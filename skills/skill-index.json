@@ -18,6 +18,15 @@
       "prompt_path": ".github/prompts/robotics-maintenance-development.prompt.md",
       "workflow": "robotics-maintenance-development",
       "description": "既存 robotics system の新機能追加、bug fix、hardware replacement、network change、deployment change、field issue response を開始する。"
+    },
+    {
+      "slash_command": "/corrective-action-report",
+      "skill": "corrective-action-report",
+      "skill_path": "skills/corrective-action-report/SKILL.md",
+      "delegated_prompt": "/corrective-action-report",
+      "prompt_path": ".github/prompts/corrective-action-report.prompt.md",
+      "workflow": "corrective-action-report",
+      "description": "指定された repository / branch の現状を調査し、改善点、risk、test gap、documentation gap、architecture concern、workflow opportunity を RAG 用 report として保存する。"
     }
   ],
   "intake_gate": {
@@ -26,5 +35,8 @@
     "reject_when_missing": true,
     "reject_when_multiple": true,
     "requires_repository_control": true
+  },
+  "report_outputs": {
+    "corrective_action_report": "rag/corrective-action-report"
   }
 }

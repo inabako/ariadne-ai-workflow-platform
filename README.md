@@ -34,6 +34,7 @@ knowledge-inbox/
 work/
   requirements/
 rag/
+  corrective-action-report/
 runtime/
 skills/
 templates/
@@ -116,6 +117,7 @@ Current prompts:
 - `/robotics-workflow`
 - `/robotics-new-system`
 - `/robotics-feature-maintenance`
+- `/corrective-action-report`
 - `/pre-development-preparation`
 - `/new-robotics-system-development`
 - `/robotics-maintenance-development`
@@ -152,8 +154,11 @@ Current skills:
 | --- | --- | --- |
 | `/robotics-new-system` | `skills/robotics-new-system/` | `/new-robotics-system-development` |
 | `/robotics-feature-maintenance` | `skills/robotics-feature-maintenance/` | `/robotics-maintenance-development` |
+| `/corrective-action-report` | `skills/corrective-action-report/` | `/corrective-action-report` |
 
-どちらの Skill も、`work/requirements/` に完成版の要件定義書が1件だけある状態を前提にします。要件定義書が無い、2件以上ある、または `Repository Control` が読めない場合は intake harness で受領拒否します。
+`/robotics-new-system` と `/robotics-feature-maintenance` は、`work/requirements/` に完成版の要件定義書が1件だけある状態を前提にします。要件定義書が無い、2件以上ある、または `Repository Control` が読めない場合は intake harness で受領拒否します。
+
+`/corrective-action-report` は開発開始ではなく read-only review と改善点report作成の Skill です。対象repositoryと対象branchを user に確認し、report を `rag/corrective-action-report/` へ保存します。
 
 ## Shared JSON Schema
 
@@ -269,6 +274,8 @@ knowledge-inbox/
   investigations/
   improvement-reports/
   field-notes/
+rag/
+  corrective-action-report/
 ```
 
 ## Status

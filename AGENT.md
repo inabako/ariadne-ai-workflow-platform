@@ -72,6 +72,7 @@ Current prompt set:
 - `/robotics-workflow`
 - `/robotics-new-system`
 - `/robotics-feature-maintenance`
+- `/corrective-action-report`
 - `/pre-development-preparation`
 - `/new-robotics-system-development`
 - `/robotics-maintenance-development`
@@ -87,6 +88,9 @@ Current Skill entrypoints:
 
 - `/robotics-new-system` -> `skills/robotics-new-system/SKILL.md` -> `/new-robotics-system-development`
 - `/robotics-feature-maintenance` -> `skills/robotics-feature-maintenance/SKILL.md` -> `/robotics-maintenance-development`
+- `/corrective-action-report` -> `skills/corrective-action-report/SKILL.md` -> `rag/corrective-action-report/`
+
+`/corrective-action-report` を使う場合は、対象repositoryと対象branchを user に確認してから read-only review を開始してください。未指定の場合は必ず入力を求めます。
 
 ## Shared Data Contract
 

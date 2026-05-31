@@ -16,6 +16,7 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 | --- | --- |
 | `robotics-new-system.prompt.md` | `/robotics-new-system` Skill entrypoint |
 | `robotics-feature-maintenance.prompt.md` | `/robotics-feature-maintenance` Skill entrypoint |
+| `corrective-action-report.prompt.md` | `/corrective-action-report` Skill entrypoint |
 | `pre-development-preparation.prompt.md` | 開発前準備、repository sync、Issue、branch 作成 |
 | `new-robotics-system-development.prompt.md` | 新システム開発の標準フロー |
 | `robotics-maintenance-development.prompt.md` | 既存システムの新機能追加・保守変更フロー |
@@ -29,6 +30,7 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 | --- | --- | --- |
 | `/robotics-new-system` | `skills/robotics-new-system/SKILL.md` | `/new-robotics-system-development` |
 | `/robotics-feature-maintenance` | `skills/robotics-feature-maintenance/SKILL.md` | `/robotics-maintenance-development` |
+| `/corrective-action-report` | `skills/corrective-action-report/SKILL.md` | read-only improvement report |
 
 ## Two Primary Flows
 
