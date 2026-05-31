@@ -1,0 +1,11 @@
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Runtime source checkout area
+work/*/source/
+
+# Python cache
+__pycache__/
+*.py[cod]

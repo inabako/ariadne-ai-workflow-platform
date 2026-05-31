@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SCM State",
+  "type": "object",
+  "required": ["schema_version", "work_id", "repository", "source_dir", "target_branch"],
+  "properties": {
+    "schema_version": { "type": "string", "examples": ["1.0"] },
+    "work_id": { "type": "string" },
+    "repository": { "type": "string" },
+    "repository_source": {
+      "type": "string",
+      "enum": ["cli", "requirements"]
+    },
+    "requirement_files": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "source_dir": { "type": "string" },
+    "remote": { "type": "string" },
+    "target_branch": { "type": "string" },
+    "current_branch": { "type": "string" },
+    "current_commit": { "type": "string" },
+    "issue_number": { "type": "string" },
+    "working_branch": { "type": "string" },
+    "prepared_at": { "type": "string" },
+    "branch_created_at": { "type": "string" },
+    "dry_run": { "type": "boolean" }
+  }
+}

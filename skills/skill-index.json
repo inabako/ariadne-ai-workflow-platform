@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "skills": [
+    {
+      "slash_command": "/robotics-new-system",
+      "skill": "robotics-new-system",
+      "skill_path": "skills/robotics-new-system/SKILL.md",
+      "delegated_prompt": "/new-robotics-system-development",
+      "prompt_path": ".github/prompts/new-robotics-system-development.prompt.md",
+      "workflow": "new-robotics-system-development",
+      "description": "新しい robotics system、runtime、remote operation system、device integration、architecture-level launch を開始する。"
+    },
+    {
+      "slash_command": "/robotics-feature-maintenance",
+      "skill": "robotics-feature-maintenance",
+      "skill_path": "skills/robotics-feature-maintenance/SKILL.md",
+      "delegated_prompt": "/robotics-maintenance-development",
+      "prompt_path": ".github/prompts/robotics-maintenance-development.prompt.md",
+      "workflow": "robotics-maintenance-development",
+      "description": "既存 robotics system の新機能追加、bug fix、hardware replacement、network change、deployment change、field issue response を開始する。"
+    }
+  ],
+  "intake_gate": {
+    "requirements_directory": "work/requirements",
+    "accepted_requirement_file_count": 1,
+    "reject_when_missing": true,
+    "reject_when_multiple": true,
+    "requires_repository_control": true
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GitHub Issue Record",
+  "type": "object",
+  "required": ["schema_version", "work_id", "github_repo", "title", "status"],
+  "properties": {
+    "schema_version": { "type": "string", "examples": ["1.0"] },
+    "work_id": { "type": "string" },
+    "github_repo": { "type": "string" },
+    "title": { "type": "string" },
+    "body_path": { "type": "string" },
+    "labels": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "assignees": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "created"]
+    },
+    "issue_url": { "type": ["string", "null"] },
+    "issue_number": { "type": ["string", "null"] },
+    "created_at": { "type": "string" }
+  }
+}
+

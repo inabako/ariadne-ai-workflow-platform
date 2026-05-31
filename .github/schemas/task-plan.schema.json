@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Task Plan",
+  "type": "object",
+  "required": ["schema_version", "tasks"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "examples": ["1.0"]
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["sequential", "parallel"]
+        },
+        "max_workers": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "stop_on_failure": {
+          "type": "boolean"
+        }
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "agent": { "type": "string" },
+          "description": { "type": "string" },
+          "depends_on": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "command": {
+            "oneOf": [
+              {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              { "type": "string" }
+            ]
+          },
+          "cwd": { "type": "string" },
+          "timeout_seconds": {
+            "type": "number",
+            "minimum": 0
+          },
+          "inputs": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "outputs": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
+

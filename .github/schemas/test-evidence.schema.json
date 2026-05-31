@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Test Evidence",
+  "type": "object",
+  "required": [
+    "id",
+    "test_type",
+    "target",
+    "result",
+    "evidence"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "examples": ["TEST-001"]
+    },
+    "test_type": {
+      "type": "string",
+      "enum": [
+        "static",
+        "unit",
+        "integration",
+        "simulation",
+        "hardware-mock",
+        "bench",
+        "limited-field",
+        "rollback-rehearsal"
+      ]
+    },
+    "target": { "type": "string" },
+    "scenario": { "type": "string" },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "repository": { "type": "string" },
+        "commit": { "type": "string" },
+        "robot": { "type": "string" },
+        "device": { "type": "string" },
+        "os": { "type": "string" },
+        "network": { "type": "string" }
+      }
+    },
+    "result": {
+      "type": "string",
+      "enum": ["pass", "warn", "fail", "blocked", "not-run"]
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "command": { "type": "string" },
+        "logs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "screenshots": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "telemetry": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "residual_risk": { "type": "string" },
+    "related_findings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
+

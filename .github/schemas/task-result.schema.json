@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Task Result",
+  "type": "object",
+  "required": ["schema_version", "run_id", "execution_mode", "tasks"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "examples": ["1.0"]
+    },
+    "run_id": { "type": "string" },
+    "task_file": { "type": "string" },
+    "execution_mode": {
+      "type": "string",
+      "enum": ["sequential", "parallel"]
+    },
+    "created_at": { "type": "string" },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "total": { "type": "integer" },
+        "success": { "type": "integer" },
+        "planned": { "type": "integer" },
+        "skipped": { "type": "integer" },
+        "failed": { "type": "integer" },
+        "blocked": { "type": "integer" }
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "status", "started_at", "ended_at"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["success", "failed", "blocked", "planned", "skipped"]
+          },
+          "started_at": { "type": "string" },
+          "ended_at": { "type": "string" },
+          "duration_seconds": { "type": "number" },
+          "returncode": { "type": "integer" },
+          "stdout_path": { "type": "string" },
+          "stderr_path": { "type": "string" },
+          "error": { "type": "string" },
+          "outputs": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
+

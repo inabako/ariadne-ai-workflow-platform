@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Decision Record",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "status",
+    "decision",
+    "reason",
+    "owner_agent"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "examples": ["DEC-001"]
+    },
+    "title": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["proposed", "accepted", "rejected", "superseded"]
+    },
+    "owner_agent": { "type": "string" },
+    "date": { "type": "string" },
+    "context": { "type": "string" },
+    "decision": { "type": "string" },
+    "reason": { "type": "string" },
+    "alternatives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "option": { "type": "string" },
+          "reason_not_chosen": { "type": "string" }
+        }
+      }
+    },
+    "consequences": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "safety_impact": { "type": "string" },
+    "operational_impact": { "type": "string" },
+    "related_artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
+

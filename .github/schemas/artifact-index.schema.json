@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Artifact Index",
+  "type": "object",
+  "required": ["schema_version", "project", "artifacts"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "examples": ["1.0"]
+    },
+    "project": { "type": "string" },
+    "workflow": { "type": "string" },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "path",
+          "type",
+          "status",
+          "owner_agent"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "path": {
+            "type": "string",
+            "description": "Repository relative path or absolute path."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "requirement",
+              "architecture",
+              "design",
+              "review",
+              "test",
+              "operation",
+              "release",
+              "incident",
+              "report",
+              "rag-note",
+              "other"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "in-review",
+              "approved",
+              "conditional-pass",
+              "rejected",
+              "superseded"
+            ]
+          },
+          "owner_agent": { "type": "string" },
+          "created_at": { "type": "string" },
+          "updated_at": { "type": "string" },
+          "depends_on": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "consumed_by": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "summary": { "type": "string" },
+          "unresolved_items": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
+

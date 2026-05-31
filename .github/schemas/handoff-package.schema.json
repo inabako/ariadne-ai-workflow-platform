@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Handoff Package",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "from_agent",
+    "to_agent",
+    "intent",
+    "summary",
+    "artifacts",
+    "open_questions",
+    "risks"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "examples": ["1.0"]
+    },
+    "from_agent": { "type": "string" },
+    "to_agent": { "type": "string" },
+    "workflow": { "type": "string" },
+    "phase": { "type": "string" },
+    "intent": { "type": "string" },
+    "summary": { "type": "string" },
+    "decisions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "risks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "required_next_actions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "stop_conditions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "notes_for_next_agent": { "type": "string" }
+  }
+}
+
