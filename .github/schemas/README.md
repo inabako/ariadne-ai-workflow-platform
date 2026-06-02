@@ -20,6 +20,11 @@
 | `scm-state.schema.json` | target repository / branch / issue branch の状態 |
 | `github-issue.schema.json` | GitHub Issue draft / created record |
 | `commit-record.schema.json` | semantic commit の記録 |
+| `rag-document.schema.json` | RAG投入用に正規化した document |
+| `rag-chunk.schema.json` | retrieval / embeddings 用の chunk |
+| `rag-embedding.schema.json` | local embedding index のchunk vector |
+| `rag-retrieval-result.schema.json` | query、selected chunks、dropped chunks、filter条件 |
+| `rag-context-pack.schema.json` | 圧縮済みcontext、source、token見積もり |
 
 ## Usage Rule
 

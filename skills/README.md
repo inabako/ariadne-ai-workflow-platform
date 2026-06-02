@@ -24,6 +24,27 @@
 
 会話ログだけを根拠に intake 済みとして扱ってはいけません。
 
+## Codex Discovery
+
+この `skills/` ディレクトリは workflow repository 側の source of truth です。
+
+Codex の Skill 候補として表示するには、`C:\Users\User\.codex\skills` から参照できる必要があります。
+
+現在は以下の junction を使います。
+
+```text
+C:\Users\User\.codex\skills\robotics-new-system
+  -> C:\github\intent-driven-robotics-ai-workflow\skills\robotics-new-system
+
+C:\Users\User\.codex\skills\robotics-feature-maintenance
+  -> C:\github\intent-driven-robotics-ai-workflow\skills\robotics-feature-maintenance
+
+C:\Users\User\.codex\skills\corrective-action-report
+  -> C:\github\intent-driven-robotics-ai-workflow\skills\corrective-action-report
+```
+
+VS Code Copilot Chat の `/` 候補は `.github/prompts/*.prompt.md`、Codex Skill 候補は `C:\Users\User\.codex\skills` を主に見ます。
+
 ## Corrective Action Report Rule
 
 `/corrective-action-report` は、開発開始ではなく read-only review と report 作成の Skill です。

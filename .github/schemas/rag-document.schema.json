@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RAG Document",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "document_id",
+    "source_path",
+    "normalized_path",
+    "document_type",
+    "title",
+    "content",
+    "metadata"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "examples": ["1.0"]
+    },
+    "document_id": {
+      "type": "string"
+    },
+    "source_path": {
+      "type": "string",
+      "description": "Repository relative path or absolute path for the original document."
+    },
+    "normalized_path": {
+      "type": "string",
+      "description": "Repository relative path for the normalized JSON document."
+    },
+    "document_type": {
+      "type": "string",
+      "examples": ["corrective-action-report", "process-report", "design-document"]
+    },
+    "title": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["project", "repository", "branch", "commit", "status", "created_at", "tags"],
+      "properties": {
+        "project": { "type": "string" },
+        "repository": { "type": "string" },
+        "branch": { "type": "string" },
+        "commit": { "type": "string" },
+        "workflow": { "type": "string" },
+        "phase": { "type": "string" },
+        "agent": { "type": "string" },
+        "status": { "type": "string" },
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" },
+        "source": { "type": "string" },
+        "severity_focus": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "areas": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "headings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": true
+}

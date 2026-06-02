@@ -13,6 +13,7 @@
 | `runtime/retrieval/` | task を順次または並列で処理し、必要なcontextやartifactを取り出す機能 |
 | `runtime/scm/` | target repository の取得、要件比較、Issue branch作成、semantic commit |
 | `runtime/github/` | GitHub Issue のdraft作成または実作成 |
+| `runtime/rag/` | report / artifact を file-based RAG 用 document、chunk、index に変換する機能 |
 
 ## Environment Files
 
@@ -36,6 +37,11 @@ runtime/scm/compare_requirements.py
 runtime/scm/create_issue_branch.py
 runtime/scm/commit_changes.py
 runtime/github/issue_manager.py
+runtime/rag/normalize_documents.py
+runtime/rag/chunk_documents.py
+runtime/rag/build_index.py
+runtime/rag/embed_chunks.py
+runtime/rag/retrieve_context.py
 ```
 
 `intake_requirements.py` は、要件定義書を `work/<採番ID>/design-document/` へ移動し、`context/*.json` を初期化します。
@@ -51,6 +57,16 @@ runtime/github/issue_manager.py
 `create_issue_branch.py` は、Issue番号から `feature/issue-<issue-number>` branch を作成します。
 
 `commit_changes.py` は、semantic commit message を検証してcommitします。
+
+`normalize_documents.py` は、Markdown report を metadata 付きの RAG document JSON に変換します。
+
+`chunk_documents.py` は、normalized document を retrieval しやすい chunk JSON に分割します。
+
+`build_index.py` は、document / chunk を JSONL index として `rag/indexes/` に集約します。
+
+`embed_chunks.py` は、chunk index から deterministic sparse embedding を生成し、`rag/embeddings/` に出力します。
+
+`retrieve_context.py` は、JSONL chunk index と local embeddings から query に合うchunkを選び、Agent投入用の圧縮済みcontext packを `rag/retrieval/` に出力します。
 
 ## Intake Role
 
@@ -76,3 +92,19 @@ runtime/github/issue_manager.py
 - Agentに渡すhandoff packageの組み立て
 - sequential / parallel task execution の補助
 - 実行結果のartifact index更新
+
+## RAG Role
+
+`runtime/rag/` は、review report や corrective action report を future Agent が再利用できる知識へ変換する責務を持ちます。
+
+想定処理:
+
+- source Markdown report の読み取り
+- front matter / heading / content の抽出
+- normalized RAG document JSON の生成
+- chunk JSON の生成
+- `documents.jsonl` / `chunks.jsonl` index の生成
+- local sparse embedding の生成
+- keyword retrieval、embedding cosine similarity、hybrid reranking、extractive context compression
+- `retrieval-result.json` / `context-pack.json` / `context-pack.md` の生成
+- 将来の embeddings / vector DB 移行に備えた metadata の標準化

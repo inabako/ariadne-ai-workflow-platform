@@ -47,6 +47,7 @@ runtime/
   retrieval/   retrieve context/artifacts and support sequential or parallel task execution
   scm/         prepare repository, compare requirements, create issue branch, commit changes
   github/      create GitHub Issue draft or issue
+  rag/         normalize reports, create chunks, and build file-based RAG indexes
 ```
 
 Environment files:
@@ -112,6 +113,11 @@ Current schema set:
 - `scm-state.schema.json`
 - `github-issue.schema.json`
 - `commit-record.schema.json`
+- `rag-document.schema.json`
+- `rag-chunk.schema.json`
+- `rag-embedding.schema.json`
+- `rag-retrieval-result.schema.json`
+- `rag-context-pack.schema.json`
 
 Agent は、次のAgentが必要とする情報を schema に沿って残してください。
 
@@ -192,6 +198,11 @@ runtime/scm/compare_requirements.py
 runtime/github/issue_manager.py
 runtime/scm/create_issue_branch.py
 runtime/scm/commit_changes.py
+runtime/rag/normalize_documents.py
+runtime/rag/chunk_documents.py
+runtime/rag/build_index.py
+runtime/rag/embed_chunks.py
+runtime/rag/retrieve_context.py
 ```
 
 新規機能および保守開発では、開発本体へ入る前に `/pre-development-preparation` を通してください。
@@ -208,6 +219,20 @@ runtime/scm/commit_changes.py
 ```
 
 重いtaskや独立したreview taskは、`task-plan.schema.json` に沿ってtask planを作成し、`runtime/retrieval/task_runner.py` で sequential / parallel に処理してください。
+
+review report や corrective action report を RAG 化する場合は、以下を順に実行してください。
+
+```text
+runtime/rag/normalize_documents.py
+  -> runtime/rag/chunk_documents.py
+  -> runtime/rag/build_index.py
+  -> runtime/rag/embed_chunks.py
+  -> runtime/rag/retrieve_context.py
+```
+
+RAG source は `rag/corrective-action-report/`、変換後のJSONは `rag/normalized/`、chunkは `rag/chunks/`、indexは `rag/indexes/`、local embeddingは `rag/embeddings/`、圧縮済みcontext packは `rag/retrieval/` に保存します。
+
+この local workflow では keyword retrieval、local embedding cosine similarity、hybrid reranking、extractive compression までを扱います。Vector DB、provider-based embeddings、高度な semantic search、reranking model は将来の MCP repository 側で担当します。
 
 ## Safety Rules
 
@@ -252,3 +277,15 @@ knowledge-inbox/
 ```
 
 RAG化する前提で、可能な限り front matter、project、type、status、created_at、source、tags を残してください。
+
+RAG pipeline の標準出力:
+
+```text
+rag/
+  corrective-action-report/
+  normalized/
+  chunks/
+  indexes/
+  embeddings/
+  retrieval/
+```

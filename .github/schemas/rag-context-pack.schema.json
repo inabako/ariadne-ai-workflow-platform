@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RAG Context Pack",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "query",
+    "created_at",
+    "compression",
+    "context",
+    "sources"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "examples": ["1.0"]
+    },
+    "query": { "type": "string" },
+    "created_at": { "type": "string" },
+    "compression": {
+      "type": "object",
+      "required": [
+        "method",
+        "max_chars",
+        "input_chunk_count",
+        "selected_chunk_count",
+        "estimated_tokens"
+      ],
+      "properties": {
+        "method": { "type": "string" },
+        "max_chars": { "type": "integer", "minimum": 1 },
+        "input_chunk_count": { "type": "integer", "minimum": 0 },
+        "selected_chunk_count": { "type": "integer", "minimum": 0 },
+        "estimated_tokens": { "type": "integer", "minimum": 0 },
+        "dropped_reason_summary": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "context": { "type": "string" },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["chunk_id", "source_path"],
+        "properties": {
+          "chunk_id": { "type": "string" },
+          "document_id": { "type": "string" },
+          "source_path": { "type": "string" },
+          "chunk_path": { "type": "string" },
+          "heading_path": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "score": { "type": "number" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "risks": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": true
+}
