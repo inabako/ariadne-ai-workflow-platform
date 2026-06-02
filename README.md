@@ -591,6 +591,7 @@ rag/
   normalized/
   chunks/
   indexes/
+  embeddings/
   retrieval/
 ```
 
