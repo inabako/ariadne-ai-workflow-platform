@@ -34,4 +34,6 @@ Do not proceed from chat history alone.
 
 ## Next Step
 
-After intake succeeds, run `/pre-development-preparation`, then continue with `/robotics-maintenance-development`.
+After intake succeeds, run `/pre-development-preparation`, then run `/rag-load`, then continue with `/robotics-maintenance-development`.
+
+`/rag-load` must search prior corrective action reports in parallel where possible and use `runtime/rag/retrieve_context.py` to generate compressed context packs before maintenance design starts.

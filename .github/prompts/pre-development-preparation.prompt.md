@@ -128,7 +128,30 @@ feature/issue-<issue-number>
 - working branch が `feature/issue-<issue-number>` であるか
 - `scm-state.json` に issue number と working branch が記録されているか
 
-## Phase 5: Development Workflow
+## Phase 5: RAG Load Before Development
+
+開発本体flowへ進む前に、`/rag-load` を実行して過去の corrective action report や関連知識を読み込みます。
+
+入力に使う情報:
+
+- `work/<採番ID>/design-document/<requirements>`
+- `work/<採番ID>/context/scm-state.json`
+- `work/<採番ID>/process-report/requirement-comparison-*.md`
+- `work/<採番ID>/process-report/github-issue-*.md`
+
+`/rag-load` では、`runtime/rag/rag_dispatcher.py` を実行します。dispatcher は対象 repository、branch、要件の intent、影響コンポーネント、安全・STOP・通信断・rollback・test gap などから 3〜5 個の検索クエリを作り、可能なら並列検索します。
+
+検索結果は `runtime/rag/retrieve_context.py` の既存圧縮機能で `rag/retrieval/*_context-pack.md` として保存します。dispatcher はそれらを集約して `rag/retrieval/*_rag-load-dispatch.md` を作り、開発本体flowに入る前に要約します。
+
+確認:
+
+- RAG index / embedding が存在しない場合は `/rag-build` を先に実行したか
+- `rag/retrieval/*_rag-load-dispatch.md` が生成されたか
+- `rag/retrieval/*_context-pack.md` が生成されたか
+- RAG から得た prior finding / risk / test gap が開発計画へ反映されたか
+- safety-critical な未解決指摘がある場合、implementation に進まず blocker として扱ったか
+
+## Phase 6: Development Workflow
 
 新規機能または保守開発の本体flowへ進みます。
 
@@ -139,7 +162,7 @@ feature/issue-<issue-number>
 - `/robotics-safety-gates`
 - `/robotics-test-strategy`
 
-## Phase 6: Commit
+## Phase 7: Commit
 
 成果物とsource差分を作業branchにcommitします。
 

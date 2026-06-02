@@ -1,0 +1,4 @@
+interface:
+  display_name: "RAG Build"
+  short_description: "Create or refresh file-based RAG indexes from Markdown reports."
+  default_prompt: "/rag-build\n日本語で出力してください。"

@@ -82,6 +82,21 @@ Vector DB、embeddings、semantic search、reranking は、将来の MCP reposit
 
 Local embeddings は `local-hash-embedding-v1` による deterministic sparse embedding です。外部APIを使わず、MCP repository 側の本格embedding / Vector DBへ移行する前の local baseline として扱います。
 
+### 5. Dispatch Parallel RAG Load
+
+開発前の RAG 読み込みでは、dispatcher を使って複数queryを計画・並列検索し、`retrieve_context.py` の圧縮済みcontext packを集約します。
+
+```powershell
+python runtime/rag/rag_dispatcher.py `
+  --task "MainWindow 分離 責務集中" `
+  --repository "C:\github\localty-system-gui" `
+  --branch develop `
+  --search-mode hybrid `
+  --top-k 5 `
+  --max-chars 4000 `
+  --jobs 4
+```
+
 ## Output Files
 
 | Path | Purpose |
@@ -91,6 +106,8 @@ Local embeddings は `local-hash-embedding-v1` による deterministic sparse em
 | `rag/indexes/documents.jsonl` | document-level index |
 | `rag/indexes/chunks.jsonl` | chunk-level index |
 | `rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |
+| `rag/retrieval/*_rag-load-dispatch.json` | 複数query retrieval の集約結果 |
+| `rag/retrieval/*_rag-load-dispatch.md` | 開発前に読む集約済みRAG context |
 | `rag/retrieval/*_retrieval-result.json` | query、selected chunks、dropped chunks、filters |
 | `rag/retrieval/*_context-pack.json` | Agent投入用の圧縮済みcontext pack |
 | `rag/retrieval/*_context-pack.md` | 人間が読める圧縮済みcontext |

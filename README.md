@@ -93,17 +93,21 @@ work/
 
 ## Primary Entry Points
 
-この repository では、主に3つの slash command / Skill entrypoint を使います。
+この repository では、主に5つの slash command / Skill entrypoint を使います。
 
 | Slash Command | Purpose | Skill | Main Output |
 | --- | --- | --- | --- |
 | `/robotics-new-system` | 新しい robotics system を立ち上げる | `skills/robotics-new-system/` | `work/<receipt-id>/` |
 | `/robotics-feature-maintenance` | 既存 robotics system の新機能追加または保守開発を行う | `skills/robotics-feature-maintenance/` | `work/<receipt-id>/` |
 | `/corrective-action-report` | 指定repository / branchの改善点をreport化する | `skills/corrective-action-report/` | `rag/corrective-action-report/` |
+| `/rag-build` | Markdown report を file-based RAG artifact に変換する | `skills/rag-build/` | `rag/normalized/`, `rag/chunks/`, `rag/indexes/`, `rag/embeddings/` |
+| `/rag-load` | 開発前に RAG を検索し、圧縮済みcontextを読み込む | `skills/rag-load/` | `rag/retrieval/*_context-pack.md` |
 
 `/robotics-new-system` と `/robotics-feature-maintenance` は、開発 workflow を開始するための入口です。
 
 `/corrective-action-report` は、開発開始ではなく read-only review と改善点report作成の入口です。
+
+`/rag-build` は RAG 作成、`/rag-load` は RAG 読み込みの入口です。開発本体へ入る前に `/rag-load` を実行します。`/rag-load` は `runtime/rag/rag_dispatcher.py` を使って複数クエリを並列検索し、既存の `retrieve_context.py` 圧縮結果を集約します。
 
 ## VS Code Prompt Discovery
 
@@ -114,6 +118,8 @@ VS Code / GitHub Copilot Chat の `/` 候補に出すため、prompt files は `
 ```text
 .github/prompts/
   corrective-action-report.prompt.md
+  rag-build.prompt.md
+  rag-load.prompt.md
   robotics-new-system.prompt.md
   robotics-feature-maintenance.prompt.md
 ```
@@ -173,6 +179,7 @@ Repository は `.env` の fallback ではなく、要件定義書の `Repository
 
 ```text
 /pre-development-preparation
+  -> /rag-load
   -> /new-robotics-system-development
 ```
 
@@ -184,6 +191,7 @@ Intake
   -> Requirement Comparison
   -> GitHub Issue Draft / Create
   -> Working Branch Create
+  -> RAG Load / Prior Findings
   -> Intent / Mission
   -> Operational Context
   -> Hazard Analysis / Safety Requirements
@@ -216,6 +224,7 @@ Intake
 
 ```text
 /pre-development-preparation
+  -> /rag-load
   -> /robotics-maintenance-development
 ```
 
@@ -307,6 +316,7 @@ Implemented runtime CLI:
 | `runtime/rag/build_index.py` | document / chunk を JSONL index として `rag/indexes/` に集約する |
 | `runtime/rag/embed_chunks.py` | chunk index から local sparse embedding を生成する |
 | `runtime/rag/retrieve_context.py` | JSONL index と local embeddings から候補chunkを選び、圧縮済みcontext packを生成する |
+| `runtime/rag/rag_dispatcher.py` | 開発前RAG読み込み用に複数queryを計画・並列検索し、圧縮済みcontext packを集約する |
 
 Intake example:
 
@@ -601,7 +611,12 @@ RAG化する前提で、可能な限り front matter、project、repository、br
 
 ## RAG Pipeline
 
-レビューや改善レポートをRAG化するときは、いきなり vector DB に投入せず、まず file-based RAG の中間形式へ変換します。
+RAG は「作成」と「読み込み」を分けます。
+
+- `/rag-build`: レビューや改善レポートを file-based RAG の中間形式へ変換する
+- `/rag-load`: 開発前に RAG を検索し、圧縮済み context pack を読み込む
+
+いきなり vector DB に投入せず、まず file-based RAG の中間形式へ変換します。
 
 ```text
 source markdown
@@ -611,6 +626,8 @@ source markdown
   -> local embeddings
   -> compressed context pack
 ```
+
+### RAG Build
 
 標準コマンド:
 
@@ -632,15 +649,21 @@ python runtime/rag/build_index.py `
 python runtime/rag/embed_chunks.py `
   --chunks-index rag/indexes/chunks.jsonl `
   --output rag/embeddings/chunks-embeddings.jsonl
+```
 
-python runtime/rag/retrieve_context.py `
-  "MainWindow 分割 Qt smoke test" `
-  --chunks-index rag/indexes/chunks.jsonl `
-  --embeddings-index rag/embeddings/chunks-embeddings.jsonl `
-  --output-dir rag/retrieval `
+### RAG Load
+
+開発前に、task context から 3〜5 個の検索クエリを作り、可能なら並列に retrieval します。
+
+標準では `runtime/rag/rag_dispatcher.py` を使います。RAG 圧縮は `runtime/rag/retrieve_context.py` の既存 context pack 生成を使います。
+
+```powershell
+python runtime/rag/rag_dispatcher.py `
+  --task "MainWindow 分割 Qt smoke test" `
   --search-mode hybrid `
   --top-k 5 `
-  --max-chars 4000
+  --max-chars 4000 `
+  --jobs 4
 ```
 
 主な出力:
@@ -652,6 +675,8 @@ python runtime/rag/retrieve_context.py `
 | `rag/indexes/documents.jsonl` | document-level index |
 | `rag/indexes/chunks.jsonl` | chunk-level index |
 | `rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |
+| `rag/retrieval/*_rag-load-dispatch.json` | 複数query retrieval の集約結果 |
+| `rag/retrieval/*_rag-load-dispatch.md` | 開発前に読む集約済みRAG context |
 | `rag/retrieval/*_retrieval-result.json` | query、selected chunks、dropped chunks、filter条件 |
 | `rag/retrieval/*_context-pack.json` | Agent投入用の圧縮済みcontext pack |
 | `rag/retrieval/*_context-pack.md` | 人間が確認しやすい圧縮済みcontext |

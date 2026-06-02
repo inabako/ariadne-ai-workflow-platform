@@ -39,9 +39,10 @@ Do not treat chat history as a substitute for an accepted requirement document.
 
 1. Run `/pre-development-preparation`.
 2. Confirm repository sync, requirement comparison, GitHub Issue, and `feature/issue-<issue-number>` branch.
-3. Run `/new-robotics-system-development`.
-4. Preserve artifacts under `work/<receipt-id>/`.
-5. Record decisions, QA, risks, test evidence, and handoff context as JSON where schemas exist.
+3. Run `/rag-load` before entering the development body. Derive parallel retrieval queries from the requirement, repository, branch, comparison report, and issue summary.
+4. Run `/new-robotics-system-development` only after relevant RAG context has been loaded and summarized.
+5. Preserve artifacts under `work/<receipt-id>/`.
+6. Record decisions, QA, risks, test evidence, RAG context references, and handoff context as JSON where schemas exist.
 
 ## Required Focus
 

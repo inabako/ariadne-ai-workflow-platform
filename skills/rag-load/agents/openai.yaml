@@ -1,0 +1,4 @@
+interface:
+  display_name: "RAG Load"
+  short_description: "Load compressed prior context from file-based RAG before development."
+  default_prompt: "/rag-load\n日本語で出力してください。"

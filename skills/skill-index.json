@@ -27,6 +27,24 @@
       "prompt_path": ".github/prompts/corrective-action-report.prompt.md",
       "workflow": "corrective-action-report",
       "description": "指定された repository / branch の現状を調査し、改善点、risk、test gap、documentation gap、architecture concern、workflow opportunity を RAG 用 report として保存する。"
+    },
+    {
+      "slash_command": "/rag-build",
+      "skill": "rag-build",
+      "skill_path": "skills/rag-build/SKILL.md",
+      "delegated_prompt": "/rag-build",
+      "prompt_path": ".github/prompts/rag-build.prompt.md",
+      "workflow": "rag-build",
+      "description": "Markdown report を file-based RAG 用 document、chunk、index、embedding に変換する。"
+    },
+    {
+      "slash_command": "/rag-load",
+      "skill": "rag-load",
+      "skill_path": "skills/rag-load/SKILL.md",
+      "delegated_prompt": "/rag-load",
+      "prompt_path": ".github/prompts/rag-load.prompt.md",
+      "workflow": "rag-load",
+      "description": "開発前に file-based RAG を並列検索し、retrieve_context.py の圧縮済み context pack を読み込む。"
     }
   ],
   "intake_gate": {

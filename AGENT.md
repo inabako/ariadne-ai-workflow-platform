@@ -75,6 +75,8 @@ Current prompt set:
 - `/robotics-feature-maintenance`
 - `/corrective-action-report`
 - `/pre-development-preparation`
+- `/rag-build`
+- `/rag-load`
 - `/new-robotics-system-development`
 - `/robotics-maintenance-development`
 - `/robotics-safety-gates`
@@ -90,6 +92,8 @@ Current Skill entrypoints:
 - `/robotics-new-system` -> `skills/robotics-new-system/SKILL.md` -> `/new-robotics-system-development`
 - `/robotics-feature-maintenance` -> `skills/robotics-feature-maintenance/SKILL.md` -> `/robotics-maintenance-development`
 - `/corrective-action-report` -> `skills/corrective-action-report/SKILL.md` -> `rag/corrective-action-report/`
+- `/rag-build` -> `skills/rag-build/SKILL.md` -> `rag/normalized/`, `rag/chunks/`, `rag/indexes/`, `rag/embeddings/`
+- `/rag-load` -> `skills/rag-load/SKILL.md` -> `rag/retrieval/*_context-pack.md`
 
 `/corrective-action-report` を使う場合は、対象repositoryと対象branchを user に確認してから read-only review を開始してください。未指定の場合は必ず入力を求めます。
 
@@ -205,7 +209,7 @@ runtime/rag/embed_chunks.py
 runtime/rag/retrieve_context.py
 ```
 
-新規機能および保守開発では、開発本体へ入る前に `/pre-development-preparation` を通してください。
+新規機能および保守開発では、開発本体へ入る前に `/pre-development-preparation` と `/rag-load` を通してください。
 
 標準準備工程:
 
@@ -214,23 +218,25 @@ runtime/rag/retrieve_context.py
 2. 要件定義書とrepository stateを比較
 3. 修正内容をGitHub Issueへ記載
 4. Issue番号から feature/issue-<issue-number> branchを作成
-5. 開発工程
-6. 成果物とsource差分をsemantic commitでcommit
+5. `/rag-load` で過去の corrective action report を並列検索し、圧縮済みcontext packを読み込む
+6. 開発工程
+7. 成果物とsource差分をsemantic commitでcommit
 ```
 
 重いtaskや独立したreview taskは、`task-plan.schema.json` に沿ってtask planを作成し、`runtime/retrieval/task_runner.py` で sequential / parallel に処理してください。
 
-review report や corrective action report を RAG 化する場合は、以下を順に実行してください。
+review report や corrective action report を RAG 作成する場合は `/rag-build` を使い、以下を順に実行してください。
 
 ```text
 runtime/rag/normalize_documents.py
   -> runtime/rag/chunk_documents.py
   -> runtime/rag/build_index.py
   -> runtime/rag/embed_chunks.py
-  -> runtime/rag/retrieve_context.py
 ```
 
 RAG source は `rag/corrective-action-report/`、変換後のJSONは `rag/normalized/`、chunkは `rag/chunks/`、indexは `rag/indexes/`、local embeddingは `rag/embeddings/`、圧縮済みcontext packは `rag/retrieval/` に保存します。
+
+開発前の RAG 読み込みは `/rag-load` を使います。`/rag-load` は `runtime/rag/rag_dispatcher.py` を実行します。dispatcher は 3〜5 個の検索クエリを作り、可能なら `runtime/rag/retrieve_context.py` を並列実行します。圧縮は `retrieve_context.py` が生成する `rag/retrieval/*_context-pack.md` を利用し、集約結果を `rag/retrieval/*_rag-load-dispatch.md` に保存します。
 
 この local workflow では keyword retrieval、local embedding cosine similarity、hybrid reranking、extractive compression までを扱います。Vector DB、provider-based embeddings、高度な semantic search、reranking model は将来の MCP repository 側で担当します。
 

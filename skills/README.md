@@ -9,6 +9,8 @@
 | `/robotics-new-system` | `robotics-new-system/` | `/new-robotics-system-development` | 新しい robotics system を立ち上げる |
 | `/robotics-feature-maintenance` | `robotics-feature-maintenance/` | `/robotics-maintenance-development` | 既存 robotics system の新機能追加または保守開発を行う |
 | `/corrective-action-report` | `corrective-action-report/` | `/corrective-action-report` | 指定repository / branchの改善点をreport化する |
+| `/rag-build` | `rag-build/` | `/rag-build` | Markdown report を file-based RAG 用に normalize / chunk / index / embedding 化する |
+| `/rag-load` | `rag-load/` | `/rag-load` | 開発前に file-based RAG を並列検索し、圧縮済み context を読み込む |
 
 ## Intake Rule
 
@@ -41,6 +43,12 @@ C:\Users\User\.codex\skills\robotics-feature-maintenance
 
 C:\Users\User\.codex\skills\corrective-action-report
   -> C:\github\intent-driven-robotics-ai-workflow\skills\corrective-action-report
+
+C:\Users\User\.codex\skills\rag-build
+  -> C:\github\intent-driven-robotics-ai-workflow\skills\rag-build
+
+C:\Users\User\.codex\skills\rag-load
+  -> C:\github\intent-driven-robotics-ai-workflow\skills\rag-load
 ```
 
 VS Code Copilot Chat の `/` 候補は `.github/prompts/*.prompt.md`、Codex Skill 候補は `C:\Users\User\.codex\skills` を主に見ます。

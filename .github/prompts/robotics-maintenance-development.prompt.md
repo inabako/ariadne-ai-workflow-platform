@@ -27,8 +27,16 @@
 - 修正内容、影響範囲、acceptance criteriaをGitHub Issueへ記載した
 - Issue番号から `feature/issue-<issue-number>` branch を作成した
 - `work/<採番ID>/context/scm-state.json` にbranch情報が記録されている
+- `/rag-load` を実行し、過去の corrective action report から関連する prior finding / risk / test gap / architecture concern を読み込んだ
+- `rag/retrieval/*_context-pack.md` の圧縮済み context を確認し、変更前状態と影響分析に反映した
 
 この準備が未完了の場合、implementation へ進みません。
+
+RAG loading rule:
+
+- RAG index / embedding が無い場合は `/rag-build` を先に実行する
+- `/rag-load` では 3〜5 個の検索クエリを並列実行し、`runtime/rag/retrieve_context.py` の既存圧縮機能を使う
+- safety-critical な未解決指摘が見つかった場合は、Phase 1 以降へ進む前に blocker として扱う
 
 ## Phase 1: Change Intent
 

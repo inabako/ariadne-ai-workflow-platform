@@ -1,0 +1,120 @@
+---
+name: rag-build
+description: Build or refresh the Intent-Driven Robotics AI Workflow file-based RAG artifacts from Markdown reports. Use when the user selects /rag-build, asks to create RAG, update RAG, accumulate corrective action reports into RAG, normalize reports, chunk documents, build indexes, or create local embeddings.
+---
+
+# RAG Build Skill
+
+## Slash Command
+
+Use this skill when the user specifies:
+
+```text
+/rag-build
+```
+
+## Default Language
+
+Respond to the user in Japanese by default.
+
+## Purpose
+
+Create or refresh file-based RAG artifacts from Markdown reports.
+
+This is the RAG creation flow. It does not retrieve context unless the user explicitly asks for retrieval too. Use `rag-load` for RAG reading before development work.
+
+Default workflow repository root:
+
+```text
+C:\github\intent-driven-robotics-ai-workflow
+```
+
+Default source reports:
+
+```text
+rag/corrective-action-report
+```
+
+## Parameters
+
+- `source-dir`: default `rag/corrective-action-report`
+- `document-type`: default `corrective-action-report`
+- `normalized-dir`: default `rag/normalized`
+- `chunks-dir`: default `rag/chunks`
+- `indexes-dir`: default `rag/indexes`
+- `embeddings-output`: default `rag/embeddings/chunks-embeddings.jsonl`
+
+If unspecified, use all defaults.
+
+## Command Confirmation Policy
+
+Do not ask conversational confirmation before read-only inspection commands.
+
+If the execution environment requires approval for sandbox, filesystem, or write permissions, request that approval with a clear justification.
+
+## Pipeline
+
+Run commands from:
+
+```powershell
+cd C:\github\intent-driven-robotics-ai-workflow
+```
+
+### 1. Normalize Documents
+
+```powershell
+python runtime/rag/normalize_documents.py `
+  --source-dir rag/corrective-action-report `
+  --output-dir rag/normalized `
+  --document-type corrective-action-report
+```
+
+### 2. Chunk Documents
+
+```powershell
+python runtime/rag/chunk_documents.py `
+  --input-dir rag/normalized `
+  --output-dir rag/chunks
+```
+
+### 3. Build Index
+
+```powershell
+python runtime/rag/build_index.py `
+  --normalized-dir rag/normalized `
+  --chunks-dir rag/chunks `
+  --output-dir rag/indexes
+```
+
+### 4. Build Local Embeddings
+
+```powershell
+python runtime/rag/embed_chunks.py `
+  --chunks-index rag/indexes/chunks.jsonl `
+  --output rag/embeddings/chunks-embeddings.jsonl
+```
+
+## Output Files
+
+Expected outputs:
+
+```text
+rag/normalized/*.json
+rag/chunks/*.json
+rag/indexes/documents.jsonl
+rag/indexes/chunks.jsonl
+rag/embeddings/chunks-embeddings.jsonl
+```
+
+## Workflow
+
+1. Inspect the source report directory.
+2. Run normalize, chunk, build index, and local embeddings in order.
+3. Stop on the first failed stage and report the failed command.
+4. Summarize document count, chunk count, embedding count, and output paths in Japanese.
+
+## Guardrails
+
+- Do not delete existing RAG artifacts unless the user explicitly requests cleanup.
+- Do not overwrite source reports manually.
+- If Python is not available as `python`, use an available local Python after identifying it.

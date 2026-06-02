@@ -42,6 +42,7 @@ runtime/rag/chunk_documents.py
 runtime/rag/build_index.py
 runtime/rag/embed_chunks.py
 runtime/rag/retrieve_context.py
+runtime/rag/rag_dispatcher.py
 ```
 
 `intake_requirements.py` は、要件定義書を `work/<採番ID>/design-document/` へ移動し、`context/*.json` を初期化します。
@@ -67,6 +68,8 @@ runtime/rag/retrieve_context.py
 `embed_chunks.py` は、chunk index から deterministic sparse embedding を生成し、`rag/embeddings/` に出力します。
 
 `retrieve_context.py` は、JSONL chunk index と local embeddings から query に合うchunkを選び、Agent投入用の圧縮済みcontext packを `rag/retrieval/` に出力します。
+
+`rag_dispatcher.py` は、開発前RAG読み込み用に複数queryを計画し、`retrieve_context.py` を並列実行して、圧縮済みcontext packを集約します。
 
 ## Intake Role
 
@@ -107,4 +110,5 @@ runtime/rag/retrieve_context.py
 - local sparse embedding の生成
 - keyword retrieval、embedding cosine similarity、hybrid reranking、extractive context compression
 - `retrieval-result.json` / `context-pack.json` / `context-pack.md` の生成
+- `rag-load-dispatch.json` / `rag-load-dispatch.md` の生成
 - 将来の embeddings / vector DB 移行に備えた metadata の標準化
