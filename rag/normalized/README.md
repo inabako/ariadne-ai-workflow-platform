@@ -11,5 +11,5 @@ runtime/rag/normalize_documents.py
 出力例:
 
 ```text
-rag/normalized/corrective-action-report-20260531_145409_localty-system-gui.json
+rag/normalized/<uuid>.json
 ```

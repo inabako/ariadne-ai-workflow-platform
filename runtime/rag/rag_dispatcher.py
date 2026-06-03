@@ -4,6 +4,7 @@ import argparse
 import json
 import subprocess
 import sys
+import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Sequence
@@ -11,7 +12,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, slugify, utc_now_iso, write_json  # noqa: E402
+from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 
 
 DEFAULT_QUERIES = [
@@ -56,6 +57,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--jobs", type=int, default=4)
     parser.add_argument("--aggregate-max-chars", type=int, default=12000)
     parser.add_argument("--build-if-missing", action="store_true")
+    parser.add_argument("--write-markdown", action="store_true")
     parser.add_argument("--repo-root", default=None)
     parser.add_argument("--python", default=sys.executable)
     return parser
@@ -196,8 +198,17 @@ def ensure_indexes(args: argparse.Namespace, repo_root: Path) -> None:
             "rag/normalized",
             "--document-type",
             "corrective-action-report",
+            "--clean-output",
         ],
-        [args.python, "runtime/rag/chunk_documents.py", "--input-dir", "rag/normalized", "--output-dir", "rag/chunks"],
+        [
+            args.python,
+            "runtime/rag/chunk_documents.py",
+            "--input-dir",
+            "rag/normalized",
+            "--output-dir",
+            "rag/chunks",
+            "--clean-output",
+        ],
         [
             args.python,
             "runtime/rag/build_index.py",
@@ -247,6 +258,8 @@ def retrieval_command(args: argparse.Namespace, query: str) -> list[str]:
             command.extend([f"--{option}", value])
     for tag in args.tag:
         command.extend(["--tag", tag])
+    if args.write_markdown:
+        command.append("--write-markdown")
     return command
 
 
@@ -369,12 +382,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     aggregate_context, sources = aggregate_context_packs(repo_root, retrievals, args.aggregate_max_chars)
     output_dir = resolve_path(repo_root, args.output_dir)
-    timestamp = local_timestamp()
-    base_name = f"{timestamp}_rag-load-dispatch"
-    json_path = output_dir / f"{base_name}.json"
-    markdown_path = output_dir / f"{base_name}.md"
+    dispatch_id = str(uuid.uuid4())
+    json_path = output_dir / f"{dispatch_id}.json"
+    markdown_path = output_dir / f"{dispatch_id}.md"
     result = {
         "schema_version": "1.0",
+        "artifact_type": "rag-load-dispatch",
+        "dispatch_id": dispatch_id,
         "created_at": utc_now_iso(),
         "queries": queries,
         "search_mode": args.search_mode,
@@ -389,10 +403,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "sources": sources,
     }
     write_json(json_path, result)
-    write_dispatch_markdown(markdown_path, result)
+    if args.write_markdown:
+        write_dispatch_markdown(markdown_path, result)
     return {
         "dispatch_result": relative_to_repo(repo_root, json_path),
-        "dispatch_markdown": relative_to_repo(repo_root, markdown_path),
+        "dispatch_markdown": relative_to_repo(repo_root, markdown_path) if args.write_markdown else "",
         "query_count": len(queries),
         "context_pack_count": len(context_packs),
         "source_count": len(sources),

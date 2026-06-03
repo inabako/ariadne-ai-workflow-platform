@@ -86,8 +86,12 @@ def row_text(row: dict[str, Any]) -> str:
     return "\n".join(
         [
             str(row.get("title", "")),
+            str(row.get("source_path", "")),
+            str(row.get("repository", "")),
+            str(row.get("branch", "")),
             " ".join(str(item) for item in row.get("heading_path", [])),
             " ".join(str(tag) for tag in row.get("tags", [])),
+            json.dumps(row.get("metadata", {}), ensure_ascii=False, sort_keys=True),
             str(row.get("content", "")),
         ]
     )

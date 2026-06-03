@@ -43,6 +43,8 @@ runtime/rag/build_index.py
 runtime/rag/embed_chunks.py
 runtime/rag/retrieve_context.py
 runtime/rag/rag_dispatcher.py
+runtime/rag/jsonize_rag_tree.py
+runtime/rag/standardize_corrective_report_names.py
 ```
 
 `intake_requirements.py` は、要件定義書を `work/<採番ID>/design-document/` へ移動し、`context/*.json` を初期化します。
@@ -70,6 +72,9 @@ runtime/rag/rag_dispatcher.py
 `retrieve_context.py` は、JSONL chunk index と local embeddings から query に合うchunkを選び、Agent投入用の圧縮済みcontext packを `rag/retrieval/` に出力します。
 
 `rag_dispatcher.py` は、開発前RAG読み込み用に複数queryを計画し、`retrieve_context.py` を並列実行して、圧縮済みcontext packを集約します。
+
+`jsonize_rag_tree.py` は、`rag/` 配下の非UUID JSON、JSONL、Markdown、text artifact を UUID名の JSON wrapper に変換します。
+`standardize_corrective_report_names.py` は、`rag/corrective-action-report/` 配下のMarkdown reportを `YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md` に統一します。
 
 ## Intake Role
 
@@ -109,6 +114,7 @@ runtime/rag/rag_dispatcher.py
 - `documents.jsonl` / `chunks.jsonl` index の生成
 - local sparse embedding の生成
 - keyword retrieval、embedding cosine similarity、hybrid reranking、extractive context compression
-- `retrieval-result.json` / `context-pack.json` / `context-pack.md` の生成
-- `rag-load-dispatch.json` / `rag-load-dispatch.md` の生成
+- UUID-named `rag-retrieval-result` / `rag-context-pack` JSON の生成
+- UUID-named `rag-load-dispatch` JSON の生成
+- UUID filename policy と JSON content / metadata search
 - 将来の embeddings / vector DB 移行に備えた metadata の標準化

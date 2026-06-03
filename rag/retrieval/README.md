@@ -1,20 +1,19 @@
 # RAG Retrieval Workspace
 
-このディレクトリは、retrieval 結果、圧縮済みcontext pack、Agent投入用promptを保存する作業領域です。
-
-例:
-
-```text
-rag/retrieval/<timestamp>_<query-name>.json
-rag/retrieval/<timestamp>_<query-name>.md
-```
+このディレクトリは、RAG load の retrieval result、圧縮済み context pack、dispatch 結果を保存する作業領域です。
 
 標準出力:
 
 ```text
-<timestamp>_<query-name>_retrieval-result.json
-<timestamp>_<query-name>_context-pack.json
-<timestamp>_<query-name>_context-pack.md
+rag/retrieval/<uuid>.json
 ```
 
-`runtime/rag/retrieve_context.py` が、local JSONL index と local embeddings から候補chunkを選び、hybrid reranking と extractive compression によって context pack を生成します。
+JSON の種別はファイル名ではなく `artifact_type` で判定します。
+
+```text
+artifact_type: rag-retrieval-result
+artifact_type: rag-context-pack
+artifact_type: rag-load-dispatch
+```
+
+Markdown 出力はデバッグ用途です。通常は生成せず、必要な場合だけ `--write-markdown` を指定します。

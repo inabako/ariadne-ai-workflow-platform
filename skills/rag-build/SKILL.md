@@ -23,6 +23,8 @@ Create or refresh file-based RAG artifacts from Markdown reports.
 
 This is the RAG creation flow. It does not retrieve context unless the user explicitly asks for retrieval too. Use `rag-load` for RAG reading before development work.
 
+RAG artifact filenames are UUID-based. Search must use JSON content and metadata, not filename semantics.
+
 Default workflow repository root:
 
 ```text
@@ -43,6 +45,7 @@ rag/corrective-action-report
 - `chunks-dir`: default `rag/chunks`
 - `indexes-dir`: default `rag/indexes`
 - `embeddings-output`: default `rag/embeddings/chunks-embeddings.jsonl`
+- `jsonized-dir`: default `rag/jsonized`
 
 If unspecified, use all defaults.
 
@@ -60,13 +63,28 @@ Run commands from:
 cd C:\github\intent-driven-robotics-ai-workflow
 ```
 
+### 0. Standardize Corrective Action Report Filenames
+
+```powershell
+python runtime/rag/standardize_corrective_report_names.py `
+  --source-dir rag/corrective-action-report `
+  --replace-references
+```
+
+Corrective action report Markdown filenames must use:
+
+```text
+YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md
+```
+
 ### 1. Normalize Documents
 
 ```powershell
 python runtime/rag/normalize_documents.py `
   --source-dir rag/corrective-action-report `
   --output-dir rag/normalized `
-  --document-type corrective-action-report
+  --document-type corrective-action-report `
+  --clean-output
 ```
 
 ### 2. Chunk Documents
@@ -74,7 +92,8 @@ python runtime/rag/normalize_documents.py `
 ```powershell
 python runtime/rag/chunk_documents.py `
   --input-dir rag/normalized `
-  --output-dir rag/chunks
+  --output-dir rag/chunks `
+  --clean-output
 ```
 
 ### 3. Build Index
@@ -94,6 +113,19 @@ python runtime/rag/embed_chunks.py `
   --output rag/embeddings/chunks-embeddings.jsonl
 ```
 
+### Optional: JSONize Existing RAG Markdown Files
+
+Use this when existing non-UUID JSON, JSONL, Markdown, or text files under `rag/` should be mirrored as UUID-named JSON wrapper artifacts.
+
+```powershell
+python runtime/rag/jsonize_rag_tree.py `
+  --rag-dir rag `
+  --output-dir rag/jsonized `
+  --clean-output
+```
+
+Do not pass `--delete-source` unless the user explicitly requests removing original Markdown files.
+
 ## Output Files
 
 Expected outputs:
@@ -104,6 +136,7 @@ rag/chunks/*.json
 rag/indexes/documents.jsonl
 rag/indexes/chunks.jsonl
 rag/embeddings/chunks-embeddings.jsonl
+rag/jsonized/*.json
 ```
 
 ## Workflow

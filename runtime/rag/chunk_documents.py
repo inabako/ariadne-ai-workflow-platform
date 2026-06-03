@@ -4,6 +4,7 @@ import argparse
 import json
 import re
 import sys
+import uuid
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -23,6 +24,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--chunk-size", type=int, default=1800)
     parser.add_argument("--chunk-overlap", type=int, default=180)
     parser.add_argument("--repo-root", default=None)
+    parser.add_argument("--clean-output", action="store_true")
     return parser
 
 
@@ -86,7 +88,8 @@ def chunk_document(repo_root: Path, document_path: Path, output_dir: Path, args:
     split_chunks = split_content(content, args.chunk_size, args.chunk_overlap)
     chunks: list[dict[str, Any]] = []
     for index, (start, end, text) in enumerate(split_chunks):
-        chunk_id = f"{document_id}-chunk-{index + 1:04d}"
+        legacy_chunk_id = f"{document_id}-chunk-{index + 1:04d}"
+        chunk_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"rag-chunk:{document_id}:{index}:{start}:{end}"))
         metadata = {
             **document.get("metadata", {}),
             "document_type": document.get("document_type", ""),
@@ -95,10 +98,12 @@ def chunk_document(repo_root: Path, document_path: Path, output_dir: Path, args:
         chunk = {
             "schema_version": "1.0",
             "chunk_id": chunk_id,
+            "legacy_chunk_id": legacy_chunk_id,
             "document_id": document_id,
             "source_path": document.get("source_path", ""),
             "normalized_path": relative_to_repo(repo_root, document_path),
             "chunk_index": index,
+            "chunk_sequence": index + 1,
             "heading_path": heading_path_for_text(text),
             "content": text,
             "char_start": start,
@@ -120,6 +125,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     input_dir = (repo_root / args.input_dir).resolve() if not Path(args.input_dir).is_absolute() else Path(args.input_dir)
     output_dir = (repo_root / args.output_dir).resolve() if not Path(args.output_dir).is_absolute() else Path(args.output_dir)
+    if args.clean_output and output_dir.exists():
+        for path in output_dir.glob("*.json"):
+            path.unlink()
     documents = discover_documents(input_dir)
     all_chunks: list[dict[str, Any]] = []
     for document_path in documents:

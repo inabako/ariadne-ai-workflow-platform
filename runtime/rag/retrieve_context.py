@@ -6,6 +6,7 @@ import json
 import math
 import re
 import sys
+import uuid
 from collections import Counter
 from pathlib import Path
 from typing import Any, Sequence
@@ -13,7 +14,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import find_repo_root, local_timestamp, relative_to_repo, slugify, utc_now_iso, write_json  # noqa: E402
+from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 
 
 WORD_RE = re.compile(r"[A-Za-z0-9_.:-]+|[\u3040-\u30ff\u3400-\u9fff]+")
@@ -36,6 +37,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--branch", default="")
     parser.add_argument("--tag", action="append", default=[])
     parser.add_argument("--repo-root", default=None)
+    parser.add_argument("--write-markdown", action="store_true")
     return parser
 
 
@@ -83,8 +85,12 @@ def filter_row(row: dict[str, Any], args: argparse.Namespace) -> bool:
 def score_row(row: dict[str, Any], query_terms: list[str]) -> float:
     text_parts = [
         row.get("title", ""),
+        row.get("source_path", ""),
+        row.get("repository", ""),
+        row.get("branch", ""),
         " ".join(str(item) for item in row.get("heading_path", [])),
         " ".join(str(tag) for tag in row.get("tags", [])),
+        json.dumps(row.get("metadata", {}), ensure_ascii=False, sort_keys=True),
         row.get("content", ""),
     ]
     text = "\n".join(text_parts).lower()
@@ -306,12 +312,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
     selected, dropped = retrieve(rows, embeddings, dimensions, args)
     context, sources = build_context(selected, args)
-    timestamp = local_timestamp()
-    query_slug = slugify(args.query)[:80]
-    base_name = f"{timestamp}_{query_slug}"
-    retrieval_path = output_dir / f"{base_name}_retrieval-result.json"
-    context_path = output_dir / f"{base_name}_context-pack.json"
-    markdown_path = output_dir / f"{base_name}_context-pack.md"
+    retrieval_id = str(uuid.uuid4())
+    context_pack_id = str(uuid.uuid4())
+    retrieval_path = output_dir / f"{retrieval_id}.json"
+    context_path = output_dir / f"{context_pack_id}.json"
+    markdown_path = output_dir / f"{context_pack_id}.md"
 
     selected_summary = [
         {
@@ -330,6 +335,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     ]
     retrieval_result = {
         "schema_version": "1.0",
+        "artifact_type": "rag-retrieval-result",
+        "retrieval_id": retrieval_id,
+        "context_pack_id": context_pack_id,
         "query": args.query,
         "created_at": utc_now_iso(),
         "index_path": relative_to_repo(repo_root, chunks_index),
@@ -347,6 +355,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     }
     context_pack = {
         "schema_version": "1.0",
+        "artifact_type": "rag-context-pack",
+        "context_pack_id": context_pack_id,
+        "retrieval_id": retrieval_id,
         "query": args.query,
         "created_at": retrieval_result["created_at"],
         "compression": {
@@ -366,11 +377,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     }
     write_json(retrieval_path, retrieval_result)
     write_json(context_path, context_pack)
-    write_context_markdown(markdown_path, context_pack)
+    if args.write_markdown:
+        write_context_markdown(markdown_path, context_pack)
     return {
         "retrieval_result": relative_to_repo(repo_root, retrieval_path),
         "context_pack": relative_to_repo(repo_root, context_path),
-        "context_markdown": relative_to_repo(repo_root, markdown_path),
+        "context_markdown": relative_to_repo(repo_root, markdown_path) if args.write_markdown else "",
         "candidate_count": len(rows),
         "selected_chunk_count": len(sources),
         "estimated_tokens": context_pack["compression"]["estimated_tokens"],

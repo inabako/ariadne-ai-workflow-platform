@@ -35,7 +35,8 @@ rag/
 python runtime/rag/normalize_documents.py `
   --source-dir rag/corrective-action-report `
   --output-dir rag/normalized `
-  --document-type corrective-action-report
+  --document-type corrective-action-report `
+  --clean-output
 ```
 
 ### 2. Chunk Documents
@@ -43,7 +44,8 @@ python runtime/rag/normalize_documents.py `
 ```powershell
 python runtime/rag/chunk_documents.py `
   --input-dir rag/normalized `
-  --output-dir rag/chunks
+  --output-dir rag/chunks `
+  --clean-output
 ```
 
 ### 3. Build Index
@@ -82,6 +84,10 @@ Vector DB、embeddings、semantic search、reranking は、将来の MCP reposit
 
 Local embeddings は `local-hash-embedding-v1` による deterministic sparse embedding です。外部APIを使わず、MCP repository 側の本格embedding / Vector DBへ移行する前の local baseline として扱います。
 
+RAG artifact のファイル名は UUID にします。検索はファイル名ではなく JSON の `content` と metadata を対象にします。
+
+Corrective action report Markdown は、RAG build前に `runtime/rag/standardize_corrective_report_names.py` で `YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md` へ統一します。標準は8桁です。
+
 ### 5. Dispatch Parallel RAG Load
 
 開発前の RAG 読み込みでは、dispatcher を使って複数queryを計画・並列検索し、`retrieve_context.py` の圧縮済みcontext packを集約します。
@@ -97,6 +103,17 @@ python runtime/rag/rag_dispatcher.py `
   --jobs 4
 ```
 
+### 6. JSONize Existing Markdown Artifacts
+
+```powershell
+python runtime/rag/jsonize_rag_tree.py `
+  --rag-dir rag `
+  --output-dir rag/jsonized `
+  --clean-output
+```
+
+元の Markdown を削除する場合だけ、明示的に `--delete-source` を指定します。
+
 ## Output Files
 
 | Path | Purpose |
@@ -106,11 +123,12 @@ python runtime/rag/rag_dispatcher.py `
 | `rag/indexes/documents.jsonl` | document-level index |
 | `rag/indexes/chunks.jsonl` | chunk-level index |
 | `rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |
-| `rag/retrieval/*_rag-load-dispatch.json` | 複数query retrieval の集約結果 |
-| `rag/retrieval/*_rag-load-dispatch.md` | 開発前に読む集約済みRAG context |
-| `rag/retrieval/*_retrieval-result.json` | query、selected chunks、dropped chunks、filters |
-| `rag/retrieval/*_context-pack.json` | Agent投入用の圧縮済みcontext pack |
-| `rag/retrieval/*_context-pack.md` | 人間が読める圧縮済みcontext |
+| `rag/jsonized/*.json` | 非UUID JSON、JSONL、Markdown、text artifact を UUID名 JSON wrapper 化したもの |
+| `rag/retrieval/<uuid>.json` (`artifact_type: rag-load-dispatch`) | 複数query retrieval の集約結果 |
+| `rag/retrieval/<uuid>.json` (`artifact_type: rag-retrieval-result`) | query、selected chunks、dropped chunks、filters |
+| `rag/retrieval/<uuid>.json` (`artifact_type: rag-context-pack`) | Agent投入用の圧縮済みcontext pack |
+
+Markdown出力はデバッグ用途です。必要な場合だけ `--write-markdown` を指定します。
 
 ## Quality Rule
 

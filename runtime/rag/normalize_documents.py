@@ -4,6 +4,7 @@ import argparse
 import json
 import re
 import sys
+import uuid
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -40,6 +41,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--branch", default="")
     parser.add_argument("--commit", default="")
     parser.add_argument("--status", default="draft")
+    parser.add_argument("--clean-output", action="store_true")
     return parser
 
 
@@ -129,7 +131,8 @@ def normalize_document(
     front_matter, content = parse_front_matter(raw_text)
     title = first_string(front_matter.get("title"), title_from_content(content, source))
     document_type = first_string(front_matter.get("type"), args.document_type)
-    document_id = slugify(f"{document_type}-{source.stem}")
+    legacy_document_id = slugify(f"{document_type}-{source.stem}")
+    document_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"rag-document:{relative_to_repo(repo_root, source)}"))
     output_path = output_dir / f"{document_id}.json"
 
     metadata = {
@@ -152,6 +155,7 @@ def normalize_document(
     normalized = {
         "schema_version": "1.0",
         "document_id": document_id,
+        "legacy_document_id": legacy_document_id,
         "source_path": relative_to_repo(repo_root, source),
         "normalized_path": relative_to_repo(repo_root, output_path),
         "document_type": document_type,
@@ -179,6 +183,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     source_dir = (repo_root / args.source_dir).resolve() if not Path(args.source_dir).is_absolute() else Path(args.source_dir)
     output_dir = (repo_root / args.output_dir).resolve() if not Path(args.output_dir).is_absolute() else Path(args.output_dir)
+    if args.clean_output and output_dir.exists():
+        for path in output_dir.glob("*.json"):
+            path.unlink()
     sources = discover_sources(source_dir)
     documents = [normalize_document(repo_root, source, output_dir, args) for source in sources]
     return {

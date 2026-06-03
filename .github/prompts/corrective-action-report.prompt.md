@@ -39,7 +39,7 @@ C:\github\intent-driven-robotics-ai-workflow\rag\corrective-action-report
 Recommended filename:
 
 ```text
-yyyyMMdd_HHmmss_<repository-name>_<branch-name>_corrective-action-report.md
+YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md
 ```
 
 ## Guardrail

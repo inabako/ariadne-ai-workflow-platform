@@ -23,6 +23,8 @@ Read existing file-based RAG knowledge before development work by running `runti
 
 The dispatcher creates or accepts multiple retrieval queries, runs `runtime/rag/retrieve_context.py` in parallel, and aggregates the compressed context packs. Compression remains implemented by `retrieve_context.py`.
 
+Search uses JSON content and metadata from the indexes. Do not rely on RAG filenames; artifact filenames are UUID-based.
+
 This is the RAG reading flow. Use `rag-build` to create or refresh RAG indexes.
 
 Default workflow repository root:
@@ -91,14 +93,14 @@ python runtime/rag/rag_dispatcher.py `
 The dispatcher writes:
 
 ```text
-rag/retrieval/*_rag-load-dispatch.json
-rag/retrieval/*_rag-load-dispatch.md
-rag/retrieval/*_retrieval-result.json
-rag/retrieval/*_context-pack.json
-rag/retrieval/*_context-pack.md
+rag/retrieval/<uuid>.json
 ```
 
+Use each artifact's `artifact_type` to distinguish `rag-load-dispatch`, `rag-retrieval-result`, and `rag-context-pack`.
+
 Do not reimplement compression. Use the existing compression output from `retrieve_context.py`.
+
+Markdown dispatch or context-pack files are optional debug artifacts and are written only when `--write-markdown` is explicitly used.
 
 ## Direct Retrieval Template
 
@@ -161,7 +163,7 @@ The loaded RAG context should inform:
 1. Identify task context and target repository / branch if available.
 2. Verify RAG indexes and embeddings exist.
 3. Run `runtime/rag/rag_dispatcher.py`.
-4. Read the generated `*_rag-load-dispatch.md` and referenced `*_context-pack.md` files.
+4. Read the generated UUID-named dispatch JSON and referenced UUID-named context-pack JSON files.
 5. Summarize the loaded prior knowledge in Japanese.
 6. Carry the RAG findings into the subsequent development plan or review.
 

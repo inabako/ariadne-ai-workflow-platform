@@ -47,6 +47,7 @@ def document_index_row(repo_root: Path, path: Path) -> dict[str, Any]:
         "status": metadata.get("status", ""),
         "tags": metadata.get("tags", []),
         "headings": document.get("headings", []),
+        "metadata": metadata,
     }
 
 
@@ -72,6 +73,7 @@ def chunk_index_row(repo_root: Path, path: Path) -> dict[str, Any]:
         "status": metadata.get("status", ""),
         "tags": metadata.get("tags", []),
         "content": chunk.get("content", ""),
+        "metadata": metadata,
     }
 
 

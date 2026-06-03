@@ -93,7 +93,7 @@ Current Skill entrypoints:
 - `/robotics-feature-maintenance` -> `skills/robotics-feature-maintenance/SKILL.md` -> `/robotics-maintenance-development`
 - `/corrective-action-report` -> `skills/corrective-action-report/SKILL.md` -> `rag/corrective-action-report/`
 - `/rag-build` -> `skills/rag-build/SKILL.md` -> `rag/normalized/`, `rag/chunks/`, `rag/indexes/`, `rag/embeddings/`
-- `/rag-load` -> `skills/rag-load/SKILL.md` -> `rag/retrieval/*_context-pack.md`
+- `/rag-load` -> `skills/rag-load/SKILL.md` -> `rag/retrieval/<uuid>.json`
 
 `/corrective-action-report` を使う場合は、対象repositoryと対象branchを user に確認してから read-only review を開始してください。未指定の場合は必ず入力を求めます。
 
@@ -236,7 +236,9 @@ runtime/rag/normalize_documents.py
 
 RAG source は `rag/corrective-action-report/`、変換後のJSONは `rag/normalized/`、chunkは `rag/chunks/`、indexは `rag/indexes/`、local embeddingは `rag/embeddings/`、圧縮済みcontext packは `rag/retrieval/` に保存します。
 
-開発前の RAG 読み込みは `/rag-load` を使います。`/rag-load` は `runtime/rag/rag_dispatcher.py` を実行します。dispatcher は 3〜5 個の検索クエリを作り、可能なら `runtime/rag/retrieve_context.py` を並列実行します。圧縮は `retrieve_context.py` が生成する `rag/retrieval/*_context-pack.md` を利用し、集約結果を `rag/retrieval/*_rag-load-dispatch.md` に保存します。
+開発前の RAG 読み込みは `/rag-load` を使います。`/rag-load` は `runtime/rag/rag_dispatcher.py` を実行します。dispatcher は 3〜5 個の検索クエリを作り、可能なら `runtime/rag/retrieve_context.py` を並列実行します。圧縮は `retrieve_context.py` が生成する `artifact_type: rag-context-pack` の `rag/retrieval/<uuid>.json` を利用し、集約結果を `artifact_type: rag-load-dispatch` の `rag/retrieval/<uuid>.json` に保存します。
+
+RAG artifact のファイル名は UUID とし、検索はファイル名ではなく JSON の `content` と metadata を対象にしてください。Markdown出力はデバッグ用で、必要な場合だけ `--write-markdown` を使います。
 
 この local workflow では keyword retrieval、local embedding cosine similarity、hybrid reranking、extractive compression までを扱います。Vector DB、provider-based embeddings、高度な semantic search、reranking model は将来の MCP repository 側で担当します。
 

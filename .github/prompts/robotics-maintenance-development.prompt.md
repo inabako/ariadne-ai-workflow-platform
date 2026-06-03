@@ -28,7 +28,7 @@
 - Issue番号から `feature/issue-<issue-number>` branch を作成した
 - `work/<採番ID>/context/scm-state.json` にbranch情報が記録されている
 - `/rag-load` を実行し、過去の corrective action report から関連する prior finding / risk / test gap / architecture concern を読み込んだ
-- `rag/retrieval/*_context-pack.md` の圧縮済み context を確認し、変更前状態と影響分析に反映した
+- `artifact_type: rag-context-pack` の `rag/retrieval/<uuid>.json` の圧縮済み context を確認し、変更前状態と影響分析に反映した
 
 この準備が未完了の場合、implementation へ進みません。
 
