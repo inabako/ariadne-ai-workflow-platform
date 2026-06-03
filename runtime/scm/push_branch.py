@@ -32,6 +32,8 @@ def push_branch(args: argparse.Namespace) -> dict[str, Any]:
     source_dir = Path(args.source_dir).resolve() if args.source_dir else work_dir / "source" / "repository"
     if not source_dir.exists():
         raise FileNotFoundError(f"Source repository does not exist: {source_dir}")
+    if source_dir.resolve() == repo_root.resolve():
+        raise ValueError("Refusing to push the workflow repository itself. Set --source-dir to work/issue-<number>/source/repository.")
 
     scm_state = read_json(work_dir / "context" / "scm-state.json", default={}) or {}
     remote = args.remote or scm_state.get("remote") or "origin"

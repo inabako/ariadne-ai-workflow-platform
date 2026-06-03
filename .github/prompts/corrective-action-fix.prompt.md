@@ -38,5 +38,7 @@ Guardrail:
 
 - `work/issue-XXX` はフォルダ名、`feature/issue-XXX` は Git branch 名として扱う。
 - 人間チェックが承認されるまで push しない。
+- `intent-driven-robotics-ai-workflow` はworkflow/RAG/report置き場であり、このflowのpush対象にしない。
+- push対象は、step 1で指定されたrepositoryの `work/issue-XXX/source/repository` と `feature/issue-XXX` のみ。
 - target branch へ直接実装しない。
 - RAG build/load を省略しない。

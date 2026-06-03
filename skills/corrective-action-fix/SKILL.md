@@ -232,6 +232,13 @@ Do not push until the user explicitly confirms the check is approved.
 
 After human approval:
 
+Before pushing, confirm:
+
+- `work/issue-<issue-number>/context/scm-state.json` points to the repository given in step 1.
+- `source_dir` is `work/issue-<issue-number>/source/repository`.
+- `working_branch` is `feature/issue-<issue-number>`.
+- The push target is not `intent-driven-robotics-ai-workflow`.
+
 ```powershell
 python runtime/scm/push_branch.py `
   --work-id "issue-<issue-number>" `
@@ -241,6 +248,9 @@ python runtime/scm/push_branch.py `
 
 ## Guardrails
 
+- Never push `intent-driven-robotics-ai-workflow` during this flow. This repository is only the workflow/RAG/report workspace.
+- Push only the issue branch in the repository specified by the user in step 1.
+- Treat `work/issue-<issue-number>/source/repository` as the only valid source directory for step 12 unless the user explicitly overrides it after reviewing the push target.
 - Do not push before human startup/integration approval.
 - Do not create GitHub Issues unless the user has approved mutation or the environment policy allows it for this flow.
 - Do not skip RAG build/load.
