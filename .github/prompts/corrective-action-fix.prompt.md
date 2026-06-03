@@ -37,6 +37,8 @@ Flow:
 Guardrail:
 
 - `work/issue-XXX` はフォルダ名、`feature/issue-XXX` は Git branch 名として扱う。
+- `work/<branch>` または `work/issue-XXX` が既に存在する場合は止めて、既存フォルダを確認するよう user に伝える。
+- 既存フォルダを再利用する場合は、確認後に `--reuse-existing` を指定する。
 - 人間チェックが承認されるまで push しない。
 - `intent-driven-robotics-ai-workflow` はworkflow/RAG/report置き場であり、このflowのpush対象にしない。
 - push対象は、step 1で指定されたrepositoryの `work/issue-XXX/source/repository` と `feature/issue-XXX` のみ。

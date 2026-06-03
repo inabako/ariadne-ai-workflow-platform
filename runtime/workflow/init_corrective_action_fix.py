@@ -29,6 +29,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--target-branch", required=True)
     parser.add_argument("--work-id", default=None)
     parser.add_argument("--base-work-id", default="")
+    parser.add_argument("--reuse-existing", action="store_true")
     parser.add_argument("--report-path", default="")
     parser.add_argument("--intent-summary", default="")
     parser.add_argument("--repo-root", default=None)
@@ -58,6 +59,12 @@ def run(args: argparse.Namespace) -> dict[str, object]:
     repository = normalize_repository_value(args.repository)
     repo_name = repository_name(repository)
     work_id = args.work_id or branch_to_work_id(args.target_branch)
+    work_dir = repo_root / "work" / work_id
+    if work_dir.exists() and not args.reuse_existing:
+        raise FileExistsError(
+            f"Work directory already exists: {work_dir}. "
+            "原本または作業フォルダが既にあります。内容を確認してから、再利用する場合のみ --reuse-existing を指定してください。"
+        )
     work_dir = ensure_work_tree(repo_root, work_id)
     context_dir = work_dir / "context"
     now = utc_now_iso()

@@ -247,6 +247,7 @@ Corrective action fix flow:
 この flow では、startup/integration check の人間確認が `approved` になるまで push しないでください。
 `work/issue-<issue-number>` は作業フォルダ名、`feature/issue-<issue-number>` は Git branch 名として扱ってください。
 `intent-driven-robotics-ai-workflow` は workflow/RAG/report の管理repositoryであり、この flow の push 対象にしないでください。push するのは、user が step 1 で指定した repository の `work/issue-<issue-number>/source/repository` にある `feature/issue-<issue-number>` branch だけです。
+`work/<branch>` または `work/issue-<issue-number>` が既に存在する場合は、既存の原本または作業フォルダがあるため停止し、user に確認してください。確認済みで再利用する場合のみ `--reuse-existing` を使ってください。
 
 重いtaskや独立したreview taskは、`task-plan.schema.json` に沿ってtask planを作成し、`runtime/retrieval/task_runner.py` で sequential / parallel に処理してください。
 

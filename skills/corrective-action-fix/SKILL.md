@@ -51,6 +51,15 @@ python runtime/workflow/init_corrective_action_fix.py `
 
 For `develop`, the default `work_id` is `develop`.
 
+If `work/<target-branch>` already exists, stop and ask the user to confirm whether to reuse it. Do not overwrite or silently reuse the existing base checkout. After confirmation, rerun with:
+
+```powershell
+python runtime/workflow/init_corrective_action_fix.py `
+  --repository "<target-repository>" `
+  --target-branch "<target-branch>" `
+  --reuse-existing
+```
+
 ### 2. Prepare Base Repository / Branch
 
 Clone or fetch the target branch into `work/<target-branch>/source/repository`:
@@ -174,6 +183,8 @@ python runtime/workflow/init_corrective_action_fix.py `
   --base-work-id "<target-branch>"
 ```
 
+If `work/issue-<issue-number>` already exists, stop and ask the user to confirm whether this is the same Issue work area. After confirmation, rerun with `--reuse-existing`.
+
 Clone/fetch the base branch into the issue work folder:
 
 ```powershell
@@ -251,6 +262,7 @@ python runtime/scm/push_branch.py `
 - Never push `intent-driven-robotics-ai-workflow` during this flow. This repository is only the workflow/RAG/report workspace.
 - Push only the issue branch in the repository specified by the user in step 1.
 - Treat `work/issue-<issue-number>/source/repository` as the only valid source directory for step 12 unless the user explicitly overrides it after reviewing the push target.
+- Do not silently reuse an existing `work/<branch>` or `work/issue-<issue-number>` folder. Stop and ask the user to confirm reuse first.
 - Do not push before human startup/integration approval.
 - Do not create GitHub Issues unless the user has approved mutation or the environment policy allows it for this flow.
 - Do not skip RAG build/load.
