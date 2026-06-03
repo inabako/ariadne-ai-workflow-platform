@@ -58,12 +58,21 @@ def resolve_github_repo(settings: dict[str, str], explicit: str | None = None) -
     raise ValueError("GitHub repository is required. Set --github-repo or prepare scm-state.json from requirements.")
 
 
-def repository_to_github_slug(repository: str) -> str | None:
+def normalize_repository_value(repository: str) -> str:
     value = repository.strip()
+    markdown_link = re.match(r"^\[[^\]]+\]\((?P<url>[^)]+)\)$", value)
+    if markdown_link:
+        return markdown_link.group("url").strip()
+    return value
+
+
+def repository_to_github_slug(repository: str) -> str | None:
+    value = normalize_repository_value(repository)
     if not value:
         return None
-    if re.match(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", value):
-        return value
+    owner_repo = re.match(r"^(?P<owner>[A-Za-z0-9_.-]+)/(?P<repo>[A-Za-z0-9_.-]+?)(?:\.git)?$", value)
+    if owner_repo:
+        return f"{owner_repo.group('owner')}/{owner_repo.group('repo')}"
     patterns = [
         r"github\.com[:/](?P<owner>[A-Za-z0-9_.-]+)/(?P<repo>[A-Za-z0-9_.-]+?)(?:\.git)?/?$",
         r"https?://[^/]*github[^/]*/(?P<owner>[A-Za-z0-9_.-]+)/(?P<repo>[A-Za-z0-9_.-]+?)(?:\.git)?/?$",
@@ -76,7 +85,8 @@ def repository_to_github_slug(repository: str) -> str | None:
 
 
 def repository_to_clone_source(repository: str) -> str:
-    value = repository.strip()
-    if re.match(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", value):
-        return f"https://github.com/{value}.git"
+    value = normalize_repository_value(repository)
+    slug = repository_to_github_slug(value)
+    if slug and not re.search(r"github\.com[:/]", value):
+        return f"https://github.com/{slug}.git"
     return value

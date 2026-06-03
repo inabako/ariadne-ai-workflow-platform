@@ -74,6 +74,7 @@ Current prompt set:
 - `/robotics-new-system`
 - `/robotics-feature-maintenance`
 - `/corrective-action-report`
+- `/corrective-action-fix`
 - `/pre-development-preparation`
 - `/rag-build`
 - `/rag-load`
@@ -92,6 +93,7 @@ Current Skill entrypoints:
 - `/robotics-new-system` -> `skills/robotics-new-system/SKILL.md` -> `/new-robotics-system-development`
 - `/robotics-feature-maintenance` -> `skills/robotics-feature-maintenance/SKILL.md` -> `/robotics-maintenance-development`
 - `/corrective-action-report` -> `skills/corrective-action-report/SKILL.md` -> `rag/corrective-action-report/`
+- `/corrective-action-fix` -> `skills/corrective-action-fix/SKILL.md` -> `work/<branch>/`, `work/issue-<issue-number>/`, `feature/issue-<issue-number>`
 - `/rag-build` -> `skills/rag-build/SKILL.md` -> `rag/normalized/`, `rag/chunks/`, `rag/indexes/`, `rag/embeddings/`
 - `/rag-load` -> `skills/rag-load/SKILL.md` -> `rag/retrieval/<uuid>.json`
 
@@ -196,12 +198,14 @@ Implemented runtime CLI:
 
 ```text
 runtime/intake/intake_requirements.py
+runtime/workflow/init_corrective_action_fix.py
 runtime/retrieval/task_runner.py
 runtime/scm/prepare_repository.py
 runtime/scm/compare_requirements.py
 runtime/github/issue_manager.py
 runtime/scm/create_issue_branch.py
 runtime/scm/commit_changes.py
+runtime/scm/push_branch.py
 runtime/rag/normalize_documents.py
 runtime/rag/chunk_documents.py
 runtime/rag/build_index.py
@@ -222,6 +226,26 @@ runtime/rag/retrieve_context.py
 6. 開発工程
 7. 成果物とsource差分をsemantic commitでcommit
 ```
+
+Corrective action fix flow:
+
+```text
+1. /corrective-action-fix <repository> <branch>
+2. prepare base checkout under work/<branch>/source/repository
+3. corrective-action-report
+4. /rag-build
+5. /rag-load
+6. GitHub Issue draft/create
+7. prepare work/issue-<issue-number>/source/repository and create feature/issue-<issue-number>
+8. implement corrective changes in work/issue-<issue-number>
+9. create/run unit tests
+10. startup/integration check
+11. human check
+12. push feature/issue-<issue-number>
+```
+
+この flow では、startup/integration check の人間確認が `approved` になるまで push しないでください。
+`work/issue-<issue-number>` は作業フォルダ名、`feature/issue-<issue-number>` は Git branch 名として扱ってください。
 
 重いtaskや独立したreview taskは、`task-plan.schema.json` に沿ってtask planを作成し、`runtime/retrieval/task_runner.py` で sequential / parallel に処理してください。
 

@@ -93,7 +93,7 @@ work/
 
 ## Primary Entry Points
 
-この repository では、主に5つの slash command / Skill entrypoint を使います。
+この repository では、主に6つの slash command / Skill entrypoint を使います。
 
 | Slash Command | Purpose | Skill | Main Output |
 | --- | --- | --- | --- |
@@ -111,6 +111,12 @@ work/
 
 RAG artifact のファイル名は UUID にします。検索はファイル名ではなく、JSON の `content` と metadata を対象にします。
 
+Additional corrective implementation entrypoint:
+
+| Command | Purpose | Skill | Main Output |
+| --- | --- | --- | --- |
+| `/corrective-action-fix` | GitHub repository / branchを取得し、report/RAG/Issue/branch/修正/test/確認/pushまで進める | `skills/corrective-action-fix/` | `work/<branch>/`, `work/issue-<issue-number>/`, `rag/corrective-action-report/` |
+
 ## VS Code Prompt Discovery
 
 VS Code / GitHub Copilot Chat の `/` 候補に出すため、prompt files は `.github/prompts/*.prompt.md` に置いています。
@@ -119,6 +125,7 @@ VS Code / GitHub Copilot Chat の `/` 候補に出すため、prompt files は `
 
 ```text
 .github/prompts/
+  corrective-action-fix.prompt.md
   corrective-action-report.prompt.md
   rag-build.prompt.md
   rag-load.prompt.md
@@ -306,6 +313,8 @@ Implemented runtime CLI:
 
 | Script | Responsibility |
 | --- | --- |
+| `runtime/workflow/init_corrective_action_fix.py` | corrective-action-fix 用の `work/<branch>/` または `work/issue-<issue-number>/` と初期contextを作成する |
+| `runtime/scm/push_branch.py` | human check承認後に `feature/issue-<issue-number>` branch をpushし、push recordを残す |
 | `runtime/intake/intake_requirements.py` | `work/requirements/` の要件定義書を受付ID単位で `work/<receipt-id>/` へ移動し、初期contextを作成する |
 | `runtime/retrieval/task_runner.py` | task plan を sequential / parallel に処理し、task result を出力する |
 | `runtime/scm/prepare_repository.py` | target repository / branch を取得し、`work/<receipt-id>/source/` と `scm-state.json` を整える |
@@ -493,6 +502,7 @@ Current prompts:
 - `/robotics-new-system`
 - `/robotics-feature-maintenance`
 - `/corrective-action-report`
+- `/corrective-action-fix`
 - `/pre-development-preparation`
 - `/new-robotics-system-development`
 - `/robotics-maintenance-development`

@@ -29,6 +29,15 @@
       "description": "指定された repository / branch の現状を調査し、改善点、risk、test gap、documentation gap、architecture concern、workflow opportunity を RAG 用 report として保存する。"
     },
     {
+      "slash_command": "/corrective-action-fix",
+      "skill": "corrective-action-fix",
+      "skill_path": "skills/corrective-action-fix/SKILL.md",
+      "delegated_prompt": "/corrective-action-fix",
+      "prompt_path": ".github/prompts/corrective-action-fix.prompt.md",
+      "workflow": "corrective-action-fix",
+      "description": "GitHub repository / branchをwork/<branch>に取得し、corrective action report、RAG build/load、GitHub Issue、work/issue-XXX + feature/issue-XXX、改善修正、test、人間確認、pushまで進める。"
+    },
+    {
       "slash_command": "/rag-build",
       "skill": "rag-build",
       "skill_path": "skills/rag-build/SKILL.md",

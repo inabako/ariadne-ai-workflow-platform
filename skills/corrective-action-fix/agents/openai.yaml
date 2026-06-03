@@ -1,0 +1,4 @@
+interface:
+  display_name: "Corrective Action Fix"
+  short_description: "Turn a corrective action report into Issue, branch, fixes, tests, human check, and push."
+  default_prompt: "/corrective-action-fix\n日本語で出力してください。\n"

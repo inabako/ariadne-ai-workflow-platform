@@ -12,6 +12,12 @@
 | `/rag-build` | `rag-build/` | `/rag-build` | Markdown report を file-based RAG 用に normalize / chunk / index / embedding 化する |
 | `/rag-load` | `rag-load/` | `/rag-load` | 開発前に file-based RAG を並列検索し、圧縮済み context を読み込む |
 
+Additional skill:
+
+| Slash Command | Skill | Delegated Prompt | Purpose |
+| --- | --- | --- | --- |
+| `/corrective-action-fix` | `corrective-action-fix/` | `/corrective-action-fix` | GitHub repository / branchをwork/<branch>へ取得し、work/issue-XXXで修正/pushする |
+
 ## Intake Rule
 
 どちらの Skill も、開発本体に入る前に `runtime/intake/intake_requirements.py` と `/pre-development-preparation` を通します。
@@ -43,6 +49,9 @@ C:\Users\User\.codex\skills\robotics-feature-maintenance
 
 C:\Users\User\.codex\skills\corrective-action-report
   -> C:\github\intent-driven-robotics-ai-workflow\skills\corrective-action-report
+
+C:\Users\User\.codex\skills\corrective-action-fix
+  -> C:\github\intent-driven-robotics-ai-workflow\skills\corrective-action-fix
 
 C:\Users\User\.codex\skills\rag-build
   -> C:\github\intent-driven-robotics-ai-workflow\skills\rag-build

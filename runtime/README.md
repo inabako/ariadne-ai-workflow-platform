@@ -31,11 +31,13 @@ Runtime は `runtime/common/env.py` を通じて `.env` を読み込みます。
 
 ```text
 runtime/intake/intake_requirements.py
+runtime/workflow/init_corrective_action_fix.py
 runtime/retrieval/task_runner.py
 runtime/scm/prepare_repository.py
 runtime/scm/compare_requirements.py
 runtime/scm/create_issue_branch.py
 runtime/scm/commit_changes.py
+runtime/scm/push_branch.py
 runtime/github/issue_manager.py
 runtime/rag/normalize_documents.py
 runtime/rag/chunk_documents.py
@@ -49,6 +51,8 @@ runtime/rag/standardize_corrective_report_names.py
 
 `intake_requirements.py` は、要件定義書を `work/<採番ID>/design-document/` へ移動し、`context/*.json` を初期化します。
 
+`init_corrective_action_fix.py` は、corrective action fix 用に repository / branch 引数から `work/<branch>/` または `work/issue-<issue-number>/` と初期contextを作成します。
+
 `task_runner.py` は、`task-plan.schema.json` に沿ったtask planを読み込み、sequential / parallel に処理して `process-report/` へ実行レポートを出力します。
 
 `prepare_repository.py` は、target repository / branch を `work/<採番ID>/source/repository/` に準備します。
@@ -60,6 +64,8 @@ runtime/rag/standardize_corrective_report_names.py
 `create_issue_branch.py` は、Issue番号から `feature/issue-<issue-number>` branch を作成します。
 
 `commit_changes.py` は、semantic commit message を検証してcommitします。
+
+`push_branch.py` は、人間チェック承認後に `feature/issue-<issue-number>` branch をpushし、push recordを保存します。
 
 `normalize_documents.py` は、Markdown report を metadata 付きの RAG document JSON に変換します。
 
