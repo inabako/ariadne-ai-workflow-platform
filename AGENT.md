@@ -221,7 +221,7 @@ runtime/rag/retrieve_context.py
 1. GitHubからtarget branchを取得
 2. 要件定義書とrepository stateを比較
 3. 修正内容をGitHub Issueへ記載
-4. Issue番号から feature/issue-<issue-number> branchを作成
+4. Issue番号からGitHub上に feature/issue-<issue-number> branchを作成し、work配下へclone / checkout
 5. `/rag-load` で過去の corrective action report を並列検索し、圧縮済みcontext packを読み込む
 6. 開発工程
 7. 成果物とsource差分をsemantic commitでcommit
@@ -236,7 +236,7 @@ Corrective action fix flow:
 4. /rag-build
 5. /rag-load
 6. GitHub Issue draft/create
-7. prepare work/issue-<issue-number>/source/repository and create feature/issue-<issue-number>
+7. create feature/issue-<issue-number> on GitHub, then clone / checkout it under work/issue-<issue-number>/source/repository
 8. implement corrective changes in work/issue-<issue-number>
 9. create/run unit tests
 10. startup/integration check

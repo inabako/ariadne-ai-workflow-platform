@@ -59,9 +59,9 @@ runtime/rag/standardize_corrective_report_names.py
 
 `compare_requirements.py` は、要件定義書と repository state の比較レポートを作成します。
 
-`issue_manager.py` は、GitHub Issue draftを作成し、`--create` 指定時のみ GitHub CLI でIssueを作成します。
+`issue_manager.py` は、GitHub Issue draftを作成し、`--create` 指定時のみ GitHub REST API でIssueを作成します。
 
-`create_issue_branch.py` は、Issue番号から `feature/issue-<issue-number>` branch を作成します。
+`create_issue_branch.py` は、Issue番号からGitHub上に `feature/issue-<issue-number>` branchを作成し、work配下へclone / checkoutします。
 
 `commit_changes.py` は、semantic commit message を検証してcommitします。
 

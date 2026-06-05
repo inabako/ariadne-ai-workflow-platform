@@ -2,17 +2,17 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Sequence
+from urllib.parse import quote
 
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import (  # noqa: E402
+    default_github_owner,
     find_repo_root,
     env_value,
     load_artifact_index,
@@ -26,6 +26,7 @@ from runtime.common import (  # noqa: E402
     write_json,
     write_markdown_bom,
 )
+from runtime.github.api import github_api_json  # noqa: E402
 
 
 ISSUE_URL_RE = re.compile(r"/issues/(\d+)")
@@ -40,7 +41,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--label", action="append", default=[])
     parser.add_argument("--assignee", action="append", default=[])
     parser.add_argument("--repo-root", default=None)
-    parser.add_argument("--create", action="store_true", help="Actually create the issue using GitHub CLI.")
+    parser.add_argument("--create", action="store_true", help="Actually create the issue using GitHub REST API.")
     return parser
 
 
@@ -93,34 +94,41 @@ def default_issue_body(repo_root: Path, work_dir: Path) -> str:
     return "\n".join(lines)
 
 
-def create_issue_with_gh(
+def create_issue_with_api(
     github_repo: str,
     title: str,
-    body_file: Path,
+    body_text: str,
     labels: list[str],
     assignees: list[str],
-    env: dict[str, str],
+    settings: dict[str, str],
 ) -> tuple[str, str | None]:
-    command = ["gh", "issue", "create", "--repo", github_repo, "--title", title, "--body-file", str(body_file)]
-    for label in labels:
-        command.extend(["--label", label])
-    for assignee in assignees:
-        command.extend(["--assignee", assignee])
-    result = subprocess.run(
-        command,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        env=env,
-        shell=False,
+    owner, repo = github_repo.split("/", 1)
+    payload = {
+        "title": title,
+        "body": body_text,
+    }
+    if labels:
+        payload["labels"] = labels
+    if assignees:
+        payload["assignees"] = assignees
+
+    data = github_api_json(
+        settings,
+        "POST",
+        f"/repos/{quote(owner, safe='')}/{quote(repo, safe='')}/issues",
+        payload,
     )
-    if result.returncode != 0:
-        detail = result.stderr.strip() or result.stdout.strip()
-        raise RuntimeError(f"gh issue create failed: {detail}")
-    issue_url = result.stdout.strip()
-    match = ISSUE_URL_RE.search(issue_url)
-    return issue_url, match.group(1) if match else None
+
+    issue_url = str(data.get("html_url", ""))
+    issue_number = data.get("number")
+    if not issue_url and issue_number:
+        issue_url = f"https://github.com/{github_repo}/issues/{issue_number}"
+    if not issue_url:
+        raise RuntimeError("GitHub API issue create failed: response did not include issue URL.")
+    if issue_number is None:
+        match = ISSUE_URL_RE.search(issue_url)
+        issue_number = match.group(1) if match else None
+    return issue_url, str(issue_number) if issue_number is not None else None
 
 
 def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
@@ -130,10 +138,14 @@ def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
     if not work_dir.exists():
         raise FileNotFoundError(f"Work directory does not exist: {work_dir}")
     scm_state = read_json(work_dir / "context" / "scm-state.json", default={}) or {}
-    scm_github_repo = repository_to_github_slug(str(scm_state.get("repository", "")))
-    github_repo = args.github_repo or scm_github_repo
+    owner = default_github_owner(settings)
+    scm_github_repo = repository_to_github_slug(str(scm_state.get("repository", "")), owner)
+    explicit_github_repo = repository_to_github_slug(args.github_repo, owner) if args.github_repo else None
+    github_repo = explicit_github_repo or scm_github_repo
     if not github_repo:
         raise ValueError("GitHub repository is required. Run runtime/scm/prepare_repository.py first or set --github-repo.")
+    if "/" not in github_repo:
+        raise ValueError("GitHub repository must be in owner/name format.")
     labels = args.label or [
         item.strip()
         for item in env_value(settings, "DEFAULT_GITHUB_ISSUE_LABELS", "GITHUB_DEFAULT_LABELS").split(",")
@@ -155,18 +167,13 @@ def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
     issue_number = None
     status = "draft"
     if args.create:
-        process_env = os.environ.copy()
-        if settings.get("GITHUB_TOKEN") and not process_env.get("GH_TOKEN"):
-            process_env["GH_TOKEN"] = settings["GITHUB_TOKEN"]
-        if settings.get("GH_HOST"):
-            process_env["GH_HOST"] = settings["GH_HOST"]
-        issue_url, issue_number = create_issue_with_gh(
+        issue_url, issue_number = create_issue_with_api(
             github_repo,
             args.title,
-            draft_md,
+            body_text,
             labels,
             assignees,
-            process_env,
+            settings,
         )
         status = "created"
 

@@ -11,13 +11,19 @@ Respond to the user in Japanese by default.
 
 ## Required Inputs
 
-- target repository: GitHub URL, Markdown link to a GitHub URL, git URL, owner/repo, or local path
+- target repository: GitHub URL, Markdown link to a GitHub URL, git URL, owner/repo, repository name with `GITHUB_OWNER`, or local path
 - target branch: branch name to inspect and base the fix on
 
 Example:
 
 ```text
 /corrective-action-fix [inabako/localty-system-gui.git](https://github.com/inabako/localty-system-gui.git) develop
+```
+
+If `.env` has `GITHUB_OWNER=inabako`, this shorter form is also valid:
+
+```text
+/corrective-action-fix localty-system-gui develop
 ```
 
 ## Directory Model
@@ -185,21 +191,14 @@ python runtime/workflow/init_corrective_action_fix.py `
 
 If `work/issue-<issue-number>` already exists, stop and ask the user to confirm whether this is the same Issue work area. After confirmation, rerun with `--reuse-existing`.
 
-Clone/fetch the base branch into the issue work folder:
-
-```powershell
-python runtime/scm/prepare_repository.py `
-  --work-id "issue-<issue-number>" `
-  --repository "<target-repository>" `
-  --target-branch "<target-branch>"
-```
-
-Create the Git branch:
+Create the GitHub branch first, then clone that branch into the issue work folder:
 
 ```powershell
 python runtime/scm/create_issue_branch.py `
   --work-id "issue-<issue-number>" `
-  --issue-number "<issue-number>"
+  --issue-number "<issue-number>" `
+  --repository "<target-repository>" `
+  --base-branch "<target-branch>"
 ```
 
 The work folder is `work/issue-<issue-number>`, and the Git branch is:

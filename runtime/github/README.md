@@ -6,20 +6,30 @@
 
 - 要件比較レポートとartifact indexを元に Issue body を作る
 - `work/<採番ID>/process-report/` にIssue draftを保存する
-- `--create` 指定時のみ GitHub CLI でIssueを作成する
+- `--create` 指定時のみ GitHub REST API でIssueを作成する
 - Issue番号を `github-issue-*.json` に記録する
 
 ## Environment
 
 GitHub連携に必要な値は repository root の `.env` から読み込みます。
 
-主なキー:
+必須キー:
 
-- `GITHUB_AUTH_METHOD`
 - `GITHUB_TOKEN`
+
+任意キー:
+
 - `GH_HOST`
+- `GITHUB_API_URL`
+- `GITHUB_OWNER`
 - `DEFAULT_GITHUB_ISSUE_LABELS`
 - `DEFAULT_GITHUB_ISSUE_ASSIGNEES`
+
+`GITHUB_TOKEN` には、対象repositoryのIssue作成権限を持つGitHub Personal Access Tokenまたはfine-grained tokenを設定します。互換キーとして `GH_TOKEN` / `GITHUB_API_TOKEN` / `GITHUB_API_KEY` も読み取れます。
+
+`GH_HOST` / `GITHUB_API_URL` は通常不要です。未指定の場合、API endpoint は `https://api.github.com` です。GitHub Enterprise Server などで明示したい場合だけ `GITHUB_API_URL` に `https://<host>/api/v3` 形式で指定できます。
+
+`GITHUB_OWNER` を設定すると、`localty-system-gui` のようなrepository名だけの指定を `<GITHUB_OWNER>/localty-system-gui` として解決できます。
 
 `--github-repo` が未指定の場合、`scm-state.json` の repository を使います。
 
@@ -59,6 +69,6 @@ python runtime/github/issue_manager.py `
 
 ## Network Rule
 
-Issue creation requires network access and GitHub CLI authentication.
+Issue creation requires network access and GitHub API token authentication.
 
 By default, this runtime creates a local draft only. It calls GitHub only when `--create` is explicitly specified.

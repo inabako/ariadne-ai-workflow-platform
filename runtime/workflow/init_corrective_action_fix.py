@@ -10,8 +10,10 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import (  # noqa: E402
+    default_github_owner,
     ensure_work_tree,
     find_repo_root,
+    load_env,
     load_artifact_index,
     normalize_repository_value,
     relative_to_repo,
@@ -43,8 +45,8 @@ def branch_to_work_id(branch_name: str) -> str:
     return slugify(value.replace("/", "-"))
 
 
-def repository_name(repository: str) -> str:
-    slug = repository_to_github_slug(repository)
+def repository_name(repository: str, default_owner: str = "") -> str:
+    slug = repository_to_github_slug(repository, default_owner)
     if slug:
         name = slug.rsplit("/", 1)[-1]
     else:
@@ -56,8 +58,9 @@ def repository_name(repository: str) -> str:
 
 def run(args: argparse.Namespace) -> dict[str, object]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    settings = load_env(repo_root)
     repository = normalize_repository_value(args.repository)
-    repo_name = repository_name(repository)
+    repo_name = repository_name(repository, default_github_owner(settings))
     work_id = args.work_id or branch_to_work_id(args.target_branch)
     work_dir = repo_root / "work" / work_id
     if work_dir.exists() and not args.reuse_existing:

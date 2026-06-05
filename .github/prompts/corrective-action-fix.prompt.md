@@ -19,6 +19,12 @@ skills/corrective-action-fix/SKILL.md
 /corrective-action-fix [inabako/localty-system-gui.git](https://github.com/inabako/localty-system-gui.git) develop
 ```
 
+`.env` に `GITHUB_OWNER=inabako` がある場合:
+
+```text
+/corrective-action-fix localty-system-gui develop
+```
+
 Flow:
 
 1. 改善対象の repository / branch を取得する。

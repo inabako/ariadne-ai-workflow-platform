@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Sequence
@@ -12,6 +11,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import (  # noqa: E402
+    default_github_owner,
     find_repo_root,
     extract_repository_config_from_files,
     env_value,
@@ -25,7 +25,7 @@ from runtime.common import (  # noqa: E402
     utc_now_iso,
     write_json,
 )
-from runtime.scm.scm_utils import current_branch, current_commit, is_git_repository, require_success, run_git  # noqa: E402
+from runtime.scm.scm_utils import current_branch, current_commit, github_token_git_env, is_git_repository, require_success, run_git  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -42,26 +42,19 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def clone_repository(repository: str, target_branch: str, source_dir: Path, dry_run: bool) -> None:
+def clone_repository(repository: str, target_branch: str, source_dir: Path, token: str, dry_run: bool) -> None:
     source_dir.parent.mkdir(parents=True, exist_ok=True)
-    command = ["git", "clone", "--branch", target_branch, "--single-branch", repository, str(source_dir)]
+    command = ["clone", "--branch", target_branch, "--single-branch", repository, str(source_dir)]
     if dry_run:
         return
-    result = subprocess.run(
-        command,
-        cwd=str(source_dir.parent),
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        shell=False,
-    )
-    require_success(result, "git clone")
+    with github_token_git_env(token) as git_env:
+        require_success(run_git(command, source_dir.parent, env=git_env), "git clone")
 
 
 def prepare_repository(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     settings = load_env(repo_root)
+    default_owner = default_github_owner(settings)
     work_dir = repo_root / "work" / args.work_id
     if not work_dir.exists():
         raise FileNotFoundError(f"Work directory does not exist: {work_dir}")
@@ -88,7 +81,8 @@ def prepare_repository(args: argparse.Namespace) -> dict[str, Any]:
     if source_dir.exists() and not is_git_repository(source_dir):
         raise RuntimeError(f"Source directory exists but is not a git repository: {source_dir}")
     if not source_dir.exists():
-        clone_repository(repository_to_clone_source(repository), target_branch, source_dir, args.dry_run)
+        token = env_value(settings, "GITHUB_TOKEN", "GH_TOKEN", "GITHUB_API_TOKEN", "GITHUB_API_KEY")
+        clone_repository(repository_to_clone_source(repository, default_owner), target_branch, source_dir, token, args.dry_run)
 
     if not args.dry_run:
         require_success(run_git(["fetch", remote, target_branch], source_dir), "git fetch")

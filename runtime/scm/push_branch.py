@@ -9,8 +9,8 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
-from runtime.scm.scm_utils import current_branch, require_success, run_git  # noqa: E402
+from runtime.common import env_value, find_repo_root, load_env, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.scm.scm_utils import current_branch, github_token_git_env, require_success, run_git  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -28,6 +28,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def push_branch(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    settings = load_env(repo_root)
     work_dir = repo_root / "work" / args.work_id
     source_dir = Path(args.source_dir).resolve() if args.source_dir else work_dir / "source" / "repository"
     if not source_dir.exists():
@@ -46,7 +47,9 @@ def push_branch(args: argparse.Namespace) -> dict[str, Any]:
         command.append("-u")
     command.extend([remote, branch])
     if not args.dry_run:
-        require_success(run_git(command, source_dir), "git push")
+        token = env_value(settings, "GITHUB_TOKEN", "GH_TOKEN", "GITHUB_API_TOKEN", "GITHUB_API_KEY")
+        with github_token_git_env(token) as git_env:
+            require_success(run_git(command, source_dir, env=git_env), "git push")
 
     record = {
         "schema_version": "1.0",

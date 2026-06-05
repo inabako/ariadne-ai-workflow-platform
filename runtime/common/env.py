@@ -52,9 +52,14 @@ def env_value(settings: dict[str, str], *keys: str, default: str = "") -> str:
     return default
 
 
+def default_github_owner(settings: dict[str, str]) -> str:
+    return env_value(settings, "GITHUB_OWNER", "GITHUB_ACCOUNT", "GH_OWNER").strip()
+
+
 def resolve_github_repo(settings: dict[str, str], explicit: str | None = None) -> str:
     if explicit:
-        return explicit
+        slug = repository_to_github_slug(explicit, default_github_owner(settings))
+        return slug or explicit
     raise ValueError("GitHub repository is required. Set --github-repo or prepare scm-state.json from requirements.")
 
 
@@ -66,7 +71,7 @@ def normalize_repository_value(repository: str) -> str:
     return value
 
 
-def repository_to_github_slug(repository: str) -> str | None:
+def repository_to_github_slug(repository: str, default_owner: str | None = None) -> str | None:
     value = normalize_repository_value(repository)
     if not value:
         return None
@@ -81,12 +86,15 @@ def repository_to_github_slug(repository: str) -> str | None:
         match = re.search(pattern, value)
         if match:
             return f"{match.group('owner')}/{match.group('repo')}"
+    repo_only = re.match(r"^(?P<repo>[A-Za-z0-9_.-]+?)(?:\.git)?$", value)
+    if repo_only and default_owner:
+        return f"{default_owner}/{repo_only.group('repo')}"
     return None
 
 
-def repository_to_clone_source(repository: str) -> str:
+def repository_to_clone_source(repository: str, default_owner: str | None = None) -> str:
     value = normalize_repository_value(repository)
-    slug = repository_to_github_slug(value)
+    slug = repository_to_github_slug(value, default_owner)
     if slug and not re.search(r"github\.com[:/]", value):
         return f"https://github.com/{slug}.git"
     return value

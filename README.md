@@ -320,7 +320,7 @@ Implemented runtime CLI:
 | `runtime/scm/prepare_repository.py` | target repository / branch を取得し、`work/<receipt-id>/source/` と `scm-state.json` を整える |
 | `runtime/scm/compare_requirements.py` | 要件定義書と repository state の比較reportを作る |
 | `runtime/github/issue_manager.py` | GitHub Issue draft / create を行う |
-| `runtime/scm/create_issue_branch.py` | Issue番号から `feature/issue-<issue-number>` branch を作成する |
+| `runtime/scm/create_issue_branch.py` | Issue番号からGitHub上に `feature/issue-<issue-number>` branchを作成し、work配下へclone / checkoutする |
 | `runtime/scm/commit_changes.py` | 成果物とsource差分を semantic commit で commit する |
 | `runtime/rag/standardize_corrective_report_names.py` | corrective action report Markdown を `YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md` に統一する |
 | `runtime/rag/normalize_documents.py` | Markdown report を metadata 付きの RAG document JSON に変換する |
@@ -426,22 +426,13 @@ GitHub / SCM 連携で必要な値は、repository root の環境ファイルで
 `.env.example` の現行キー:
 
 ```env
-GITHUB_ACCOUNT=
-GH_HOST=github.com
-GITHUB_AUTH_METHOD=gh
+GITHUB_OWNER=
 GITHUB_TOKEN=
-
-GIT_USER_NAME=
-GIT_USER_EMAIL=
-DEFAULT_GIT_REMOTE_NAME=origin
-DEFAULT_GIT_TARGET_BRANCH=main
-DEFAULT_FEATURE_BRANCH_PREFIX=feature/issue
-
-DEFAULT_GITHUB_ISSUE_LABELS=
-DEFAULT_GITHUB_ISSUE_ASSIGNEES=
 ```
 
 `.env` には token やローカル実値を書きますが、commit しません。
+
+`GITHUB_OWNER` を設定すると、`localty-system-gui` のようなrepository名だけの指定を `<GITHUB_OWNER>/localty-system-gui` として解決できます。
 
 案件ごとに変わる repository は `.env` に置きません。要件定義書の `Repository Control` を source of truth とします。
 
