@@ -117,6 +117,16 @@ Additional corrective implementation entrypoint:
 | --- | --- | --- | --- |
 | `/corrective-action-fix` | GitHub repository / branchを取得し、report/RAG/Issue/branch/修正/test/確認/pushまで進める | `skills/corrective-action-fix/` | `work/<branch>/`, `work/issue-<issue-number>/`, `rag/corrective-action-report/` |
 
+### Dispatcher 方針
+
+`runtime/rag/rag_dispatcher.py` は、意図的に `/rag-load` 専用にしています。
+
+RAG load には、複数の検索queryを計画し、必要に応じて並列検索し、開発前に圧縮済みcontext packを集約するという明確な dispatch / aggregate 責務があります。
+
+一方で、`/corrective-action-fix` 全体は単一の workflow dispatcher で包まない方針です。このflowには GitHub Issue 作成、remote branch 作成、clone、commit、人間確認、push が含まれます。これらは副作用と人間の承認gateを伴うため、`skills/corrective-action-fix/SKILL.md` に工程を明示し、小さな runtime CLI を段階ごとに呼び出します。
+
+同じ承認gateと副作用境界を明示できない限り、corrective action 用の all-in-one dispatcher は追加しません。
+
 ## VS Code Prompt Discovery
 
 VS Code / GitHub Copilot Chat の `/` 候補に出すため、prompt files は `.github/prompts/*.prompt.md` に置いています。
