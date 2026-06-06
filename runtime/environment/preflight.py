@@ -1,0 +1,390 @@
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import shutil
+import subprocess
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Sequence
+
+if __package__ in {None, ""}:
+    sys.path.append(str(Path(__file__).resolve().parents[2]))
+
+from runtime.common import find_repo_root, local_timestamp, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+
+
+@dataclass(frozen=True)
+class Check:
+    id: str
+    label: str
+    kind: str
+    required: bool
+    ok: bool
+    detected: str
+    install_hint: str
+    install_command: str | None = None
+    fallback_command: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "label": self.label,
+            "kind": self.kind,
+            "required": self.required,
+            "ok": self.ok,
+            "detected": self.detected,
+            "install_hint": self.install_hint,
+            "install_command": self.install_command,
+            "fallback_command": self.fallback_command,
+        }
+
+
+def run_command(command: Sequence[str], cwd: Path | None = None, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        list(command),
+        cwd=str(cwd) if cwd else None,
+        env=env,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+
+def which_check(executable: str, *, required: bool, install_hint: str, install_command: str | None = None) -> Check:
+    path = shutil.which(executable)
+    return Check(
+        id=f"exe:{executable}",
+        label=executable,
+        kind="executable",
+        required=required,
+        ok=path is not None,
+        detected=path or "",
+        install_hint=install_hint,
+        install_command=install_command,
+    )
+
+
+def path_check(path: Path, *, check_id: str, label: str, required: bool, install_hint: str, install_command: str | None = None) -> Check:
+    return Check(
+        id=check_id,
+        label=label,
+        kind="path",
+        required=required,
+        ok=path.exists(),
+        detected=str(path) if path.exists() else "",
+        install_hint=install_hint,
+        install_command=install_command,
+    )
+
+
+def python_module_check(module: str, *, required: bool, install_hint: str, install_command: str | None = None) -> Check:
+    completed = run_command([sys.executable, "-c", f"import {module}"])
+    return Check(
+        id=f"python-module:{module}",
+        label=module,
+        kind="python-module",
+        required=required,
+        ok=completed.returncode == 0,
+        detected=sys.executable if completed.returncode == 0 else "",
+        install_hint=install_hint,
+        install_command=install_command or f"{sys.executable} -m pip install {module}",
+    )
+
+
+def localty_protocol_check(args: argparse.Namespace, protocol_dir: Path | None, bash_path: Path) -> Check:
+    verify_code = "from localty_protocol.telemetry import UDP_PORTS; print(UDP_PORTS)"
+    use_msys2_python = args.profile == "localty-msys2" and bash_path.exists()
+    if use_msys2_python:
+        env = {**os.environ, "MSYSTEM": "MINGW64", "CHERE_INVOKING": "1"}
+        completed = run_command([str(bash_path), "-lc", f"python -c '{verify_code}'"], env=env)
+        install_command = f"\"{bash_path}\" -lc \"python -m pip install 'localty-system-protocol>=0.1.0'\""
+        detected_runtime = f"MSYS2 python via {bash_path}"
+    else:
+        completed = run_command([sys.executable, "-c", verify_code])
+        install_command = f"{sys.executable} -m pip install \"localty-system-protocol>=0.1.0\""
+        detected_runtime = sys.executable
+    if completed.returncode == 0:
+        return Check(
+            id="python-package:localty-system-protocol",
+            label="localty-system-protocol package",
+            kind="python-package",
+            required=True,
+            ok=True,
+            detected=f"{detected_runtime}: {completed.stdout.strip()}",
+            install_hint="Published package is installed and localty_protocol.telemetry.UDP_PORTS is importable.",
+            install_command=install_command,
+        )
+
+    fallback_ok = bool(protocol_dir and (protocol_dir / "pyproject.toml").exists())
+    fallback_command = None
+    if args.work_id:
+        branch = args.support_branch or "develop"
+        fallback_command = (
+            f"{sys.executable} runtime/scm/prepare_support_repository.py "
+            f"--work-id \"{args.work_id}\" "
+            "--name \"localty-system-protocol\" "
+            "--repository \"inabako/localty-system-protocol\" "
+            f"--branch \"{branch}\""
+        )
+
+    if fallback_ok:
+        return Check(
+            id="python-package:localty-system-protocol",
+            label="localty-system-protocol package",
+            kind="python-package",
+            required=True,
+            ok=True,
+            detected=f"fallback source repository: {protocol_dir}",
+            install_hint=(
+                "Published package import failed, but a local fallback source repository exists. "
+                "Prefer pip install localty-system-protocol>=0.1.0 when available."
+            ),
+            install_command=install_command,
+            fallback_command=fallback_command,
+        )
+
+    fallback_hint = " If pip cannot fetch the package, download the support repository with the fallback command."
+    if not fallback_command:
+        fallback_hint = " If pip cannot fetch the package, pass --work-id so the report can include the support repository fallback command."
+    return Check(
+        id="python-package:localty-system-protocol",
+        label="localty-system-protocol package",
+        kind="python-package",
+        required=True,
+        ok=False,
+        detected=completed.stderr.strip() or completed.stdout.strip(),
+        install_hint=(
+            "Install the published protocol package first, then verify: "
+            "python -c \"from localty_protocol.telemetry import UDP_PORTS; print(UDP_PORTS)\"."
+            f"{fallback_hint}"
+        ),
+        install_command=install_command,
+        fallback_command=fallback_command,
+    )
+
+
+def msys2_package_check(bash_path: Path, package: str, *, required: bool) -> Check:
+    if not bash_path.exists():
+        return Check(
+            id=f"msys2-package:{package}",
+            label=package,
+            kind="msys2-package",
+            required=required,
+            ok=False,
+            detected="",
+            install_hint="Install MSYS2 first, then install required pacman packages.",
+            install_command=f"pacman -S --needed --noconfirm {package}",
+        )
+    env = {**os.environ, "MSYSTEM": "MINGW64", "CHERE_INVOKING": "1"}
+    completed = run_command([str(bash_path), "-lc", f"pacman -Q {package}"], env=env)
+    return Check(
+        id=f"msys2-package:{package}",
+        label=package,
+        kind="msys2-package",
+        required=required,
+        ok=completed.returncode == 0,
+        detected=completed.stdout.strip(),
+        install_hint=f"Install with MSYS2 pacman: pacman -S --needed --noconfirm {package}",
+        install_command=f"pacman -S --needed --noconfirm {package}",
+    )
+
+
+def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
+    source_dir = Path(args.source_dir).resolve() if args.source_dir else None
+    protocol_dir = Path(args.protocol_dir).resolve() if args.protocol_dir else (source_dir.parent / "localty-system-protocol" if source_dir else None)
+    msys2_root = Path(args.msys2_root)
+    bash_path = msys2_root / "usr" / "bin" / "bash.exe"
+
+    checks: list[Check] = [
+        which_check("git", required=True, install_hint="Install Git for Windows and ensure git is on PATH."),
+        which_check("uv", required=True, install_hint="Install uv and ensure uv is on PATH.", install_command="powershell -NoProfile -ExecutionPolicy Bypass -c \"irm https://astral.sh/uv/install.ps1 | iex\""),
+        which_check("python", required=False, install_hint="Optional when uv provides Python. Install Python or use uv run python."),
+    ]
+
+    if args.profile in {"corrective-action-fix", "localty-msys2"}:
+        checks.append(path_check(
+            bash_path,
+            check_id="path:msys2-bash",
+            label="MSYS2 bash.exe",
+            required=args.profile == "localty-msys2",
+            install_hint="Install MSYS2 to C:\\msys64 or pass --msys2-root.",
+        ))
+
+    if args.profile == "localty-msys2":
+        if source_dir:
+            checks.append(path_check(
+                source_dir / "pyproject.toml",
+                check_id="path:target-pyproject",
+                label="target pyproject.toml",
+                required=True,
+                install_hint="Run preflight with --source-dir pointing at the GUI repository root.",
+            ))
+        checks.append(localty_protocol_check(args, protocol_dir, bash_path))
+        for package in [
+            "mingw-w64-x86_64-python",
+            "mingw-w64-x86_64-python-pip",
+            "mingw-w64-x86_64-python-gobject",
+            "mingw-w64-x86_64-gstreamer",
+            "mingw-w64-x86_64-gst-plugins-base",
+            "mingw-w64-x86_64-gst-plugins-good",
+            "mingw-w64-x86_64-gst-plugins-bad",
+            "mingw-w64-x86_64-gst-plugins-ugly",
+            "mingw-w64-x86_64-qt6-base",
+            "mingw-w64-x86_64-python-pyqt6",
+        ]:
+            checks.append(msys2_package_check(bash_path, package, required=True))
+
+    if args.profile == "corrective-action-fix":
+        checks.append(python_module_check(
+            "pytest",
+            required=False,
+            install_hint="Needed for local pytest execution. Prefer uv run --with pytest ... instead of global install.",
+            install_command="uv run --with pytest python -m pytest --version",
+        ))
+
+    return checks
+
+
+def markdown_report(result: dict[str, Any]) -> str:
+    missing_required = [item for item in result["checks"] if item["required"] and not item["ok"]]
+    missing_optional = [item for item in result["checks"] if not item["required"] and not item["ok"]]
+    lines = [
+        "# Environment Preflight",
+        "",
+        f"- profile: `{result['profile']}`",
+        f"- status: `{result['status']}`",
+        f"- created_at: `{result['created_at']}`",
+        "",
+        "## Missing Required",
+        "",
+    ]
+    if missing_required:
+        for item in missing_required:
+            lines.extend([
+                f"- `{item['label']}`",
+                f"  - hint: {item['install_hint']}",
+                f"  - command: `{item['install_command'] or 'manual install required'}`",
+            ])
+            if item.get("fallback_command"):
+                lines.append(f"  - fallback: `{item['fallback_command']}`")
+    else:
+        lines.append("- none")
+    lines.extend(["", "## Missing Optional", ""])
+    if missing_optional:
+        for item in missing_optional:
+            lines.extend([
+                f"- `{item['label']}`",
+                f"  - hint: {item['install_hint']}",
+                f"  - command: `{item['install_command'] or 'manual install required'}`",
+            ])
+    else:
+        lines.append("- none")
+    lines.extend(["", "## Checks", ""])
+    for item in result["checks"]:
+        mark = "OK" if item["ok"] else "MISSING"
+        required = "required" if item["required"] else "optional"
+        lines.append(f"- [{mark}] `{item['label']}` ({required})")
+    return "\n".join(lines) + "\n"
+
+
+def write_reports(repo_root: Path, work_id: str, result: dict[str, Any]) -> tuple[Path, Path]:
+    process_dir = repo_root / "work" / work_id / "process-report"
+    stamp = local_timestamp()
+    json_path = process_dir / f"environment-preflight-{stamp}.json"
+    md_path = process_dir / f"environment-preflight-{stamp}.md"
+    write_json(json_path, result)
+    md_path.parent.mkdir(parents=True, exist_ok=True)
+    md_path.write_text(markdown_report(result), encoding="utf-8")
+    return json_path, md_path
+
+
+def install_missing(checks: list[Check]) -> list[dict[str, Any]]:
+    executed: list[dict[str, Any]] = []
+    for check in checks:
+        if check.ok or not check.required or not check.install_command:
+            continue
+        if check.kind == "msys2-package":
+            bash_path = Path(r"C:\msys64\usr\bin\bash.exe")
+            env = {**os.environ, "MSYSTEM": "MINGW64", "CHERE_INVOKING": "1"}
+            command_display = f"{bash_path} -lc {check.install_command!r}"
+            completed = run_command([str(bash_path), "-lc", check.install_command], env=env)
+        else:
+            command_display = check.install_command
+            completed = subprocess.run(check.install_command, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, check=False)
+        executed.append({
+            "id": check.id,
+            "label": check.label,
+            "command": command_display,
+            "returncode": completed.returncode,
+            "stdout": completed.stdout,
+            "stderr": completed.stderr,
+        })
+        if completed.returncode != 0:
+            if check.fallback_command:
+                fallback_completed = subprocess.run(check.fallback_command, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, check=False)
+                executed.append({
+                    "id": check.id,
+                    "label": f"{check.label} fallback",
+                    "command": check.fallback_command,
+                    "returncode": fallback_completed.returncode,
+                    "stdout": fallback_completed.stdout,
+                    "stderr": fallback_completed.stderr,
+                })
+                if fallback_completed.returncode == 0:
+                    continue
+            break
+    return executed
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Check workflow environment dependencies and produce an install plan.")
+    parser.add_argument("--profile", choices=["corrective-action-fix", "localty-msys2"], default="corrective-action-fix")
+    parser.add_argument("--work-id", default="")
+    parser.add_argument("--source-dir", default="")
+    parser.add_argument("--protocol-dir", default="")
+    parser.add_argument("--support-branch", default="develop")
+    parser.add_argument("--msys2-root", default=r"C:\msys64")
+    parser.add_argument("--repo-root", default="")
+    parser.add_argument("--install", action="store_true")
+    parser.add_argument("--human-check", choices=["approved"], default=None)
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    checks = build_checks(args, repo_root)
+    missing_required = [check for check in checks if check.required and not check.ok]
+    install_executions: list[dict[str, Any]] = []
+    if args.install:
+        if args.human_check != "approved":
+            print("ERROR: --install requires --human-check approved", file=sys.stderr)
+            return 1
+        install_executions = install_missing(checks)
+
+    status = "ready" if not missing_required else "install-list-required"
+    result = {
+        "schema_version": "1.0",
+        "artifact_type": "environment-preflight",
+        "profile": args.profile,
+        "created_at": utc_now_iso(),
+        "status": status,
+        "next_flow_allowed": not missing_required,
+        "checks": [check.to_dict() for check in checks],
+        "install_executions": install_executions,
+    }
+    output: dict[str, Any] = dict(result)
+    if args.work_id:
+        json_path, md_path = write_reports(repo_root, args.work_id, result)
+        output["record_path"] = relative_to_repo(repo_root, json_path)
+        output["markdown_path"] = relative_to_repo(repo_root, md_path)
+    print(json.dumps(output, ensure_ascii=False, indent=2))
+    return 0 if not missing_required else 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

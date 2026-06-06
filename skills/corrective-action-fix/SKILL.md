@@ -176,11 +176,97 @@ python runtime/rag/rag_dispatcher.py `
 
 Read the generated `artifact_type: rag-load-dispatch` JSON and referenced `artifact_type: rag-context-pack` JSON before implementation.
 
+### 5.1 External Web RAG Support Gate
+
+If the corrective action involves an unfamiliar implementation area, standards-sensitive behavior, network/runtime behavior, or technology-specific constraints, dispatch external-web RAG as supporting context before finalizing the Issue body or implementation plan.
+
+Examples:
+
+- Go realtime gateway
+- UDP / TCP / QUIC behavior
+- NAT traversal
+- GStreamer pipeline behavior
+- Docker / Windows / Raspberry Pi platform behavior
+- Prometheus / OpenTelemetry design
+
+Use saved external-web RAG first:
+
+```powershell
+python runtime/rag/rag_dispatcher.py `
+  --task "<unknown implementation area>" `
+  --source-type external-web `
+  --category "<category>" `
+  --search-mode hybrid `
+  --top-k 5 `
+  --max-chars 4000 `
+  --jobs 4
+```
+
+If there is no suitable saved external-web RAG, use the external-web source reviewer flow:
+
+```text
+rag/external-web/knowledge-sources.md
+.github/agents/external-web-source-reviewer-agent.prompt.md
+.github/agents/external-web-rag-dispatcher-agent.prompt.md
+```
+
+Record external-web references as supporting references in:
+
+```text
+work/<target-branch>/process-report/
+work/issue-<issue-number>/process-report/
+```
+
+External-web RAG may shape the implementation plan, test specification, and risk checks. It must not override current source code, test evidence, or the corrective action report.
+
+### 5.2 Specialist Review Gate
+
+If the Issue scope, implementation plan, or test specification depends on domain-specific interpretation, run the relevant Specialist Agent review after external-web RAG dispatch and before finalizing the Issue body or implementation plan.
+
+Use this gate for areas such as:
+
+- Go realtime gateway
+- Python GUI / runtime
+- UDP / TCP / QUIC / NAT traversal
+- GStreamer / video pipeline
+- Windows / Linux / Raspberry Pi / Docker / MSYS2 platform behavior
+- Prometheus / OpenTelemetry / logging / metrics
+- pytest / Go test / fault injection / packet evidence
+- STOP / communication loss / safe state / watchdog
+
+Save review outputs under:
+
+```text
+work/<target-branch>/process-report/specialist-review-<domain>.md
+work/issue-<issue-number>/process-report/specialist-review-<domain>.md
+```
+
+The review must record trusted external-web RAG, rejected or limited claims, repository evidence, required tests, and unresolved human-check items. High or critical specialist findings must be resolved before implementation or push.
+
 ### 5.5 Dependency / Support Component Gate
 
 Before creating the Issue branch, confirm whether the target fix needs support repositories, local tools, Python packages, MSYS2 packages, or runtime devices. At this stage, create the dependency plan and include it in the Issue body. Run repository preparation commands after `work/issue-<issue-number>` exists.
 
-Use the loaded RAG context first. If RAG contains setup knowledge for sibling repositories such as `localty-system-protocol` or `localty-system-simulator`, prepare them under the same issue source folder level after step 7:
+Use the loaded RAG context first. If the target is a Localty repository (`localty-system-gui`, `localty-system-robot`, or `localty-system-simulator`), treat `localty-system-protocol` as a required runtime contract.
+
+Default protocol dependency:
+
+```toml
+dependencies = [
+  "localty-system-protocol>=0.1.0"
+]
+```
+
+Preferred verification:
+
+```powershell
+pip install "localty-system-protocol>=0.1.0"
+python -c "from localty_protocol.telemetry import UDP_PORTS; print(UDP_PORTS)"
+```
+
+Use the published package first. Do not assume an editable sibling checkout for normal Localty fixes.
+
+If the published package cannot be fetched or installed, prepare the protocol repository as a fallback support repository under the same issue source folder level after step 7:
 
 ```powershell
 python runtime/scm/prepare_support_repository.py `
@@ -190,7 +276,9 @@ python runtime/scm/prepare_support_repository.py `
   --branch "<target-branch>"
 ```
 
-For libraries or packages that must be installed, list the missing items and install commands first, then stop for human approval. Do not install automatically until the user approves.
+Only use this fallback when the pip package path is unavailable. For `localty-system-simulator` integration, prepare the simulator support repository when the fix requires a runnable robot mock.
+
+For libraries or packages that must be installed, list the missing items, install commands, and fallback repository commands first, then stop for human approval. Do not install automatically until the user approves.
 
 Record discovered support components and missing tools in:
 
@@ -202,6 +290,13 @@ work/<work-id>/process-report/
 ### 6. Create GitHub Issue
 
 Create an issue body from the corrective action report and loaded RAG context.
+When the target repository has `.github/ISSUE_TEMPLATE.md`, use that project-local template as the issue body base.
+
+Issue title must use the corrective-action prefix:
+
+```text
+[改善フロー] <issue-title>
+```
 
 Minimum sections:
 
@@ -209,10 +304,24 @@ Minimum sections:
 - Corrective action report path
 - Findings to fix in this branch
 - Implementation scope
+- Supporting references, including external-web RAG when used
+- Specialist review references when used
 - Unit tests
 - Startup / integration check
 - Human check gate
 - Acceptance criteria
+
+Issue body source priority:
+
+1. Explicit `--body-file`
+2. Target repository `.github/ISSUE_TEMPLATE.md`
+3. Runtime fallback body generated by `runtime/github/issue_manager.py`
+
+Before GitHub creation, review the generated draft under:
+
+```text
+work/<target-branch>/process-report/github-issue-*.md
+```
 
 Create a draft unless the user explicitly approves GitHub mutation:
 
@@ -220,6 +329,7 @@ Create a draft unless the user explicitly approves GitHub mutation:
 python runtime/github/issue_manager.py `
   --work-id "<target-branch>" `
   --title "<issue-title>" `
+  --flow-label improvement `
   --body-file "<issue-body.md>"
 ```
 
@@ -229,6 +339,7 @@ When approved:
 python runtime/github/issue_manager.py `
   --work-id "<target-branch>" `
   --title "<issue-title>" `
+  --flow-label improvement `
   --body-file "<issue-body.md>" `
   --create
 ```
@@ -294,14 +405,97 @@ Rules:
 
 - Keep changes scoped to the Issue.
 - Preserve safety behavior.
+- Treat external-web RAG as supporting context only; verify the adopted behavior with local tests or integration evidence.
+- Treat Specialist Agent review as supporting context; connect accepted external knowledge to tests or human checks.
 - If a safety-critical finding cannot be resolved, stop and report the blocker.
 - Record implementation notes in `work/issue-<issue-number>/process-report/`.
 
+### 8.5 Create Test Specification
+
+Before running unit tests, startup checks, or integration / communication checks, write the test specification and test case table.
+
+Use:
+
+```text
+templates/test-specifications/robotics-test-specification-template.md
+```
+
+Save the issue-specific test specification under:
+
+```text
+work/issue-<issue-number>/test-specifications/
+```
+
+Before push, split the durable target-repository test case tables into:
+
+```text
+work/issue-<issue-number>/source/repository/docs/evidence/issue-<issue-number>/test_specifications/unit-test-cases.md
+work/issue-<issue-number>/source/repository/docs/evidence/issue-<issue-number>/test_specifications/integration-test-cases.md
+work/issue-<issue-number>/source/repository/docs/evidence/issue-<issue-number>/test_specifications/human-check-list.md
+```
+
+Use `unit-test-cases.md` for unit test cases, `integration-test-cases.md` for integration / connectivity and QTest candidates, and `human-check-list.md` for human confirmation items.
+
+The test specification must include:
+
+- Change-based test viewpoints derived from the corrective action report, Issue scope, implementation plan, and expected code / behavior changes.
+- Unit test cases for the corrective fix.
+- Integration / communication test cases for the affected runtime path.
+- PyQt QTest source plan when the target repository uses PyQt / Qt GUI.
+- Startup checks required before integration testing.
+- Human-check items and pass criteria.
+- Required evidence and save locations under `work/issue-<issue-number>/test-evidence/`.
+- Target repository docs save locations under `docs/evidence/issue-<issue-number>/`.
+- Known constraints or accepted risks.
+
+For each planned change, add at least one test case or explicitly record why it is not directly testable. Cover normal behavior, boundary / error behavior, regression risk, safety impact, and observability such as logs, metrics, or UI display when applicable.
+
+For `localty-system-gui` and `localty-system-simulator` integration, include test cases for auto-discovery, connect, control-key send / simulator receive display, camera video, FPS display, telemetry receive, sensor override, Event Log / Packet display, and both-GUI human confirmation.
+
+Do not start unit tests or integration / communication checks until the required test cases and pass criteria are written, unless the user explicitly approves skipping the test specification for a trivial change.
+
 ### 9. Add And Run Unit Tests
 
-Create or update unit tests that prove the fix.
+Create or update unit tests that prove the fix according to the test specification.
 
 Record commands and results in `work/issue-<issue-number>/test-evidence/`.
+
+### 9.5 Create PyQt QTest Integration Sources
+
+If the target repository uses PyQt / Qt GUI, convert automatable integration / connectivity test cases from the approved test specification into QTest-based test sources before manual startup or human integration checks.
+
+QTest source candidates include:
+
+- Connect / Disconnect button behavior
+- control key send and UI state change
+- telemetry receive display
+- sensor override UI
+- Event Log / Packet display
+- FPS label or video state label
+- show / close lifecycle
+- startup with external I/O disabled or stubbed
+
+Recommended target location:
+
+```text
+work/issue-<issue-number>/source/repository/src/tests/qt/test_<feature>_integration.py
+```
+
+Each QTest test must reference the source Test Case ID in comments, test names, or evidence notes.
+
+Default policy:
+
+- Use `PyQt6.QtTest.QTest` or the target repository's existing Qt test pattern.
+- Prefer fixtures/stubs that prevent real UDP sockets, GStreamer receivers, RobotController instances, hardware services, or external processes from starting unless the test case explicitly requires them.
+- Do not use QTest to silently broaden the Issue scope.
+- If a test case cannot be automated with QTest, record the reason and keep it as manual / human-check evidence.
+
+Record QTest commands and results in:
+
+```text
+work/issue-<issue-number>/test-evidence/qtest_integration/
+work/issue-<issue-number>/source/repository/docs/evidence/issue-<issue-number>/integration/qtest/
+```
 
 ### 10. Startup / Integration Check
 
@@ -320,9 +514,10 @@ For `localty-system-gui` MSYS2 startup:
 python runtime/environment/preflight.py `
   --profile localty-msys2 `
   --work-id "issue-<issue-number>" `
-  --source-dir "work/issue-<issue-number>/source/repository" `
-  --protocol-dir "work/issue-<issue-number>/source/localty-system-protocol"
+  --source-dir "work/issue-<issue-number>/source/repository"
 ```
+
+This preflight checks the published `localty-system-protocol>=0.1.0` package by importing `localty_protocol.telemetry.UDP_PORTS`. If the package cannot be fetched, use the fallback support repository command reported by preflight, then rerun preflight. Pass `--protocol-dir "work/issue-<issue-number>/source/localty-system-protocol"` only when validating that fallback repository.
 
 If required tools or MSYS2 packages are missing, create the install list, stop, and ask the user for approval before installing.
 
@@ -333,7 +528,6 @@ python runtime/environment/preflight.py `
   --profile localty-msys2 `
   --work-id "issue-<issue-number>" `
   --source-dir "work/issue-<issue-number>/source/repository" `
-  --protocol-dir "work/issue-<issue-number>/source/localty-system-protocol" `
   --install `
   --human-check approved
 ```
@@ -350,7 +544,44 @@ Ask the user to verify the startup/integration result.
 
 Do not push until the user explicitly confirms the check is approved.
 
-### 12. Push Issue Branch
+### 12. Finalize PR Material And Docs Evidence
+
+Before pushing, create the final PR material and confirm test evidence docs placement.
+
+Run:
+
+```powershell
+python runtime/workflow/knowledge_capture.py `
+  --issue "issue-<issue-number>" `
+  --repository "<target-repository>" `
+  --branch "feature/issue-<issue-number>" `
+  --base-work-id "<target-branch>"
+```
+
+Generated files:
+
+```text
+work/issue-<issue-number>/process-report/pull-request-title.md
+work/issue-<issue-number>/process-report/pull-request-description.md
+work/issue-<issue-number>/process-report/merge-comment.md
+work/issue-<issue-number>/process-report/knowledge-capture-report.md
+```
+
+Store the test case tables and evidence in the target repository docs tree before push:
+
+```text
+work/issue-<issue-number>/source/repository/docs/evidence/issue-<issue-number>/test_specifications/unit-test-cases.md
+work/issue-<issue-number>/source/repository/docs/evidence/issue-<issue-number>/test_specifications/integration-test-cases.md
+work/issue-<issue-number>/source/repository/docs/evidence/issue-<issue-number>/test_specifications/human-check-list.md
+work/issue-<issue-number>/source/repository/docs/evidence/issue-<issue-number>/ut/
+work/issue-<issue-number>/source/repository/docs/evidence/issue-<issue-number>/integration/
+work/issue-<issue-number>/source/repository/docs/evidence/issue-<issue-number>/human_check/
+```
+
+`knowledge_capture.py` creates missing evidence directories and scaffold `README.md` files automatically.
+Do not push if required docs evidence files are missing, or if the required directories contain only scaffold `README.md` files.
+
+### 13. Push Issue Branch
 
 After human approval:
 
@@ -368,16 +599,92 @@ python runtime/scm/push_branch.py `
   --set-upstream
 ```
 
+### 14. Create Pull Request To Develop
+
+After the issue branch is pushed, create a Pull Request to `develop`.
+
+The Pull Request title must use the GitHub Issue title.
+
+The Pull Request body must include a Mermaid sequence diagram showing the change flow.
+
+Draft PR record:
+
+```powershell
+python runtime/github/pull_request_manager.py `
+  --work-id "issue-<issue-number>" `
+  --base develop
+```
+
+Create PR after human approval:
+
+```powershell
+python runtime/github/pull_request_manager.py `
+  --work-id "issue-<issue-number>" `
+  --base develop `
+  --create `
+  --human-check approved
+```
+
+### 15. Finalization And Knowledge Capture
+
+After the issue branch is pushed, run final knowledge recovery.
+
+Required outputs:
+
+```text
+work/issue-<issue-number>/process-report/pull-request-title.md
+work/issue-<issue-number>/process-report/pull-request-description.md
+work/issue-<issue-number>/process-report/merge-comment.md
+work/issue-<issue-number>/process-report/knowledge-capture-report.md
+```
+
+RAG source candidates:
+
+```text
+work/issue-<issue-number>/process-report
+work/issue-<issue-number>/test-specifications
+work/issue-<issue-number>/test-evidence
+rag/specialist-review/<domain>
+```
+
+RAG registration requires explicit human approval. After approval, run `/rag-build` or the equivalent runtime RAG pipeline.
+
+Archive target:
+
+```text
+work/issue-<issue-number>
+  -> work/close/issue-<issue-number>
+```
+
+Base work reset:
+
+Before deleting `work/<target-branch>`, preserve base-phase process reports under the closed issue folder:
+
+```text
+work/<target-branch>/process-report
+  -> work/close/issue-<issue-number>/process-report/base-work-<target-branch>
+```
+
+After the copy is verified, delete `work/<target-branch>` so the next corrective flow starts from a clean base work folder.
+
+Do not move the issue folder until the user approves archive.
+
 ## Guardrails
 
 - Never push `intent-driven-robotics-ai-workflow` during this flow. This repository is only the workflow/RAG/report workspace.
 - Push only the issue branch in the repository specified by the user in step 1.
-- Treat `work/issue-<issue-number>/source/repository` as the only valid source directory for step 12 unless the user explicitly overrides it after reviewing the push target.
+- Treat `work/issue-<issue-number>/source/repository` as the only valid source directory for push unless the user explicitly overrides it after reviewing the push target.
 - Do not silently reuse an existing `work/<branch>` or `work/issue-<issue-number>` folder. Stop and ask the user to confirm reuse first.
 - Do not push before human startup/integration approval.
+- Do not create a Pull Request before the issue branch is pushed and PR material has been generated.
 - Do not create GitHub Issues unless the user has approved mutation or the environment policy allows it for this flow.
 - When an Issue branch is created on GitHub, use the GraphQL `createLinkedBranch` path (`--link-to-issue`) so GitHub records it as the Issue linked branch.
 - Do not install missing tools, Python packages, or MSYS2 pacman packages without explicit human approval.
+- Do not run unit tests, startup checks, or integration / communication checks before writing the issue test specification and pass criteria, unless the user explicitly approves skipping it for a trivial change.
+- For PyQt / Qt GUI repositories, do not skip QTest source planning for automatable integration cases unless the test specification records a reason.
+- Do not push before PR material is generated and docs evidence exists under `docs/evidence/issue-<issue-number>/test_specifications`, `docs/evidence/issue-<issue-number>/ut`, and `docs/evidence/issue-<issue-number>/integration`; add `docs/evidence/issue-<issue-number>/human_check` when human confirmation is required. Scaffold `README.md` files alone are not evidence.
+- Do not run RAG registration / rebuild or move `work/issue-<issue-number>` to `work/close/issue-<issue-number>` without explicit human approval.
+- Do not delete `work/<target-branch>` until `work/<target-branch>/process-report` has been preserved under `work/close/issue-<issue-number>/process-report/base-work-<target-branch>` and the copy has been verified.
 - Do not skip RAG build/load.
 - Do not implement on the target branch directly.
 - Keep `/corrective-action-report` read-only; use this skill for implementation.

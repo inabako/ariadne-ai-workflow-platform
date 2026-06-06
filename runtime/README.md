@@ -9,6 +9,7 @@
 | Directory | Purpose |
 | --- | --- |
 | `runtime/common/` | intake / retrieval で共通利用する utility |
+| `runtime/environment/` | workflow 前の tool / package preflight と install list 作成 |
 | `runtime/intake/` | 投入された要件定義書を受付ID単位の `work/<採番ID>/` へ移動・初期化する機能 |
 | `runtime/retrieval/` | task を順次または並列で処理し、必要なcontextやartifactを取り出す機能 |
 | `runtime/scm/` | target repository の取得、要件比較、Issue branch作成、semantic commit |
@@ -31,6 +32,7 @@ Runtime は `runtime/common/env.py` を通じて `.env` を読み込みます。
 
 ```text
 runtime/intake/intake_requirements.py
+runtime/environment/preflight.py
 runtime/workflow/init_corrective_action_fix.py
 runtime/retrieval/task_runner.py
 runtime/scm/prepare_repository.py
@@ -39,6 +41,7 @@ runtime/scm/create_issue_branch.py
 runtime/scm/commit_changes.py
 runtime/scm/push_branch.py
 runtime/github/issue_manager.py
+runtime/github/pull_request_manager.py
 runtime/rag/normalize_documents.py
 runtime/rag/chunk_documents.py
 runtime/rag/build_index.py
@@ -51,6 +54,8 @@ runtime/rag/standardize_corrective_report_names.py
 
 `intake_requirements.py` は、要件定義書を `work/<採番ID>/design-document/` へ移動し、`context/*.json` を初期化します。
 
+`preflight.py` は、workflow や target repository の作業前に必要な executable / Python module / Python package / MSYS2 package / fallback support repository を確認し、不足時は install list を `work/<id>/process-report/` に出力します。`--install --human-check approved` が指定された場合のみ install を実行します。Localty の MSYS2 profile では公開済み `localty-system-protocol>=0.1.0` を優先し、取得できない場合だけ `localty-system-protocol` repository を support repository として準備します。
+
 `init_corrective_action_fix.py` は、corrective action fix 用に repository / branch 引数から `work/<branch>/` または `work/issue-<issue-number>/` と初期contextを作成します。
 
 `task_runner.py` は、`task-plan.schema.json` に沿ったtask planを読み込み、sequential / parallel に処理して `process-report/` へ実行レポートを出力します。
@@ -59,13 +64,15 @@ runtime/rag/standardize_corrective_report_names.py
 
 `compare_requirements.py` は、要件定義書と repository state の比較レポートを作成します。
 
-`issue_manager.py` は、GitHub Issue draftを作成し、`--create` 指定時のみ GitHub REST API でIssueを作成します。
+`issue_manager.py` は、GitHub Issue draftを作成し、`--create` 指定時のみ GitHub REST API でIssueを作成します。Issue body は `--body-file`、target repository の `.github/ISSUE_TEMPLATE.md`、runtime fallback の順に選択します。Issue titleはworkflowに応じて `[新規機能フロー]`、`[改善フロー]`、`[初期開発]` のprefixを付けます。
 
 `create_issue_branch.py` は、Issue番号からGitHub上に `feature/issue-<issue-number>` branchを作成し、work配下へclone / checkoutします。
 
 `commit_changes.py` は、semantic commit message を検証してcommitします。
 
 `push_branch.py` は、人間チェック承認後に `feature/issue-<issue-number>` branch をpushし、push recordを保存します。
+
+`pull_request_manager.py` は、Issue branch push後に `develop` へのPull Request draft / createを行います。PR titleはIssue titleを使い、PR bodyにはMermaid sequence diagramを含めます。
 
 `normalize_documents.py` は、Markdown report を metadata 付きの RAG document JSON に変換します。
 
