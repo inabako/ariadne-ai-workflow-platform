@@ -96,6 +96,39 @@ The report must include:
 - startup/integration check expectations
 - human-check items
 
+### 3.5 Environment Preflight Gate
+
+Before moving to the next workflow phase, check whether required local tools are available.
+
+Create a preflight report:
+
+```powershell
+python runtime/environment/preflight.py `
+  --profile corrective-action-fix `
+  --work-id "<target-branch>"
+```
+
+If the result status is `ready`, continue to the next flow.
+
+If the result status is `install-list-required`:
+
+1. Read the generated `work/<target-branch>/process-report/environment-preflight-*.md`.
+2. Show the missing required tools and install commands to the user.
+3. Stop and ask whether installation is approved.
+4. Do not install anything until the user explicitly approves.
+
+After approval, run:
+
+```powershell
+python runtime/environment/preflight.py `
+  --profile corrective-action-fix `
+  --work-id "<target-branch>" `
+  --install `
+  --human-check approved
+```
+
+Re-run the non-install preflight after installation. Continue only when the required checks are ready, or when the user explicitly accepts the remaining risk.
+
 ### 4. Build RAG
 
 Run `/rag-build` or the equivalent pipeline:
@@ -142,6 +175,29 @@ python runtime/rag/rag_dispatcher.py `
 ```
 
 Read the generated `artifact_type: rag-load-dispatch` JSON and referenced `artifact_type: rag-context-pack` JSON before implementation.
+
+### 5.5 Dependency / Support Component Gate
+
+Before creating the Issue branch, confirm whether the target fix needs support repositories, local tools, Python packages, MSYS2 packages, or runtime devices. At this stage, create the dependency plan and include it in the Issue body. Run repository preparation commands after `work/issue-<issue-number>` exists.
+
+Use the loaded RAG context first. If RAG contains setup knowledge for sibling repositories such as `localty-system-protocol` or `localty-system-simulator`, prepare them under the same issue source folder level after step 7:
+
+```powershell
+python runtime/scm/prepare_support_repository.py `
+  --work-id "issue-<issue-number>" `
+  --name "localty-system-protocol" `
+  --repository "inabako/localty-system-protocol" `
+  --branch "<target-branch>"
+```
+
+For libraries or packages that must be installed, list the missing items and install commands first, then stop for human approval. Do not install automatically until the user approves.
+
+Record discovered support components and missing tools in:
+
+```text
+work/<work-id>/context/support-repositories.json
+work/<work-id>/process-report/
+```
 
 ### 6. Create GitHub Issue
 
@@ -198,7 +254,8 @@ python runtime/scm/create_issue_branch.py `
   --work-id "issue-<issue-number>" `
   --issue-number "<issue-number>" `
   --repository "<target-repository>" `
-  --base-branch "<target-branch>"
+  --base-branch "<target-branch>" `
+  --link-to-issue
 ```
 
 The work folder is `work/issue-<issue-number>`, and the Git branch is:
@@ -206,6 +263,28 @@ The work folder is `work/issue-<issue-number>`, and the Git branch is:
 ```text
 feature/issue-<issue-number>
 ```
+
+### 7.5 Encoding / Mojibake Gate
+
+If source files show mojibake or unreadable non-ASCII text during analysis or implementation, treat it as a workflow concern.
+
+Detection examples:
+
+- Japanese comments display as fragments such as `縺`, `繧`, `譁`, `謗`, or replacement characters such as `�`.
+- Patch context fails because non-ASCII comments are unreadable or unstable.
+- PowerShell output and file content disagree about Japanese text.
+
+Procedure:
+
+1. If mojibake is found in the read-only base checkout, do not edit the base branch. Record it in the corrective action report or issue body.
+2. After the issue branch exists, check whether the target repository already has `.editorconfig` at its repository root.
+3. If it does not, add `.editorconfig` from `templates/editorconfig/target-repository.editorconfig` into `work/issue-<issue-number>/source/repository/.editorconfig`.
+4. Preserve `.bat` / `.cmd` Shift_JIS operation by keeping `charset = unset` and `end_of_line = crlf` for those files.
+5. Ask the user to reload the editor/session for the target repository after adding `.editorconfig`.
+6. Re-read the affected files after reload before continuing implementation. Do not rely on previously garbled buffers.
+7. If the file still contains unstable or unreadable non-ASCII text, avoid using garbled text as patch context. Use stable ASCII anchors, IDs, function names, or deliberately inserted ASCII markers to make the smallest mechanical replacement possible.
+8. When ASCII markers are inserted only to protect an edit boundary, remove them before finishing unless they are useful comments or test fixtures.
+9. Do not mass-convert existing files unless the Issue explicitly includes encoding normalization. For ordinary fixes, add `.editorconfig`, re-read the file, and keep code changes scoped.
 
 ### 8. Implement Corrective Fixes
 
@@ -225,6 +304,39 @@ Create or update unit tests that prove the fix.
 Record commands and results in `work/issue-<issue-number>/test-evidence/`.
 
 ### 10. Startup / Integration Check
+
+Before startup or integration checks, run target-specific preflight when the repository has setup scripts or external runtime dependencies.
+
+For fixes that involve `localty-system-gui` robot mock communication, prepare and start both GUIs before asking for human confirmation:
+
+- `work/issue-<issue-number>/source/repository`: `localty-system-gui`
+- `work/issue-<issue-number>/source/localty-system-simulator`: `localty-system-simulator`
+
+The integration check must keep both processes running at the same time while waiting for the user result. Record launch commands, important environment variables, ports, logs, and the human result in `work/issue-<issue-number>/test-evidence/`.
+
+For `localty-system-gui` MSYS2 startup:
+
+```powershell
+python runtime/environment/preflight.py `
+  --profile localty-msys2 `
+  --work-id "issue-<issue-number>" `
+  --source-dir "work/issue-<issue-number>/source/repository" `
+  --protocol-dir "work/issue-<issue-number>/source/localty-system-protocol"
+```
+
+If required tools or MSYS2 packages are missing, create the install list, stop, and ask the user for approval before installing.
+
+After approval:
+
+```powershell
+python runtime/environment/preflight.py `
+  --profile localty-msys2 `
+  --work-id "issue-<issue-number>" `
+  --source-dir "work/issue-<issue-number>/source/repository" `
+  --protocol-dir "work/issue-<issue-number>/source/localty-system-protocol" `
+  --install `
+  --human-check approved
+```
 
 Run the appropriate startup or integration check for the target repository.
 
@@ -264,6 +376,8 @@ python runtime/scm/push_branch.py `
 - Do not silently reuse an existing `work/<branch>` or `work/issue-<issue-number>` folder. Stop and ask the user to confirm reuse first.
 - Do not push before human startup/integration approval.
 - Do not create GitHub Issues unless the user has approved mutation or the environment policy allows it for this flow.
+- When an Issue branch is created on GitHub, use the GraphQL `createLinkedBranch` path (`--link-to-issue`) so GitHub records it as the Issue linked branch.
+- Do not install missing tools, Python packages, or MSYS2 pacman packages without explicit human approval.
 - Do not skip RAG build/load.
 - Do not implement on the target branch directly.
 - Keep `/corrective-action-report` read-only; use this skill for implementation.
