@@ -30,6 +30,7 @@ Web system の workflow をそのまま流用せず、robotics system に必要�
 - [RAG / Knowledge Capture](#rag--knowledge-capture)
 - [RAG Pipeline](#rag-pipeline)
 - [Commit Rule](#commit-rule)
+- [License](#license)
 - [Status](#status)
 
 ## Core Concept
@@ -743,6 +744,10 @@ chore: update workflow skill index
 - ci
 - perf
 - revert
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
 
 ## Status
 
