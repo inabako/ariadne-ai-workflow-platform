@@ -36,6 +36,8 @@ disconnect、stale data、crash、wrong assumptions、human mistakes といっ�
 - Manual Field Test Plan
 - Regression Test Plan
 
+テスト実行前に、テスト仕様とテスト項目表を作成します。実行結果や証跡だけを後からまとめるのではなく、何を合格とするかを先に定義します。
+
 ## 必須テスト領域
 
 ### Functional
@@ -76,6 +78,27 @@ disconnect、stale data、crash、wrong assumptions、human mistakes といっ�
 - stale / live states are visible
 - incident evidence is captured
 
+## 修正点ベースのテスト観点
+
+implementation report、corrective action report、Issue scope、planned diff / changed files から、修正点ごとのテスト観点を抽出します。
+
+各修正点について、最低1つのテストケースを作成するか、直接テストできない理由と残リスクを明記します。
+
+観点には以下を含めます。
+
+- normal behavior
+- boundary / error behavior
+- regression risk
+- safety impact
+- observability: logs, metrics, telemetry, UI display
+- integration / communication path
+
+Change-based viewpoint table:
+
+| Change ID | Planned Change / Fix Point | Affected File / Component | Behavior To Prove | Risk | Test Viewpoint | Test Case IDs | Untestable Reason / Residual Risk |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| CHG-001 |  |  | normal / boundary / error / regression / safety / observability | low / medium / high / critical |  | TC-001 |  |
+
 ## 必須出力
 
 `test-specification.md` を作成してください。
@@ -83,6 +106,7 @@ disconnect、stale data、crash、wrong assumptions、human mistakes といっ�
 含める内容:
 
 - Intent
+- Change-Based Test Viewpoints
 - Test Matrix
 - Test Cases
 - Expected Results
@@ -97,10 +121,13 @@ Test case table:
 | ID | Area | Scenario | Steps | Expected Result | Automated | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 
+For `localty-system-gui` and `localty-system-simulator` integration, include cases for auto-discovery, Connect, control-key send and simulator-side receive display, camera video, FPS display, telemetry receive, sensor override, Event Log / Packet display, and both-GUI human confirmation.
+
 ## Quality Gate
 
 以下に該当する場合は fail または QA としてください。
 
+- planned changes are not mapped to test viewpoints or test cases
 - communication loss がテストされていない
 - STOP behavior がテストされていない
 - stale telemetry がテストされていない

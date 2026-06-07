@@ -14,6 +14,12 @@
 
 Additional skill:
 
+Additional knowledge-capture skill:
+
+| Slash Command | Skill | Delegated Prompt | Purpose |
+| --- | --- | --- | --- |
+| `/knowledge-capture` | `knowledge-capture/` | `/knowledge-capture` | completed issue workflow のPR資料、証跡整理、RAG/docs候補、archive準備 |
+
 | Slash Command | Skill | Delegated Prompt | Purpose |
 | --- | --- | --- | --- |
 | `/corrective-action-fix` | `corrective-action-fix/` | `/corrective-action-fix` | GitHub repository / branchをwork/<branch>へ取得し、work/issue-XXXで修正/pushする |
@@ -58,6 +64,9 @@ C:\Users\User\.codex\skills\rag-build
 
 C:\Users\User\.codex\skills\rag-load
   -> C:\github\intent-driven-robotics-ai-workflow\skills\rag-load
+
+C:\Users\User\.codex\skills\knowledge-capture
+  -> C:\github\intent-driven-robotics-ai-workflow\skills\knowledge-capture
 ```
 
 VS Code Copilot Chat の `/` 候補は `.github/prompts/*.prompt.md`、Codex Skill 候補は `C:\Users\User\.codex\skills` を主に見ます。

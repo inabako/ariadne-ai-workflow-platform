@@ -27,6 +27,7 @@
 | `observability-reviewer-agent.prompt.md` | logs, metrics, telemetry, incident traceability | `observability-review.md` |
 | `robotics-tester-agent.prompt.md` | test strategy と test matrix | `test-specification.md` |
 | `documentation-writer-agent.prompt.md` | decision record と再利用可能な知識化 | docs, troubleshooting, RAG notes |
+| `knowledge-capture-agent.prompt.md` | PR資料、証跡整理、RAG/docs候補抽出、archive準備 | PR docs, `knowledge-capture-report.md` |
 
 ## 推奨フロー
 
@@ -44,6 +45,7 @@ intent / requirements
   -> robotics tester
   -> implementer
   -> documentation writer
+  -> knowledge capture
   -> knowledge-inbox / RAG
 ```
 

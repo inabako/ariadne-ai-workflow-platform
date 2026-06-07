@@ -38,6 +38,15 @@
       "description": "GitHub repository / branchをwork/<branch>に取得し、corrective action report、RAG build/load、GitHub Issue、work/issue-XXX + feature/issue-XXX、改善修正、test、人間確認、pushまで進める。"
     },
     {
+      "slash_command": "/knowledge-capture",
+      "skill": "knowledge-capture",
+      "skill_path": "skills/knowledge-capture/SKILL.md",
+      "delegated_prompt": "/knowledge-capture",
+      "prompt_path": ".github/prompts/knowledge-capture.prompt.md",
+      "workflow": "knowledge-capture",
+      "description": "Completed issue workflow finalization: PR material, docs evidence check, RAG/docs candidate extraction, and archive readiness."
+    },
+    {
       "slash_command": "/rag-build",
       "skill": "rag-build",
       "skill_path": "skills/rag-build/SKILL.md",

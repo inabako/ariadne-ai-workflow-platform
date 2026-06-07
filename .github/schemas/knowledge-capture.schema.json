@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Knowledge Capture",
+  "type": "object",
+  "required": ["schema_version", "issue", "generated_at", "pr_documents", "docs_status", "rag_sources", "archive"],
+  "properties": {
+    "schema_version": { "type": "string", "examples": ["1.0"] },
+    "issue": { "type": "string", "examples": ["issue-11"] },
+    "repository": { "type": "string" },
+    "branch": { "type": "string" },
+    "generated_at": { "type": "string" },
+    "dry_run": { "type": "boolean" },
+    "pr_documents": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "docs_status": {
+      "type": "object",
+      "properties": {
+        "unit_test": { "$ref": "#/$defs/path_status" },
+        "integration_connectivity_test": { "$ref": "#/$defs/path_status" }
+      }
+    },
+    "rag_sources": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/path_status" }
+    },
+    "rag_candidate_count": { "type": "integer" },
+    "docs_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["topic", "reason", "source_path"],
+        "properties": {
+          "topic": { "type": "string" },
+          "reason": { "type": "string" },
+          "source_path": { "type": "string" }
+        }
+      }
+    },
+    "archive": {
+      "type": "object",
+      "required": ["source", "target", "status"],
+      "properties": {
+        "source": { "type": "string" },
+        "target": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["ready", "blocked-target-exists", "already-archived"]
+        }
+      }
+    },
+    "base_work_reset": {
+      "type": "object",
+      "required": ["base_work_id", "source", "preserve_target", "source_exists", "preserve_target_exists", "action"],
+      "properties": {
+        "base_work_id": { "type": "string" },
+        "source": { "type": "string" },
+        "preserve_target": { "type": "string" },
+        "source_exists": { "type": "boolean" },
+        "preserve_target_exists": { "type": "boolean" },
+        "action": {
+          "type": "string",
+          "enum": ["copy-process-report-then-delete-base-work", "not_configured"]
+        }
+      }
+    },
+    "human_actions": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "path_status": {
+      "type": "object",
+      "required": ["exists", "file_count"],
+      "properties": {
+        "path": { "type": "string" },
+        "relative_path": { "type": "string" },
+        "exists": { "type": "boolean" },
+        "file_count": { "type": "integer" },
+        "files": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

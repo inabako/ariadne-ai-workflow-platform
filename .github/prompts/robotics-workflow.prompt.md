@@ -23,6 +23,7 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 | `robotics-safety-gates.prompt.md` | 各段階で通す Safety Gate |
 | `robotics-test-strategy.prompt.md` | simulation、bench、field を含む test strategy |
 | `robotics-release-and-field-operation.prompt.md` | release、rollback、現場運用、incident capture |
+| `knowledge-capture.prompt.md` | PR資料、テスト証跡、RAG/docs候補、archive準備 |
 
 ## Skill Entrypoints
 
@@ -31,6 +32,7 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 | `/robotics-new-system` | `skills/robotics-new-system/SKILL.md` | `/new-robotics-system-development` |
 | `/robotics-feature-maintenance` | `skills/robotics-feature-maintenance/SKILL.md` | `/robotics-maintenance-development` |
 | `/corrective-action-report` | `skills/corrective-action-report/SKILL.md` | read-only improvement report |
+| `/knowledge-capture` | `skills/knowledge-capture/SKILL.md` | finalization and knowledge recovery |
 
 ## Two Primary Flows
 
@@ -88,6 +90,7 @@ intent / requirements
   -> robotics tester
   -> implementer
   -> documentation writer
+  -> knowledge capture
   -> knowledge-inbox / RAG
 ```
 

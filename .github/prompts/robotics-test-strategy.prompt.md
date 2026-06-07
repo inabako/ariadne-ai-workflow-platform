@@ -150,6 +150,35 @@ static checks
 - operator degraded state
 - logs / telemetry output
 
+## Change-Based Test Viewpoints
+
+テスト実行前に、修正点ごとのテスト観点を作成します。
+
+入力として以下を使います。
+
+- corrective action report
+- Issue scope
+- implementation plan
+- changed files / planned diff
+- RAGで取得した過去の類似不具合や疎通ノウハウ
+
+各修正点について、最低1つのテストケースを割り当てます。直接テストできない場合は、理由、残リスク、代替証跡を明記します。
+
+観点:
+
+- normal behavior
+- boundary / error behavior
+- regression risk
+- safety impact
+- observability: logs, metrics, telemetry, UI display
+- integration / communication path
+
+```markdown
+| Change ID | Planned Change / Fix Point | Affected File / Component | Behavior To Prove | Risk | Test Viewpoint | Test Case IDs | Untestable Reason / Residual Risk |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| CHG-001 |  |  | normal / boundary / error / regression / safety / observability | low / medium / high / critical |  | TC-001 |  |
+```
+
 ## Test Matrix Template
 
 ```markdown
@@ -185,4 +214,3 @@ Test result は、未来の調査で使える形で残します。
 - field test の中止条件がない
 - rollback rehearsal がない
 - operator が degraded state を認識できない
-
