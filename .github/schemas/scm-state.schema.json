@@ -24,6 +24,16 @@
     "working_branch": { "type": "string" },
     "prepared_at": { "type": "string" },
     "branch_created_at": { "type": "string" },
+    "remote_branch_ref": { "type": "string" },
+    "remote_branch_base_sha": { "type": "string" },
+    "linked_branch_status": {
+      "type": "string",
+      "enum": ["not_requested", "created", "dry-run", "skipped_local_only"]
+    },
+    "linked_branch_id": { "type": "string" },
+    "linked_branch_name": { "type": "string" },
+    "linked_branch_issue_id": { "type": "string" },
+    "linked_branch_repository_id": { "type": "string" },
     "dry_run": { "type": "boolean" }
   }
 }

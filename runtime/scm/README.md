@@ -6,8 +6,10 @@
 
 - GitHub / git repository から target branch を取得する
 - `work/<採番ID>/source/repository/` を準備する
+- RAGで判明したsupport repositoryを `work/<採番ID>/source/<name>/` に準備する
 - 要件定義書と repository state の比較レポートを作成する
 - Issue番号から GitHub 上に `feature/issue-<issue-number>` branch を作成し、そのbranchをwork配下へclone / checkoutする
+- 必要に応じてIssue branchをGitHub linked branchとして作成する
 - semantic commit message を検証して commit する
 
 ## Environment
@@ -30,9 +32,11 @@ SCM連携に必要な値は repository root の `.env` から読み込みます�
 
 `GITHUB_OWNER` を設定すると、`localty-system-gui` のようなrepository名だけの指定を `<GITHUB_OWNER>/localty-system-gui` として解決し、clone URLやGitHub branch作成に使います。
 
-`create_issue_branch.py` は、既定ではGitHub上にbranchを先に作成してから、`work/<id>/source/repository/` にそのbranchをclone / checkoutします。`--branch-prefix` が未指定の場合、`DEFAULT_FEATURE_BRANCH_PREFIX` を使います。従来のローカルbranch作成だけを行う場合は `--local-only` を指定します。
+`create_issue_branch.py` は、既定ではGitHub上にbranchを先に作成してから、`work/<id>/source/repository/` にそのbranchをclone / checkoutします。`--link-to-issue` を指定すると、GitHub GraphQL `createLinkedBranch` でIssueに紐づくbranchとして作成します。`--branch-prefix` が未指定の場合、`DEFAULT_FEATURE_BRANCH_PREFIX` を使います。従来のローカルbranch作成だけを行う場合は `--local-only` を指定します。
 
 `prepare_repository.py` は、`--remote` が未指定の場合、`DEFAULT_GIT_REMOTE_NAME` を使います。
+
+`prepare_support_repository.py` は、RAGやpreflightで必要と判明したsupport repositoryを `work/<id>/source/<name>/` にclone / checkoutします。実行結果は `work/<id>/context/support-repositories.json` と `work/<id>/process-report/support-repository-<name>.json` に残します。
 
 ## Requirement Repository Control
 
@@ -59,6 +63,7 @@ Supported fields:
 
 ```text
 runtime/scm/prepare_repository.py
+runtime/scm/prepare_support_repository.py
 runtime/scm/compare_requirements.py
 runtime/scm/create_issue_branch.py
 runtime/scm/commit_changes.py
@@ -72,7 +77,14 @@ python runtime/scm/create_issue_branch.py `
   --work-id issue-123 `
   --issue-number 123 `
   --repository https://github.com/example/robot.git `
-  --base-branch main
+  --base-branch main `
+  --link-to-issue
+
+python runtime/scm/prepare_support_repository.py `
+  --work-id issue-123 `
+  --name localty-system-protocol `
+  --repository inabako/localty-system-protocol `
+  --branch develop
 
 python runtime/scm/commit_changes.py `
   --work-id issue-123 `

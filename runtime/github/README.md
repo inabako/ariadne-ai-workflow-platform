@@ -8,6 +8,7 @@
 - `work/<採番ID>/process-report/` にIssue draftを保存する
 - `--create` 指定時のみ GitHub REST API でIssueを作成する
 - Issue番号を `github-issue-*.json` に記録する
+- Issue branch作成時のGitHub GraphQL linked branch登録を支援する
 
 ## Environment
 
@@ -21,13 +22,14 @@ GitHub連携に必要な値は repository root の `.env` から読み込みま�
 
 - `GH_HOST`
 - `GITHUB_API_URL`
+- `GITHUB_GRAPHQL_URL`
 - `GITHUB_OWNER`
 - `DEFAULT_GITHUB_ISSUE_LABELS`
 - `DEFAULT_GITHUB_ISSUE_ASSIGNEES`
 
 `GITHUB_TOKEN` には、対象repositoryのIssue作成権限を持つGitHub Personal Access Tokenまたはfine-grained tokenを設定します。互換キーとして `GH_TOKEN` / `GITHUB_API_TOKEN` / `GITHUB_API_KEY` も読み取れます。
 
-`GH_HOST` / `GITHUB_API_URL` は通常不要です。未指定の場合、API endpoint は `https://api.github.com` です。GitHub Enterprise Server などで明示したい場合だけ `GITHUB_API_URL` に `https://<host>/api/v3` 形式で指定できます。
+`GH_HOST` / `GITHUB_API_URL` は通常不要です。未指定の場合、REST API endpoint は `https://api.github.com`、GraphQL endpoint は `https://api.github.com/graphql` です。GitHub Enterprise Server などで明示したい場合だけ `GITHUB_API_URL` に `https://<host>/api/v3` 形式で指定できます。GraphQL endpointだけを上書きする場合は `GITHUB_GRAPHQL_URL` を指定します。
 
 `GITHUB_OWNER` を設定すると、`localty-system-gui` のようなrepository名だけの指定を `<GITHUB_OWNER>/localty-system-gui` として解決できます。
 
@@ -43,6 +45,7 @@ repository は要件定義書の `Repository Control` から `runtime/scm/prepar
 
 ```text
 runtime/github/issue_manager.py
+runtime/scm/create_issue_branch.py --link-to-issue
 ```
 
 ## Example
@@ -72,3 +75,5 @@ python runtime/github/issue_manager.py `
 Issue creation requires network access and GitHub API token authentication.
 
 By default, this runtime creates a local draft only. It calls GitHub only when `--create` is explicitly specified.
+
+Issue linked branch creation is handled during `runtime/scm/create_issue_branch.py --link-to-issue`. It uses GitHub GraphQL `createLinkedBranch` after the GitHub Issue number is available.

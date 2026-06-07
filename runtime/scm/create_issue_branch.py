@@ -21,7 +21,7 @@ from runtime.common import (  # noqa: E402
     write_json,
     utc_now_iso,
 )
-from runtime.github.api import create_branch_ref, get_branch_sha  # noqa: E402
+from runtime.github.api import create_branch_ref, create_linked_branch, get_branch_sha  # noqa: E402
 from runtime.scm.scm_utils import (  # noqa: E402
     current_branch,
     current_commit,
@@ -44,6 +44,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repo-root", default=None)
     parser.add_argument("--source-dir", default=None)
     parser.add_argument("--local-only", action="store_true", help="Only create/switch the local branch. Does not create GitHub branch.")
+    parser.add_argument("--link-to-issue", action="store_true", help="Create the remote branch as a GitHub linked branch for the issue.")
     parser.add_argument("--dry-run", action="store_true")
     return parser
 
@@ -108,7 +109,11 @@ def create_branch(args: argparse.Namespace) -> dict[str, Any]:
 
     remote_ref = ""
     base_sha = ""
+    linked_branch: dict[str, Any] = {}
     if args.local_only:
+        linked_branch = {
+            "status": "skipped_local_only" if args.link_to_issue else "not_requested",
+        }
         if not source_dir.exists():
             raise FileNotFoundError(f"Source repository does not exist: {source_dir}")
         if not args.dry_run:
@@ -125,9 +130,20 @@ def create_branch(args: argparse.Namespace) -> dict[str, Any]:
         if args.dry_run:
             base_sha = "dry-run"
             remote_ref = f"refs/heads/{branch_name}"
+            if args.link_to_issue:
+                linked_branch = {
+                    "status": "dry-run",
+                    "linked_branch_name": branch_name,
+                    "base_oid": base_sha,
+                }
         else:
-            base_sha = get_branch_sha(settings, github_repo, str(base_branch))
-            remote_ref = create_branch_ref(settings, github_repo, branch_name, base_sha)
+            if args.link_to_issue:
+                linked_branch = create_linked_branch(settings, github_repo, args.issue_number, branch_name, str(base_branch))
+                base_sha = str(linked_branch.get("base_oid") or "")
+                remote_ref = f"refs/heads/{linked_branch.get('linked_branch_name') or branch_name}"
+            else:
+                base_sha = get_branch_sha(settings, github_repo, str(base_branch))
+                remote_ref = create_branch_ref(settings, github_repo, branch_name, base_sha)
 
         if source_dir.exists():
             checkout_existing_repository(source_dir, remote, branch_name, args.dry_run)
@@ -147,6 +163,11 @@ def create_branch(args: argparse.Namespace) -> dict[str, Any]:
             "current_commit": "dry-run" if args.dry_run else current_commit(source_dir),
             "remote_branch_ref": remote_ref,
             "remote_branch_base_sha": base_sha,
+            "linked_branch_status": linked_branch.get("status") or ("created" if args.link_to_issue else "not_requested"),
+            "linked_branch_id": linked_branch.get("linked_branch_id", ""),
+            "linked_branch_name": linked_branch.get("linked_branch_name", ""),
+            "linked_branch_issue_id": linked_branch.get("issue_id", ""),
+            "linked_branch_repository_id": linked_branch.get("repository_id", ""),
             "branch_created_at": utc_now_iso(),
             "dry_run": bool(args.dry_run),
         }
@@ -160,6 +181,8 @@ def create_branch(args: argparse.Namespace) -> dict[str, Any]:
         "github_repo": github_repo,
         "base_branch": base_branch,
         "remote_branch_ref": remote_ref,
+        "linked_branch_status": linked_branch.get("status") or ("created" if args.link_to_issue else "not_requested"),
+        "linked_branch_id": linked_branch.get("linked_branch_id", ""),
         "dry_run": bool(args.dry_run),
     }
 

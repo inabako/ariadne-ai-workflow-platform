@@ -18,6 +18,7 @@
 | `task-plan.schema.json` | sequential / parallel に処理する task 定義 |
 | `task-result.schema.json` | runtime/retrieval による task 実行結果 |
 | `scm-state.schema.json` | target repository / branch / issue branch の状態 |
+| `support-repositories.schema.json` | RAGやpreflightで判明したsupport repositoryの準備状態 |
 | `github-issue.schema.json` | GitHub Issue draft / created record |
 | `commit-record.schema.json` | semantic commit の記録 |
 | `rag-document.schema.json` | RAG投入用に正規化した document |
