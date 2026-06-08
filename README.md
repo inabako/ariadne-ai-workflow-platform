@@ -78,6 +78,7 @@ runtime/
 
 skills/
   requirement-discovery/
+  docs-sync/
   corrective-action-report/
   robotics-feature-maintenance/
   robotics-new-system/
@@ -101,6 +102,7 @@ work/
 | Slash Command | Purpose | Skill | Main Output |
 | --- | --- | --- | --- |
 | `/requirement-discovery` | 箇条書き草案から要件定義書を作成する | `skills/requirement-discovery/` | `work/requirements/<completed-requirements>.md` |
+| `/docs-sync` | 実装とdocsの差分をJSON化し、Issue branchでdocsのみ修正する | `skills/docs-sync/` | `work/<branch>/context/docs-drift-analysis.json`, `work/issue-<number>/` |
 | `/robotics-new-system` | 新しい robotics system を立ち上げる | `skills/robotics-new-system/` | `work/<receipt-id>/` |
 | `/robotics-feature-maintenance` | 既存 robotics system の新機能追加または保守開発を行う | `skills/robotics-feature-maintenance/` | `work/<receipt-id>/` |
 | `/corrective-action-report` | 指定repository / branchの改善点をreport化する | `skills/corrective-action-report/` | `rag/corrective-action-report/` |
@@ -140,6 +142,7 @@ VS Code / GitHub Copilot Chat の `/` 候補に出すため、prompt files は `
 ```text
 .github/prompts/
   requirement-discovery.prompt.md
+  docs-sync.prompt.md
   corrective-action-fix.prompt.md
   corrective-action-report.prompt.md
   rag-build.prompt.md
@@ -333,6 +336,7 @@ Implemented runtime CLI:
 | Script | Responsibility |
 | --- | --- |
 | `runtime/workflow/init_corrective_action_fix.py` | corrective-action-fix 用の `work/<branch>/` または `work/issue-<issue-number>/` と初期contextを作成する |
+| `runtime/workflow/docs_sync.py` | docs-sync 用の初期context、docs drift分析JSON scaffold、Issue bodyを作成する |
 | `runtime/scm/push_branch.py` | human check承認後に `feature/issue-<issue-number>` branch をpushし、push recordを残す |
 | `runtime/intake/intake_requirements.py` | `work/requirements/` の要件定義書を受付ID単位で `work/<receipt-id>/` へ移動し、初期contextを作成する |
 | `runtime/retrieval/task_runner.py` | task plan を sequential / parallel に処理し、task result を出力する |
@@ -464,6 +468,9 @@ skills/
   requirement-discovery/
     SKILL.md
     agents/openai.yaml
+  docs-sync/
+    SKILL.md
+    agents/openai.yaml
   robotics-new-system/
     SKILL.md
     agents/openai.yaml
@@ -489,6 +496,9 @@ Codex の Skill 候補として表示するには、Codex が探索する local 
 ```text
 C:\Users\User\.codex\skills\requirement-discovery
   -> C:\github\intent-driven-robotics-ai-workflow\skills\requirement-discovery
+
+C:\Users\User\.codex\skills\docs-sync
+  -> C:\github\intent-driven-robotics-ai-workflow\skills\docs-sync
 
 C:\Users\User\.codex\skills\robotics-new-system
   -> C:\github\intent-driven-robotics-ai-workflow\skills\robotics-new-system
@@ -516,6 +526,7 @@ Current prompts:
 
 - `/robotics-workflow`
 - `/requirement-discovery`
+- `/docs-sync`
 - `/robotics-new-system`
 - `/robotics-feature-maintenance`
 - `/corrective-action-report`
@@ -536,6 +547,7 @@ Current prompts:
 Current agents:
 
 - Requirement Discovery Agent
+- Docs Drift Analyzer Agent
 - Robotics Architect Agent
 - Robotics Runtime Agent
 - Network Migration Planner Agent
@@ -571,6 +583,7 @@ Current schemas:
 - `scm-state.schema.json`
 - `github-issue.schema.json`
 - `commit-record.schema.json`
+- `docs-drift-analysis.schema.json`
 - `rag-document.schema.json`
 - `rag-chunk.schema.json`
 - `rag-embedding.schema.json`

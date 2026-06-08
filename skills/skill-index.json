@@ -11,6 +11,15 @@
       "description": "Create a completed robotics requirement document from a human bullet-list draft in work/requirements/draft, with clarification questions and human review before saving to work/requirements."
     },
     {
+      "slash_command": "/docs-sync",
+      "skill": "docs-sync",
+      "skill_path": "skills/docs-sync/SKILL.md",
+      "delegated_prompt": "/docs-sync",
+      "prompt_path": ".github/prompts/docs-sync.prompt.md",
+      "workflow": "docs-sync",
+      "description": "Compare implementation and docs on a target branch, store docs drift analysis as JSON, create an Issue, update docs only on feature/issue-XXX, push after approval, and prepare RAG/archive."
+    },
+    {
       "slash_command": "/robotics-new-system",
       "skill": "robotics-new-system",
       "skill_path": "skills/robotics-new-system/SKILL.md",

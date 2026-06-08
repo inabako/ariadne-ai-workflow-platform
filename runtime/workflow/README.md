@@ -4,6 +4,33 @@
 
 ## Commands
 
+### `docs_sync.py`
+
+Initializes documentation sync work folders, creates a docs drift analysis JSON scaffold, and creates a GitHub Issue body from that JSON.
+
+Examples:
+
+```powershell
+python runtime/workflow/docs_sync.py init `
+  --repository localty-system-gui `
+  --target-branch develop
+
+python runtime/workflow/docs_sync.py analysis-template `
+  --work-id develop
+
+python runtime/workflow/docs_sync.py issue-body `
+  --work-id develop
+```
+
+Primary artifacts:
+
+```text
+work/<target-branch>/context/docs-drift-analysis.json
+work/<target-branch>/process-report/docs-sync-issue-body-*.md
+```
+
+This command does not create GitHub Issues, change docs, push branches, run RAG registration, or move archives by itself.
+
 ### `init_corrective_action_fix.py`
 
 Initializes base and issue work folders for the corrective action fix workflow.

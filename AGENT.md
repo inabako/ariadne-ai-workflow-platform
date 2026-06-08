@@ -50,6 +50,7 @@ runtime/
   scm/         prepare repository, compare requirements, create issue branch, commit changes
   github/      create GitHub Issue draft or issue
   rag/         normalize reports, create chunks, and build file-based RAG indexes
+  workflow/    initialize workflow contexts and create workflow-level handoff artifacts
 ```
 
 Environment files:
@@ -74,6 +75,7 @@ Current prompt set:
 
 - `/robotics-workflow`
 - `/requirement-discovery`
+- `/docs-sync`
 - `/robotics-new-system`
 - `/robotics-feature-maintenance`
 - `/corrective-action-report`
@@ -94,6 +96,7 @@ Workflow Skill entrypoints live in `skills/`.
 Current Skill entrypoints:
 
 - `/requirement-discovery` -> `skills/requirement-discovery/SKILL.md` -> `work/requirements/draft/`, then `work/requirements/` after human OK
+- `/docs-sync` -> `skills/docs-sync/SKILL.md` -> `work/<target-branch>/context/docs-drift-analysis.json`, then docs-only `feature/issue-<number>`
 - `/robotics-new-system` -> `skills/robotics-new-system/SKILL.md` -> `/new-robotics-system-development`
 - `/robotics-feature-maintenance` -> `skills/robotics-feature-maintenance/SKILL.md` -> `/robotics-maintenance-development`
 - `/corrective-action-report` -> `skills/corrective-action-report/SKILL.md` -> `rag/corrective-action-report/`
@@ -123,6 +126,7 @@ Current schema set:
 - `scm-state.schema.json`
 - `github-issue.schema.json`
 - `commit-record.schema.json`
+- `docs-drift-analysis.schema.json`
 - `rag-document.schema.json`
 - `rag-chunk.schema.json`
 - `rag-embedding.schema.json`
@@ -220,6 +224,8 @@ runtime/rag/retrieve_context.py
 ```
 
 新規機能および保守開発では、開発本体へ入る前に `/pre-development-preparation` と `/rag-load` を通してください。
+
+`/docs-sync` では、`work/<target-branch>` を read-only の分析用 checkout とし、実装と `docs/` の差分を `work/<target-branch>/context/docs-drift-analysis.json` に保存してから Issue 化してください。docs 修正は `work/issue-<issue-number>/source/repository/docs` のみで行い、実装コードは変更しません。
 
 標準準備工程:
 

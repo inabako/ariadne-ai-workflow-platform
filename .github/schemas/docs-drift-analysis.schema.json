@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Docs Drift Analysis",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "workflow",
+    "work_id",
+    "repository",
+    "target_branch",
+    "docs_root",
+    "generated_at",
+    "summary",
+    "drift_items"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "examples": ["1.0"] },
+    "workflow": { "type": "string", "const": "docs-sync" },
+    "work_id": { "type": "string" },
+    "repository": { "type": "string" },
+    "target_branch": { "type": "string" },
+    "source_commit": { "type": "string" },
+    "docs_root": { "type": "string" },
+    "generated_at": { "type": "string" },
+    "summary": { "type": "string" },
+    "implementation_sources": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "docs_sources": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "rag_context_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "issue_recommendation": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "labels": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "acceptance_summary": { "type": "string" }
+      }
+    },
+    "guardrails": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "drift_items": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/drift_item" }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/open_question" }
+    }
+  },
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "required": ["path", "reason"],
+      "properties": {
+        "path": { "type": "string" },
+        "symbol": { "type": "string" },
+        "line_hint": { "type": "string" },
+        "reason": { "type": "string" }
+      }
+    },
+    "open_question": {
+      "type": "object",
+      "required": ["id", "question", "blocks"],
+      "properties": {
+        "id": { "type": "string" },
+        "question": { "type": "string" },
+        "reason": { "type": "string" },
+        "blocks": { "type": "boolean" }
+      }
+    },
+    "drift_item": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "severity",
+        "status",
+        "implementation_evidence",
+        "docs_evidence",
+        "expected_doc_updates",
+        "acceptance_criteria"
+      ],
+      "properties": {
+        "id": { "type": "string", "examples": ["DOCS-001"] },
+        "title": { "type": "string" },
+        "severity": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["confirmed", "needs-human-answer", "deferred", "rejected"]
+        },
+        "area": {
+          "type": "string",
+          "examples": ["setup", "network", "telemetry", "simulator", "operator-ui"]
+        },
+        "implementation_evidence": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evidence" }
+        },
+        "docs_evidence": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evidence" }
+        },
+        "expected_doc_updates": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "issue_body_note": { "type": "string" },
+        "acceptance_criteria": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "unresolved_questions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/open_question" }
+        },
+        "rag_candidate": { "type": "boolean" }
+      }
+    }
+  }
+}

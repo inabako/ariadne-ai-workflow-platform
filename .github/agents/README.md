@@ -16,6 +16,7 @@
 | Agent | 主な役割 | 代表的な出力 |
 | --- | --- | --- |
 | `requirement-discovery-agent.prompt.md` | 箇条書き草案の精査、深掘り質問、要件定義書レビュー草案 | `work/requirements/draft/*-questions.md`, `*-requirements-review.md` |
+| `docs-drift-analyzer-agent.prompt.md` | 実装とdocsの差分検出、JSON化、Issue材料作成 | `work/<branch>/context/docs-drift-analysis.json` |
 | `robotics-architect-agent.prompt.md` | システム構造と責務境界 | `architecture.md` |
 | `robotics-runtime-agent.prompt.md` | process model、lifecycle、restart、watchdog | `runtime-design.md` |
 | `network-migration-planner-agent.prompt.md` | LAN -> VPN -> Relay -> Remote Ops の移行計画 | `network-migration-plan.md` |
@@ -39,6 +40,7 @@ Agent間の共通schemaは `.github/schemas/`、共通判断ルールは `.githu
 draft bullets
   -> requirement discovery
   -> reviewed requirements
+  -> docs drift analysis when docs sync is requested
   -> robotics architect
   -> robotics runtime agent
   -> network migration planner

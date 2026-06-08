@@ -1,0 +1,4 @@
+interface:
+  display_name: "Docs Sync"
+  short_description: "Detect implementation/docs drift and update docs through an issue branch."
+  default_prompt: "/docs-sync\n日本語で出力してください。"

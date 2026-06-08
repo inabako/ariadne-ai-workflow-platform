@@ -15,6 +15,7 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 | File | Purpose |
 | --- | --- |
 | `requirement-discovery.prompt.md` | `/requirement-discovery` Skill entrypoint |
+| `docs-sync.prompt.md` | `/docs-sync` Skill entrypoint |
 | `robotics-new-system.prompt.md` | `/robotics-new-system` Skill entrypoint |
 | `robotics-feature-maintenance.prompt.md` | `/robotics-feature-maintenance` Skill entrypoint |
 | `corrective-action-report.prompt.md` | `/corrective-action-report` Skill entrypoint |
@@ -31,6 +32,7 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 | Slash Command | Skill | Delegated Flow |
 | --- | --- | --- |
 | `/requirement-discovery` | `skills/requirement-discovery/SKILL.md` | requirement discovery and human review |
+| `/docs-sync` | `skills/docs-sync/SKILL.md` | implementation/docs drift analysis and docs-only issue branch |
 | `/robotics-new-system` | `skills/robotics-new-system/SKILL.md` | `/new-robotics-system-development` |
 | `/robotics-feature-maintenance` | `skills/robotics-feature-maintenance/SKILL.md` | `/robotics-maintenance-development` |
 | `/corrective-action-report` | `skills/corrective-action-report/SKILL.md` | read-only improvement report |
@@ -45,6 +47,14 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 Critical items が不足している場合は、設計や実装方針を勝手に決めず、人間へ質問します。
 
 Completion は、人間レビューで OK が出た後に `work/requirements/` へ完成版を1件だけ保存した状態です。
+
+### Documentation Sync
+
+実装と `docs/` の差分を検出し、差分結果を `docs-drift-analysis.json` に保存してから Issue 化する workflow です。
+
+`work/<target-branch>` は read-only 分析用、`work/issue-<issue-number>` は docs 修正用に分けます。
+
+この flow では実装コードを変更しません。
 
 ### 新システム開発
 
