@@ -55,6 +55,14 @@ def parse_scalar(value: str) -> str | list[str]:
     return value.strip("'\"")
 
 
+def parse_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+    return bool(value)
+
+
 def parse_front_matter_value(lines: list[str], start_index: int) -> tuple[str | list[str], int]:
     key, raw_value = lines[start_index].split(":", 1)
     value = raw_value.strip()
@@ -121,6 +129,31 @@ def first_string(*values: Any) -> str:
     return ""
 
 
+def external_web_metadata(front_matter: dict[str, Any]) -> dict[str, Any]:
+    fields = {
+        "artifact_type": first_string(front_matter.get("artifact_type")),
+        "source_type": first_string(front_matter.get("source_type")),
+        "source_kind": first_string(front_matter.get("source_kind")),
+        "source_owner": first_string(front_matter.get("source_owner")),
+        "category": first_string(front_matter.get("category")),
+        "topic": first_string(front_matter.get("topic")),
+        "trust_level": first_string(front_matter.get("trust_level")),
+        "retrieved_at": first_string(front_matter.get("retrieved_at")),
+        "freshness_policy": first_string(front_matter.get("freshness_policy")),
+        "sources": ensure_list(front_matter.get("sources")),
+        "urls": ensure_list(front_matter.get("urls")),
+        "claims": ensure_list(front_matter.get("claims")),
+        "verification_notes": ensure_list(front_matter.get("verification_notes")),
+    }
+    if "verify_before_use" in front_matter:
+        fields["verify_before_use"] = parse_bool(front_matter.get("verify_before_use"))
+    return {
+        key: value
+        for key, value in fields.items()
+        if not (value == "" or value == [])
+    }
+
+
 def normalize_document(
     repo_root: Path,
     source: Path,
@@ -151,6 +184,8 @@ def normalize_document(
         "areas": ensure_list(front_matter.get("areas")),
         "tags": ensure_list(front_matter.get("tags")) or [document_type],
     }
+    metadata.update(external_web_metadata(front_matter))
+    metadata["front_matter"] = front_matter
 
     normalized = {
         "schema_version": "1.0",

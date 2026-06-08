@@ -43,12 +43,15 @@ Use:
 
 1. Human writes a bullet-list draft in `work/requirements/draft/`.
 2. AI inspects the draft.
-3. If the draft is unclear, AI sends questions back to the human.
-4. Human answers.
-5. AI inspects the draft and answers again.
-6. AI creates a requirement review draft under `work/requirements/draft/`.
-7. Human reviews the requirement review draft.
-8. After explicit human OK, AI saves the completed requirement document under `work/requirements/`.
+3. AI identifies both clarification gaps and technical knowledge gaps.
+4. If saved internal RAG is relevant, AI reads prior findings through `/rag-load`.
+5. If external knowledge is needed, AI uses `rag/external-web/knowledge-sources.md` and the external-web agents to create or dispatch external-web RAG.
+6. If the draft is unclear, AI sends questions back to the human.
+7. Human answers.
+8. AI inspects the draft, answers, and cited RAG context again.
+9. AI creates a requirement review draft under `work/requirements/draft/`.
+10. Human reviews the requirement review draft.
+11. After explicit human OK, AI saves the completed requirement document under `work/requirements/`.
 
 ## Hard Stop Rules
 
@@ -95,6 +98,43 @@ RAG reference is allowed while drafting the requirement document.
 
 Use `/rag-load` only to gather prior findings, known risks, or test gaps. RAG must not replace human confirmation for Critical items.
 
+## External Web Knowledge Gap Reference
+
+When the requirement draft contains a domain that is not understood well enough to ask good questions or write safe requirements, use external-web RAG.
+
+Source index:
+
+```text
+rag/external-web/knowledge-sources.md
+```
+
+Agents:
+
+```text
+.github/agents/external-web-source-reviewer-agent.prompt.md
+.github/agents/external-web-rag-dispatcher-agent.prompt.md
+```
+
+Flow:
+
+```text
+要件を聞く
+  -> 知らない領域が出る
+  -> knowledge-sources.md からsource候補を選ぶ
+  -> 外部Webを精査し、claims / metadata / verification notesだけを保存する
+  -> rag/external-web/<category>/ に蓄積する
+  -> 必要な外部Web RAGをdispatch / aggregateする
+  -> requirement review draftに、根拠pathと未確認事項を反映する
+```
+
+Rules:
+
+- Do not store full external page bodies.
+- Prefer official docs, standards, RFCs, and authoritative registries.
+- Treat external-web RAG as supporting context only.
+- If external-web RAG conflicts with internal evidence or human answers, ask the human.
+- Critical items still require human confirmation.
+
 ## Output Artifacts
 
 Intermediate artifacts stay under:
@@ -107,6 +147,7 @@ Recommended intermediate files:
 
 ```text
 <draft-stem>-inspection.md
+<draft-stem>-knowledge-gaps.md
 <draft-stem>-questions.md
 <draft-stem>-requirements-review.md
 ```

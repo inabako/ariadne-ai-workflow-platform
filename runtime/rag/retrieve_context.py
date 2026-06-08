@@ -36,6 +36,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repository", default="")
     parser.add_argument("--branch", default="")
     parser.add_argument("--tag", action="append", default=[])
+    parser.add_argument("--source-type", default="", help="Optional source_type filter, e.g. external-web or internal-work.")
+    parser.add_argument("--category", default="", help="Optional external-web category filter.")
+    parser.add_argument("--trust-level", default="", help="Optional trust_level filter.")
     parser.add_argument("--repo-root", default=None)
     parser.add_argument("--write-markdown", action="store_true")
     return parser
@@ -79,6 +82,12 @@ def filter_row(row: dict[str, Any], args: argparse.Namespace) -> bool:
         tags = set(str(tag) for tag in row.get("tags", []))
         if not set(args.tag).issubset(tags):
             return False
+    if args.source_type and row.get("source_type") != args.source_type:
+        return False
+    if args.category and row.get("category") != args.category:
+        return False
+    if args.trust_level and row.get("trust_level") != args.trust_level:
+        return False
     return True
 
 
@@ -261,6 +270,13 @@ def build_context(selected: list[dict[str, Any]], args: argparse.Namespace) -> t
                 "chunk_path": row.get("chunk_path", ""),
                 "heading_path": row.get("heading_path", []),
                 "score": row.get("_score", row.get("score", 0)),
+                "source_type": row.get("source_type", ""),
+                "category": row.get("category", ""),
+                "topic": row.get("topic", ""),
+                "trust_level": row.get("trust_level", ""),
+                "retrieved_at": row.get("retrieved_at", ""),
+                "verify_before_use": row.get("verify_before_use", False),
+                "sources": row.get("sources", []),
             }
         )
     return "\n\n".join(sections).strip(), sources
@@ -326,6 +342,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "source_path": row.get("source_path", ""),
             "chunk_path": row.get("chunk_path", ""),
             "heading_path": row.get("heading_path", []),
+            "source_type": row.get("source_type", ""),
+            "category": row.get("category", ""),
+            "topic": row.get("topic", ""),
+            "trust_level": row.get("trust_level", ""),
+            "retrieved_at": row.get("retrieved_at", ""),
+            "verify_before_use": row.get("verify_before_use", False),
+            "sources": row.get("sources", []),
             "reason": "query-match",
             "keyword_score": row.get("_keyword_score", 0),
             "semantic_score": row.get("_semantic_score", 0),
@@ -348,6 +371,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "repository": args.repository,
             "branch": args.branch,
             "tags": args.tag,
+            "source_type": args.source_type,
+            "category": args.category,
+            "trust_level": args.trust_level,
         },
         "candidate_count": len(rows),
         "selected_chunks": selected_summary,

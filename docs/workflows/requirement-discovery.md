@@ -34,9 +34,38 @@ work/requirements/<completed-requirements>.md
 
 1. `work/requirements/draft/` の草案を読む。
 2. blocking clarification があれば質問する。
-3. 必要ならRAG contextを補助的に読む。
-4. review draftを作る。
-5. 人間OK後に `work/requirements/` へ完成版を保存する。
+3. 知見不足の領域があれば `knowledge gap` として記録する。
+4. 必要なら内部RAG contextを補助的に読む。
+5. 外部知識が必要なら [External Web RAG](external-web-rag.md) を使う。
+6. review draftを作る。
+7. 人間OK後に `work/requirements/` へ完成版を保存する。
+
+## Knowledge Gap Flow
+
+要件を聞いて、知らない領域や判断材料が足りない領域が出た場合は、外部Web RAGの補助フローを使います。
+
+```text
+要件を聞く
+  -> 知らない領域が出る
+  -> rag/external-web/knowledge-sources.md を参照する
+  -> 外部Webを精査する
+  -> rag/external-web/<category>/ に蓄積する
+  -> 要件定義review draftに根拠pathと未確認事項を反映する
+```
+
+知見不足の記録先:
+
+```text
+work/requirements/draft/<draft-stem>-knowledge-gaps.md
+```
+
+外部Web RAGのsource index:
+
+```text
+rag/external-web/knowledge-sources.md
+```
+
+外部Web RAGは補助contextです。Repository、Target Branch、STOP、communication loss、safety requirements は人間確認なしに確定しません。
 
 ## Gate
 

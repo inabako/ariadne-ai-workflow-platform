@@ -37,6 +37,14 @@ Default source reports:
 rag/corrective-action-report
 ```
 
+External Web RAG source examples:
+
+```text
+rag/external-web/network
+rag/external-web/go-runtime
+rag/external-web/architecture
+```
+
 ## Parameters
 
 - `source-dir`: default `rag/corrective-action-report`
@@ -86,6 +94,27 @@ python runtime/rag/normalize_documents.py `
   --document-type corrective-action-report `
   --clean-output
 ```
+
+For external-web RAG, normalize category Markdown into the same JSON document format while preserving provenance metadata:
+
+```powershell
+python runtime/rag/normalize_documents.py `
+  --source-dir rag/external-web/network `
+  --output-dir rag/normalized `
+  --document-type external-web-knowledge
+```
+
+The normalizer preserves external-web front matter such as:
+
+- `source_type`
+- `category`
+- `topic`
+- `trust_level`
+- `retrieved_at`
+- `verify_before_use`
+- `sources`
+- `claims`
+- `verification_notes`
 
 ### 2. Chunk Documents
 

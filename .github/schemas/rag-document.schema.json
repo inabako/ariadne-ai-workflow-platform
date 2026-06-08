@@ -67,6 +67,36 @@
         "tags": {
           "type": "array",
           "items": { "type": "string" }
+        },
+        "artifact_type": { "type": "string" },
+        "source_type": { "type": "string", "examples": ["internal-work", "external-web"] },
+        "source_kind": { "type": "string" },
+        "source_owner": { "type": "string" },
+        "category": { "type": "string" },
+        "topic": { "type": "string" },
+        "trust_level": { "type": "string", "examples": ["project-evidence", "official-standard", "official-docs", "vendor-docs", "community"] },
+        "retrieved_at": { "type": "string" },
+        "freshness_policy": { "type": "string" },
+        "verify_before_use": { "type": "boolean" },
+        "sources": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "urls": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "claims": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "verification_notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "front_matter": {
+          "type": "object",
+          "additionalProperties": true
         }
       },
       "additionalProperties": true

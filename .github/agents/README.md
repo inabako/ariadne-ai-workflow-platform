@@ -16,6 +16,8 @@
 | Agent | 主な役割 | 代表的な出力 |
 | --- | --- | --- |
 | `requirement-discovery-agent.prompt.md` | 箇条書き草案の精査、深掘り質問、要件定義書レビュー草案 | `work/requirements/draft/*-questions.md`, `*-requirements-review.md` |
+| `external-web-source-reviewer-agent.prompt.md` | 不足知識に対して外部Web一次情報を精査し、外部Web RAG候補へ要約する | `rag/external-web/<category>/*.md` |
+| `external-web-rag-dispatcher-agent.prompt.md` | 蓄積済み外部Web RAGをカテゴリ別に検索・集約し、要件定義/設計へ渡す | `rag/external-web/retrieval/*-aggregate.md` |
 | `docs-drift-analyzer-agent.prompt.md` | 実装とdocsの差分検出、JSON化、Issue材料作成 | `work/<branch>/context/docs-drift-analysis.json` |
 | `robotics-architect-agent.prompt.md` | システム構造と責務境界 | `architecture.md` |
 | `robotics-runtime-agent.prompt.md` | process model、lifecycle、restart、watchdog | `runtime-design.md` |
@@ -39,6 +41,8 @@ Agent間の共通schemaは `.github/schemas/`、共通判断ルールは `.githu
 ```text
 draft bullets
   -> requirement discovery
+  -> external web knowledge review when knowledge is insufficient
+  -> external web RAG dispatch when saved external knowledge is relevant
   -> reviewed requirements
   -> docs drift analysis when docs sync is requested
   -> robotics architect

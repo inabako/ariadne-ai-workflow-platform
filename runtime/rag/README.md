@@ -20,12 +20,15 @@ source markdown
 ```text
 rag/
   corrective-action-report/  source markdown reports
+  external-web/              external-web source index and category Markdown
   normalized/                normalized RAG documents
   chunks/                    chunk JSON files
   indexes/                   documents.jsonl / chunks.jsonl
   embeddings/                local embedding index
   retrieval/                 temporary retrieval results and prompts
 ```
+
+External Web RAG uses the same JSON pipeline. Provenance metadata from front matter is preserved under `metadata`.
 
 ## CLI
 
@@ -46,6 +49,15 @@ python runtime/rag/chunk_documents.py `
   --input-dir rag/normalized `
   --output-dir rag/chunks `
   --clean-output
+```
+
+External Web RAG normalize example:
+
+```powershell
+python runtime/rag/normalize_documents.py `
+  --source-dir rag/external-web/network `
+  --output-dir rag/normalized `
+  --document-type external-web-knowledge
 ```
 
 ### 3. Build Index
@@ -73,6 +85,18 @@ python runtime/rag/retrieve_context.py `
   --chunks-index rag/indexes/chunks.jsonl `
   --embeddings-index rag/embeddings/chunks-embeddings.jsonl `
   --output-dir rag/retrieval `
+  --search-mode hybrid `
+  --top-k 5 `
+  --max-chars 4000
+```
+
+External-web only retrieval:
+
+```powershell
+python runtime/rag/retrieve_context.py `
+  "Go realtime gateway NAT traversal" `
+  --source-type external-web `
+  --category network `
   --search-mode hybrid `
   --top-k 5 `
   --max-chars 4000
@@ -127,6 +151,7 @@ python runtime/rag/jsonize_rag_tree.py `
 | `rag/retrieval/<uuid>.json` (`artifact_type: rag-load-dispatch`) | 複数query retrieval の集約結果 |
 | `rag/retrieval/<uuid>.json` (`artifact_type: rag-retrieval-result`) | query、selected chunks、dropped chunks、filters |
 | `rag/retrieval/<uuid>.json` (`artifact_type: rag-context-pack`) | Agent投入用の圧縮済みcontext pack |
+| `rag/external-web/<category>/*.md` | external-web claims / metadata / verification notes のsource Markdown |
 
 Markdown出力はデバッグ用途です。必要な場合だけ `--write-markdown` を指定します。
 
@@ -144,6 +169,18 @@ RAG document には最低限以下を持たせます。
 - tags
 - headings
 - content
+
+External-web source Markdown should also include:
+
+- source_type
+- category
+- topic
+- trust_level
+- retrieved_at
+- verify_before_use
+- sources
+- claims
+- verification_notes
 
 metadata が不足している source report でも normalize できますが、retrieval 品質を上げるため、元の Markdown report には front matter を付けることを推奨します。
 

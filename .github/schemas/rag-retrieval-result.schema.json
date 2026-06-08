@@ -25,6 +25,9 @@
         "project": { "type": "string" },
         "repository": { "type": "string" },
         "branch": { "type": "string" },
+        "source_type": { "type": "string" },
+        "category": { "type": "string" },
+        "trust_level": { "type": "string" },
         "tags": {
           "type": "array",
           "items": { "type": "string" }
@@ -48,7 +51,17 @@
             "type": "array",
             "items": { "type": "string" }
           },
-          "reason": { "type": "string" }
+          "reason": { "type": "string" },
+          "source_type": { "type": "string" },
+          "category": { "type": "string" },
+          "topic": { "type": "string" },
+          "trust_level": { "type": "string" },
+          "retrieved_at": { "type": "string" },
+          "verify_before_use": { "type": "boolean" },
+          "sources": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
         },
         "additionalProperties": true
       }

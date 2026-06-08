@@ -110,6 +110,7 @@ def build_embedding(row: dict[str, Any], dimensions: int) -> dict[str, Any]:
         "dimensions": dimensions,
         "embedding": sparse_embedding(row_text(row), dimensions),
         "metadata": {
+            **row.get("metadata", {}),
             "document_type": row.get("document_type", ""),
             "title": row.get("title", ""),
             "project": row.get("project", ""),

@@ -54,7 +54,17 @@
             "type": "array",
             "items": { "type": "string" }
           },
-          "score": { "type": "number" }
+          "score": { "type": "number" },
+          "source_type": { "type": "string" },
+          "category": { "type": "string" },
+          "topic": { "type": "string" },
+          "trust_level": { "type": "string" },
+          "retrieved_at": { "type": "string" },
+          "verify_before_use": { "type": "boolean" },
+          "sources": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
         },
         "additionalProperties": true
       }

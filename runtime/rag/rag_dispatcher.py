@@ -47,6 +47,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--branch", default="", help="Optional retrieval filter.")
     parser.add_argument("--project", default="", help="Optional retrieval filter.")
     parser.add_argument("--tag", action="append", default=[], help="Optional retrieval tag filter. Can be repeated.")
+    parser.add_argument("--source-type", default="", help="Optional source_type filter, e.g. external-web or internal-work.")
+    parser.add_argument("--category", default="", help="Optional external-web category filter.")
+    parser.add_argument("--trust-level", default="", help="Optional trust_level filter.")
     parser.add_argument("--chunks-index", default="rag/indexes/chunks.jsonl")
     parser.add_argument("--embeddings-index", default="rag/embeddings/chunks-embeddings.jsonl")
     parser.add_argument("--output-dir", default="rag/retrieval")
@@ -256,6 +259,10 @@ def retrieval_command(args: argparse.Namespace, query: str) -> list[str]:
         value = getattr(args, option)
         if value:
             command.extend([f"--{option}", value])
+    for option in ["source_type", "category", "trust_level"]:
+        value = getattr(args, option)
+        if value:
+            command.extend([f"--{option.replace('_', '-')}", value])
     for tag in args.tag:
         command.extend(["--tag", tag])
     if args.write_markdown:
@@ -397,6 +404,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "repository": args.repository,
             "branch": args.branch,
             "tags": args.tag,
+            "source_type": args.source_type,
+            "category": args.category,
+            "trust_level": args.trust_level,
         },
         "context_packs": context_packs,
         "aggregate_context": aggregate_context,

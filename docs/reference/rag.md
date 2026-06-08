@@ -1,6 +1,6 @@
 # RAG
 
-このrepoのRAGは、現場やreviewから得た知識を、次のworkflowで再利用するためのfile-based pipelineです。
+このrepoのRAGは、現場やreviewから得た知識、または外部Webの一次情報から抽出した補助知識を、次のworkflowで再利用するためのfile-based pipelineです。
 
 ## Source Reports
 
@@ -8,6 +8,13 @@
 
 ```text
 rag/corrective-action-report/
+```
+
+外部Web由来のsource indexとRAG候補は次に置きます。
+
+```text
+rag/external-web/knowledge-sources.md
+rag/external-web/<category>/
 ```
 
 推奨ファイル名:
@@ -38,6 +45,72 @@ source markdown
 | `rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |
 | `rag/retrieval/*.json` | retrieval result、dispatch aggregate、context pack |
 | `rag/jsonized/*.json` | 既存Markdown / JSONLなどをUUID名JSON wrapperにしたもの |
+| `rag/external-web/<category>/*.md` | 外部Web一次情報から抽出したclaims / metadata / verification notes |
+| `rag/external-web/retrieval/*.md` | 外部Web RAG dispatcher の集約結果 |
+
+## External Web RAG
+
+要件定義や設計で知らない領域が出た場合、`rag/external-web/knowledge-sources.md` を入口に外部Web一次情報を精査します。
+
+保存先例:
+
+```text
+rag/external-web/
+  network/
+  robotics/
+  ai-workflow/
+  architecture/
+  go-runtime/
+  observability/
+  video/
+  platform/
+  retrieval/
+```
+
+外部Web RAGは、URL、retrieved_at、source_type、trust_level、claims、verification_notes を保存します。
+
+外部ページ本文を丸ごと保存しません。
+
+外部Web RAGも内部RAGと同じJSON pipelineで扱います。
+
+```text
+rag/external-web/<category>/*.md
+  -> rag/normalized/*.json
+  -> rag/chunks/*.json
+  -> rag/indexes/*.jsonl
+  -> rag/embeddings/*.jsonl
+  -> rag/retrieval/*.json
+```
+
+`normalize_documents.py` は external-web front matter を `metadata` に保持します。
+
+```text
+source_type
+source_kind
+source_owner
+category
+topic
+trust_level
+retrieved_at
+freshness_policy
+verify_before_use
+sources
+urls
+claims
+verification_notes
+front_matter
+```
+
+外部Webだけを検索する場合は、`--source-type external-web` を使います。
+
+```powershell
+python runtime/rag/retrieve_context.py `
+  "Go realtime gateway NAT traversal" `
+  --source-type external-web `
+  --category network
+```
+
+詳しくは [External Web RAG](../workflows/external-web-rag.md) を参照してください。
 
 ## Build
 
@@ -91,3 +164,5 @@ python runtime/rag/rag_dispatcher.py `
 - extractive compression
 
 Vector DB、provider-based embeddings、高度なsemantic search、reranking modelは、将来の別repository / MCP側で扱います。
+
+External-web RAGは current source code、test evidence、人間承認済み運用知見を上書きしません。

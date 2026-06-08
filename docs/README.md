@@ -30,6 +30,7 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 | [Docs Sync](workflows/docs-sync.md) | 実装とdocsの差分を検出し、docsだけを同期する |
 | [Knowledge Capture](workflows/knowledge-capture.md) | 完了IssueからPR文面、RAG候補、docs候補、archive準備を作る |
 | [RAG Build / Load](workflows/rag-build-load.md) | RAG作成と開発前RAG読み込みを行う |
+| [External Web RAG](workflows/external-web-rag.md) | 要件定義や設計で不足した知識を外部Web一次情報から補う |
 
 ## Reference Docs
 
@@ -40,7 +41,7 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 | [Templates](reference/templates.md) | templates配下の成果物ひな形と品質ルール |
 | [Skill Discovery](reference/skill-discovery.md) | VS Code prompt候補とCodex Skill候補の違い |
 | [Data Model](reference/data-model.md) | `.github/schemas/` と `work/<id>/context/*.json` |
-| [RAG](reference/rag.md) | file-based RAG pipeline、出力artifact、境界 |
+| [RAG](reference/rag.md) | internal / external-web RAG pipeline、出力artifact、境界 |
 | [Operations](reference/operations.md) | commit rule、human gate、encoding、archiveの運用注意 |
 
 ## Source Of Truth

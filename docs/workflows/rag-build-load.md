@@ -50,6 +50,38 @@ python runtime/rag/embed_chunks.py `
   --output rag/embeddings/chunks-embeddings.jsonl
 ```
 
+外部Web RAGも、同じJSON pipelineへ載せます。
+
+```powershell
+python runtime/rag/normalize_documents.py `
+  --source-dir rag/external-web/network `
+  --output-dir rag/normalized `
+  --document-type external-web-knowledge
+
+python runtime/rag/chunk_documents.py `
+  --input-dir rag/normalized `
+  --output-dir rag/chunks
+
+python runtime/rag/build_index.py `
+  --normalized-dir rag/normalized `
+  --chunks-dir rag/chunks `
+  --output-dir rag/indexes
+```
+
+外部Web用metadataは `metadata` に保持されます。
+
+```text
+source_type
+category
+topic
+trust_level
+retrieved_at
+verify_before_use
+sources
+claims
+verification_notes
+```
+
 ## RAG Load
 
 開発前にtask contextから複数queryを計画し、検索結果を圧縮します。
@@ -59,6 +91,19 @@ python runtime/rag/rag_dispatcher.py `
   --task "<development task>" `
   --repository "<target-repository>" `
   --branch "<target-branch>" `
+  --search-mode hybrid `
+  --top-k 5 `
+  --max-chars 4000 `
+  --jobs 4
+```
+
+外部Web RAGだけを読む場合:
+
+```powershell
+python runtime/rag/rag_dispatcher.py `
+  --task "Go realtime gateway NAT traversal" `
+  --source-type external-web `
+  --category network `
   --search-mode hybrid `
   --top-k 5 `
   --max-chars 4000 `

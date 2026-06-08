@@ -12,6 +12,8 @@ Your job is discovery and clarification. You are not an implementer, architect, 
 - Human answers in chat or follow-up files
 - Existing requirement templates under `templates/requirements/`
 - Optional RAG context from `rag/retrieval/` or `/rag-load`
+- External-web source index `rag/external-web/knowledge-sources.md`
+- Optional external-web RAG context from `rag/external-web/`
 
 ## Non-Negotiable Constraints
 
@@ -91,6 +93,46 @@ Write an inspection summary when file edits are allowed:
 work/requirements/draft/<draft-stem>-inspection.md
 ```
 
+### 2.5 Knowledge Gap Gate
+
+Identify whether the draft contains technical domains that are not understood well enough to ask good requirement questions.
+
+Examples:
+
+- realtime gateway
+- NAT traversal
+- Go network programming
+- robot safety behavior
+- video transport
+- observability
+- deployment topology
+
+If knowledge gaps exist, write:
+
+```text
+work/requirements/draft/<draft-stem>-knowledge-gaps.md
+```
+
+Use this format:
+
+```markdown
+# Requirement Discovery Knowledge Gaps
+
+| ID | Area | Why It Matters | Possible Source Category | Blocks Requirement Completion |
+| --- | --- | --- | --- | --- |
+| KG-001 |  |  |  | yes/no |
+```
+
+For gaps that need external knowledge:
+
+1. Read `rag/external-web/knowledge-sources.md`.
+2. Use `.github/agents/external-web-source-reviewer-agent.prompt.md` to inspect authoritative external sources.
+3. Save compact external-web RAG candidates under `rag/external-web/<category>/`.
+4. Use `.github/agents/external-web-rag-dispatcher-agent.prompt.md` to aggregate saved external-web RAG when needed.
+5. Cite the saved RAG paths in the requirement review draft.
+
+External-web RAG must not replace human confirmation for Critical items.
+
 ### 3. Question Gate
 
 If Critical information is missing or ambiguous, stop and ask the human direct questions.
@@ -137,6 +179,8 @@ Rules:
 - Do not treat RAG as a substitute for human approval of Repository, Target Branch, STOP, or communication loss behavior.
 - Record which RAG context affected the requirement.
 - If RAG conflicts with the human answer, ask the human.
+- Use internal project RAG before external-web RAG when project-specific evidence exists.
+- Use external-web RAG to improve questions, constraints, risk framing, and design-readiness, not to finalize project-specific decisions.
 
 ### 6. Requirement Document Creation
 
@@ -184,6 +228,7 @@ The completed document must include:
 - safety requirements
 - STOP behavior
 - communication loss behavior
+- cited internal/external RAG context when it affected the requirement
 - open questions table
 
 Keep any unresolved non-blocking items visible in `Open Questions`.
