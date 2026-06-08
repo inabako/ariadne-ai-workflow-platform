@@ -1,6 +1,6 @@
 # External Web RAG
 
-要件定義や設計工程で知見が足りない領域が出た場合に、外部Webの一次情報を精査し、外部Web RAGとして蓄積・dispatchする補助workflowです。
+要件定義、設計工程、改善レポート、改善実装で知見が足りない領域が出た場合に、外部Webの一次情報を精査し、外部Web RAGとして蓄積・dispatchする補助workflowです。
 
 ## Purpose
 
@@ -9,12 +9,12 @@
   -> 知らない領域が出る
   -> 調べる
   -> 外部Web RAGに蓄積する
-  -> 要件定義 / 設計工程で補助contextとして使う
+  -> 要件定義 / 設計 / 改善flowで補助contextとして使う
 ```
 
 このworkflowは、外部Web情報を要件の最終判断として使うためではありません。
 
-目的は、より良い質問、より安全な制約整理、より明確な設計論点を作ることです。
+目的は、より良い質問、より安全な制約整理、より明確な設計論点、より広いreview/test観点を作ることです。
 
 ## Source Index
 
@@ -46,7 +46,7 @@ rag/
 | Agent | Purpose | Output |
 | --- | --- | --- |
 | `external-web-source-reviewer-agent.prompt.md` | 外部Webを精査し、claims / metadata / verification notesへ圧縮する | `rag/external-web/<category>/*.md` |
-| `external-web-rag-dispatcher-agent.prompt.md` | 蓄積済み外部Web RAGを検索・集約して要件/設計へ渡す | `rag/external-web/retrieval/*-aggregate.md` |
+| `external-web-rag-dispatcher-agent.prompt.md` | 蓄積済み外部Web RAGを検索・集約して要件/設計/改善flowへ渡す | `rag/external-web/retrieval/*-aggregate.md` |
 
 ## Flow
 
@@ -58,6 +58,27 @@ rag/
 6. External Web RAG Dispatcherが必要なcategoryを検索・集約する。
 7. Requirement review draftに、参照したRAG pathと未確認事項を反映する。
 8. Critical itemは人間確認で確定する。
+
+## Corrective Action Integration
+
+改善フローでは、外部Web RAGを次の目的で使います。
+
+- finding候補を広げる
+- risk観点を補う
+- test観点を補う
+- 公式docs / RFC / vendor docsとの照合ポイントを作る
+- 実装時のunknown areaを補助する
+
+ただし、外部WebRAGだけでfindingを確定しません。
+
+```text
+external-web RAG
+  -> supporting_reference
+  -> current repo evidenceへ結び直す
+  -> finding / issue scope / test specification
+```
+
+最終findingには、対象repositoryのfile、behavior、log、docs gap、test gapなどのevidenceが必要です。
 
 ## JSON Pipeline
 
@@ -168,6 +189,8 @@ verification_notes:
 6. External community sources
 
 外部Web RAGが current code、test evidence、人間回答と矛盾する場合は、人間に確認します。
+
+改善フローでは、外部WebRAGを `supporting_reference` として記録します。
 
 ## Requirement Discovery Integration
 

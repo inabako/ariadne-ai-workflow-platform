@@ -15,7 +15,7 @@
 | `/knowledge-capture` | 完了IssueのPR材料、RAG候補、docs候補、archive準備を作る | `work/issue-<number>` | `knowledge-capture-report.md` |
 | `/rag-build` | Markdown reportをRAG artifactへ変換する | `rag/corrective-action-report/*.md` | `rag/normalized/`, `rag/chunks/`, `rag/indexes/`, `rag/embeddings/` |
 | `/rag-load` | 開発前に過去知識を検索し、圧縮contextを読む | task, repository, branch | `rag/retrieval/*.json` |
-| External Web RAG | 要件定義や設計で知見不足の領域を外部Web一次情報で補う | `rag/external-web/knowledge-sources.md` | `rag/external-web/<category>/*.md` |
+| External Web RAG | 要件定義、設計、改善flowで知見不足の領域を外部Web一次情報で補う | `rag/external-web/knowledge-sources.md` | `rag/external-web/<category>/*.md` |
 
 ## Decision Guide
 
@@ -29,7 +29,7 @@
 | codeは変えず、docsだけ実装に合わせたい | [Docs Sync](docs-sync.md) |
 | 作業完了後にPR文面と知識回収を整えたい | [Knowledge Capture](knowledge-capture.md) |
 | 過去reportを検索可能にしたい | [RAG Build / Load](rag-build-load.md) |
-| 要件定義や設計で知らない技術領域が出た | [External Web RAG](external-web-rag.md) |
+| 要件定義、設計、改善flowで知らない技術領域が出た | [External Web RAG](external-web-rag.md) |
 
 ## Common Rules
 
@@ -40,3 +40,4 @@
 - 成果物は `work/<id>/context/artifact-index.json` に登録できる形で残します。
 - RAG化する成果物は、metadata、evidence、open questions、stable section order を保ちます。
 - 外部Web RAGは current code、test evidence、人間承認済み運用知見を上書きしません。
+- 改善flowで外部WebRAGを使う場合、findingは必ず対象repository evidenceへ結び直します。

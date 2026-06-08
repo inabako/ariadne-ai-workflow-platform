@@ -47,3 +47,22 @@ YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md
 この Skill は read-only review を基本とする。
 
 GitHub Issue 作成、branch 作成、commit、source 修正は行わない。user が明示的に実装修正へ進めた場合のみ、別 workflow へ移行する。
+
+## External Web RAG Support
+
+外部Web RAGは、finding候補、risk観点、test観点、公式仕様との照合ポイントを補強するために使ってよい。
+
+ただし、外部Web RAGだけでfindingを確定しない。
+
+最終findingには必ず対象repositoryの evidence を紐づける。
+
+```text
+file / line / component
+behavior
+docs gap
+log / runtime evidence
+test gap
+reproducible inspection result
+```
+
+外部Web由来の根拠は `supporting_reference` としてreportに記録する。

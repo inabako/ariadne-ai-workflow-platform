@@ -50,7 +50,7 @@ source markdown
 
 ## External Web RAG
 
-要件定義や設計で知らない領域が出た場合、`rag/external-web/knowledge-sources.md` を入口に外部Web一次情報を精査します。
+要件定義、設計、改善flowで知らない領域が出た場合、`rag/external-web/knowledge-sources.md` を入口に外部Web一次情報を精査します。
 
 保存先例:
 
@@ -166,3 +166,5 @@ python runtime/rag/rag_dispatcher.py `
 Vector DB、provider-based embeddings、高度なsemantic search、reranking modelは、将来の別repository / MCP側で扱います。
 
 External-web RAGは current source code、test evidence、人間承認済み運用知見を上書きしません。
+
+改善flowでは、外部WebRAGを `supporting_reference` として扱います。finding確定には、対象repositoryのfile、behavior、log、docs gap、test gapなどのevidenceが必要です。

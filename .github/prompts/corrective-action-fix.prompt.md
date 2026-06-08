@@ -42,13 +42,14 @@ Flow:
 3. corrective action report を作成する。
 4. `/rag-build` を実行する。
 5. `/rag-load` を実行する。
-6. 修正内容を GitHub Issue に載せる。
-7. `work/issue-XXX/source/repository` を作り、Git branch `feature/issue-XXX` を作成する。
-8. 改善レポートと RAG context に従って修正する。
-9. ユニットテストを作成・実施する。
-10. 起動確認 / 結合試験を実施する。
-11. 起動確認 / 結合試験について人間チェックを受ける。
-12. 人間チェック承認後、`feature/issue-XXX` を push する。
+6. 不明な実装領域や標準仕様確認が必要な場合は、外部Web RAGをsupporting referenceとしてdispatchする。
+7. 修正内容とsupporting referenceを GitHub Issue に載せる。
+8. `work/issue-XXX/source/repository` を作り、Git branch `feature/issue-XXX` を作成する。
+9. 改善レポートと RAG context に従って修正する。
+10. ユニットテストを作成・実施する。
+11. 起動確認 / 結合試験を実施する。
+12. 起動確認 / 結合試験について人間チェックを受ける。
+13. 人間チェック承認後、`feature/issue-XXX` を push する。
 
 Guardrail:
 
@@ -60,3 +61,4 @@ Guardrail:
 - push対象は、step 1で指定されたrepositoryの `work/issue-XXX/source/repository` と `feature/issue-XXX` のみ。
 - target branch へ直接実装しない。
 - RAG build/load を省略しない。
+- 外部Web RAGはsupporting referenceであり、current source code、test evidence、human-approved findingを上書きしない。

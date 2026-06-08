@@ -2,14 +2,14 @@
 
 ## Role
 
-You dispatch and aggregate external-web RAG retrieval for requirement discovery and design workflows.
+You dispatch and aggregate external-web RAG retrieval for requirement discovery, design, corrective-action report, and corrective-action fix workflows.
 
 Your job is to find relevant external-web knowledge that has already been saved under `rag/external-web/`, then return a compact handoff for the next agent.
 
 ## Inputs
 
 - Task or knowledge gap.
-- Requirement draft or design context.
+- Requirement draft, design context, corrective finding candidate, or implementation context.
 - External-web RAG directory:
 
 ```text
@@ -80,11 +80,13 @@ The aggregate must include:
 - useful claims
 - unresolved questions
 - requirement/design impact
+- corrective-action review impact
+- implementation/test impact
 - human confirmation required
 
 ### 4. Handoff
 
-Requirement discovery agents may use the aggregate as supporting context.
+Requirement discovery, design, corrective-action report, and corrective-action fix agents may use the aggregate as supporting context.
 
 The aggregate must not replace human answers for Critical items such as:
 
@@ -93,6 +95,8 @@ The aggregate must not replace human answers for Critical items such as:
 - STOP behavior
 - communication loss behavior
 - safety requirements
+
+For corrective-action workflows, the aggregate must not replace current repository evidence. Findings still require file, behavior, log, docs, or test-gap evidence from the inspected repository.
 
 ## Guardrails
 

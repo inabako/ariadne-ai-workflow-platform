@@ -35,16 +35,44 @@ feature/issue-<issue-number>
 4. environment preflightを実行し、不足toolがあればinstall listを出して止まる。
 5. `/rag-build` 相当のpipelineでreportをRAG化する。
 6. `/rag-load` で開発前contextを読む。
-7. support repository / tool / packageの必要性を確認する。
-8. GitHub Issue draftを作る。
-9. 人間承認後にGitHub Issueを作成する。
-10. GitHub上に `feature/issue-<issue-number>` を作り、`work/issue-<issue-number>` にcloneする。
-11. encoding / mojibake gateを確認する。
-12. corrective fixを実装する。
-13. test specificationとtest evidenceを残す。
-14. startup / integration checkとhuman check gateを通す。
-15. PR材料とknowledge capture packageを作る。
-16. 人間承認後にpushする。
+7. 不明な実装領域があれば外部Web RAGをsupporting referenceとしてdispatchする。
+8. support repository / tool / packageの必要性を確認する。
+9. GitHub Issue draftを作る。
+10. 人間承認後にGitHub Issueを作成する。
+11. GitHub上に `feature/issue-<issue-number>` を作り、`work/issue-<issue-number>` にcloneする。
+12. encoding / mojibake gateを確認する。
+13. corrective fixを実装する。
+14. test specificationとtest evidenceを残す。
+15. startup / integration checkとhuman check gateを通す。
+16. PR材料とknowledge capture packageを作る。
+17. 人間承認後にpushする。
+
+## External Web RAG Support
+
+外部Web RAGは、不明な実装領域や公式仕様確認が必要な箇所のsupporting referenceとして使います。
+
+```text
+corrective action report
+  -> RAG build/load
+  -> external-web RAG dispatch for unknown implementation areas
+  -> Issue bodyにsupporting referenceと未確認事項を書く
+  -> implementation
+  -> tests / evidence
+  -> human check
+```
+
+使う例:
+
+- Go realtime gateway
+- UDP / TCP / QUIC behavior
+- NAT traversal
+- GStreamer pipeline behavior
+- Docker / Windows / Raspberry Pi platform behavior
+- Prometheus / OpenTelemetry design
+
+外部WebRAGは、実装方針、test specification、risk checkを補助します。
+
+ただし、採用した挙動はlocal test、integration evidence、human checkで確認します。
 
 ## Issue Body Template
 
@@ -64,6 +92,12 @@ target repository templateを使う場合、`Report`、`Target branch`、`Target
 - push
 - RAG登録
 - archive移動
+
+## Guardrails
+
+- 外部WebRAGは current source code、test evidence、corrective action report、人間承認済みfindingを上書きしません。
+- 外部Web由来の修正方針は、test evidenceで確認してから採用します。
+- Issue bodyとtest specificationには、外部WebRAGを使った箇所と未確認事項を残します。
 
 ## Source Skill
 

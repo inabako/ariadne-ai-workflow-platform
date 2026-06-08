@@ -30,7 +30,7 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 | [Docs Sync](workflows/docs-sync.md) | 実装とdocsの差分を検出し、docsだけを同期する |
 | [Knowledge Capture](workflows/knowledge-capture.md) | 完了IssueからPR文面、RAG候補、docs候補、archive準備を作る |
 | [RAG Build / Load](workflows/rag-build-load.md) | RAG作成と開発前RAG読み込みを行う |
-| [External Web RAG](workflows/external-web-rag.md) | 要件定義や設計で不足した知識を外部Web一次情報から補う |
+| [External Web RAG](workflows/external-web-rag.md) | 要件定義、設計、改善flowで不足した知識を外部Web一次情報から補う |
 
 ## Reference Docs
 
