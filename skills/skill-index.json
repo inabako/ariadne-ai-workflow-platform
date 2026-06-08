@@ -2,6 +2,15 @@
   "schema_version": "1.0",
   "skills": [
     {
+      "slash_command": "/requirement-discovery",
+      "skill": "requirement-discovery",
+      "skill_path": "skills/requirement-discovery/SKILL.md",
+      "delegated_prompt": "/requirement-discovery",
+      "prompt_path": ".github/prompts/requirement-discovery.prompt.md",
+      "workflow": "requirement-discovery",
+      "description": "Create a completed robotics requirement document from a human bullet-list draft in work/requirements/draft, with clarification questions and human review before saving to work/requirements."
+    },
+    {
       "slash_command": "/robotics-new-system",
       "skill": "robotics-new-system",
       "skill_path": "skills/robotics-new-system/SKILL.md",
@@ -66,6 +75,7 @@
     }
   ],
   "intake_gate": {
+    "draft_directory": "work/requirements/draft",
     "requirements_directory": "work/requirements",
     "accepted_requirement_file_count": 1,
     "reject_when_missing": true,

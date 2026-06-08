@@ -32,6 +32,8 @@ knowledge-inbox/
 work/          project-specific artifact and source work area
 work/requirements/
                completed requirement documents waiting for intake
+work/requirements/draft/
+               human bullet-list drafts for requirement discovery
 rag/           future RAG-ready knowledge area
 runtime/       workflow runtime functions
 skills/        workflow skill assets
@@ -71,6 +73,7 @@ Workflow prompts live in `.github/prompts/`.
 Current prompt set:
 
 - `/robotics-workflow`
+- `/requirement-discovery`
 - `/robotics-new-system`
 - `/robotics-feature-maintenance`
 - `/corrective-action-report`
@@ -90,6 +93,7 @@ Workflow Skill entrypoints live in `skills/`.
 
 Current Skill entrypoints:
 
+- `/requirement-discovery` -> `skills/requirement-discovery/SKILL.md` -> `work/requirements/draft/`, then `work/requirements/` after human OK
 - `/robotics-new-system` -> `skills/robotics-new-system/SKILL.md` -> `/new-robotics-system-development`
 - `/robotics-feature-maintenance` -> `skills/robotics-feature-maintenance/SKILL.md` -> `/robotics-maintenance-development`
 - `/corrective-action-report` -> `skills/corrective-action-report/SKILL.md` -> `rag/corrective-action-report/`
@@ -162,6 +166,8 @@ templates/
 ```
 
 `templates/requirements/` の要件定義書には `Repository Control` 欄を設けます。
+
+`work/requirements/draft/` は未完成の箇条書き草案置き場です。`/requirement-discovery` では、Critical items が未確定の場合に設計や実装案を推測せず、人間へ質問してください。完成版は人間レビュー OK 後にのみ `work/requirements/` へ保存します。
 
 新機能および保守開発では、target repository / target branch を要件定義書に記載し、案件ごとに可変にしてください。`.env` に repository fallback は置きません。
 

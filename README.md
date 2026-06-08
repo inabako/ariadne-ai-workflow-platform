@@ -77,6 +77,7 @@ runtime/
   github/
 
 skills/
+  requirement-discovery/
   corrective-action-report/
   robotics-feature-maintenance/
   robotics-new-system/
@@ -90,6 +91,7 @@ templates/
 
 work/
   requirements/
+    draft/
 ```
 
 ## Primary Entry Points
@@ -98,6 +100,7 @@ work/
 
 | Slash Command | Purpose | Skill | Main Output |
 | --- | --- | --- | --- |
+| `/requirement-discovery` | 箇条書き草案から要件定義書を作成する | `skills/requirement-discovery/` | `work/requirements/<completed-requirements>.md` |
 | `/robotics-new-system` | 新しい robotics system を立ち上げる | `skills/robotics-new-system/` | `work/<receipt-id>/` |
 | `/robotics-feature-maintenance` | 既存 robotics system の新機能追加または保守開発を行う | `skills/robotics-feature-maintenance/` | `work/<receipt-id>/` |
 | `/corrective-action-report` | 指定repository / branchの改善点をreport化する | `skills/corrective-action-report/` | `rag/corrective-action-report/` |
@@ -136,6 +139,7 @@ VS Code / GitHub Copilot Chat の `/` 候補に出すため、prompt files は `
 
 ```text
 .github/prompts/
+  requirement-discovery.prompt.md
   corrective-action-fix.prompt.md
   corrective-action-report.prompt.md
   rag-build.prompt.md
@@ -166,8 +170,12 @@ agent: agent
 ```text
 work/
   requirements/
+    draft/
+      <bullet-draft>.txt
     <completed-requirements>.md
 ```
+
+`work/requirements/draft/` は未完成の箇条書き草案置き場です。`/requirement-discovery` は草案を精査し、Critical items が不足している場合は人間に質問し、人間レビュー OK 後にのみ完成版を `work/requirements/` へ保存します。
 
 標準運用:
 
@@ -453,6 +461,9 @@ GITHUB_TOKEN=
 
 ```text
 skills/
+  requirement-discovery/
+    SKILL.md
+    agents/openai.yaml
   robotics-new-system/
     SKILL.md
     agents/openai.yaml
@@ -476,6 +487,9 @@ Codex の Skill 候補として表示するには、Codex が探索する local 
 現在は以下の junction で接続します。
 
 ```text
+C:\Users\User\.codex\skills\requirement-discovery
+  -> C:\github\intent-driven-robotics-ai-workflow\skills\requirement-discovery
+
 C:\Users\User\.codex\skills\robotics-new-system
   -> C:\github\intent-driven-robotics-ai-workflow\skills\robotics-new-system
 
@@ -501,6 +515,7 @@ C:\Users\User\.codex\skills\corrective-action-report
 Current prompts:
 
 - `/robotics-workflow`
+- `/requirement-discovery`
 - `/robotics-new-system`
 - `/robotics-feature-maintenance`
 - `/corrective-action-report`
@@ -520,6 +535,7 @@ Current prompts:
 
 Current agents:
 
+- Requirement Discovery Agent
 - Robotics Architect Agent
 - Robotics Runtime Agent
 - Network Migration Planner Agent

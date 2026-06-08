@@ -23,6 +23,8 @@
 
 完成版の要件定義書は `work/requirements/` に配置します。
 
+未完成の箇条書き草案は `work/requirements/draft/` に配置します。`/requirement-discovery` workflow はこの草案を精査し、必要な質問と人間レビューを経てから完成版を `work/requirements/` に保存します。
+
 新システム立ち上げ、新機能追加、保守開発のいずれでも、この投入口を共通で使います。
 
 `work/requirements/` に要件定義書が無い場合、Skill や workflow prompt から作業をオーダーされても intake harness は受領拒否します。

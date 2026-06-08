@@ -14,6 +14,7 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 
 | File | Purpose |
 | --- | --- |
+| `requirement-discovery.prompt.md` | `/requirement-discovery` Skill entrypoint |
 | `robotics-new-system.prompt.md` | `/robotics-new-system` Skill entrypoint |
 | `robotics-feature-maintenance.prompt.md` | `/robotics-feature-maintenance` Skill entrypoint |
 | `corrective-action-report.prompt.md` | `/corrective-action-report` Skill entrypoint |
@@ -29,12 +30,21 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 
 | Slash Command | Skill | Delegated Flow |
 | --- | --- | --- |
+| `/requirement-discovery` | `skills/requirement-discovery/SKILL.md` | requirement discovery and human review |
 | `/robotics-new-system` | `skills/robotics-new-system/SKILL.md` | `/new-robotics-system-development` |
 | `/robotics-feature-maintenance` | `skills/robotics-feature-maintenance/SKILL.md` | `/robotics-maintenance-development` |
 | `/corrective-action-report` | `skills/corrective-action-report/SKILL.md` | read-only improvement report |
 | `/knowledge-capture` | `skills/knowledge-capture/SKILL.md` | finalization and knowledge recovery |
 
 ## Two Primary Flows
+
+### Requirement Discovery
+
+人間が `work/requirements/draft/` に置いた箇条書き草案を、完成版要件定義書へ育てる前段 workflow です。
+
+Critical items が不足している場合は、設計や実装方針を勝手に決めず、人間へ質問します。
+
+Completion は、人間レビューで OK が出た後に `work/requirements/` へ完成版を1件だけ保存した状態です。
 
 ### 新システム開発
 
