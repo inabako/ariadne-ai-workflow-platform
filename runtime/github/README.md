@@ -41,6 +41,16 @@ repository は要件定義書の `Repository Control` から `runtime/scm/prepar
 
 `--label` / `--assignee` が未指定の場合、`DEFAULT_GITHUB_ISSUE_LABELS` / `DEFAULT_GITHUB_ISSUE_ASSIGNEES` をカンマ区切りで読みます。
 
+## Issue Body Template
+
+Issue body のsourceは次の優先順位で決定します。
+
+1. `--body-file` で明示されたMarkdown
+2. target repository の `.github/ISSUE_TEMPLATE.md`
+3. `runtime/github/issue_manager.py` のfallback本文
+
+target repository templateを使う場合、`Report`、`Target branch`、`Target commit` の空欄は、利用可能なworkflow contextから自動補完します。
+
 ## CLI
 
 ```text

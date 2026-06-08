@@ -51,10 +51,50 @@ def collect_artifact_paths(work_dir: Path) -> list[str]:
     return [artifact.get("path", "") for artifact in artifacts if artifact.get("path")]
 
 
+def resolve_source_dir(repo_root: Path, work_dir: Path, scm_state: dict[str, Any]) -> Path:
+    source_dir = str(scm_state.get("source_dir", "")).strip()
+    if source_dir:
+        path = Path(source_dir)
+        return path.resolve() if path.is_absolute() else (repo_root / path).resolve()
+    return (work_dir / "source" / "repository").resolve()
+
+
+def project_issue_template_path(repo_root: Path, work_dir: Path, scm_state: dict[str, Any]) -> Path | None:
+    template_path = resolve_source_dir(repo_root, work_dir, scm_state) / ".github" / "ISSUE_TEMPLATE.md"
+    return template_path if template_path.exists() else None
+
+
+def corrective_action_report_path(artifact_paths: list[str]) -> str:
+    for path in artifact_paths:
+        if "corrective-action-report" in path.replace("\\", "/"):
+            return path
+    return ""
+
+
+def fill_project_issue_template(template_text: str, scm_state: dict[str, Any], artifact_paths: list[str]) -> str:
+    replacements = {
+        "Report": corrective_action_report_path(artifact_paths),
+        "Target branch": str(scm_state.get("target_branch", "") or scm_state.get("current_branch", "")),
+        "Target commit": str(scm_state.get("current_commit", "")),
+    }
+    body = template_text
+    for label, value in replacements.items():
+        if value:
+            body = re.sub(
+                rf"(?m)^- {re.escape(label)}:\s*$",
+                f"- {label}: `{value}`",
+                body,
+            )
+    return body
+
+
 def default_issue_body(repo_root: Path, work_dir: Path) -> str:
     context = read_json(work_dir / "context" / "agent-context.json", default={}) or {}
     scm_state = read_json(work_dir / "context" / "scm-state.json", default={}) or {}
     artifact_paths = collect_artifact_paths(work_dir)
+    template_path = project_issue_template_path(repo_root, work_dir, scm_state)
+    if template_path:
+        return fill_project_issue_template(template_path.read_text(encoding="utf-8-sig"), scm_state, artifact_paths)
 
     lines = [
         "## Intent",
@@ -92,6 +132,18 @@ def default_issue_body(repo_root: Path, work_dir: Path) -> str:
         ]
     )
     return "\n".join(lines)
+
+
+def issue_body_from_args(repo_root: Path, work_dir: Path, args: argparse.Namespace) -> tuple[str, str, str | None]:
+    if args.body_file:
+        return Path(args.body_file).read_text(encoding="utf-8-sig"), "body-file", str(Path(args.body_file).resolve())
+
+    scm_state = read_json(work_dir / "context" / "scm-state.json", default={}) or {}
+    template_path = project_issue_template_path(repo_root, work_dir, scm_state)
+    if template_path:
+        return default_issue_body(repo_root, work_dir), "project-template", relative_to_repo(repo_root, template_path)
+
+    return default_issue_body(repo_root, work_dir), "runtime-default", None
 
 
 def create_issue_with_api(
@@ -157,7 +209,7 @@ def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
         if item.strip()
     ]
 
-    body_text = Path(args.body_file).read_text(encoding="utf-8-sig") if args.body_file else default_issue_body(repo_root, work_dir)
+    body_text, body_source, template_path = issue_body_from_args(repo_root, work_dir, args)
     issue_id = f"github-issue-{local_timestamp()}"
     draft_md = work_dir / "process-report" / f"{issue_id}.md"
     draft_json = work_dir / "process-report" / f"{issue_id}.json"
@@ -183,6 +235,8 @@ def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
         "github_repo": github_repo,
         "title": args.title,
         "body_path": relative_to_repo(repo_root, draft_md),
+        "body_source": body_source,
+        "template_path": template_path,
         "labels": labels,
         "assignees": assignees,
         "status": status,
