@@ -56,6 +56,21 @@ work/<issue-id>/process-report/knowledge-capture-report.md
 work/<issue-id>/process-report/knowledge-capture-*.json
 ```
 
+The runtime also creates the target repository evidence scaffold when missing:
+
+```text
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/README.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/test_specifications/README.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/ut/README.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/integration/README.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/integration/qtest/README.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/integration/manual/README.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/integration/startup/README.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/human_check/README.md
+```
+
+Scaffold `README.md` files keep empty directories visible to Git, but they are not test evidence.
+
 ## 1. PR Documents
 
 Generate:
@@ -80,21 +95,28 @@ The documents must cover:
 Confirm:
 
 ```text
-docs/<issue-id>/unit_test
-docs/<issue-id>/integration_connectivity_test
+docs/evidence/<issue-id>/test_specifications
+docs/evidence/<issue-id>/test_specifications/unit-test-cases.md
+docs/evidence/<issue-id>/test_specifications/integration-test-cases.md
+docs/evidence/<issue-id>/test_specifications/human-check-list.md
+docs/evidence/<issue-id>/ut
+docs/evidence/<issue-id>/integration
+docs/evidence/<issue-id>/human_check
 ```
 
 These paths are inside the target repository checkout:
 
 ```text
-work/<issue-id>/source/repository/docs/<issue-id>/
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/
 ```
 
 If missing, report the missing path and stop before push.
+If only scaffold `README.md` files exist, report that actual evidence is still missing.
+If the expected test case files are missing, report which test layer is missing or why it is not required.
 
 ## 3. Push Gate
 
-After test cases and evidence are stored under `docs/<issue-id>/`, push only the issue branch:
+After test cases and evidence are stored under `docs/evidence/<issue-id>/`, push only the issue branch:
 
 ```powershell
 python runtime/scm/push_branch.py `
@@ -202,3 +224,4 @@ Do not:
 - move archive without human approval
 - delete base work without preserving process-report and receiving human approval
 - delete evidence
+- treat scaffold `README.md` files as actual evidence

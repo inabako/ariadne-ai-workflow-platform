@@ -10,7 +10,7 @@ agent: agent
 Readable workflow additions:
 
 - Before push, generate PR material with `runtime/workflow/knowledge_capture.py`: `pull-request-title.md`, `pull-request-description.md`, `merge-comment.md`, and `knowledge-capture-report.md`.
-- Before push, confirm test specifications and evidence are stored under `work/issue-XXX/source/repository/docs/issue-XXX/unit_test/` and `work/issue-XXX/source/repository/docs/issue-XXX/integration_connectivity_test/`.
+- Before push, confirm test specifications and evidence are stored under `work/issue-XXX/source/repository/docs/evidence/issue-XXX/test_specifications/`, `ut/`, `integration/`, and `human_check/` when required. Split test case tables into `unit-test-cases.md`, `integration-test-cases.md`, and `human-check-list.md`. `knowledge_capture.py` creates missing scaffold directories, but scaffold `README.md` files alone are not evidence.
 - After docs evidence is present and human approval is recorded, push only `feature/issue-XXX`.
 - For final knowledge recovery, extract RAG candidates from `work/issue-XXX/process-report`, `work/issue-XXX/test-specifications`, and `work/issue-XXX/test-evidence`.
 - Before deleting `work/<base-branch>`, preserve `work/<base-branch>/process-report` under `work/close/issue-XXX/process-report/base-work-<base-branch>` and verify the copy.

@@ -44,8 +44,10 @@ work/<issue-id>/test-evidence/
 Target repository docs evidence paths:
 
 ```text
-work/<issue-id>/source/repository/docs/<issue-id>/unit_test/
-work/<issue-id>/source/repository/docs/<issue-id>/integration_connectivity_test/
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/test_specifications/
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/ut/
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/integration/
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/human_check/
 ```
 
 ## Workflow
@@ -76,6 +78,21 @@ knowledge-capture-report.md
 knowledge-capture-*.json
 ```
 
+The runtime also creates the target repository evidence scaffold when missing:
+
+```text
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/README.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/test_specifications/README.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/ut/README.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/integration/README.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/integration/qtest/README.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/integration/manual/README.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/integration/startup/README.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/human_check/README.md
+```
+
+Scaffold `README.md` files keep empty directories visible to Git, but they are not test evidence.
+
 `pull-request-title.md` must use the GitHub Issue title when an Issue record is available.
 
 `pull-request-description.md` must include a Mermaid sequence diagram that shows the change flow from Issue to branch, tests, push, PR, and `develop`.
@@ -85,11 +102,18 @@ knowledge-capture-*.json
 Confirm that test case tables and evidence are stored under:
 
 ```text
-docs/<issue-id>/unit_test
-docs/<issue-id>/integration_connectivity_test
+docs/evidence/<issue-id>/test_specifications
+docs/evidence/<issue-id>/test_specifications/unit-test-cases.md
+docs/evidence/<issue-id>/test_specifications/integration-test-cases.md
+docs/evidence/<issue-id>/test_specifications/human-check-list.md
+docs/evidence/<issue-id>/ut
+docs/evidence/<issue-id>/integration
+docs/evidence/<issue-id>/human_check
 ```
 
-If either path is missing or empty, report it and stop before push.
+If any required path is missing or empty, report it and stop before push.
+If only scaffold `README.md` files exist, report that actual evidence is still missing.
+If the expected test case files are missing, report which test layer is missing or why it is not required.
 
 ### 3. Push Gate
 
@@ -222,3 +246,4 @@ Human Action
 - Do not delete `work/<base-work-id>` until its `process-report` has been preserved under `work/close/<issue-id>/process-report/base-work-<base-work-id>` and the copy has been verified.
 - Do not delete evidence.
 - Report missing docs evidence before push.
+- Do not treat scaffold `README.md` files as actual evidence.

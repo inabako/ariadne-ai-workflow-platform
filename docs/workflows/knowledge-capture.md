@@ -28,6 +28,21 @@ work/<issue-id>/test-specifications/
 work/<issue-id>/test-evidence/
 ```
 
+target repository docs側の永続証跡:
+
+```text
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/test_specifications/
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/test_specifications/unit-test-cases.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/test_specifications/integration-test-cases.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/test_specifications/human-check-list.md
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/ut/
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/integration/
+work/<issue-id>/source/repository/docs/evidence/<issue-id>/human_check/
+```
+
+`runtime/workflow/knowledge_capture.py` は、存在しない証跡フォルダとscaffold用 `README.md` を自動生成します。
+ただし、`README.md` だけでは実エビデンスとはみなしません。
+
 ## Flow
 
 1. knowledge capture packageを生成する。
@@ -71,6 +86,7 @@ python runtime/github/pull_request_manager.py `
 - designを変更しません。
 - push、Pull Request作成、RAG登録、archive移動、base work削除は人間承認後に行います。
 - evidenceを削除しません。
+- テスト成果物の保存先は [Test Artifact Storage](../reference/test-artifact-storage.md) に従います。
 
 ## Source Skill
 

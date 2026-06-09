@@ -140,7 +140,21 @@ QTestにできない結合疎通試験は、理由と残リスクを記録しま
 
 | Evidence ID | Test Case ID | Evidence Type | Save Location | Required |
 | --- | --- | --- | --- | --- |
-| EVD-001 | TC-001 | log / screenshot / telemetry / video / command-output | work/<receipt-id>/test-evidence/ | yes / no |
+| EVD-001 | TC-001 | log / screenshot / telemetry / video / command-output | work/<receipt-id>/test-evidence/<category>/ | yes / no |
+
+Target repository docs location:
+
+```text
+docs/evidence/issue-<issue-number>/test_specifications/unit-test-cases.md
+docs/evidence/issue-<issue-number>/test_specifications/integration-test-cases.md
+docs/evidence/issue-<issue-number>/test_specifications/human-check-list.md
+docs/evidence/issue-<issue-number>/ut/
+docs/evidence/issue-<issue-number>/integration/
+docs/evidence/issue-<issue-number>/human_check/
+```
+
+UT、結合試験、人間確認は同じIssue配下に保存しますが、test case tableは上記3ファイルへ分けます。
+単一の包括的な `test-specification.md` を併用する場合も、各テストケースがUT、integration、human checkのどれに属するかを明示します。
 
 ## 14. Exit Criteria
 

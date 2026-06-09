@@ -33,7 +33,24 @@ safety-critical test では、STOP、communication loss、startup safe state、s
 実案件では以下に保存します。
 
 ```text
-work/<receipt-id>/test-evidence/
+work/<receipt-id>/test-evidence/<category>/
+```
+
+推奨category:
+
+```text
+unit_test/
+qtest_integration/
+integration_connectivity_test/
+human_check/
+```
+
+target repositoryへpushする永続証跡は次へ保存します。
+
+```text
+docs/evidence/issue-<issue-number>/ut/
+docs/evidence/issue-<issue-number>/integration/
+docs/evidence/issue-<issue-number>/human_check/
 ```
 
 生成後は `work/<receipt-id>/context/artifact-index.json` に登録します。

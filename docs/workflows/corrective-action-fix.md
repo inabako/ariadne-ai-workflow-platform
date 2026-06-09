@@ -191,9 +191,12 @@ work/issue-<issue-number>/source/repository/src/tests/qt/test_<feature>_integrat
 テスト証跡は次に保存します。
 
 ```text
-work/issue-<issue-number>/test-evidence/
-work/issue-<issue-number>/source/repository/docs/issue-<issue-number>/integration_connectivity_test/
+work/issue-<issue-number>/test-evidence/qtest_integration/
+work/issue-<issue-number>/source/repository/docs/evidence/issue-<issue-number>/integration/qtest/
 ```
+
+テスト仕様書、unit test、manual integration、human checkを含む全体の保存先は [Test Artifact Storage](../reference/test-artifact-storage.md) に従います。
+Knowledge Capture実行時にtarget repository側の証跡フォルダは自動生成されますが、scaffold用 `README.md` だけではpush可能な証跡とはみなしません。
 
 ## Guardrails
 

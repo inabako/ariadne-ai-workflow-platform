@@ -159,6 +159,36 @@ src/tests/qt/test_<feature>_integration.py
 
 QTest tests must be derived from the approved test specification. Do not invent additional behavior that is not tied to a requirement, Issue scope, or test case ID.
 
+## Test Artifact Storage
+
+Save work artifacts under:
+
+```text
+work/<id>/test-specifications/
+work/<id>/test-evidence/unit_test/
+work/<id>/test-evidence/qtest_integration/
+work/<id>/test-evidence/integration_connectivity_test/
+work/<id>/test-evidence/human_check/
+```
+
+Before push, copy durable evidence into the target repository:
+
+```text
+docs/evidence/issue-<issue-number>/test_specifications/unit-test-cases.md
+docs/evidence/issue-<issue-number>/test_specifications/integration-test-cases.md
+docs/evidence/issue-<issue-number>/test_specifications/human-check-list.md
+docs/evidence/issue-<issue-number>/ut/
+docs/evidence/issue-<issue-number>/integration/qtest/
+docs/evidence/issue-<issue-number>/integration/manual/
+docs/evidence/issue-<issue-number>/integration/startup/
+docs/evidence/issue-<issue-number>/human_check/
+```
+
+Use `unit-test-cases.md` for unit test cases, `integration-test-cases.md` for integration / connectivity and QTest candidates, and `human-check-list.md` for human confirmation items.
+
+The knowledge-capture runtime creates missing scaffold directories and `README.md` files.
+Replace or supplement scaffold-only directories with actual test specifications, logs, command outputs, screenshots, or human check results before push.
+
 ## Quality Gate
 
 以下に該当する場合は fail または QA としてください。

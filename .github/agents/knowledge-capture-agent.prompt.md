@@ -35,7 +35,7 @@ work/issue-XXX/
 work/issue-XXX/process-report/
 work/issue-XXX/test-specifications/
 work/issue-XXX/test-evidence/
-work/issue-XXX/source/repository/docs/issue-XXX/
+work/issue-XXX/source/repository/docs/evidence/issue-XXX/
 ```
 
 When available, also read:
@@ -72,11 +72,19 @@ Include:
 Confirm that test cases and evidence are stored under the target repository docs tree:
 
 ```text
-docs/issue-XXX/unit_test
-docs/issue-XXX/integration_connectivity_test
+docs/evidence/issue-XXX/test_specifications
+docs/evidence/issue-XXX/test_specifications/unit-test-cases.md
+docs/evidence/issue-XXX/test_specifications/integration-test-cases.md
+docs/evidence/issue-XXX/test_specifications/human-check-list.md
+docs/evidence/issue-XXX/ut
+docs/evidence/issue-XXX/integration
+docs/evidence/issue-XXX/human_check
 ```
 
-If missing, report what is missing. Do not run tests by yourself.
+`runtime/workflow/knowledge_capture.py` creates missing scaffold directories and `README.md` files.
+If required evidence files are missing, or if only scaffold `README.md` files exist, report what is missing.
+If the expected test case files are missing, report the missing test layer or the recorded skip reason.
+Do not run tests by yourself.
 
 ### 3. Evidence Inventory
 

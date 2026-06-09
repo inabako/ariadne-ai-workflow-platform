@@ -41,4 +41,15 @@ PyQt / Qt GUI の結合疎通試験では、テストケース表からQTest化�
 work/<receipt-id>/test-specifications/
 ```
 
+target repositoryにpushする永続テストケース表は、Issue単位で次の3ファイルに分けて保存します。
+
+```text
+docs/evidence/issue-<issue-number>/test_specifications/unit-test-cases.md
+docs/evidence/issue-<issue-number>/test_specifications/integration-test-cases.md
+docs/evidence/issue-<issue-number>/test_specifications/human-check-list.md
+```
+
+`unit-test-cases.md` はUTで確認する項目、`integration-test-cases.md` は結合疎通試験とQTest候補、`human-check-list.md` は人間確認項目を扱います。
+単一の包括的な `test-specification.md` を併用してもよいですが、push前には上記3観点が分離して追える状態にします。
+
 生成後は `work/<receipt-id>/context/artifact-index.json` に登録します。

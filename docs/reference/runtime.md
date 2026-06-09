@@ -29,7 +29,7 @@
 | `runtime/github/pull_request_manager.py` | Issue branch push後にPull Request draft / createを行う |
 | `runtime/workflow/docs_sync.py` | docs-syncのcontext、analysis scaffold、Issue bodyを作る |
 | `runtime/workflow/init_corrective_action_fix.py` | corrective-action-fixのbase / issue work folderを初期化する |
-| `runtime/workflow/knowledge_capture.py` | PR材料、knowledge capture report、archive readinessを作る |
+| `runtime/workflow/knowledge_capture.py` | PR材料、knowledge capture report、archive readinessを作り、target repository側の `docs/evidence/<issue-id>/` scaffoldを自動生成する |
 | `runtime/rag/rag_dispatcher.py` | 複数queryのRAG loadを計画・実行・集約する |
 
 ## Environment Files

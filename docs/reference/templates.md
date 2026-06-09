@@ -36,6 +36,7 @@ templates/
 - Intent、Decision、Reason、Evidence、Open QA を明示する。
 - safety-critical な内容では STOP、communication loss、startup safe state、shutdown safe state を確認する。
 - PyQt / Qt GUIでは、結合疎通試験のうちQTest化できるものと人間確認に残すものを分ける。
+- テスト成果物の保存先は [Test Artifact Storage](test-artifact-storage.md) に従う。
 - 出力先は `work/<work-id>/` 配下の対応directoryにする。
 - 生成後は可能な限り `work/<work-id>/context/artifact-index.json` に登録する。
 

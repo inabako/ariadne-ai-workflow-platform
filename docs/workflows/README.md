@@ -49,4 +49,5 @@
 - Specialist Agent reviewは作業中は `work/<id>/process-report/` に保存し、人間承認後に内部RAG候補として扱います。
 - Specialist Agent reviewでは、採用した外部Web RAG、採用しなかったclaim、検証方法を残します。
 - PyQt / Qt GUIでは、テストケース表からQTest化できる結合疎通試験を選別し、外部I/Oは原則stub / disableします。
+- target repositoryへ残すテスト証跡は `docs/evidence/issue-<issue-number>/` に保存します。
 - Issue branch push後は、Issue titleをPR titleとして `develop` へPull Requestを作成します。

@@ -13,6 +13,25 @@ from runtime.common import find_repo_root, local_timestamp, read_json, relative_
 
 
 RAG_SOURCE_DIRS = ["process-report", "test-specifications", "test-evidence"]
+EXPECTED_TEST_SPEC_FILES = ["unit-test-cases.md", "integration-test-cases.md", "human-check-list.md"]
+SCAFFOLD_FILE_NAMES = {"README.md"}
+EVIDENCE_SCAFFOLD = {
+    "": "# Issue Evidence\n\nStore durable test specifications and evidence for this issue here.\n",
+    "test_specifications": (
+        "# Test Specifications\n\n"
+        "Store test case tables and test specifications here.\n\n"
+        "Recommended files:\n\n"
+        "- `unit-test-cases.md`\n"
+        "- `integration-test-cases.md`\n"
+        "- `human-check-list.md`\n"
+    ),
+    "ut": "# Unit Test Evidence\n\nStore unit test commands, logs, and results here.\n",
+    "integration": "# Integration Evidence\n\nStore integration evidence under qtest, manual, and startup subdirectories.\n",
+    "integration/qtest": "# QTest Evidence\n\nStore PyQt / Qt QTest commands, logs, and results here.\n",
+    "integration/manual": "# Manual Integration Evidence\n\nStore manual integration check steps, observations, and results here.\n",
+    "integration/startup": "# Startup Evidence\n\nStore startup commands, logs, external I/O notes, and results here.\n",
+    "human_check": "# Human Check Evidence\n\nStore human confirmation items, approver, date, and results here.\n",
+}
 DOCS_CANDIDATE_KEYWORDS = [
     "Docker",
     "UDP Broadcast",
@@ -48,13 +67,28 @@ def list_files(path: Path) -> list[Path]:
     return sorted(item for item in path.rglob("*") if item.is_file())
 
 
+def is_scaffold_file(path: Path) -> bool:
+    return path.name in SCAFFOLD_FILE_NAMES
+
+
 def path_status(path: Path) -> dict[str, Any]:
     files = list_files(path)
+    evidence_files = [path for path in files if not is_scaffold_file(path)]
     return {
         "path": path,
         "exists": path.exists(),
         "file_count": len(files),
+        "evidence_file_count": len(evidence_files),
         "files": files,
+        "evidence_files": evidence_files,
+    }
+
+
+def file_status(path: Path) -> dict[str, Any]:
+    return {
+        "path": path,
+        "exists": path.exists() and path.is_file(),
+        "size": path.stat().st_size if path.exists() and path.is_file() else 0,
     }
 
 
@@ -97,6 +131,27 @@ def write_markdown(path: Path, text: str, dry_run: bool) -> None:
         return
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text.rstrip() + "\n", encoding="utf-8")
+
+
+def scaffold_evidence_docs(docs_root: Path, dry_run: bool) -> list[dict[str, Any]]:
+    scaffold_results = []
+    for relative_dir, readme_text in EVIDENCE_SCAFFOLD.items():
+        directory = docs_root / relative_dir if relative_dir else docs_root
+        readme_path = directory / "README.md"
+        existed = readme_path.exists()
+        if not dry_run:
+            directory.mkdir(parents=True, exist_ok=True)
+            if not existed:
+                readme_path.write_text(readme_text.rstrip() + "\n", encoding="utf-8")
+        scaffold_results.append(
+            {
+                "path": directory,
+                "readme": readme_path,
+                "created": not existed and not dry_run,
+                "planned": not existed and dry_run,
+            }
+        )
+    return scaffold_results
 
 
 def latest_issue_title(repo_root: Path, work_dir: Path, base_work_id: str = "") -> str:
@@ -161,12 +216,14 @@ sequenceDiagram
 
 ## Tests
 
-- Unit test evidence directory: `{docs_status["unit_test"]["relative_path"]}`
-- Integration / connectivity evidence directory: `{docs_status["integration_connectivity_test"]["relative_path"]}`
+- Test specification docs directory: `{docs_status["test_specifications"]["relative_path"]}`
+- Unit test evidence directory: `{docs_status["ut"]["relative_path"]}`
+- Integration / connectivity evidence directory: `{docs_status["integration"]["relative_path"]}`
+- Human check evidence directory: `{docs_status["human_check"]["relative_path"]}`
 
 ## Human Confirmation
 
-- Confirm the evidence documents are present under `docs/{issue}/`.
+- Confirm the evidence documents are present under `docs/evidence/{issue}/`.
 - Confirm the integration / connectivity result is accepted.
 - Confirm this branch is ready to push and open / merge the pull request.
 """
@@ -178,8 +235,10 @@ def build_merge_comment(issue: str) -> str:
 Merged corrective action for `{issue}` after confirming:
 
 - PR title and description were prepared.
-- Unit test evidence was stored under `docs/{issue}/unit_test`.
-- Integration / connectivity evidence was stored under `docs/{issue}/integration_connectivity_test`.
+- Test specifications were stored under `docs/evidence/{issue}/test_specifications`.
+- Unit test evidence was stored under `docs/evidence/{issue}/ut`.
+- Integration / connectivity evidence was stored under `docs/evidence/{issue}/integration`.
+- Human check evidence was stored under `docs/evidence/{issue}/human_check` when required.
 - Human integration check was accepted.
 - Knowledge-capture report identified RAG and docs candidates.
 """
@@ -201,15 +260,36 @@ def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
     base_work_id = args.base_work_id or str(scm_state.get("base_work_id", ""))
 
     process_report_dir = work_dir / "process-report"
-    docs_root = source_dir / "docs" / args.issue
+    docs_root = source_dir / "docs" / "evidence" / args.issue
+    scaffold_status = scaffold_evidence_docs(docs_root, args.dry_run)
     docs_status = {
-        "unit_test": path_status(docs_root / "unit_test"),
-        "integration_connectivity_test": path_status(docs_root / "integration_connectivity_test"),
+        "test_specifications": path_status(docs_root / "test_specifications"),
+        "ut": path_status(docs_root / "ut"),
+        "integration": path_status(docs_root / "integration"),
+        "human_check": path_status(docs_root / "human_check"),
+    }
+    test_spec_file_status = {
+        name: file_status(docs_root / "test_specifications" / name)
+        for name in EXPECTED_TEST_SPEC_FILES
     }
     for status in docs_status.values():
         status["relative_path"] = relative_to_repo(repo_root, status["path"])
         status["path"] = status["relative_path"]
         status["files"] = [relative_to_repo(repo_root, path) for path in status["files"]]
+        status["evidence_files"] = [relative_to_repo(repo_root, path) for path in status["evidence_files"]]
+    for status in test_spec_file_status.values():
+        status["relative_path"] = relative_to_repo(repo_root, status["path"])
+        status["path"] = status["relative_path"]
+
+    scaffold_status = [
+        {
+            "path": relative_to_repo(repo_root, item["path"]),
+            "readme": relative_to_repo(repo_root, item["readme"]),
+            "created": item["created"],
+            "planned": item["planned"],
+        }
+        for item in scaffold_status
+    ]
 
     rag_sources: dict[str, dict[str, Any]] = {}
     rag_files: list[Path] = []
@@ -272,10 +352,20 @@ Finalization and knowledge recovery package for `{repository or "unknown reposit
 
 ## Test Evidence Docs
 
-| Area | Path | Exists | File Count |
-| --- | --- | --- | --- |
-| Unit Test | `{docs_status["unit_test"]["relative_path"]}` | {docs_status["unit_test"]["exists"]} | {docs_status["unit_test"]["file_count"]} |
-| Integration / Connectivity Test | `{docs_status["integration_connectivity_test"]["relative_path"]}` | {docs_status["integration_connectivity_test"]["exists"]} | {docs_status["integration_connectivity_test"]["file_count"]} |
+| Area | Path | Exists | File Count | Evidence File Count |
+| --- | --- | --- | --- | --- |
+| Test Specifications | `{docs_status["test_specifications"]["relative_path"]}` | {docs_status["test_specifications"]["exists"]} | {docs_status["test_specifications"]["file_count"]} | {docs_status["test_specifications"]["evidence_file_count"]} |
+| Unit Test | `{docs_status["ut"]["relative_path"]}` | {docs_status["ut"]["exists"]} | {docs_status["ut"]["file_count"]} | {docs_status["ut"]["evidence_file_count"]} |
+| Integration / Connectivity Test | `{docs_status["integration"]["relative_path"]}` | {docs_status["integration"]["exists"]} | {docs_status["integration"]["file_count"]} | {docs_status["integration"]["evidence_file_count"]} |
+| Human Check | `{docs_status["human_check"]["relative_path"]}` | {docs_status["human_check"]["exists"]} | {docs_status["human_check"]["file_count"]} | {docs_status["human_check"]["evidence_file_count"]} |
+
+## Expected Test Case Tables
+
+| File | Exists | Size |
+| --- | --- | --- |
+| `{test_spec_file_status["unit-test-cases.md"]["relative_path"]}` | {test_spec_file_status["unit-test-cases.md"]["exists"]} | {test_spec_file_status["unit-test-cases.md"]["size"]} |
+| `{test_spec_file_status["integration-test-cases.md"]["relative_path"]}` | {test_spec_file_status["integration-test-cases.md"]["exists"]} | {test_spec_file_status["integration-test-cases.md"]["size"]} |
+| `{test_spec_file_status["human-check-list.md"]["relative_path"]}` | {test_spec_file_status["human-check-list.md"]["exists"]} | {test_spec_file_status["human-check-list.md"]["size"]} |
 
 ## RAG Candidates
 
@@ -306,7 +396,7 @@ Finalization and knowledge recovery package for `{repository or "unknown reposit
 
 ## Human Action
 
-- Confirm docs evidence is stored under `docs/{args.issue}/unit_test` and `docs/{args.issue}/integration_connectivity_test`.
+- Confirm docs evidence is stored under `docs/evidence/{args.issue}/test_specifications`, `docs/evidence/{args.issue}/ut`, `docs/evidence/{args.issue}/integration`, and `docs/evidence/{args.issue}/human_check` when required.
 - Push `feature/{args.issue}` only after docs evidence is committed in the feature branch.
 - Run RAG build for selected candidates after approval.
 - Preserve `work/<base-work-id>/process-report` under `work/close/{args.issue}/process-report/base-work-<base-work-id>` before deleting the base work folder.
@@ -324,7 +414,9 @@ Finalization and knowledge recovery package for `{repository or "unknown reposit
         "generated_at": timestamp,
         "dry_run": bool(args.dry_run),
         "pr_documents": {key: relative_to_repo(repo_root, path) for key, path in output_paths.items() if key != "knowledge_capture_json"},
+        "scaffold_status": scaffold_status,
         "docs_status": docs_status,
+        "test_specification_files": test_spec_file_status,
         "rag_sources": rag_sources,
         "rag_candidate_count": len(rag_files),
         "docs_candidates": docs_candidates,

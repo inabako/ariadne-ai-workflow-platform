@@ -98,6 +98,30 @@ feature/issue-<issue-number>
 | `source/` | clone、差分、実装対象source |
 | `context/` | Agent間共有JSON、handoff、artifact index |
 
+## Test Artifact Storage
+
+テスト成果物の詳細な保存先は [Test Artifact Storage](test-artifact-storage.md) を参照します。
+
+target repositoryにpushする永続証跡は、原則として次へ保存します。
+
+```text
+work/issue-<issue-number>/source/repository/docs/evidence/issue-<issue-number>/
+  README.md
+  test_specifications/
+    unit-test-cases.md
+    integration-test-cases.md
+    human-check-list.md
+  ut/
+  integration/
+    qtest/
+    manual/
+    startup/
+  human_check/
+```
+
+存在しない場合、Knowledge Capture実行時に上記のscaffoldと各フォルダの `README.md` を自動生成します。
+ただし、scaffold `README.md` だけではpush可能なテスト証跡とはみなしません。
+
 ## Requirement Intake Location
 
 ```text
