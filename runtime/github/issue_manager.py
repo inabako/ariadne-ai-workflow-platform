@@ -30,6 +30,11 @@ from runtime.github.api import github_api_json  # noqa: E402
 
 
 ISSUE_URL_RE = re.compile(r"/issues/(\d+)")
+ISSUE_TITLE_PREFIXES = {
+    "new-feature": "新規機能フロー",
+    "improvement": "改善フロー",
+    "initial-development": "初期開発",
+}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -37,12 +42,36 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--work-id", required=True)
     parser.add_argument("--github-repo", default=None, help="GitHub repository in owner/name format.")
     parser.add_argument("--title", required=True)
+    parser.add_argument("--flow-label", choices=sorted(ISSUE_TITLE_PREFIXES), default=None)
+    parser.add_argument("--title-prefix", default=None, help="Issue title prefix label without brackets, for example 改善フロー.")
     parser.add_argument("--body-file", default=None)
     parser.add_argument("--label", action="append", default=[])
     parser.add_argument("--assignee", action="append", default=[])
     parser.add_argument("--repo-root", default=None)
     parser.add_argument("--create", action="store_true", help="Actually create the issue using GitHub REST API.")
     return parser
+
+
+def infer_flow_label(work_dir: Path) -> str:
+    context = read_json(work_dir / "context" / "agent-context.json", default={}) or {}
+    workflow_name = str(context.get("workflow", {}).get("name", "")).lower()
+    if "new-robotics-system" in workflow_name or "new-system" in workflow_name:
+        return ISSUE_TITLE_PREFIXES["initial-development"]
+    if "maintenance" in workflow_name or "feature" in workflow_name:
+        return ISSUE_TITLE_PREFIXES["new-feature"]
+    if "corrective" in workflow_name or "docs-sync" in workflow_name:
+        return ISSUE_TITLE_PREFIXES["improvement"]
+    return ""
+
+
+def normalize_issue_title(title: str, flow_label: str = "", explicit_prefix: str = "") -> tuple[str, str]:
+    prefix = explicit_prefix.strip() or ISSUE_TITLE_PREFIXES.get(flow_label, "")
+    if not prefix:
+        return title, ""
+    bracketed = f"[{prefix}]"
+    if title.strip().startswith(bracketed):
+        return title, prefix
+    return f"{bracketed} {title.strip()}", prefix
 
 
 def collect_artifact_paths(work_dir: Path) -> list[str]:
@@ -198,6 +227,11 @@ def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError("GitHub repository is required. Run runtime/scm/prepare_repository.py first or set --github-repo.")
     if "/" not in github_repo:
         raise ValueError("GitHub repository must be in owner/name format.")
+    explicit_prefix = args.title_prefix or ""
+    flow_label = args.flow_label or ""
+    if not explicit_prefix and not flow_label:
+        explicit_prefix = infer_flow_label(work_dir)
+    issue_title, applied_title_prefix = normalize_issue_title(args.title, flow_label, explicit_prefix)
     labels = args.label or [
         item.strip()
         for item in env_value(settings, "DEFAULT_GITHUB_ISSUE_LABELS", "GITHUB_DEFAULT_LABELS").split(",")
@@ -221,7 +255,7 @@ def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
     if args.create:
         issue_url, issue_number = create_issue_with_api(
             github_repo,
-            args.title,
+            issue_title,
             body_text,
             labels,
             assignees,
@@ -233,7 +267,9 @@ def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
         "schema_version": "1.0",
         "work_id": args.work_id,
         "github_repo": github_repo,
-        "title": args.title,
+        "title": issue_title,
+        "raw_title": args.title,
+        "title_prefix": applied_title_prefix,
         "body_path": relative_to_repo(repo_root, draft_md),
         "body_source": body_source,
         "template_path": template_path,

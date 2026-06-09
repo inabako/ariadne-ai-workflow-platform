@@ -9,6 +9,7 @@
 - `--create` 指定時のみ GitHub REST API でIssueを作成する
 - Issue番号を `github-issue-*.json` に記録する
 - Issue branch作成時のGitHub GraphQL linked branch登録を支援する
+- Issue branch push後の Pull Request draft / create を扱う
 
 ## Environment
 
@@ -41,6 +42,18 @@ repository は要件定義書の `Repository Control` から `runtime/scm/prepar
 
 `--label` / `--assignee` が未指定の場合、`DEFAULT_GITHUB_ISSUE_LABELS` / `DEFAULT_GITHUB_ISSUE_ASSIGNEES` をカンマ区切りで読みます。
 
+## Issue Title Prefix
+
+Issue title は workflow に応じてprefixを付けます。
+
+| Flow | Prefix |
+| --- | --- |
+| New feature / maintenance | `[新規機能フロー]` |
+| Corrective action / docs sync | `[改善フロー]` |
+| New system / initial development | `[初期開発]` |
+
+`runtime/github/issue_manager.py` は `--flow-label` または `--title-prefix` でprefixを付与できます。
+
 ## Issue Body Template
 
 Issue body のsourceは次の優先順位で決定します。
@@ -55,6 +68,7 @@ target repository templateを使う場合、`Report`、`Target branch`、`Target
 
 ```text
 runtime/github/issue_manager.py
+runtime/github/pull_request_manager.py
 runtime/scm/create_issue_branch.py --link-to-issue
 ```
 
@@ -66,7 +80,8 @@ Draft only:
 python runtime/github/issue_manager.py `
   --work-id WF-20260601-090000 `
   --github-repo owner/repository `
-  --title "Add remote gateway skeleton"
+  --title "Add remote gateway skeleton" `
+  --flow-label initial-development
 ```
 
 Create GitHub Issue:
@@ -76,14 +91,27 @@ python runtime/github/issue_manager.py `
   --work-id WF-20260601-090000 `
   --github-repo owner/repository `
   --title "Add remote gateway skeleton" `
+  --flow-label initial-development `
   --label enhancement `
   --create
+```
+
+Create Pull Request after the issue branch has been pushed:
+
+```powershell
+python runtime/github/pull_request_manager.py `
+  --work-id issue-11 `
+  --base develop `
+  --create `
+  --human-check approved
 ```
 
 ## Network Rule
 
 Issue creation requires network access and GitHub API token authentication.
 
-By default, this runtime creates a local draft only. It calls GitHub only when `--create` is explicitly specified.
+By default, this runtime creates local drafts only. It calls GitHub only when `--create` is explicitly specified.
+
+Pull Request creation also requires `--create --human-check approved`.
 
 Issue linked branch creation is handled during `runtime/scm/create_issue_branch.py --link-to-issue`. It uses GitHub GraphQL `createLinkedBranch` after the GitHub Issue number is available.

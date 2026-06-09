@@ -43,7 +43,8 @@ Use:
 7. Clone the issue branch under `work/issue-<issue-number>/`.
 8. Update `docs/` based on the JSON.
 9. Commit and push the issue branch after human approval.
-10. Prepare knowledge capture and RAG candidates.
+10. Create a Pull Request to `develop` after human approval.
+11. Prepare knowledge capture and RAG candidates.
 11. Move the work folder to `work/close/issue-<issue-number>` after human approval.
 
 ## Runtime Helpers
@@ -85,6 +86,7 @@ Create the Issue:
 python runtime/github/issue_manager.py `
   --work-id "<target-branch>" `
   --title "<issue-title>" `
+  --flow-label improvement `
   --body-file "work/<target-branch>/process-report/docs-sync-issue-body-YYYYMMDD_HHMMSS.md" `
   --create
 ```
@@ -120,6 +122,16 @@ python runtime/scm/push_branch.py `
   --set-upstream
 ```
 
+Create Pull Request to `develop` after push:
+
+```powershell
+python runtime/github/pull_request_manager.py `
+  --work-id "issue-<issue-number>" `
+  --base develop `
+  --create `
+  --human-check approved
+```
+
 ## Required JSON
 
 The drift analysis must be saved before Issue creation:
@@ -140,6 +152,7 @@ Schema:
 - Do not change implementation code in the issue branch.
 - Do not create an Issue from a free-form summary; use `docs-drift-analysis.json`.
 - Do not push without human approval.
+- Do not create Pull Requests without human approval.
 - Do not run RAG registration or move archives without human approval.
 - If docs and implementation conflict, current implementation evidence wins unless the human says otherwise.
 - If implementation behavior is unclear, ask or record an unresolved question.

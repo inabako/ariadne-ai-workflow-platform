@@ -76,6 +76,10 @@ knowledge-capture-report.md
 knowledge-capture-*.json
 ```
 
+`pull-request-title.md` must use the GitHub Issue title when an Issue record is available.
+
+`pull-request-description.md` must include a Mermaid sequence diagram that shows the change flow from Issue to branch, tests, push, PR, and `develop`.
+
 ### 2. Confirm Test Evidence Docs Placement
 
 Confirm that test case tables and evidence are stored under:
@@ -98,7 +102,31 @@ python runtime/scm/push_branch.py `
   --set-upstream
 ```
 
-### 4. RAG Candidate Extraction
+### 4. Pull Request Gate
+
+After the issue branch is pushed, create a Pull Request to `develop`.
+
+Draft PR record:
+
+```powershell
+python runtime/github/pull_request_manager.py `
+  --work-id "<issue-id>" `
+  --base develop
+```
+
+Create PR after human approval:
+
+```powershell
+python runtime/github/pull_request_manager.py `
+  --work-id "<issue-id>" `
+  --base develop `
+  --create `
+  --human-check approved
+```
+
+Pull Request title uses the GitHub Issue title.
+
+### 5. RAG Candidate Extraction
 
 Use the report to identify RAG candidates from:
 
@@ -110,7 +138,7 @@ work/<issue-id>/test-evidence
 
 Do not run `/rag-build` until the user approves RAG registration.
 
-### 5. Docs Candidate Extraction
+### 6. Docs Candidate Extraction
 
 Classify durable operational knowledge that should become docs rather than only RAG.
 
@@ -125,7 +153,7 @@ Examples:
 - camera input design
 - test evidence policy
 
-### 6. Archive Readiness
+### 7. Archive Readiness
 
 Check whether the work folder can move:
 
@@ -134,7 +162,7 @@ work/<issue-id>
   -> work/close/<issue-id>
 ```
 
-### 7. Base Work Reset
+### 8. Base Work Reset
 
 Before deleting the base work folder, preserve the base-phase process reports:
 
@@ -177,6 +205,7 @@ Archive
 
 Human Action
   Push feature/issue-XXX
+  Open PR to develop
   Run approved RAG build
   Move work/issue-XXX to work/close/issue-XXX
 ```
@@ -187,6 +216,7 @@ Human Action
 - Do not change design.
 - Do not install libraries.
 - Do not push without human approval.
+- Do not create Pull Requests without human approval.
 - Do not run RAG registration / rebuild without human approval.
 - Do not move archive without human approval.
 - Do not delete `work/<base-work-id>` until its `process-report` has been preserved under `work/close/<issue-id>/process-report/base-work-<base-work-id>` and the copy has been verified.

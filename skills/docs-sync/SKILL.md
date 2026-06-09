@@ -136,12 +136,19 @@ Do not create an Issue from a free-form summary. Update the JSON first.
 
 ### 6. Create GitHub Issue
 
+Use the improvement flow prefix:
+
+```text
+[改善フロー] <issue-title>
+```
+
 Create a draft first unless the user has approved GitHub mutation:
 
 ```powershell
 python runtime/github/issue_manager.py `
   --work-id "<target-branch>" `
   --title "<issue-title>" `
+  --flow-label improvement `
   --body-file "<issue-body.md>"
 ```
 
@@ -151,6 +158,7 @@ After approval:
 python runtime/github/issue_manager.py `
   --work-id "<target-branch>" `
   --title "<issue-title>" `
+  --flow-label improvement `
   --body-file "<issue-body.md>" `
   --create
 ```
@@ -227,6 +235,28 @@ python runtime/scm/push_branch.py `
   --set-upstream
 ```
 
+After push, create a Pull Request to `develop`.
+
+Draft PR record:
+
+```powershell
+python runtime/github/pull_request_manager.py `
+  --work-id "issue-<issue-number>" `
+  --base develop
+```
+
+Create PR after human approval:
+
+```powershell
+python runtime/github/pull_request_manager.py `
+  --work-id "issue-<issue-number>" `
+  --base develop `
+  --create `
+  --human-check approved
+```
+
+The Pull Request title must use the GitHub Issue title.
+
 ### 10. Knowledge Capture / RAG
 
 Prepare RAG candidates after push:
@@ -262,6 +292,7 @@ Do not move or delete folders without explicit human approval.
 - Do not edit base checkout docs.
 - Do not create GitHub Issues without approval.
 - Do not push without approval.
+- Do not create Pull Requests without approval.
 - Do not run RAG registration / rebuild without approval.
 - Do not move archive or delete base work without approval.
 - Do not let old RAG override current repository evidence.

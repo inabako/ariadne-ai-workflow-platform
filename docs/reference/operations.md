@@ -7,6 +7,7 @@
 次の操作は、人間承認なしに進めません。
 
 - GitHub Issue 作成
+- Pull Request 作成
 - GitHub branch 作成
 - missing tool / package のinstall
 - 実機または外部I/Oを伴うstartup / integration check
@@ -94,3 +95,18 @@ work/<base-work-id>/process-report
 ```
 
 copy確認と人間承認後にだけ、base work folderを削除します。
+## GitHub Title Rules
+
+Issue title は、workflowに応じて次のprefixを付けます。
+
+| Workflow | Prefix |
+| --- | --- |
+| 新規機能追加 / 保守開発 | `[新規機能フロー]` |
+| 改善 / corrective action / docs sync | `[改善フロー]` |
+| 新システム / 初期開発 | `[初期開発]` |
+
+Pull Request title は、対応するGitHub Issue titleを使います。
+
+Issue branchをpushした後、`develop` へPull Requestを送信します。
+
+Pull Request bodyには、変更点のMermaid式sequence diagramを含めます。

@@ -38,7 +38,16 @@ feature/issue-<issue-number>
 7. Issue branchを作成し、`work/issue-<issue-number>` にcloneする。
 8. docsだけを修正する。
 9. docs-only差分を確認してcommit / pushする。
-10. RAG候補とarchive準備を確認する。
+10. Issue titleをPR titleとして `develop` へPull Requestを作成する。
+11. RAG候補とarchive準備を確認する。
+
+## Issue Title
+
+docs同期は改善扱いとして、Issue titleに次のprefixを付けます。
+
+```text
+[改善フロー] <issue-title>
+```
 
 ## Guardrails
 
@@ -47,6 +56,7 @@ feature/issue-<issue-number>
 - docs driftの根拠はcurrent implementationとcurrent docsを優先します。
 - RAGは補助contextであり、current codeを上書きする根拠にはしません。
 - Issue bodyはfree-form summaryではなく、`docs-drift-analysis.json` から作ります。
+- Pull Request titleは対応するIssue titleを使用します。
 
 ## Source Skill
 

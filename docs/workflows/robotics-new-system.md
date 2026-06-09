@@ -55,6 +55,14 @@ Intake
 
 Critical / high safety finding が残っている場合、field testへ進めません。
 
+## Issue Title
+
+新しいsystemや初期開発のIssue titleは、次のprefixを付けます。
+
+```text
+[初期開発] <issue-title>
+```
+
 ## Specialist Review Gate
 
 内部RAGと外部Web RAGを読んだあと、新システムの成果物に専門前提が含まれる場合は、実装前にSpecialist Agentへreviewを渡します。

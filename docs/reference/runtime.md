@@ -26,6 +26,7 @@
 | `runtime/scm/commit_changes.py` | semantic commit messageでcommitする |
 | `runtime/scm/push_branch.py` | human check承認後にpush recordを残してpushする |
 | `runtime/github/issue_manager.py` | GitHub Issue draft / createを行う |
+| `runtime/github/pull_request_manager.py` | Issue branch push後にPull Request draft / createを行う |
 | `runtime/workflow/docs_sync.py` | docs-syncのcontext、analysis scaffold、Issue bodyを作る |
 | `runtime/workflow/init_corrective_action_fix.py` | corrective-action-fixのbase / issue work folderを初期化する |
 | `runtime/workflow/knowledge_capture.py` | PR材料、knowledge capture report、archive readinessを作る |
@@ -61,6 +62,16 @@ GITHUB_TOKEN=
 3. runtime fallback body
 
 GitHub APIで実Issueを作るのは `--create` 指定時だけです。
+
+Issue title は workflow に応じて `[新規機能フロー]`、`[改善フロー]`、`[初期開発]` のprefixを付けます。
+
+## Pull Request
+
+Issue branch push後、`runtime/github/pull_request_manager.py` で `develop` へのPull Requestを作成します。
+
+Pull Request title はGitHub Issue titleを使用します。
+
+Pull Request bodyには、変更点のMermaid式sequence diagramを含めます。
 
 ## Validation Note
 

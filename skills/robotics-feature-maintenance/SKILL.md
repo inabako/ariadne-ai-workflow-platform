@@ -58,6 +58,14 @@ Do not treat chat history as a substitute for an accepted requirement document.
 
 Safety behavior, network authority, runtime process ownership, and operator workflow changes must be reviewed before implementation.
 
+## Issue Title
+
+Use the new-feature flow prefix for GitHub Issues:
+
+```text
+[新規機能フロー] <issue-title>
+```
+
 ## Specialist Review Gate
 
 Use Specialist Agent review when a change affects STOP behavior, communication loss, robot command authority, network routing/protocol behavior, runtime lifecycle, video pipeline, deployment platform, observability, or evidence strategy.

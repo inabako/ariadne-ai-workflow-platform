@@ -33,10 +33,11 @@ work/<issue-id>/test-evidence/
 1. knowledge capture packageを生成する。
 2. target repository docs配下にtest evidenceが置かれているか確認する。
 3. push gateを確認する。
-4. RAG candidateを抽出する。
-5. docs candidateを抽出する。
-6. archive readinessを確認する。
-7. base work resetの準備をする。
+4. Issue branch push後、`develop` へのPull Request gateを確認する。
+5. RAG candidateを抽出する。
+6. docs candidateを抽出する。
+7. archive readinessを確認する。
+8. base work resetの準備をする。
 
 ## Output
 
@@ -48,11 +49,27 @@ work/<issue-id>/process-report/knowledge-capture-report.md
 work/<issue-id>/process-report/knowledge-capture-*.json
 ```
 
+`pull-request-title.md` は、利用可能なGitHub Issue recordのtitleを使います。
+
+`pull-request-description.md` には、Issueからbranch、test evidence、push、Pull Request、`develop` までのMermaid式sequence diagramを含めます。
+
+## Pull Request
+
+Issue branch push後に、`develop` へPull Requestを送信します。
+
+```powershell
+python runtime/github/pull_request_manager.py `
+  --work-id "<issue-id>" `
+  --base develop `
+  --create `
+  --human-check approved
+```
+
 ## Guardrails
 
 - 実装codeを変更しません。
 - designを変更しません。
-- push、RAG登録、archive移動、base work削除は人間承認後に行います。
+- push、Pull Request作成、RAG登録、archive移動、base work削除は人間承認後に行います。
 - evidenceを削除しません。
 
 ## Source Skill

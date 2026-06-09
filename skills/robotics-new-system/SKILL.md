@@ -58,6 +58,14 @@ Do not treat chat history as a substitute for an accepted requirement document.
 
 Implementation must not start while STOP behavior, communication loss behavior, startup safe state, or shutdown safe state is unresolved.
 
+## Issue Title
+
+Use the initial development prefix for GitHub Issues:
+
+```text
+[初期開発] <issue-title>
+```
+
 ## Specialist Review Gate
 
 Use Specialist Agent review when a draft artifact depends on domain-specific knowledge such as Go realtime gateway, Python GUI/runtime, network protocols, GStreamer, platform deployment, observability, test fault injection, or robot safety control.

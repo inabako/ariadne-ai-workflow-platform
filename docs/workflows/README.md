@@ -40,6 +40,7 @@
 - Repository / branch は user input または要件定義書の `Repository Control` を source of truth にします。
 - 会話ログだけで intake 済みとは扱いません。
 - GitHub Issue 作成、branch作成、push、install、archive移動などの副作用は、人間承認gateを通します。
+- GitHub Issue title は workflow label をprefixにします: `[新規機能フロー]`、`[改善フロー]`、`[初期開発]`。
 - `work/<branch>/` はbase調査用、`work/issue-<number>/` は実装修正用に分けます。
 - 成果物は `work/<id>/context/artifact-index.json` に登録できる形で残します。
 - RAG化する成果物は、metadata、evidence、open questions、stable section order を保ちます。
@@ -48,3 +49,4 @@
 - Specialist Agent reviewは作業中は `work/<id>/process-report/` に保存し、人間承認後に内部RAG候補として扱います。
 - Specialist Agent reviewでは、採用した外部Web RAG、採用しなかったclaim、検証方法を残します。
 - PyQt / Qt GUIでは、テストケース表からQTest化できる結合疎通試験を選別し、外部I/Oは原則stub / disableします。
+- Issue branch push後は、Issue titleをPR titleとして `develop` へPull Requestを作成します。

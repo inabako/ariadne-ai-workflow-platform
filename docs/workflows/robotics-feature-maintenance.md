@@ -48,6 +48,14 @@ Intake
 - 既存のSTOP、communication loss、rollback意図を壊さない。
 - test evidence と human check gate を残す。
 
+## Issue Title
+
+新規機能追加または保守開発のIssue titleは、次のprefixを付けます。
+
+```text
+[新規機能フロー] <issue-title>
+```
+
 ## Specialist Review Gate
 
 内部RAGと外部Web RAGを読んだあと、変更の影響が専門領域に入る場合はSpecialist Agentへreviewを渡します。

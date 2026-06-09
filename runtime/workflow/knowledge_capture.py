@@ -99,7 +99,21 @@ def write_markdown(path: Path, text: str, dry_run: bool) -> None:
     path.write_text(text.rstrip() + "\n", encoding="utf-8")
 
 
-def build_pr_title(issue: str, repository: str) -> str:
+def latest_issue_title(repo_root: Path, work_dir: Path, base_work_id: str = "") -> str:
+    issue_records = sorted((work_dir / "process-report").glob("github-issue-*.json"))
+    if base_work_id:
+        issue_records.extend(sorted((repo_root / "work" / base_work_id / "process-report").glob("github-issue-*.json")))
+    for path in reversed(issue_records):
+        record = read_json(path, default={}) or {}
+        title = str(record.get("title", "")).strip()
+        if title:
+            return title
+    return ""
+
+
+def build_pr_title(issue: str, repository: str, issue_title: str = "") -> str:
+    if issue_title:
+        return issue_title
     repo_label = repository or "target repository"
     return f"{issue}: finalize corrective action evidence for {repo_label}"
 
@@ -117,6 +131,7 @@ def build_pr_description(issue: str, repository: str, branch: str, docs_status: 
 | --- | --- |
 | Repository | {repository or "unknown"} |
 | Branch | {branch or "unknown"} |
+| PR Title Source | GitHub Issue title when available |
 
 ## Improvement Purpose
 
@@ -127,6 +142,22 @@ Finalize the corrective action implementation with traceable test specifications
 - Corrective implementation completed in the issue branch.
 - Test specifications and evidence prepared for unit and integration / connectivity checks.
 - PR materials and knowledge-capture report generated.
+
+## Change Sequence
+
+```mermaid
+sequenceDiagram
+  participant Issue as GitHub Issue
+  participant Branch as feature/issue branch
+  participant Tests as Tests / Evidence
+  participant PR as Pull Request
+  participant Develop as develop
+  Issue->>Branch: create linked issue branch
+  Branch->>Tests: implement change and run tests
+  Tests->>Branch: commit source, test specs, and evidence
+  Branch->>PR: push issue branch
+  PR->>Develop: open pull request to develop
+```
 
 ## Tests
 
@@ -167,6 +198,7 @@ def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
     source_dir = Path(args.source_dir).resolve() if args.source_dir else work_dir / "source" / "repository"
     repository = args.repository or scm_state.get("github_repo") or scm_state.get("repository") or ""
     branch = args.branch or scm_state.get("working_branch") or scm_state.get("current_branch") or ""
+    base_work_id = args.base_work_id or str(scm_state.get("base_work_id", ""))
 
     process_report_dir = work_dir / "process-report"
     docs_root = source_dir / "docs" / args.issue
@@ -195,7 +227,6 @@ def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
     for candidate in docs_candidates:
         candidate["source_path"] = relative_to_repo(repo_root, Path(candidate["source_path"]))
     archive_status = "already-archived" if work_dir.resolve() == close_target.resolve() else ("ready" if not close_target.exists() else "blocked-target-exists")
-    base_work_id = args.base_work_id or ""
     base_work_dir = repo_root / "work" / base_work_id if base_work_id else None
     base_process_report_dir = base_work_dir / "process-report" if base_work_dir else None
     base_preserve_dir = close_target / "process-report" / f"base-work-{base_work_id}" if base_work_id else None
@@ -217,7 +248,8 @@ def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
         "knowledge_capture_json": process_report_dir / f"knowledge-capture-{local_timestamp()}.json",
     }
 
-    title = build_pr_title(args.issue, str(repository))
+    issue_title = latest_issue_title(repo_root, work_dir, base_work_id)
+    title = build_pr_title(args.issue, str(repository), issue_title)
     write_markdown(output_paths["pull_request_title"], title, args.dry_run)
     write_markdown(output_paths["pull_request_description"], build_pr_description(args.issue, str(repository), str(branch), docs_status), args.dry_run)
     write_markdown(output_paths["merge_comment"], build_merge_comment(args.issue), args.dry_run)
@@ -287,6 +319,8 @@ Finalization and knowledge recovery package for `{repository or "unknown reposit
         "issue": args.issue,
         "repository": repository,
         "branch": branch,
+        "issue_title": issue_title,
+        "pull_request_title": title,
         "generated_at": timestamp,
         "dry_run": bool(args.dry_run),
         "pr_documents": {key: relative_to_repo(repo_root, path) for key, path in output_paths.items() if key != "knowledge_capture_json"},

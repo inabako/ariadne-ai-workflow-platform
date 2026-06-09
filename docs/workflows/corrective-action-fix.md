@@ -47,7 +47,8 @@ feature/issue-<issue-number>
 16. PyQt / Qt GUIの場合、テストケース表を元にQTest結合テストをソース化する。
 17. startup / integration checkとhuman check gateを通す。
 18. PR材料とknowledge capture packageを作る。
-19. 人間承認後にpushする。
+19. 人間承認後にIssue branchへpushする。
+20. Issue titleをPR titleとして `develop` へPull Requestを作成する。
 
 ## External Web RAG Support
 
@@ -110,6 +111,12 @@ High / critical finding が残る場合、implementationまたはpushへ進め�
 
 ## Issue Body Template
 
+Issue title は、改善フローでは次のprefixを付けます。
+
+```text
+[改善フロー] <issue-title>
+```
+
 Issue body は次の優先順位で選びます。
 
 1. 明示された `--body-file`
@@ -124,8 +131,23 @@ target repository templateを使う場合、`Report`、`Target branch`、`Target
 - missing tool のinstall
 - startup / integration check
 - push
+- Pull Request 作成
 - RAG登録
 - archive移動
+
+## Pull Request Flow
+
+Issue branchへpushした後、`develop` にPull Requestを送信します。
+
+```text
+feature/issue-<issue-number>
+  -> push
+  -> Pull Request to develop
+```
+
+Pull Request title は、GitHub Issue titleを使用します。
+
+Pull Request body には変更点のMermaid式sequence diagramを含めます。
 
 ## PyQt QTest Integration Source Gate
 

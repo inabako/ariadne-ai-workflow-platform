@@ -89,6 +89,14 @@ runtime/scm/compare_requirements.py
 
 修正内容、目的、影響範囲、成果物予定を対象repositoryのGitHub Issueへ記載します。
 
+Issue title prefix:
+
+| Flow | Prefix | `issue_manager.py` option |
+| --- | --- | --- |
+| 新規機能 / 保守開発 | `[新規機能フロー]` | `--flow-label new-feature` |
+| 改善 / docs sync | `[改善フロー]` | `--flow-label improvement` |
+| 新システム / 初期開発 | `[初期開発]` | `--flow-label initial-development` |
+
 Runtime:
 
 ```text
