@@ -16,6 +16,7 @@
 | `/rag-build` | Markdown reportをRAG artifactへ変換する | `rag/corrective-action-report/*.md` | `rag/normalized/`, `rag/chunks/`, `rag/indexes/`, `rag/embeddings/` |
 | `/rag-load` | 開発前に過去知識を検索し、圧縮contextを読む | task, repository, branch | `rag/retrieval/*.json` |
 | External Web RAG | 要件定義、設計、改善flowで知見不足の領域を外部Web一次情報で補う | `rag/external-web/knowledge-sources.md` | `rag/external-web/<category>/*.md` |
+| Specialist Review | 内部/外部RAGを読んだ後、成果物を専門Agentがreviewする | draft artifact, RAG context | `work/<id>/process-report/specialist-review-<domain>.md` |
 
 ## Decision Guide
 
@@ -30,6 +31,7 @@
 | 作業完了後にPR文面と知識回収を整えたい | [Knowledge Capture](knowledge-capture.md) |
 | 過去reportを検索可能にしたい | [RAG Build / Load](rag-build-load.md) |
 | 要件定義、設計、改善flowで知らない技術領域が出た | [External Web RAG](external-web-rag.md) |
+| 成果物の妥当性が専門知識に依存する | [Agent Inventory](../reference/agent-inventory.md) |
 
 ## Common Rules
 
@@ -41,3 +43,5 @@
 - RAG化する成果物は、metadata、evidence、open questions、stable section order を保ちます。
 - 外部Web RAGは current code、test evidence、人間承認済み運用知見を上書きしません。
 - 改善flowで外部WebRAGを使う場合、findingは必ず対象repository evidenceへ結び直します。
+- Specialist Agent reviewは作業中は `work/<id>/process-report/` に保存し、人間承認後に内部RAG候補として扱います。
+- Specialist Agent reviewでは、採用した外部Web RAG、採用しなかったclaim、検証方法を残します。

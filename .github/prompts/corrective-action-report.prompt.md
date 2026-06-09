@@ -66,3 +66,28 @@ reproducible inspection result
 ```
 
 外部Web由来の根拠は `supporting_reference` としてreportに記録する。
+
+## Specialist Review Support
+
+finding品質が専門知識に依存する場合は、report確定前にSpecialist Agent reviewを実行してよい。
+
+対象例:
+
+- Python / Go runtime
+- realtime networking / NAT / packet evidence
+- GStreamer / video pipeline
+- platform / deployment
+- observability / telemetry
+- test fault injection
+- remote access security
+- safety control behavior
+
+保存先:
+
+```text
+work/<target-branch>/process-report/specialist-review-<domain>.md
+```
+
+Specialist reviewはsupporting referenceであり、final findingの代替ではない。
+
+reviewには、採用した外部Web RAG、採用しなかったclaim、repository evidence、verification required、unresolved QAを残す。

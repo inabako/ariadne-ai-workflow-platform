@@ -1,6 +1,6 @@
 # External Web RAG
 
-外部Web由来の知識を、要件定義と設計工程で補助的に使うためのRAG領域です。
+外部Web由来の知識を、要件定義、設計工程、改善レポート、改善実装で補助的に使うためのRAG領域です。
 
 ## Source Index
 
@@ -31,6 +31,7 @@ rag/external-web/
 - URL、retrieved_at、source_type、trust_level、claims、verification_notes を保存します。
 - current source code、test evidence、人間承認済み運用知見より強い根拠として扱いません。
 - 古くなりやすい情報は `verify_before_use: true` を付けます。
+- 改善flowでは `supporting_reference` として扱い、finding確定には対象repository evidenceを必要とします。
 
 ## Recommended Artifact
 

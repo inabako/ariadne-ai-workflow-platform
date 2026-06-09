@@ -40,9 +40,10 @@ Do not treat chat history as a substitute for an accepted requirement document.
 1. Run `/pre-development-preparation`.
 2. Confirm repository sync, requirement comparison, GitHub Issue, and `feature/issue-<issue-number>` branch.
 3. Run `/rag-load` before entering the development body. Derive parallel retrieval queries from the requirement, repository, branch, comparison report, and issue summary.
-4. Run `/robotics-maintenance-development` only after relevant RAG context has been loaded and summarized.
-5. Preserve artifacts under `work/<receipt-id>/`.
-6. Record decisions, QA, risks, test evidence, RAG context references, and handoff context as JSON where schemas exist.
+4. If impact analysis, change design, or test planning depends on specialist knowledge, run the relevant Specialist Agent review before implementation.
+5. Run `/robotics-maintenance-development` only after relevant RAG context has been loaded and summarized.
+6. Preserve artifacts under `work/<receipt-id>/`.
+7. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, and handoff context as JSON where schemas exist.
 
 ## Required Focus
 
@@ -55,3 +56,15 @@ Do not treat chat history as a substitute for an accepted requirement document.
 - verification, deployment plan, post-change observation
 
 Safety behavior, network authority, runtime process ownership, and operator workflow changes must be reviewed before implementation.
+
+## Specialist Review Gate
+
+Use Specialist Agent review when a change affects STOP behavior, communication loss, robot command authority, network routing/protocol behavior, runtime lifecycle, video pipeline, deployment platform, observability, or evidence strategy.
+
+Save review outputs under:
+
+```text
+work/<receipt-id>/process-report/specialist-review-<domain>.md
+```
+
+The review must record trusted external-web RAG, rejected or limited claims, current repository evidence, required tests, and unresolved human-check items. High or critical specialist findings must return the workflow to impact analysis, change design, or test planning before implementation.

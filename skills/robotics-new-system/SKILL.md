@@ -40,9 +40,10 @@ Do not treat chat history as a substitute for an accepted requirement document.
 1. Run `/pre-development-preparation`.
 2. Confirm repository sync, requirement comparison, GitHub Issue, and `feature/issue-<issue-number>` branch.
 3. Run `/rag-load` before entering the development body. Derive parallel retrieval queries from the requirement, repository, branch, comparison report, and issue summary.
-4. Run `/new-robotics-system-development` only after relevant RAG context has been loaded and summarized.
-5. Preserve artifacts under `work/<receipt-id>/`.
-6. Record decisions, QA, risks, test evidence, RAG context references, and handoff context as JSON where schemas exist.
+4. If architecture, runtime, network, deployment, safety, or test strategy depends on specialist knowledge, run the relevant Specialist Agent review before implementation.
+5. Run `/new-robotics-system-development` only after relevant RAG context has been loaded and summarized.
+6. Preserve artifacts under `work/<receipt-id>/`.
+7. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, and handoff context as JSON where schemas exist.
 
 ## Required Focus
 
@@ -55,3 +56,15 @@ Do not treat chat history as a substitute for an accepted requirement document.
 - integration, bench test, limited field test, release handover
 
 Implementation must not start while STOP behavior, communication loss behavior, startup safe state, or shutdown safe state is unresolved.
+
+## Specialist Review Gate
+
+Use Specialist Agent review when a draft artifact depends on domain-specific knowledge such as Go realtime gateway, Python GUI/runtime, network protocols, GStreamer, platform deployment, observability, test fault injection, or robot safety control.
+
+Save review outputs under:
+
+```text
+work/<receipt-id>/process-report/specialist-review-<domain>.md
+```
+
+The review must record trusted external-web RAG, rejected or limited claims, repository evidence, required tests, and unresolved human-check items. High or critical specialist findings must return the workflow to design or test strategy before implementation.

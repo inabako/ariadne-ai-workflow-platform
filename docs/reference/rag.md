@@ -10,6 +10,13 @@
 rag/corrective-action-report/
 ```
 
+専門Agentのreview結果は、作業中は `work/<id>/process-report/` に保存し、RAG登録承認後に内部RAG候補として扱います。
+
+```text
+work/<id>/process-report/specialist-review-<domain>.md
+rag/specialist-review/<domain>/
+```
+
 外部Web由来のsource indexとRAG候補は次に置きます。
 
 ```text
@@ -47,6 +54,7 @@ source markdown
 | `rag/jsonized/*.json` | 既存Markdown / JSONLなどをUUID名JSON wrapperにしたもの |
 | `rag/external-web/<category>/*.md` | 外部Web一次情報から抽出したclaims / metadata / verification notes |
 | `rag/external-web/retrieval/*.md` | 外部Web RAG dispatcher の集約結果 |
+| `rag/specialist-review/<domain>/*.md` | 専門Agent review結果、採用した外部知識、検証結果 |
 
 ## External Web RAG
 
@@ -70,6 +78,38 @@ rag/external-web/
 外部Web RAGは、URL、retrieved_at、source_type、trust_level、claims、verification_notes を保存します。
 
 外部ページ本文を丸ごと保存しません。
+
+## Specialist Review RAG
+
+Specialist reviewは、内部RAG、外部Web RAG、current repository evidenceを読んだうえで、成果物に対して専門観点の判断を残す内部RAG候補です。
+
+保存先例:
+
+```text
+rag/specialist-review/
+  python-runtime/
+  go-runtime/
+  network/
+  video/
+  observability/
+  platform/
+  testing/
+  security/
+  safety/
+```
+
+Specialist reviewには、必ず次を残します。
+
+- reviewed artifacts
+- internal RAG used
+- external-web RAG used
+- trusted external knowledge
+- rejected or limited external claims
+- repository evidence
+- verification / test evidence
+- unresolved QA
+
+詳しくは [Agent Inventory](agent-inventory.md) と [External Web RAG](../workflows/external-web-rag.md) を参照してください。
 
 外部Web RAGも内部RAGと同じJSON pipelineで扱います。
 

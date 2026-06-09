@@ -29,6 +29,7 @@
 - `work/<採番ID>/context/scm-state.json` にbranch情報が記録されている
 - `/rag-load` を実行し、過去の corrective action report から関連する prior finding / risk / test gap / architecture concern を読み込んだ
 - `artifact_type: rag-context-pack` の `rag/retrieval/<uuid>.json` の圧縮済み context を確認し、変更前状態と影響分析に反映した
+- 必要な場合、Specialist Agent reviewを実行し、専門前提と採用した外部知識を `work/<採番ID>/process-report/` に記録した
 
 この準備が未完了の場合、implementation へ進みません。
 
@@ -37,6 +38,13 @@ RAG loading rule:
 - RAG index / embedding が無い場合は `/rag-build` を先に実行する
 - `/rag-load` では 3〜5 個の検索クエリを並列実行し、`runtime/rag/retrieve_context.py` の既存圧縮機能を使う
 - safety-critical な未解決指摘が見つかった場合は、Phase 1 以降へ進む前に blocker として扱う
+
+Specialist review rule:
+
+- impact analysis、change design、test planが専門知識に依存する場合は、implementation前にSpecialist Agent reviewを実行する
+- review結果は `work/<採番ID>/process-report/specialist-review-<domain>.md` に保存する
+- 採用した外部Web RAG、採用しなかったclaim、repository evidence、required tests、unresolved human-check itemsを記録する
+- high / critical findingがある場合は、Phase 3、Phase 5、またはPhase 6へ戻す
 
 ## Phase 1: Change Intent
 

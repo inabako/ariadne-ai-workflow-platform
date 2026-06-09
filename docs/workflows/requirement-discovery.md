@@ -37,8 +37,9 @@ work/requirements/<completed-requirements>.md
 3. 知見不足の領域があれば `knowledge gap` として記録する。
 4. 必要なら内部RAG contextを補助的に読む。
 5. 外部知識が必要なら [External Web RAG](external-web-rag.md) を使う。
-6. review draftを作る。
-7. 人間OK後に `work/requirements/` へ完成版を保存する。
+6. 専門知識が質問品質や制約整理に影響する場合はSpecialist AgentへQA観点のreviewを渡す。
+7. review draftを作る。
+8. 人間OK後に `work/requirements/` へ完成版を保存する。
 
 ## Knowledge Gap Flow
 
@@ -66,6 +67,18 @@ rag/external-web/knowledge-sources.md
 ```
 
 外部Web RAGは補助contextです。Repository、Target Branch、STOP、communication loss、safety requirements は人間確認なしに確定しません。
+
+## Specialist QA Support
+
+要件定義では、Specialist Agentは要件を確定しません。未知領域に対する質問、制約、risk、test観点を補強します。
+
+review結果は次に保存します。
+
+```text
+work/requirements/draft/<draft-stem>-specialist-review-<domain>.md
+```
+
+採用した外部Web RAG、採用しなかったclaim、人間確認が必要な項目をreview draftへ反映します。
 
 ## Gate
 

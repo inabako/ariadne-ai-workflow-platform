@@ -29,6 +29,7 @@ Intake
   -> Change Intent
   -> Current State Capture
   -> Impact Analysis
+  -> Specialist Review Dispatch
   -> Risk Classification
   -> Change Design
   -> Test Plan
@@ -45,6 +46,32 @@ Intake
 - Safety behavior、network authority、runtime process ownership、operator workflow に影響する変更は実装前にreview対象へ上げる。
 - 既存のSTOP、communication loss、rollback意図を壊さない。
 - test evidence と human check gate を残す。
+
+## Specialist Review Gate
+
+内部RAGと外部Web RAGを読んだあと、変更の影響が専門領域に入る場合はSpecialist Agentへreviewを渡します。
+
+特に次はreview対象です。
+
+- STOP、communication loss、safe state、watchdog
+- robot command authority、operator workflow
+- UDP / TCP / QUIC / NAT / routing
+- Python / Go runtime、thread、async、process lifecycle
+- GStreamer、video latency、receiver behavior
+- Docker、MSYS2、Windows/Linux/Raspberry Pi差分
+- pytest、Go test、fault injection、packet evidence
+
+review結果は次に保存します。
+
+```text
+work/<receipt-id>/process-report/specialist-review-<domain>.md
+```
+
+Specialist Agentは、採用した外部Web RAG、採用しなかったclaim、current repository evidence、必要なtest evidenceを明示します。
+
+High / critical finding がある場合は、Change DesignまたはTest Planへ戻し、未解決のままImplementationへ進めません。
+
+完了後、review結果は [Knowledge Capture](knowledge-capture.md) でRAG候補として抽出します。
 
 ## Main Artifacts
 

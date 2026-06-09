@@ -40,6 +40,7 @@ repository / branch read-only inspection
   -> internal RAG load
   -> knowledge gap detection
   -> external-web RAG dispatch when needed
+  -> specialist review when findings need domain depth
   -> findings tied back to repository evidence
   -> corrective action report
 ```
@@ -59,6 +60,28 @@ repository / branch read-only inspection
 
 外部Web RAGの詳細は [External Web RAG](external-web-rag.md) を参照してください。
 
+## Specialist Review Support
+
+finding品質が専門知識に依存する場合は、report確定前にSpecialist Agentのreviewを挟みます。
+
+使う例:
+
+- Python / Go runtimeの挙動がfindingに影響する。
+- network protocol、NAT、latency、packet evidenceの解釈が必要。
+- GStreamer / video pipelineの仕様確認が必要。
+- platform差分やdeployment制約がriskに影響する。
+- test designにfault injection、packet capture、race検出が必要。
+
+review結果は次へ保存します。
+
+```text
+work/<target-branch>/process-report/specialist-review-<domain>.md
+```
+
+Specialist Agentのreviewは、final findingの代替ではありません。final findingには必ず対象repositoryのevidenceを紐づけます。
+
+reportには、専門reviewで採用した外部知識を `Supporting References` と `RAG Capture Candidates` に反映します。
+
 ## Report Must Include
 
 - prioritized findings
@@ -77,6 +100,15 @@ repository / branch read-only inspection
 ## Supporting References
 
 | Finding ID | Reference Type | Source | How It Was Used | Verification Required |
+| --- | --- | --- | --- | --- |
+```
+
+専門reviewを使った場合は、次の表も追加します。
+
+```markdown
+## Specialist Review References
+
+| Domain | Review Path | Trusted External Knowledge | Repository Evidence | Result |
 | --- | --- | --- | --- | --- |
 ```
 

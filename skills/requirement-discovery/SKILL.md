@@ -46,11 +46,12 @@ If no draft exists, ask the human to place a draft there. If multiple drafts exi
 3. Identify knowledge gaps where the team lacks enough technical context to ask good requirement questions.
 4. If prior internal RAG is relevant, run `/rag-load` for prior findings, risks, or test gaps.
 5. If external technical knowledge is needed, use `rag/external-web/knowledge-sources.md` as the source index.
-6. Ask the human focused questions when clarification is required.
-7. Review the human answers together with the original draft and any cited RAG context.
-8. Create a requirement review draft under `work/requirements/draft/`.
-9. Request human review.
-10. After explicit human OK, save the completed requirement document under `work/requirements/`.
+6. If specialist knowledge is needed to ask good questions or frame constraints, run the relevant Specialist Agent as QA support.
+7. Ask the human focused questions when clarification is required.
+8. Review the human answers together with the original draft and any cited RAG context.
+9. Create a requirement review draft under `work/requirements/draft/`.
+10. Request human review.
+11. After explicit human OK, save the completed requirement document under `work/requirements/`.
 
 ## External Knowledge Gap Flow
 
@@ -80,6 +81,20 @@ Flow:
 External-web RAG is supporting context only.
 
 Do not use external-web RAG to replace human confirmation for Critical items.
+
+## Specialist QA Support
+
+Specialist Agent review may be used during requirement discovery to improve questions, constraints, risk framing, and test-readiness.
+
+It must not finalize requirements by itself.
+
+Save specialist QA outputs under:
+
+```text
+work/requirements/draft/<draft-stem>-specialist-review-<domain>.md
+```
+
+The output must record trusted external-web RAG, rejected or limited claims, unresolved human questions, and what should be carried into downstream design or testing.
 
 Source index:
 
@@ -142,6 +157,7 @@ work/requirements/draft/<draft-stem>-inspection.md
 work/requirements/draft/<draft-stem>-questions.md
 work/requirements/draft/<draft-stem>-requirements-review.md
 work/requirements/draft/<draft-stem>-knowledge-gaps.md
+work/requirements/draft/<draft-stem>-specialist-review-<domain>.md
 ```
 
 External-web RAG artifacts, when used:

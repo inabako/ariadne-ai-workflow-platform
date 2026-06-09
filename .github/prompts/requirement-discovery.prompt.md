@@ -46,12 +46,13 @@ Use:
 3. AI identifies both clarification gaps and technical knowledge gaps.
 4. If saved internal RAG is relevant, AI reads prior findings through `/rag-load`.
 5. If external knowledge is needed, AI uses `rag/external-web/knowledge-sources.md` and the external-web agents to create or dispatch external-web RAG.
-6. If the draft is unclear, AI sends questions back to the human.
-7. Human answers.
-8. AI inspects the draft, answers, and cited RAG context again.
-9. AI creates a requirement review draft under `work/requirements/draft/`.
-10. Human reviews the requirement review draft.
-11. After explicit human OK, AI saves the completed requirement document under `work/requirements/`.
+6. If specialist knowledge is needed to ask good questions or frame constraints, AI uses Specialist Agent QA support.
+7. If the draft is unclear, AI sends questions back to the human.
+8. Human answers.
+9. AI inspects the draft, answers, and cited RAG context again.
+10. AI creates a requirement review draft under `work/requirements/draft/`.
+11. Human reviews the requirement review draft.
+12. After explicit human OK, AI saves the completed requirement document under `work/requirements/`.
 
 ## Hard Stop Rules
 
@@ -135,6 +136,20 @@ Rules:
 - If external-web RAG conflicts with internal evidence or human answers, ask the human.
 - Critical items still require human confirmation.
 
+## Specialist QA Support
+
+Specialist Agent review may be used to improve requirement questions, constraints, risk framing, and test-readiness.
+
+It must not finalize requirements by itself.
+
+Save specialist QA outputs under:
+
+```text
+work/requirements/draft/<draft-stem>-specialist-review-<domain>.md
+```
+
+The output must record trusted external-web RAG, rejected or limited claims, unresolved human questions, and what should be carried into downstream design or testing.
+
 ## Output Artifacts
 
 Intermediate artifacts stay under:
@@ -150,6 +165,7 @@ Recommended intermediate files:
 <draft-stem>-knowledge-gaps.md
 <draft-stem>-questions.md
 <draft-stem>-requirements-review.md
+<draft-stem>-specialist-review-<domain>.md
 ```
 
 The completed document is saved only after human OK:

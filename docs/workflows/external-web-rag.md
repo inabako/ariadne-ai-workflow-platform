@@ -47,6 +47,7 @@ rag/
 | --- | --- | --- |
 | `external-web-source-reviewer-agent.prompt.md` | 外部Webを精査し、claims / metadata / verification notesへ圧縮する | `rag/external-web/<category>/*.md` |
 | `external-web-rag-dispatcher-agent.prompt.md` | 蓄積済み外部Web RAGを検索・集約して要件/設計/改善flowへ渡す | `rag/external-web/retrieval/*-aggregate.md` |
+| Specialist Agents | 内部RAG、外部Web RAG、current evidenceを読んで成果物を専門reviewする | `work/<receipt-id>/process-report/specialist-review-<domain>.md` |
 
 ## Flow
 
@@ -79,6 +80,34 @@ external-web RAG
 ```
 
 最終findingには、対象repositoryのfile、behavior、log、docs gap、test gapなどのevidenceが必要です。
+
+## Specialist Review Integration
+
+外部Web RAGを成果物へ使う場合、専門Agentは「外部Webに何が書いてあるか」ではなく、「このprojectの成果物でどのclaimを信じるか」をreviewします。
+
+```text
+external-web source reviewer
+  -> external-web RAG claims
+  -> external-web RAG dispatcher
+  -> specialist reviewer
+  -> trusted / rejected external knowledge record
+  -> artifact update / tests / human check
+  -> internal RAG candidate
+```
+
+Specialist review output:
+
+```text
+work/<receipt-id>/process-report/specialist-review-<domain>.md
+```
+
+RAG registration after approval:
+
+```text
+rag/specialist-review/<domain>/*.md
+```
+
+外部Web由来のclaim自体は `rag/external-web/<category>/` に保存します。Specialist review結果はproject-specificな判断なので、内部RAG候補として扱います。
 
 ## JSON Pipeline
 
@@ -173,6 +202,48 @@ verification_notes:
 ## Open Questions
 
 - 
+```
+
+## Specialist Review Artifact
+
+```yaml
+---
+artifact_type: specialist-review
+source_type: internal-work
+domain: network
+workflow: corrective-action-fix
+status: draft
+created_at: 2026-06-09T00:00:00+09:00
+review_agent: network-realtime-protocol-specialist-agent
+reviewed_artifacts:
+  - work/issue-123/design-document/network-design.md
+internal_rag_used:
+  - rag/retrieval/<context-pack>.json
+external_web_rag_used:
+  - rag/external-web/network/<knowledge>.md
+tags:
+  - specialist-review
+  - network
+---
+```
+
+```markdown
+# Specialist Review: Network
+
+## Review Target
+
+## Findings
+
+## Trusted External Knowledge
+
+| Claim | Source RAG Path | Source URL | Trust Level | Used For | Verified By | Limits / Rejected Scope |
+| --- | --- | --- | --- | --- | --- | --- |
+
+## Required Tests
+
+## Open Questions
+
+## RAG Capture Candidate
 ```
 
 ## Trust Boundary

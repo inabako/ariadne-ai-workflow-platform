@@ -18,6 +18,7 @@ docs/
 rag/
   corrective-action-report/
   external-web/
+  specialist-review/
   normalized/
   chunks/
   indexes/

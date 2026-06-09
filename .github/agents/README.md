@@ -32,6 +32,15 @@
 | `robotics-tester-agent.prompt.md` | test strategy と test matrix | `test-specification.md` |
 | `documentation-writer-agent.prompt.md` | decision record と再利用可能な知識化 | docs, troubleshooting, RAG notes |
 | `knowledge-capture-agent.prompt.md` | PR資料、証跡整理、RAG/docs候補抽出、archive準備 | PR docs, `knowledge-capture-report.md` |
+| `python-runtime-specialist-agent.prompt.md` | Python runtime / PyQt / pytest / socket lifecycle の専門review | `specialist-review-python-runtime.md` |
+| `go-realtime-gateway-specialist-agent.prompt.md` | Go realtime gateway / goroutine / context / net の専門review | `specialist-review-go-realtime-gateway.md` |
+| `network-realtime-protocol-specialist-agent.prompt.md` | UDP/TCP/QUIC/NAT/packet evidence の専門review | `specialist-review-network-protocol.md` |
+| `video-pipeline-specialist-agent.prompt.md` | GStreamer / video receiver / latency / video loss の専門review | `specialist-review-video-pipeline.md` |
+| `observability-telemetry-specialist-agent.prompt.md` | logs / metrics / telemetry / incident traceability の専門review | `specialist-review-observability.md` |
+| `platform-deployment-specialist-agent.prompt.md` | Windows/Linux/Raspberry Pi/MSYS2/Docker/startup の専門review | `specialist-review-platform-deployment.md` |
+| `test-fault-injection-specialist-agent.prompt.md` | pytest / Go test / fault injection / packet evidence の専門review | `specialist-review-testing.md` |
+| `security-remote-access-specialist-agent.prompt.md` | VPN / tunnel / auth / operator authority / secrets の専門review | `specialist-review-remote-security.md` |
+| `safety-control-specialist-agent.prompt.md` | STOP / communication loss / safe state / watchdog の専門review | `specialist-review-safety-control.md` |
 
 ## 推奨フロー
 
@@ -43,6 +52,7 @@ draft bullets
   -> requirement discovery
   -> external web knowledge review when knowledge is insufficient
   -> external web RAG dispatch when saved external knowledge is relevant
+  -> specialist review when artifact quality depends on domain depth
   -> reviewed requirements
   -> corrective action report / fix with external web as supporting reference when needed
   -> docs drift analysis when docs sync is requested
@@ -60,6 +70,10 @@ draft bullets
 ```
 
 reviewで未解決QAが出た場合は、architecture または requirements へ戻します。
+
+Specialist Agent一覧と採用条件は `docs/reference/agent-inventory.md` を参照してください。
+
+Specialist reviewを使った場合は、採用した外部Web RAG、採用しなかったclaim、current evidence、必要なtest evidenceをreview結果に残します。
 
 ## 共通レビュー原則
 
@@ -89,6 +103,18 @@ Implementer は以下を黙って変更しません。
 ## RAG Capture Rule
 
 現場で得た発見、incident、review escape、design decision は、未来のAgentに役立つ可能性があります。Markdownで残す場合は front matter を付けます。
+
+専門Agentのreview結果もRAG候補です。作業中は次に保存します。
+
+```text
+work/<id>/process-report/specialist-review-<domain>.md
+```
+
+RAG登録承認後、必要に応じて次へ吸収します。
+
+```text
+rag/specialist-review/<domain>/
+```
 
 ```yaml
 ---

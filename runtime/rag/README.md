@@ -21,6 +21,7 @@ source markdown
 rag/
   corrective-action-report/  source markdown reports
   external-web/              external-web source index and category Markdown
+  specialist-review/         specialist review Markdown after approval
   normalized/                normalized RAG documents
   chunks/                    chunk JSON files
   indexes/                   documents.jsonl / chunks.jsonl
@@ -29,6 +30,8 @@ rag/
 ```
 
 External Web RAG uses the same JSON pipeline. Provenance metadata from front matter is preserved under `metadata`.
+
+Specialist review RAG also uses the same JSON pipeline. It is project-specific internal knowledge, and should record trusted external-web RAG, rejected or limited claims, repository evidence, and verification results.
 
 ## CLI
 
@@ -152,6 +155,7 @@ python runtime/rag/jsonize_rag_tree.py `
 | `rag/retrieval/<uuid>.json` (`artifact_type: rag-retrieval-result`) | query、selected chunks、dropped chunks、filters |
 | `rag/retrieval/<uuid>.json` (`artifact_type: rag-context-pack`) | Agent投入用の圧縮済みcontext pack |
 | `rag/external-web/<category>/*.md` | external-web claims / metadata / verification notes のsource Markdown |
+| `rag/specialist-review/<domain>/*.md` | specialist review results and trusted external knowledge records |
 
 Markdown出力はデバッグ用途です。必要な場合だけ `--write-markdown` を指定します。
 
@@ -180,6 +184,18 @@ External-web source Markdown should also include:
 - verify_before_use
 - sources
 - claims
+- verification_notes
+
+Specialist review Markdown should also include:
+
+- artifact_type: specialist-review
+- source_type: internal-work
+- domain
+- review_agent
+- reviewed_artifacts
+- internal_rag_used
+- external_web_rag_used
+- trusted_external_knowledge
 - verification_notes
 
 metadata が不足している source report でも normalize できますが、retrieval 品質を上げるため、元の Markdown report には front matter を付けることを推奨します。
