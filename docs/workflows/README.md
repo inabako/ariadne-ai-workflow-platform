@@ -48,6 +48,7 @@
 - 改善flowで外部WebRAGを使う場合、findingは必ず対象repository evidenceへ結び直します。
 - Specialist Agent reviewは作業中は `work/<id>/process-report/` に保存し、人間承認後に内部RAG候補として扱います。
 - Specialist Agent reviewでは、採用した外部Web RAG、採用しなかったclaim、検証方法を残します。
+- 実装系workflow（`/robotics-new-system`、`/robotics-feature-maintenance`、`/corrective-action-fix`）では、テスト実行前に `unit-test-cases.md`、`integration-test-cases.md`、`human-check-list.md` を作成します。
 - PyQt / Qt GUIでは、テストケース表からQTest化できる結合疎通試験を選別し、外部I/Oは原則stub / disableします。
 - target repositoryへ残すテスト証跡は `docs/evidence/issue-<issue-number>/` に保存します。
 - Issue branch push後は、Issue titleをPR titleとして `develop` へPull Requestを作成します。

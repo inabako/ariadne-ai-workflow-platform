@@ -98,6 +98,33 @@ High / critical finding がある場合は、Change DesignまたはTest Planへ�
 
 実robot、実camera、physical STOP、router / VPN / field networkは、QTestだけで完了扱いにせず、人間確認またはbench evidenceを残します。
 
+## Test Case And Evidence Flow
+
+Test Plan工程で、Issue単位のテストケース表を3つに分けて作成します。
+
+```text
+docs/evidence/issue-<issue-number>/test_specifications/unit-test-cases.md
+docs/evidence/issue-<issue-number>/test_specifications/integration-test-cases.md
+docs/evidence/issue-<issue-number>/test_specifications/human-check-list.md
+```
+
+- `unit-test-cases.md`: UTのテストケース表。
+- `integration-test-cases.md`: 結合試験、QTest候補、manual / startup確認のテストケース表。
+- `human-check-list.md`: 人間確認項目、確認条件、合否基準。
+
+実行エビデンスは次へ保存します。
+
+```text
+docs/evidence/issue-<issue-number>/ut/
+docs/evidence/issue-<issue-number>/integration/qtest/
+docs/evidence/issue-<issue-number>/integration/manual/
+docs/evidence/issue-<issue-number>/integration/startup/
+docs/evidence/issue-<issue-number>/human_check/
+```
+
+保存先の詳細は [Test Artifact Storage](../reference/test-artifact-storage.md) に従います。
+Knowledge Capture実行時にscaffoldは自動生成されますが、`README.md` だけではpush可能な証跡とはみなしません。
+
 ## Main Artifacts
 
 ```text

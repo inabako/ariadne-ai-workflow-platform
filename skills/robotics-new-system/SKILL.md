@@ -42,8 +42,9 @@ Do not treat chat history as a substitute for an accepted requirement document.
 3. Run `/rag-load` before entering the development body. Derive parallel retrieval queries from the requirement, repository, branch, comparison report, and issue summary.
 4. If architecture, runtime, network, deployment, safety, or test strategy depends on specialist knowledge, run the relevant Specialist Agent review before implementation.
 5. Run `/new-robotics-system-development` only after relevant RAG context has been loaded and summarized.
-6. Preserve artifacts under `work/<receipt-id>/`.
-7. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, and handoff context as JSON where schemas exist.
+6. Before implementation, create the issue test case tables and evidence plan.
+7. Preserve artifacts under `work/<receipt-id>/`.
+8. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, and handoff context as JSON where schemas exist.
 
 ## Required Focus
 
@@ -57,6 +58,32 @@ Do not treat chat history as a substitute for an accepted requirement document.
 - integration, bench test, limited field test, release handover
 
 Implementation must not start while STOP behavior, communication loss behavior, startup safe state, or shutdown safe state is unresolved.
+
+## Test Case And Evidence Flow
+
+Before unit tests, QTest, integration / bench checks, limited field checks, or human checks, create the test case tables for the Issue.
+
+Work artifacts:
+
+```text
+work/<receipt-id>/test-specifications/
+work/<receipt-id>/test-evidence/
+```
+
+Target repository durable artifacts:
+
+```text
+work/<receipt-id>/source/repository/docs/evidence/issue-<issue-number>/test_specifications/unit-test-cases.md
+work/<receipt-id>/source/repository/docs/evidence/issue-<issue-number>/test_specifications/integration-test-cases.md
+work/<receipt-id>/source/repository/docs/evidence/issue-<issue-number>/test_specifications/human-check-list.md
+work/<receipt-id>/source/repository/docs/evidence/issue-<issue-number>/ut/
+work/<receipt-id>/source/repository/docs/evidence/issue-<issue-number>/integration/
+work/<receipt-id>/source/repository/docs/evidence/issue-<issue-number>/human_check/
+```
+
+Use `unit-test-cases.md` for unit test cases, `integration-test-cases.md` for integration / connectivity, bench, limited-field, and QTest candidates, and `human-check-list.md` for human confirmation items.
+
+`runtime/workflow/knowledge_capture.py` creates missing scaffold directories and `README.md` files, but scaffold files alone are not evidence. Do not push until actual test case files and required evidence files are present, or the skip reason is recorded in the test specification.
 
 ## Issue Title
 

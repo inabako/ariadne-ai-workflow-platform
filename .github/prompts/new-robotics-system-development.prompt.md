@@ -173,7 +173,9 @@ Quality Gate:
 
 出力:
 
-- `test-specification.md`
+- `docs/evidence/issue-<issue-number>/test_specifications/unit-test-cases.md`
+- `docs/evidence/issue-<issue-number>/test_specifications/integration-test-cases.md`
+- `docs/evidence/issue-<issue-number>/test_specifications/human-check-list.md`
 - test matrix
 - PyQt QTest source plan when GUI uses PyQt / Qt
 - required simulation / mock / bench tests
@@ -189,6 +191,25 @@ Quality Gate:
 - limited field test
 - safety regression
 - QTest automation candidates for GUI integration cases
+
+テストケース表:
+
+- `unit-test-cases.md`: unit testで確認する対象、入力、期待結果、pass criteria
+- `integration-test-cases.md`: integration / connectivity、bench、limited field、QTest候補、manual / startup確認、外部I/O方針
+- `human-check-list.md`: 人間確認項目、確認者、確認条件、合否基準
+
+target repositoryへ残す永続証跡:
+
+```text
+docs/evidence/issue-<issue-number>/test_specifications/
+docs/evidence/issue-<issue-number>/ut/
+docs/evidence/issue-<issue-number>/integration/qtest/
+docs/evidence/issue-<issue-number>/integration/manual/
+docs/evidence/issue-<issue-number>/integration/startup/
+docs/evidence/issue-<issue-number>/human_check/
+```
+
+`knowledge_capture.py` はscaffold用 `README.md` を自動生成しますが、READMEだけではテストケース表または証跡とはみなしません。
 
 PyQt / Qt GUIを含む場合:
 
@@ -232,9 +253,18 @@ PyQt / Qt GUIを含む場合:
 - operator UI state
 - log / telemetry capture
 
+実行結果は、test case IDに紐づけて次へ保存します。
+
+```text
+docs/evidence/issue-<issue-number>/ut/
+docs/evidence/issue-<issue-number>/integration/
+docs/evidence/issue-<issue-number>/human_check/
+```
+
 Quality Gate:
 
 - critical / high safety finding が残っている場合は field test に進まない
+- `unit-test-cases.md`、`integration-test-cases.md`、`human-check-list.md` の該当ファイルと実エビデンスが揃っていない場合はpushしない
 
 ## Phase 9: Limited Field Test
 
