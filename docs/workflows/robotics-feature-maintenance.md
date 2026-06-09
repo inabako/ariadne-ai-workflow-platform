@@ -33,6 +33,7 @@ Intake
   -> Risk Classification
   -> Change Design
   -> Test Plan
+  -> PyQt QTest Source Plan when GUI uses PyQt / Qt
   -> Implementation
   -> Verification
   -> Deployment Plan
@@ -72,6 +73,22 @@ Specialist Agentは、採用した外部Web RAG、採用しなかったclaim、c
 High / critical finding がある場合は、Change DesignまたはTest Planへ戻し、未解決のままImplementationへ進めません。
 
 完了後、review結果は [Knowledge Capture](knowledge-capture.md) でRAG候補として抽出します。
+
+## PyQt QTest Integration
+
+既存systemの変更対象にPyQt / Qt GUIが含まれる場合、Test Planで作成したテストケース表から、QTestで自動化できる結合疎通試験をソース化します。
+
+優先対象:
+
+- changed GUI behavior
+- connect / disconnect / reconnect UI
+- control key send
+- telemetry / packet / event log display
+- sensor override
+- show / close lifecycle
+- external I/O disabled or stubbed startup
+
+実robot、実camera、physical STOP、router / VPN / field networkは、QTestだけで完了扱いにせず、人間確認またはbench evidenceを残します。
 
 ## Main Artifacts
 

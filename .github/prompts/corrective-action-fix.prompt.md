@@ -47,10 +47,11 @@ Flow:
 8. 修正内容、supporting reference、specialist review referenceを GitHub Issue に載せる。
 9. `work/issue-XXX/source/repository` を作り、Git branch `feature/issue-XXX` を作成する。
 10. 改善レポートと RAG context に従って修正する。
-11. ユニットテストを作成・実施する。
-12. 起動確認 / 結合試験を実施する。
-13. 起動確認 / 結合試験について人間チェックを受ける。
-14. 人間チェック承認後、`feature/issue-XXX` を push する。
+11. テスト仕様書のテストケース表に従ってユニットテストを作成・実施する。
+12. PyQt / Qt GUIの場合、QTest化できる結合疎通試験をソース化して実行する。
+13. 起動確認 / 結合試験を実施する。
+14. 起動確認 / 結合試験について人間チェックを受ける。
+15. 人間チェック承認後、`feature/issue-XXX` を push する。
 
 Guardrail:
 
@@ -64,3 +65,5 @@ Guardrail:
 - RAG build/load を省略しない。
 - 外部Web RAGはsupporting referenceであり、current source code、test evidence、human-approved findingを上書きしない。
 - Specialist Agent reviewを使った場合は、採用した外部Web RAG、採用しなかったclaim、repository evidence、required tests、human-check itemを `work/<branch>/process-report/` または `work/issue-XXX/process-report/` に残す。
+- PyQt / Qt GUIの場合は、承認済みテストケース表からQTest化できる結合疎通試験を選別し、`src/tests/qt/test_<feature>_integration.py` などにソース化する。
+- QTestで実UDP、GStreamer、RobotController、hardware serviceを起動する場合は、テストケース表に明示し、通常はstub / disable方針を優先する。

@@ -175,6 +175,7 @@ Quality Gate:
 
 - `test-specification.md`
 - test matrix
+- PyQt QTest source plan when GUI uses PyQt / Qt
 - required simulation / mock / bench tests
 - field test plan
 
@@ -187,10 +188,18 @@ Quality Gate:
 - bench test
 - limited field test
 - safety regression
+- QTest automation candidates for GUI integration cases
+
+PyQt / Qt GUIを含む場合:
+
+- テストケース表からQTestで自動化できる結合疎通試験を抽出する
+- `src/tests/qt/test_<feature>_integration.py` などのtarget sourceを決める
+- external I/Oは原則stub / disableし、実I/Oが必要な場合はtest caseに明示する
+- 実robot、実camera、physical STOP、field networkはbench / human-check evidenceとして残す
 
 ## Phase 7: Implementation
 
-承認された architecture と test strategy に沿って実装します。
+承認された architecture、test strategy、PyQt QTest source plan に沿って実装します。
 
 原則:
 

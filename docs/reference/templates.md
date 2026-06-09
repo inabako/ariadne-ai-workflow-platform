@@ -25,7 +25,7 @@ templates/
 | `templates/design-document/` | `robotics-design-document-template.md` | 設計方針、責務境界、安全設計、test strategy |
 | `templates/process-report/` | `robotics-process-report-template.md` | 工程入力、実行内容、判断、finding、handoff |
 | `templates/test-evidence/` | `robotics-test-evidence-template.md` | テスト条件、結果、証跡、pass / fail判断 |
-| `templates/test-specifications/` | `robotics-test-specification-template.md` | test strategy、test case table、entry / exit criteria |
+| `templates/test-specifications/` | `robotics-test-specification-template.md` | test strategy、test case table、PyQt QTest source plan、entry / exit criteria |
 | `templates/editorconfig/` | `target-repository.editorconfig` | target repositoryのencoding / line ending補助 |
 
 ## Quality Rules
@@ -35,6 +35,7 @@ templates/
 - front matterに project、receipt_id、repository、branch、commit、workflow、phase、status を残す。
 - Intent、Decision、Reason、Evidence、Open QA を明示する。
 - safety-critical な内容では STOP、communication loss、startup safe state、shutdown safe state を確認する。
+- PyQt / Qt GUIでは、結合疎通試験のうちQTest化できるものと人間確認に残すものを分ける。
 - 出力先は `work/<work-id>/` 配下の対応directoryにする。
 - 生成後は可能な限り `work/<work-id>/context/artifact-index.json` に登録する。
 

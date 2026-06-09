@@ -150,6 +150,7 @@ risk level に応じた test plan を作ります。
 出力:
 
 - test matrix
+- PyQt QTest source plan when GUI uses PyQt / Qt
 - regression target
 - safety check target
 - simulation / mock / bench / field の要否
@@ -162,10 +163,18 @@ risk level に応じた test plan を作ります。
 - timeout / stale data
 - startup / shutdown
 - observability
+- QTest automation candidates for GUI integration cases
+
+PyQt / Qt GUIを含む場合:
+
+- テストケース表からQTestで自動化できる結合疎通試験を抽出する
+- `src/tests/qt/test_<feature>_integration.py` などのtarget sourceを決める
+- external I/Oは原則stub / disableし、実I/Oが必要な場合はtest caseに明示する
+- 実robot、実camera、physical STOP、router / VPN / field networkはbench / human-check evidenceとして残す
 
 ## Phase 7: Implementation
 
-小さい差分で実装します。
+承認されたtest planとPyQt QTest source planに沿って、小さい差分で実装します。
 
 原則:
 

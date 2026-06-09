@@ -53,6 +53,7 @@ Do not treat chat history as a substitute for an accepted requirement document.
 - risk classification
 - change design and rollback plan
 - test plan based on risk
+- PyQt QTest source plan when the changed system includes a PyQt / Qt GUI
 - verification, deployment plan, post-change observation
 
 Safety behavior, network authority, runtime process ownership, and operator workflow changes must be reviewed before implementation.
@@ -68,3 +69,9 @@ work/<receipt-id>/process-report/specialist-review-<domain>.md
 ```
 
 The review must record trusted external-web RAG, rejected or limited claims, current repository evidence, required tests, and unresolved human-check items. High or critical specialist findings must return the workflow to impact analysis, change design, or test planning before implementation.
+
+## PyQt QTest Integration Gate
+
+When the changed system includes a PyQt / Qt GUI, convert automatable GUI integration test cases from the approved test specification into QTest-based test sources.
+
+Keep physical robot behavior, real camera quality, physical STOP, router / VPN, and field network checks as bench / human-check evidence.

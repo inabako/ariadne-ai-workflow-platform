@@ -53,6 +53,7 @@ Do not treat chat history as a substitute for an accepted requirement document.
 - system architecture
 - runtime / network / deployment design
 - test strategy before implementation
+- PyQt QTest source plan when the system includes a PyQt / Qt GUI
 - integration, bench test, limited field test, release handover
 
 Implementation must not start while STOP behavior, communication loss behavior, startup safe state, or shutdown safe state is unresolved.
@@ -68,3 +69,9 @@ work/<receipt-id>/process-report/specialist-review-<domain>.md
 ```
 
 The review must record trusted external-web RAG, rejected or limited claims, repository evidence, required tests, and unresolved human-check items. High or critical specialist findings must return the workflow to design or test strategy before implementation.
+
+## PyQt QTest Integration Gate
+
+When the new system includes a PyQt / Qt GUI, convert automatable GUI integration test cases from the approved test specification into QTest-based test sources.
+
+Keep physical robot behavior, real camera quality, physical STOP, and field network checks as bench / human-check evidence.

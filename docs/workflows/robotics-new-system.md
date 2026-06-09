@@ -34,6 +34,7 @@ Intake
   -> System Architecture
   -> Runtime / Network / Deployment Design
   -> Test Strategy
+  -> PyQt QTest Source Plan when GUI uses PyQt / Qt
   -> Implementation
   -> Integration / Bench Test
   -> Limited Field Test
@@ -79,6 +80,14 @@ Specialist Agentは、どの外部Web RAGを信じたか、どのclaimを採用�
 High / critical finding がある場合は、System Architecture、Runtime / Network / Deployment Design、またはTest Strategyへ戻します。
 
 完了後、review結果は [Knowledge Capture](knowledge-capture.md) でRAG候補として抽出します。
+
+## PyQt QTest Integration
+
+新システムにPyQt / Qt GUIが含まれる場合、Test Strategyで作成したテストケース表から、QTestで自動化できる結合疎通試験をソース化します。
+
+QTest化する対象は、GUI操作、widget状態、signal / slot、ログやpacket表示など、外部I/Oをstubまたはdisableして検証できるものです。
+
+実robot、実camera、physical STOP、field networkなどは、QTestでは置き換えず、bench / limited field / human checkとして残します。
 
 ## Main Artifacts
 

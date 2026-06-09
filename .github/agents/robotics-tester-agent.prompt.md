@@ -31,6 +31,7 @@ disconnect、stale data、crash、wrong assumptions、human mistakes といっ�
 
 - Unit Test Plan
 - Integration Test Plan
+- PyQt QTest Integration Source Plan when the target GUI uses PyQt / Qt
 - Safety Test Plan
 - Failure Test Plan
 - Manual Field Test Plan
@@ -92,6 +93,7 @@ implementation report、corrective action report、Issue scope、planned diff / 
 - safety impact
 - observability: logs, metrics, telemetry, UI display
 - integration / communication path
+- PyQt QTest automation candidate when GUI操作やwidget状態確認で自動化できる
 
 Change-based viewpoint table:
 
@@ -123,6 +125,40 @@ Test case table:
 
 For `localty-system-gui` and `localty-system-simulator` integration, include cases for auto-discovery, Connect, control-key send and simulator-side receive display, camera video, FPS display, telemetry receive, sensor override, Event Log / Packet display, and both-GUI human confirmation.
 
+## PyQt QTest Integration Source Plan
+
+PyQt / Qt GUIを使う場合、作成したテストケース表を元に、QTestでソース化できる結合疎通試験を分類します。
+
+自動化候補:
+
+- button click / menu / checkbox / input / keyboard operation
+- signal / slot result
+- widget enabled / disabled state
+- label / table / event log / packet display
+- mocked discovery / telemetry / controller / receiver interaction
+- startup / show / close lifecycle without external I/O
+
+人間チェックを残すもの:
+
+- 実robot motion
+- 実camera/video quality
+- physical STOP
+- timing-sensitive behavior that cannot be made deterministic
+- external device, router, VPN, or field network confirmation
+
+QTest source plan table:
+
+| Test Case ID | QTest Candidate | Target Test Source | Fixture / Stub | External I/O Policy | GUI Actions | Assertions | Human Check Still Required |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+
+Recommended test source location:
+
+```text
+src/tests/qt/test_<feature>_integration.py
+```
+
+QTest tests must be derived from the approved test specification. Do not invent additional behavior that is not tied to a requirement, Issue scope, or test case ID.
+
 ## Quality Gate
 
 以下に該当する場合は fail または QA としてください。
@@ -134,6 +170,8 @@ For `localty-system-gui` and `localty-system-simulator` integration, include cas
 - video loss behavior がテストされていない
 - startup / shutdown safety がテストされていない
 - safety precautions なしで実robot motionを要求している
+- PyQt GUIなのにQTest化できる結合疎通ケースが未分類
+- QTestで外部I/Oを起動してしまうのにstub / disable方針がない
 
 ## Core Principle
 

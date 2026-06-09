@@ -77,6 +77,7 @@ tags:
 | --- | --- | --- | --- |
 | Unit |  | yes / no |  |
 | Integration |  | yes / no |  |
+| PyQt QTest Integration |  | yes / no / not-applicable |  |
 | Simulation |  | yes / no |  |
 | Hardware Mock |  | yes / no |  |
 | Bench |  | yes / no |  |
@@ -104,7 +105,21 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | TC-001 | critical / high / medium / low | unit / integration / simulation / bench / limited-field | REQ-001 |  |  |  |  | log / screenshot / telemetry / video / command-output |  |
 
-## 10. Safety Gate Test Cases
+## 10. PyQt QTest Source Plan
+
+PyQt / Qt GUIを使う場合、結合疎通試験のうち自動化できるケースはQTestソース化します。
+
+| Test Case ID | QTest Candidate | Target Test Source | Fixture / Stub | External I/O Policy | GUI Actions | Assertions | Human Check Still Required |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| TC-001 | yes / no / partial | src/tests/qt/test_<feature>_integration.py |  | real / stubbed / disabled | QTest.mouseClick / QTest.keyClick / QTest.qWait | widget state / signal / log / packet display | yes / no |
+
+QTestにできない結合疎通試験は、理由と残リスクを記録します。
+
+| Test Case ID | Not Automated Reason | Residual Risk | Manual / Human Evidence |
+| --- | --- | --- | --- |
+| TC-002 | hardware / camera / safety / timing / external device |  |  |
+
+## 11. Safety Gate Test Cases
 
 | Safety Item | Test Case ID | Scenario | Expected Safe Behavior | Evidence Required | Blocking |
 | --- | --- | --- | --- | --- | --- |
@@ -115,19 +130,19 @@ tags:
 | Sensor failure |  |  |  |  |  |
 | Process crash |  |  |  |  |  |
 
-## 11. Regression Matrix
+## 12. Regression Matrix
 
 | Existing Behavior | Risk | Test Case ID | Expected Preservation |
 | --- | --- | --- | --- |
 |  |  |  |  |
 
-## 12. Evidence Plan
+## 13. Evidence Plan
 
 | Evidence ID | Test Case ID | Evidence Type | Save Location | Required |
 | --- | --- | --- | --- | --- |
 | EVD-001 | TC-001 | log / screenshot / telemetry / video / command-output | work/<receipt-id>/test-evidence/ | yes / no |
 
-## 13. Exit Criteria
+## 14. Exit Criteria
 
 | Criteria ID | Criteria | Required | Status |
 | --- | --- | --- | --- |
@@ -135,14 +150,15 @@ tags:
 | EXT-002 | Critical / high findings are resolved or explicitly accepted. | yes | pending / met / not-met |
 | EXT-003 | Test evidence is saved and linked. | yes | pending / met / not-met |
 | EXT-004 | Rollback behavior is verified when applicable. | yes | pending / met / not-met |
+| EXT-005 | PyQt QTest candidates are implemented or explicitly marked manual-only. | yes / no / not-applicable | pending / met / not-met |
 
-## 14. Open Questions
+## 15. Open Questions
 
 | QA ID | Question | Impact | Owner | Blocking |
 | --- | --- | --- | --- | --- |
 | QA-001 |  |  |  | yes / no |
 
-## 15. Approval
+## 16. Approval
 
 | Role | Reviewer | Status | Comment | Date |
 | --- | --- | --- | --- | --- |

@@ -17,6 +17,7 @@
 | `/rag-load` | 開発前に過去知識を検索し、圧縮contextを読む | task, repository, branch | `rag/retrieval/*.json` |
 | External Web RAG | 要件定義、設計、改善flowで知見不足の領域を外部Web一次情報で補う | `rag/external-web/knowledge-sources.md` | `rag/external-web/<category>/*.md` |
 | Specialist Review | 内部/外部RAGを読んだ後、成果物を専門Agentがreviewする | draft artifact, RAG context | `work/<id>/process-report/specialist-review-<domain>.md` |
+| PyQt QTest Integration | PyQt / Qt GUIの結合疎通試験をテスト仕様書からQTestソースへ落とす | test case table | `src/tests/qt/test_<feature>_integration.py` |
 
 ## Decision Guide
 
@@ -32,6 +33,7 @@
 | 過去reportを検索可能にしたい | [RAG Build / Load](rag-build-load.md) |
 | 要件定義、設計、改善flowで知らない技術領域が出た | [External Web RAG](external-web-rag.md) |
 | 成果物の妥当性が専門知識に依存する | [Agent Inventory](../reference/agent-inventory.md) |
+| PyQt GUIの結合疎通試験を自動化したい | [Corrective Action Fix](corrective-action-fix.md) |
 
 ## Common Rules
 
@@ -45,3 +47,4 @@
 - 改善flowで外部WebRAGを使う場合、findingは必ず対象repository evidenceへ結び直します。
 - Specialist Agent reviewは作業中は `work/<id>/process-report/` に保存し、人間承認後に内部RAG候補として扱います。
 - Specialist Agent reviewでは、採用した外部Web RAG、採用しなかったclaim、検証方法を残します。
+- PyQt / Qt GUIでは、テストケース表からQTest化できる結合疎通試験を選別し、外部I/Oは原則stub / disableします。

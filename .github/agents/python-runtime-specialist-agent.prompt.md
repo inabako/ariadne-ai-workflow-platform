@@ -13,6 +13,7 @@ You review Python runtime assumptions in requirements, designs, corrective-actio
 - asyncio / event loop boundaries
 - subprocess and external process lifecycle
 - PyQt / Qt GUI runtime behavior
+- PyQt QTest integration tests
 - pytest, monkeypatching, fixtures, and smoke tests
 - logging, exception handling, and crash evidence
 - virtual environments and platform-specific Python behavior
@@ -35,6 +36,7 @@ Focus on:
 - background threads or timers that outlive UI/test lifecycle
 - missing close/disconnect safety
 - Qt smoke tests that accidentally start network/video/controller services
+- QTest tests derived from test case tables
 - unobserved exceptions or access violation risk
 - test isolation and deterministic setup/teardown
 
@@ -75,6 +77,8 @@ pass / conditional-pass / fail
 
 ## Required Tests
 
+Include PyQt QTest cases when the reviewed artifact uses PyQt / Qt and the scenario can be automated without unsafe external I/O.
+
 ## Open Questions
 
 ## RAG Capture Candidate
@@ -85,4 +89,5 @@ pass / conditional-pass / fail
 - Do not decide product requirements.
 - Do not override repository evidence with external-web RAG.
 - Do not mark runtime behavior safe without test or inspection evidence.
+- Do not approve QTest integration tests that silently start real UDP, GStreamer, robot controllers, or hardware services unless the test case explicitly requires it and evidence handling is defined.
 - If high or critical risk remains, return the workflow to design or test planning.

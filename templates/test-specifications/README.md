@@ -20,11 +20,18 @@ test specification では、最低限以下を必ず埋めます。
 - Risk based test priority
 - Test environment
 - Test case table
+- PyQt QTest source plan when the target uses PyQt / Qt GUI
 - Required evidence
 - Entry / exit criteria
 - Safety gate
 
 high / critical risk の変更では、simulation または bench test を field test より前に定義します。
+
+PyQt / Qt GUI の結合疎通試験では、テストケース表からQTest化できるケースを選別します。
+
+- QTest化できるものは target source、fixture / stub、GUI action、assertionを記録します。
+- 実robot、実camera、physical STOP、field networkなどは人間確認またはbench evidenceとして残します。
+- QTestで外部I/Oを起動する場合は、テストケース表に明示し、通常はstub / disable方針を優先します。
 
 ## Output Location
 

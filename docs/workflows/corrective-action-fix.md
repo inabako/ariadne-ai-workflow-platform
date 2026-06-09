@@ -44,9 +44,10 @@ feature/issue-<issue-number>
 13. encoding / mojibake gateを確認する。
 14. corrective fixを実装する。
 15. test specificationとtest evidenceを残す。
-16. startup / integration checkとhuman check gateを通す。
-17. PR材料とknowledge capture packageを作る。
-18. 人間承認後にpushする。
+16. PyQt / Qt GUIの場合、テストケース表を元にQTest結合テストをソース化する。
+17. startup / integration checkとhuman check gateを通す。
+18. PR材料とknowledge capture packageを作る。
+19. 人間承認後にpushする。
 
 ## External Web RAG Support
 
@@ -126,12 +127,60 @@ target repository templateを使う場合、`Report`、`Target branch`、`Target
 - RAG登録
 - archive移動
 
+## PyQt QTest Integration Source Gate
+
+対象repositoryがPyQt / Qt GUIを含む場合、test specificationのテストケース表からQTest化できる結合疎通試験をソース化します。
+
+```text
+test specification
+  -> PyQt QTest Source Plan
+  -> src/tests/qt/test_<feature>_integration.py
+  -> QTest execution evidence
+  -> remaining human check
+```
+
+QTest化する例:
+
+- Connect button / Disconnect button
+- control key send
+- telemetry receive display
+- sensor override UI
+- Event Log / Packet display
+- FPS label / video state label
+- show / close lifecycle
+- external I/O disabled or stubbed startup
+
+QTest化しない、または人間確認を残す例:
+
+- 実robot motion
+- 実cameraの画質確認
+- physical STOP
+- router / VPN / field network
+- timingが安定化できない実機挙動
+
+QTestソースは、承認済みテスト仕様書のTest Case IDに紐づけます。
+
+推奨保存先:
+
+```text
+work/issue-<issue-number>/source/repository/src/tests/qt/test_<feature>_integration.py
+```
+
+テスト証跡は次に保存します。
+
+```text
+work/issue-<issue-number>/test-evidence/
+work/issue-<issue-number>/source/repository/docs/issue-<issue-number>/integration_connectivity_test/
+```
+
 ## Guardrails
 
 - 外部WebRAGは current source code、test evidence、corrective action report、人間承認済みfindingを上書きしません。
 - 外部Web由来の修正方針は、test evidenceで確認してから採用します。
 - Issue bodyとtest specificationには、外部WebRAGを使った箇所と未確認事項を残します。
 - Specialist Agent reviewで採用した外部知識は、どのtest evidenceまたはhuman checkで検証したかを残します。
+- PyQt QTestは、承認済みテストケース表にない挙動を勝手に仕様化しません。
+- QTestで実UDP、GStreamer、RobotController、hardware serviceを起動する場合は、テストケース表に明示し、通常はstub / disable方針を優先します。
 
 ## Source Skill
 

@@ -9,6 +9,7 @@ You review whether test specifications and evidence plans prove behavior under f
 ## Domain Focus
 
 - pytest and Go test strategy
+- PyQt QTest integration source planning
 - mocks, fixtures, monkeypatching, fake clocks, and deterministic teardown
 - race tests and concurrency stress
 - network fault injection with packet loss, delay, jitter, and disconnect
@@ -33,6 +34,7 @@ Focus on:
 - missing negative tests
 - untestable acceptance criteria
 - tests that accidentally start external I/O
+- missing QTest source plan for automatable PyQt GUI integration cases
 - missing teardown and cleanup checks
 - lack of packet/log/screenshot evidence
 - missing human-check pass criteria
@@ -74,6 +76,8 @@ pass / conditional-pass / fail
 
 ## Required Tests
 
+For PyQt / Qt targets, verify that test case table rows marked as QTest candidates have target source files, fixtures/stubs, GUI actions, assertions, and evidence paths.
+
 ## Open Questions
 
 ## RAG Capture Candidate
@@ -82,5 +86,6 @@ pass / conditional-pass / fail
 ## Guardrails
 
 - Do not accept tests that prove only object creation when behavior risk is runtime.
+- Do not accept PyQt integration tests that are not traceable to a test case ID.
 - Do not require unavailable tools without an install approval gate.
 - Do not skip evidence paths for human checks.
