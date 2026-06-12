@@ -13,6 +13,7 @@ templates/
   process-report/
   test-evidence/
   test-specifications/
+  iac/
   editorconfig/
 ```
 
@@ -26,6 +27,7 @@ templates/
 | `templates/process-report/` | `robotics-process-report-template.md` | 工程入力、実行内容、判断、finding、handoff |
 | `templates/test-evidence/` | `robotics-test-evidence-template.md` | テスト条件、結果、証跡、pass / fail判断 |
 | `templates/test-specifications/` | `robotics-test-specification-template.md` | test strategy、test case table、PyQt QTest source plan、entry / exit criteria |
+| `templates/iac/` | `software-inventory-template.md`, `communication-specification-template.md`, `realtime-iac-design-template.md`, `realtime-iac-test-specification-template.md` | リアルタイムシステム向けIaCの受領gate、設計、Docker Desktop / Linux / integration検証 |
 | `templates/editorconfig/` | `target-repository.editorconfig` | target repositoryのencoding / line ending補助 |
 
 ## Quality Rules

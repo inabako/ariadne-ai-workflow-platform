@@ -10,6 +10,7 @@
 | `/docs-sync` | `docs-sync/` | `/docs-sync` | 実装と `docs/` の差分をJSON化し、Issue branchでdocsのみ修正してRAG/archive準備まで行う |
 | `/robotics-new-system` | `robotics-new-system/` | `/new-robotics-system-development` | 新しい robotics system を立ち上げる |
 | `/robotics-feature-maintenance` | `robotics-feature-maintenance/` | `/robotics-maintenance-development` | 既存 robotics system の新機能追加または保守開発を行う |
+| `/realtime-iac` | `realtime-iac/` | `/realtime-iac` | リアルタイムシステム向けIaCを設計、生成、レビュー、検証、文書化する |
 | `/corrective-action-report` | `corrective-action-report/` | `/corrective-action-report` | 指定repository / branchの改善点をreport化する |
 | `/rag-build` | `rag-build/` | `/rag-build` | Markdown report を file-based RAG 用に normalize / chunk / index / embedding 化する |
 | `/rag-load` | `rag-load/` | `/rag-load` | 開発前に file-based RAG を並列検索し、圧縮済み context を読み込む |
@@ -28,7 +29,7 @@ Additional knowledge-capture skill:
 
 ## Intake Rule
 
-どちらの Skill も、開発本体に入る前に `runtime/intake/intake_requirements.py` と `/pre-development-preparation` を通します。
+開発系 Skill は、開発本体に入る前に `runtime/intake/intake_requirements.py` と `/pre-development-preparation` を通します。
 
 `work/requirements/` に完成版の要件定義書が1件だけある状態が必要です。
 
@@ -60,6 +61,9 @@ C:\Users\User\.codex\skills\robotics-new-system
 
 C:\Users\User\.codex\skills\robotics-feature-maintenance
   -> C:\github\intent-driven-robotics-ai-workflow\skills\robotics-feature-maintenance
+
+C:\Users\User\.codex\skills\realtime-iac
+  -> C:\github\intent-driven-robotics-ai-workflow\skills\realtime-iac
 
 C:\Users\User\.codex\skills\corrective-action-report
   -> C:\github\intent-driven-robotics-ai-workflow\skills\corrective-action-report

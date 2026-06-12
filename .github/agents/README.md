@@ -41,6 +41,16 @@
 | `test-fault-injection-specialist-agent.prompt.md` | pytest / Go test / fault injection / packet evidence の専門review | `specialist-review-testing.md` |
 | `security-remote-access-specialist-agent.prompt.md` | VPN / tunnel / auth / operator authority / secrets の専門review | `specialist-review-remote-security.md` |
 | `safety-control-specialist-agent.prompt.md` | STOP / communication loss / safe state / watchdog の専門review | `specialist-review-safety-control.md` |
+| `iac-requirements-agent.prompt.md` | IaC共有成果物とインフラ要件の整理、open questions抽出 | `requirements.md`, `open-questions.md` |
+| `iac-network-security-design-agent.prompt.md` | realtime IaCのnetwork/security/firewall設計 | `network-design.md`, `security-design.md`, `firewall-policy.md` |
+| `iac-runtime-design-agent.prompt.md` | Docker Compose、systemd、startup、restart、health check設計 | `runtime-design.md`, `docker-compose-design.md` |
+| `iac-observability-design-agent.prompt.md` | logs、metrics、monitoring、logrotate、evidence設計 | `observability-design.md`, `monitoring-policy.md` |
+| `iac-implementer-agent.prompt.md` | 承認済み設計からIaC artifactsを生成 | IaC artifacts, `iac-implementation.md` |
+| `iac-security-review-agent.prompt.md` | generated IaCのsecret/exposure/privilege/firewall review | `security-review.md` |
+| `iac-docker-desktop-test-agent.prompt.md` | Docker Desktop上のcompose/config/startup/health/port/log検証 | `docker-test-plan.md`, `docker-test-result.md` |
+| `iac-linux-runtime-test-agent.prompt.md` | Linux上のsystemd/firewall/logrotate/service検証 | `runtime-validation.md` |
+| `iac-integration-test-agent.prompt.md` | control/video/telemetry/gateway疎通と復旧確認 | `integration-test.md` |
+| `iac-documentation-agent.prompt.md` | IaC運用docs、setup、troubleshooting、network overview整理 | README, setup/operation docs |
 
 ## 推奨フロー
 
@@ -63,6 +73,7 @@ draft bullets
   -> deployment architect
   -> safety / security / network / observability reviews
   -> robotics tester
+  -> realtime IaC agents when IaC is in scope
   -> implementer
   -> documentation writer
   -> knowledge capture

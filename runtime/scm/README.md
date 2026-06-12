@@ -6,6 +6,7 @@
 
 - GitHub / git repository から target branch を取得する
 - `work/<採番ID>/source/repository/` を準備する
+- precreated-new repository modeで `work/<採番ID>/source/repository/` を初期git repository化し、作成済みGitHub repositoryへ初回branchをpushする
 - RAGで判明したsupport repositoryを `work/<採番ID>/source/<name>/` に準備する
 - 要件定義書と repository state の比較レポートを作成する
 - Issue番号から GitHub 上に `feature/issue-<issue-number>` branch を作成し、そのbranchをwork配下へclone / checkoutする
@@ -65,6 +66,7 @@ Supported fields:
 runtime/scm/prepare_repository.py
 runtime/scm/prepare_support_repository.py
 runtime/scm/compare_requirements.py
+runtime/scm/bootstrap_repository.py
 runtime/scm/create_issue_branch.py
 runtime/scm/commit_changes.py
 runtime/scm/push_branch.py
@@ -90,6 +92,12 @@ python runtime/scm/commit_changes.py `
   --work-id issue-123 `
   --all `
   --message "feat: add remote gateway skeleton"
+
+python runtime/scm/bootstrap_repository.py `
+  --work-id WF-20260601-090000 `
+  --github-repo owner/new-iac-repository `
+  --push `
+  --human-check approved
 
 python runtime/scm/push_branch.py `
   --work-id issue-123 `

@@ -34,6 +34,7 @@ ISSUE_TITLE_PREFIXES = {
     "new-feature": "新規機能フロー",
     "improvement": "改善フロー",
     "initial-development": "初期開発",
+    "iac": "IaC",
 }
 
 

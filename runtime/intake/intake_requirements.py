@@ -46,7 +46,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--workflow",
         default="new-robotics-system-development",
-        choices=["new-robotics-system-development", "robotics-maintenance-development"],
+        choices=["new-robotics-system-development", "robotics-maintenance-development", "realtime-iac"],
     )
     parser.add_argument("--phase", default="intake")
     parser.add_argument("--intent-summary", default="Requirement document intake")
@@ -127,11 +127,20 @@ def initialize_context(
     command = "/new-robotics-system-development"
     if workflow == "robotics-maintenance-development":
         command = "/robotics-maintenance-development"
+    elif workflow == "realtime-iac":
+        command = "/realtime-iac"
 
     open_safety_questions = [
         "STOP / emergency stop behavior is not confirmed at intake.",
         "Communication loss behavior is not confirmed at intake.",
     ]
+    if workflow == "realtime-iac":
+        open_safety_questions = [
+            "Communication specification is not confirmed at intake.",
+            "Port definition list is not confirmed at intake.",
+            "Network boundary definition is not confirmed at intake.",
+            "Public exposure scope and secret handling are not confirmed at intake.",
+        ]
     agent_context = {
         "schema_version": "1.0",
         "project": {
@@ -264,7 +273,11 @@ def run(args: argparse.Namespace) -> dict[str, object]:
                 "created_at": now,
                 "updated_at": now,
                 "depends_on": [],
-                "consumed_by": ["robotics-architect-agent"],
+                "consumed_by": [
+                    "iac-requirements-agent"
+                    if args.workflow == "realtime-iac"
+                    else "robotics-architect-agent"
+                ],
                 "summary": "Requirement document accepted by runtime intake.",
                 "unresolved_items": [],
             },

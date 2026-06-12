@@ -27,6 +27,7 @@
 | `runtime/scm/push_branch.py` | human check承認後にpush recordを残してpushする |
 | `runtime/github/issue_manager.py` | GitHub Issue draft / createを行う |
 | `runtime/github/pull_request_manager.py` | Issue branch push後にPull Request draft / createを行う |
+| `runtime/scm/bootstrap_repository.py` | precreated-new repository modeで初期git repository化、initial branch push recordを作る |
 | `runtime/workflow/docs_sync.py` | docs-syncのcontext、analysis scaffold、Issue bodyを作る |
 | `runtime/workflow/init_corrective_action_fix.py` | corrective-action-fixのbase / issue work folderを初期化する |
 | `runtime/workflow/knowledge_capture.py` | PR材料、knowledge capture report、archive readinessを作り、target repository側の `docs/evidence/<issue-id>/` scaffoldを自動生成する |
@@ -63,7 +64,7 @@ GITHUB_TOKEN=
 
 GitHub APIで実Issueを作るのは `--create` 指定時だけです。
 
-Issue title は workflow に応じて `[新規機能フロー]`、`[改善フロー]`、`[初期開発]` のprefixを付けます。
+Issue title は workflow に応じて `[新規機能フロー]`、`[改善フロー]`、`[初期開発]`、`[IaC]` のprefixを付けます。
 
 ## Pull Request
 

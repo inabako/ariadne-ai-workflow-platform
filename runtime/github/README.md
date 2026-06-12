@@ -1,6 +1,6 @@
 ﻿# Runtime GitHub
 
-`runtime/github/` は、GitHub Issue のdraft作成または実作成を扱います。
+`runtime/github/` は、GitHub Issue / Pull Request のdraft作成または実作成を扱います。
 
 ## Responsibilities
 
@@ -51,6 +51,7 @@ Issue title は workflow に応じてprefixを付けます。
 | New feature / maintenance | `[新規機能フロー]` |
 | Corrective action / docs sync | `[改善フロー]` |
 | New system / initial development | `[初期開発]` |
+| Realtime IaC | `[IaC]` |
 
 `runtime/github/issue_manager.py` は `--flow-label` または `--title-prefix` でprefixを付与できます。
 

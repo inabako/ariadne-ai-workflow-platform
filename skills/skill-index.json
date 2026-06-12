@@ -38,6 +38,15 @@
       "description": "既存 robotics system の新機能追加、bug fix、hardware replacement、network change、deployment change、field issue response を開始する。"
     },
     {
+      "slash_command": "/realtime-iac",
+      "skill": "realtime-iac",
+      "skill_path": "skills/realtime-iac/SKILL.md",
+      "delegated_prompt": "/realtime-iac",
+      "prompt_path": ".github/prompts/realtime-iac.prompt.md",
+      "workflow": "realtime-iac",
+      "description": "リアルタイムシステム向けIaCを、共有成果物確認、設計、生成、セキュリティレビュー、Docker Desktop検証、Linux検証、統合試験、ドキュメント化まで進める。"
+    },
+    {
       "slash_command": "/corrective-action-report",
       "skill": "corrective-action-report",
       "skill_path": "skills/corrective-action-report/SKILL.md",

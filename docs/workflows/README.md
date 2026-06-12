@@ -9,6 +9,7 @@
 | `/requirement-discovery` | 箇条書き草案から要件定義書を完成させたい | `work/requirements/draft/<draft>` | `work/requirements/<requirements>.md` |
 | `/robotics-new-system` | 新しいrobotics system、runtime、remote operation、device integrationを開始する | 完成版要件定義書 | `work/<receipt-id>/` |
 | `/robotics-feature-maintenance` | 既存robotics systemの新機能追加、bug fix、保守開発を行う | 完成版要件定義書 | `work/<receipt-id>/` |
+| `/realtime-iac` | リアルタイムシステム向けIaCを設計、生成、レビュー、検証、文書化する | 完成版要件定義書、共有通信/port/network成果物 | `work/<receipt-id>/`, IaC artifacts |
 | `/corrective-action-report` | repository / branchをread-onlyで調査し、改善reportだけ作る | target repository, target branch | `rag/corrective-action-report/*.md` |
 | `/corrective-action-fix` | 改善reportからIssue、branch、修正、test、pushまで進める | target repository, target branch | `work/<branch>/`, `work/issue-<number>/` |
 | `/docs-sync` | 実装とdocsのズレを検出し、docsだけ修正する | target repository, target branch | `docs-drift-analysis.json`, issue branch |
@@ -26,6 +27,7 @@
 | まだ要件が箇条書きだけ | [Requirement Discovery](requirement-discovery.md) |
 | 新しいrobotics systemを作る | [Robotics New System](robotics-new-system.md) |
 | 既存systemへ機能追加、bug fix、保守対応をする | [Robotics Feature Maintenance](robotics-feature-maintenance.md) |
+| Docker Compose、systemd、firewall、reverse proxy、監視などのIaCを整備したい | [Realtime IaC](realtime-iac.md) |
 | まず改善点を洗い出したいが、sourceは変更しない | [Corrective Action Report](corrective-action-report.md) |
 | 改善点の修正まで進めたい | [Corrective Action Fix](corrective-action-fix.md) |
 | codeは変えず、docsだけ実装に合わせたい | [Docs Sync](docs-sync.md) |
@@ -40,7 +42,7 @@
 - Repository / branch は user input または要件定義書の `Repository Control` を source of truth にします。
 - 会話ログだけで intake 済みとは扱いません。
 - GitHub Issue 作成、branch作成、push、install、archive移動などの副作用は、人間承認gateを通します。
-- GitHub Issue title は workflow label をprefixにします: `[新規機能フロー]`、`[改善フロー]`、`[初期開発]`。
+- GitHub Issue title は workflow label をprefixにします: `[新規機能フロー]`、`[改善フロー]`、`[初期開発]`、`[IaC]`。
 - `work/<branch>/` はbase調査用、`work/issue-<number>/` は実装修正用に分けます。
 - 成果物は `work/<id>/context/artifact-index.json` に登録できる形で残します。
 - RAG化する成果物は、metadata、evidence、open questions、stable section order を保ちます。
@@ -49,6 +51,7 @@
 - Specialist Agent reviewは作業中は `work/<id>/process-report/` に保存し、人間承認後に内部RAG候補として扱います。
 - Specialist Agent reviewでは、採用した外部Web RAG、採用しなかったclaim、検証方法を残します。
 - 実装系workflow（`/robotics-new-system`、`/robotics-feature-maintenance`、`/corrective-action-fix`）では、テスト実行前に `unit-test-cases.md`、`integration-test-cases.md`、`human-check-list.md` を作成します。
+- `/realtime-iac` では、IaC検証前に `iac-test-cases.md` を作成し、Docker Desktop、Linux runtime、integration、human check の分類を明示します。
 - PyQt / Qt GUIでは、テストケース表からQTest化できる結合疎通試験を選別し、外部I/Oは原則stub / disableします。
 - target repositoryへ残すテスト証跡は `docs/evidence/issue-<issue-number>/` に保存します。
 - Issue branch push後は、Issue titleをPR titleとして `develop` へPull Requestを作成します。

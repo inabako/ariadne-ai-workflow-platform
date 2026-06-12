@@ -22,6 +22,14 @@ python runtime/intake/intake_requirements.py `
   --workflow new-robotics-system-development
 ```
 
+`--workflow` は以下を受け付けます。
+
+```text
+new-robotics-system-development
+robotics-maintenance-development
+realtime-iac
+```
+
 `work/requirements/` に `.md` / `.markdown` / `.txt` の要件定義書が無い場合、受付IDは作らずに受領拒否します。
 
 `work/requirements/` に要件定義書が2件以上ある場合も、どの要件を受け付けるべきか曖昧になるため受領拒否します。標準運用は `1 requirement file = 1 receipt ID` です。

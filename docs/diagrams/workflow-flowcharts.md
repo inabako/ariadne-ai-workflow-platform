@@ -82,6 +82,38 @@ flowchart TD
   H --> I[RAG capture candidates]
 ```
 
+## Realtime IaC
+
+```mermaid
+flowchart TD
+  A[Completed requirement document] --> B[Pre-development preparation]
+  B --> C{Repository mode?}
+  C -- existing --> D[Repository sync / comparison]
+  D --> E[Issue draft / create]
+  E --> F1[Create linked issue branch]
+  C -- precreated-new --> N1[Generate local bootstrap workspace]
+  N1 --> N2[Confirm GitHub repository exists]
+  N2 --> N4[Initial commit and branch push]
+  N4 --> N5[Issue draft / create]
+  N5 --> N6[Create linked issue branch]
+  F1 --> RAG[RAG load]
+  N6 --> RAG
+  RAG --> F{Required shared artifacts present?}
+  F -- no --> G[open-questions.md and stop]
+  F -- yes --> H[Requirements organization]
+  H --> I[Network / security design]
+  I --> J[Runtime design]
+  J --> K[Observability design]
+  K --> L[IaC implementation]
+  L --> M[Security review]
+  M --> N{High / critical finding?}
+  N -- yes --> I
+  N -- no --> O[Docker Desktop validation]
+  O --> P[Linux runtime validation]
+  P --> Q[Integration validation]
+  Q --> R[Documentation and handoff]
+```
+
 ## Corrective Action Fix
 
 ```mermaid

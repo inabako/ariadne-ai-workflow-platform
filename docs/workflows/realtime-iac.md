@@ -1,0 +1,290 @@
+# Realtime IaC
+
+リアルタイムシステム向けの Docker Compose、systemd、firewall、reverse proxy、TURN / STUN、logrotate、monitoring などの IaC を扱う workflow です。
+
+## Command
+
+```text
+/realtime-iac
+```
+
+## Required Input
+
+完成版の要件定義書が必要です。
+
+```text
+work/requirements/<completed-requirements>.md
+```
+
+要件定義書には `Repository Control` を含めます。
+
+`Repository Control` では、既存repositoryへ入れるのか、GitHubサイト側で作成済みの新規repositoryへ最終pushするのかを明確にします。
+
+新規repositoryへpushする場合:
+
+```text
+Repository Mode: precreated-new
+GitHub Owner: <owner>
+GitHub Repository: <new-repository-name>
+Initial Branch: main
+Visibility: private
+```
+
+既存repositoryへ入れる場合:
+
+```text
+Repository Mode: existing
+GitHub Repository URL: https://github.com/<owner>/<repo>.git
+Target Branch: develop
+```
+
+## Shared Artifact Gate
+
+IaC設計や生成へ進む前に、次の共有成果物が必要です。
+
+- communication specification
+- port definition list
+- network boundary definition
+- software inventory
+
+推奨成果物:
+
+- protocol definition
+- public / private network policy
+- system architecture diagram
+- architecture decision records
+
+`software inventory` では、基盤に入れるソフトウェアを要件受領の段階で確認します。
+
+最低限の確認項目:
+
+- software name
+- purpose
+- owner / responsibility boundary
+- version or version policy
+- runtime unit: container / systemd service / host package / proxy / sidecar / monitoring job
+- required ports / protocols
+- required environment variables and secret placeholders
+- persistence / volume needs
+- health check method
+- license or distribution constraint when relevant
+
+要件定義書に同等の構造が無い場合は、次のテンプレートを使います。
+
+```text
+templates/iac/software-inventory-template.md
+templates/iac/communication-specification-template.md
+```
+
+不足している場合、AIは推測で補完せず、`work/<receipt-id>/design-document/open-questions.md` を作成して停止します。
+
+## Flow
+
+```text
+Intake
+  -> Repository Mode Decision
+  -> Existing Repo: Repository Sync / Requirement Comparison / Issue / Working Branch
+  -> Precreated New Repo: Local Bootstrap Workspace / Initial Push / Issue / Working Branch
+  -> RAG Load / Prior Findings
+  -> Shared Artifact Gate
+  -> Requirements Organization
+  -> Network / Security Design
+  -> Runtime Design
+  -> Observability Design
+  -> IaC Implementation
+  -> Security Review
+  -> Docker Desktop Validation
+  -> Linux Runtime Validation
+  -> Integration Validation
+  -> Documentation
+  -> Semantic Commit
+```
+
+## Repository Modes
+
+### Existing Repository Mode
+
+既存GitHub repositoryにIaCを追加する場合です。
+
+```text
+Repository Sync
+  -> Requirement Comparison
+  -> GitHub Issue Draft / Create
+  -> feature/issue-<issue-number> Branch Create
+  -> Implementation / Validation
+  -> Push issue branch
+  -> Pull Request
+```
+
+### Precreated New Repository Mode
+
+GitHubサイト側で先に作成した新しいrepositoryを指定し、最終的にそこへpushする場合です。
+
+```text
+Precreated owner/repository confirmation
+  -> Local workspace generation under work/<receipt-id>/source/repository/
+  -> Initial commit and initial branch push
+  -> GitHub Issue Draft / Create
+  -> feature/issue-<issue-number> Branch Create
+  -> Continue implementation / validation on issue branch
+  -> Push issue branch
+  -> Pull Request
+```
+
+このmodeでは、GitHub repositoryは人間が先に作成します。`feature/issue-<issue-number>` branch は、initial branch pushの後に作ります。空repositoryにはbranchの起点になるcommitが無いためです。
+
+補助CLI:
+
+```powershell
+uv run python runtime/scm/bootstrap_repository.py --work-id <receipt-id> --github-repo <owner>/<repo> --push --human-check approved
+uv run python runtime/github/issue_manager.py --work-id <receipt-id> --github-repo <owner>/<repo> --title "<title>" --flow-label iac --create
+uv run python runtime/scm/create_issue_branch.py --work-id <receipt-id> --issue-number <number> --github-repo <owner>/<repo> --base-branch main --link-to-issue
+```
+
+## Main Artifacts
+
+Design:
+
+```text
+work/<receipt-id>/design-document/requirements.md
+work/<receipt-id>/design-document/open-questions.md
+work/<receipt-id>/design-document/network-design.md
+work/<receipt-id>/design-document/security-design.md
+work/<receipt-id>/design-document/firewall-policy.md
+work/<receipt-id>/design-document/runtime-design.md
+work/<receipt-id>/design-document/docker-compose-design.md
+work/<receipt-id>/design-document/observability-design.md
+work/<receipt-id>/design-document/monitoring-policy.md
+```
+
+Review and validation:
+
+```text
+work/<receipt-id>/process-report/security-review.md
+work/<receipt-id>/test-specifications/iac-test-cases.md
+work/<receipt-id>/test-evidence/docker-test-plan.md
+work/<receipt-id>/test-evidence/docker-test-result.md
+work/<receipt-id>/test-evidence/runtime-validation.md
+work/<receipt-id>/test-evidence/integration-test.md
+work/<receipt-id>/context/
+```
+
+Target repository examples:
+
+```text
+docker-compose.yml
+.env.example
+deploy/systemd/*.service
+deploy/reverse-proxy/*
+deploy/turn-stun/*
+deploy/logrotate/*
+deploy/monitoring/*
+docs/evidence/issue-<issue-number>/
+```
+
+## Stop Rules
+
+次が未定義なら先へ進めません。
+
+- communication specification
+- port definition list
+- network boundary definition
+- software inventory
+- public exposure scope
+- system responsibility boundary
+- repository mode
+- planned repository name
+- initial branch
+- TLS / auth model
+- secret source and rotation
+- firewall policy
+- validation target for Docker Desktop and Linux runtime
+
+`.env` や実secretが必要になる場合も停止します。生成できるのは `.env.example` と placeholder だけです。
+
+## Test Strategy
+
+検証は次の順序で行います。
+
+1. Docker Desktop validation
+2. Linux runtime validation
+3. Integration validation
+
+Docker Desktop validation:
+
+- `docker compose config`
+- container startup
+- health check
+- environment variable loading
+- port binding
+- log output
+- restart policy
+- network isolation
+- UDP communication when applicable
+
+Linux runtime validation:
+
+- systemd
+- firewall
+- logrotate
+- service restart
+- health check
+- host permission
+
+Integration validation:
+
+- control communication
+- video communication
+- telemetry communication
+- gateway communication
+- failure recovery
+
+## Evidence Storage
+
+Target repositoryへ残す永続証跡:
+
+```text
+docs/evidence/issue-<issue-number>/test_specifications/iac-test-cases.md
+docs/evidence/issue-<issue-number>/integration/docker-desktop/
+docs/evidence/issue-<issue-number>/integration/linux-runtime/
+docs/evidence/issue-<issue-number>/integration/iac-integration/
+docs/evidence/issue-<issue-number>/human_check/
+```
+
+`iac-test-cases.md` には、Docker Desktop、Linux runtime、integration、human check のどれに属するかを明示します。
+
+## Issue Title
+
+IaC workflow の Issue title は、次のprefixを付けます。
+
+```text
+[IaC] <issue-title>
+```
+
+## Specialist Review Gate
+
+次の領域に依存する場合は、実装前または検証前に Specialist Agent review を使います。
+
+- realtime network protocol
+- firewall / routing / NAT
+- TURN / STUN
+- reverse proxy
+- TLS / auth / secret handling
+- Docker networking
+- systemd / Linux service behavior
+- logrotate / monitoring
+- evidence strategy
+
+review結果は次に保存します。
+
+```text
+work/<receipt-id>/process-report/specialist-review-<domain>.md
+```
+
+High / critical finding がある場合、Shared Artifact Gate、Network / Security Design、Runtime Design、または Test Strategy へ戻します。
+
+## Source Skill
+
+```text
+skills/realtime-iac/SKILL.md
+```
