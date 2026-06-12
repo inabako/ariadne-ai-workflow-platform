@@ -19,20 +19,20 @@ Build a VSCode environment as Workspace as Code so AI agents and humans can repr
 
 ## Required Inputs
 
-- txt draft under `work/devlop-edit-draft/`
+- draft README under `work/requirements/devlop-edit-draft/`
 - target workspace path, either in the draft or human answers
 - required tools
 - required extensions
 - required terminal profiles
 - required AI workflow entry tasks
 
-If `/vscode-environment` has no argument, do not use the current directory as the target. Read txt drafts from `work/devlop-edit-draft/`, create `open-questions.md`, and stop.
+If `/vscode-environment` has no argument, do not use the current directory as the target. Read the draft README from `work/requirements/devlop-edit-draft/`, create `open-questions.md`, and stop.
 
 If any required input is missing from the draft, stop and create `open-questions.md`.
 
 ## Flow
 
-1. Read or create txt draft under `work/devlop-edit-draft/`.
+1. Read or create the draft README under `work/requirements/devlop-edit-draft/`.
 2. Create `open-questions.md` when arguments or draft details are missing.
 3. Wait for human review and approval.
 4. Initialize a work area with `runtime/workflow/vscode_environment.py init`.

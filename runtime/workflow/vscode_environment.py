@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -15,7 +15,7 @@ if __package__ in {None, ""}:
 from runtime.common import find_repo_root, relative_to_repo, slugify, utc_now_iso, write_json  # noqa: E402
 
 
-DEFAULT_DRAFT_DIR = "work/devlop-edit-draft"
+DEFAULT_DRAFT_DIR = "work/requirements/devlop-edit-draft"
 DEFAULT_RAG_SOURCE_DIR = "rag/workspace-environment"
 CROCKFORD_BASE32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 
@@ -39,11 +39,11 @@ def build_parser() -> argparse.ArgumentParser:
     validation.add_argument("--repo-root", default="")
     validation.add_argument("--status", choices=["pass", "conditional-pass", "fail"], default="fail")
 
-    draft = subparsers.add_parser("draft-template", help="Create a txt draft scaffold for the VSCode environment workflow.")
+    draft = subparsers.add_parser("draft-template", help="Create a draft README scaffold for the VSCode environment workflow.")
     draft.add_argument("--draft-dir", default=DEFAULT_DRAFT_DIR)
     draft.add_argument("--repo-root", default="")
 
-    questions = subparsers.add_parser("open-questions", help="Create open-questions.md from txt draft intake.")
+    questions = subparsers.add_parser("open-questions", help="Create open-questions.md from draft intake.")
     questions.add_argument("--work-id", default="vscode-environment")
     questions.add_argument("--draft-dir", default=DEFAULT_DRAFT_DIR)
     questions.add_argument("--repo-root", default="")
@@ -103,18 +103,22 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def draft_template_text() -> str:
-    return """VSCode Environment Draft
+    return """# VSCode Environment Draft
 
-目的:
+## 目的
+
 - TODO: このworkspaceで何を再現可能にしたいか
 
-対象workspace:
-- TODO: 例 C:\\github\\localty-system-gui
+## 対象 Workspace
 
-起動したいAI workflow:
-- TODO: 例 /corrective-action-fix, /realtime-iac, /vscode-environment
+- TODO: 例 `C:\\github\\localty-system-gui`
 
-必要tool / runtime:
+## 起動したい AI Workflow
+
+- TODO: 例 `/corrective-action-fix`, `/realtime-iac`, `/vscode-environment`
+
+## 必要 Tool / Runtime
+
 - Git:
 - Docker Desktop:
 - Python / uv:
@@ -123,38 +127,44 @@ def draft_template_text() -> str:
 - MSYS2:
 - その他:
 
-必要VSCode拡張:
+## 必要 VSCode 拡張
+
 - TODO: extension ID または拡張名
 
-Terminal構成:
+## Terminal 構成
+
 - Dispatcher:
 - Software Workflow:
 - IaC Workflow:
 - Docker Test:
 - Evidence:
 
-VSCode task案:
+## VSCode Task 案
+
 - TODO: task label と実行コマンド
 
-Debug / launch案:
-- TODO: launch name と対象program
+## Debug / Launch 案
 
-試走したい内容:
+- TODO: launch name と対象 program
+
+## 試走したい内容
+
 - TODO: task実行、terminal起動、Docker連携、Python実行、AI workflow起動など
 
-Evidence:
+## Evidence
+
 - TODO: 保存したいログ、スクリーンショット、human check
 
-未確定:
+## 未確定
+
 - TODO
 """
-
 
 def write_draft_template(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = repo_root_from(args)
     draft_dir = (repo_root / args.draft_dir).resolve()
     draft_dir.mkdir(parents=True, exist_ok=True)
-    path = draft_dir / "vscode-environment-draft.txt"
+    path = draft_dir / "README.md"
     created = False
     if not path.exists():
         path.write_text(draft_template_text(), encoding="utf-8")
@@ -162,10 +172,14 @@ def write_draft_template(args: argparse.Namespace) -> dict[str, Any]:
     return {"draft_path": relative_to_repo(repo_root, path), "created": created}
 
 
-def discover_txt_drafts(draft_dir: Path) -> list[Path]:
+def discover_drafts(draft_dir: Path) -> list[Path]:
     if not draft_dir.exists():
         return []
-    return sorted(path for path in draft_dir.iterdir() if path.is_file() and path.suffix.lower() == ".txt")
+    return sorted(
+        path
+        for path in draft_dir.iterdir()
+        if path.is_file() and (path.name.lower() == "readme.md" or path.suffix.lower() == ".txt")
+    )
 
 
 def open_questions_text(work_id: str, draft_dir: str, draft_paths: list[str]) -> str:
@@ -181,7 +195,7 @@ def open_questions_text(work_id: str, draft_dir: str, draft_paths: list[str]) ->
 
 ## Stop Reason
 
-The VSCode Environment workflow starts from a txt draft. Required information must be confirmed by a human before `.vscode` files are created or changed.
+The VSCode Environment workflow starts from a draft README. Required information must be confirmed by a human before `.vscode` files are created or changed.
 
 ## Draft Files
 
@@ -190,7 +204,7 @@ The VSCode Environment workflow starts from a txt draft. Required information mu
 ## Required Confirmation Flow
 
 ```text
-txt draft
+draft README
   -> open-questions.md
   -> human review / answers
   -> approval
@@ -289,7 +303,7 @@ def write_open_questions(args: argparse.Namespace) -> dict[str, Any]:
     base = work_dir(repo_root, args.work_id)
     ensure_work_dirs(base)
     draft_dir = (repo_root / args.draft_dir).resolve()
-    draft_paths = [relative_to_repo(repo_root, path) for path in discover_txt_drafts(draft_dir)]
+    draft_paths = [relative_to_repo(repo_root, path) for path in discover_drafts(draft_dir)]
     path = base / "design-document" / "open-questions.md"
     path.write_text(open_questions_text(args.work_id, args.draft_dir, draft_paths), encoding="utf-8")
     state = {
@@ -352,7 +366,7 @@ areas:
 
 ## Summary
 
-Localty repositories should treat VSCode configuration as Workspace as Code. The environment starts from a human-readable txt draft, turns unknowns into `open-questions.md`, waits for human approval, then creates `.vscode` artifacts and trial-run evidence.
+Localty repositories should treat VSCode configuration as Workspace as Code. The environment starts from a human-readable draft README, turns unknowns into `open-questions.md`, waits for human approval, then creates `.vscode` artifacts and trial-run evidence.
 
 ## Scope
 
@@ -363,7 +377,7 @@ Localty repositories should treat VSCode configuration as Workspace as Code. The
 
 ## Intake Pattern
 
-1. Save a human draft under `work/devlop-edit-draft/*.txt`.
+1. Save a human draft under `work/requirements/devlop-edit-draft/README.md`.
 2. When `/vscode-environment` has no target argument or the draft is incomplete, create `work/<work-id>/design-document/open-questions.md`.
 3. Wait for human answers and approval.
 4. Initialize `work/<work-id>` with the confirmed target workspace.

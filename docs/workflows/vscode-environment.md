@@ -8,10 +8,10 @@
 /vscode-environment <target-workspace-path>
 ```
 
-When the command has no argument, the workflow starts from txt drafts in:
+When the command has no argument, the workflow starts from the draft README in:
 
 ```text
-work/devlop-edit-draft/*.txt
+work/requirements/devlop-edit-draft/README.md
 ```
 
 Example:
@@ -46,7 +46,7 @@ workspace.code-workspace
 
 ## Flow
 
-1. Place or create a txt draft under `work/devlop-edit-draft/`.
+1. Place or create a draft README under `work/requirements/devlop-edit-draft/`.
 2. Create `open-questions.md` from the draft when required details are missing.
 3. Wait for human review and approval.
 4. Initialize `work/<work-id>` with the confirmed target workspace.
@@ -63,7 +63,7 @@ workspace.code-workspace
 
 ## Stop Rules
 
-Stop and create `open-questions.md` when the command has no target argument, no txt draft exists, or required tools, extensions, terminal profiles, AI workflow entry tasks, or evidence requirements are missing or contradictory.
+Stop and create `open-questions.md` when the command has no target argument, no draft README exists, or required tools, extensions, terminal profiles, AI workflow entry tasks, or evidence requirements are missing or contradictory.
 
 Stop for human approval before installing tools/extensions, replacing existing `.vscode` files, changing default terminal behavior, or accepting `conditional-pass`.
 

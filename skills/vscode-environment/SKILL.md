@@ -15,14 +15,14 @@ Manage a VSCode development environment as Workspace as Code so AI agents and hu
 
 ## Required Inputs
 
-- txt draft under `work/devlop-edit-draft/`
+- draft README under `work/requirements/devlop-edit-draft/`
 - target workspace or repository path, either in the draft or human answers
 - intended workflow entry points, such as software workflow, IaC workflow, test workflow, evidence workflow
 - required tools and runtimes
 - required VSCode extensions
 - terminal profiles and default shell policy
 
-If `/vscode-environment` has no argument, do not infer a target workspace from the current directory. Read txt drafts from `work/devlop-edit-draft/`, create `open-questions.md`, and stop before implementation.
+If `/vscode-environment` has no argument, do not infer a target workspace from the current directory. Read the draft README from `work/requirements/devlop-edit-draft/`, create `open-questions.md`, and stop before implementation.
 
 If any required item is missing from the draft, do not infer silently. Create `open-questions.md` and stop before implementation.
 
@@ -37,7 +37,7 @@ Example:
 Draft intake:
 
 ```text
-work/devlop-edit-draft/*.txt
+work/requirements/devlop-edit-draft/README.md
 ```
 
 Workflow artifacts stay in this repository:
@@ -61,13 +61,13 @@ Workspace files are written only to the target workspace after requirements and 
 
 ## Runtime Helpers
 
-Create a txt draft scaffold:
+Create a draft README scaffold:
 
 ```powershell
 uv run python runtime/workflow/vscode_environment.py draft-template
 ```
 
-Create open questions from txt drafts:
+Create open questions from the draft README:
 
 ```powershell
 uv run python runtime/workflow/vscode_environment.py open-questions `
@@ -118,10 +118,10 @@ uv run python runtime/environment/preflight.py `
 
 ### 1. Draft Intake
 
-Start from a human-editable txt draft:
+Start from a human-editable draft README:
 
 ```text
-work/devlop-edit-draft/*.txt
+work/requirements/devlop-edit-draft/README.md
 ```
 
 If the command has no argument or the draft is incomplete, create:
