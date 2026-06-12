@@ -20,6 +20,7 @@ Workflow を選ぶ場合:
 | --- | --- | --- |
 | 箇条書き草案から要件定義書を作る | `/requirement-discovery` | [Requirement Discovery](docs/workflows/requirement-discovery.md) |
 | 新しいrobotics systemを始める | `/robotics-new-system` | [Robotics New System](docs/workflows/robotics-new-system.md) |
+| 新システム設計からShared Artifacts検証、IaC連携まで一気通貫で行う | `/robotics-new-system-iac` | [Robotics New System + IaC](docs/workflows/robotics-new-system-iac.md) |
 | 既存systemの新機能追加、bug fix、保守開発を行う | `/robotics-feature-maintenance` | [Robotics Feature Maintenance](docs/workflows/robotics-feature-maintenance.md) |
 | リアルタイムシステム向けIaCを設計、生成、検証、文書化する | `/realtime-iac` | [Realtime IaC](docs/workflows/realtime-iac.md) |
 | repository / branchをread-onlyで調査し、改善reportを作る | `/corrective-action-report` | [Corrective Action Report](docs/workflows/corrective-action-report.md) |
@@ -101,6 +102,7 @@ GITHUB_TOKEN=
 
 - 要件定義書 discovery / intake
 - 新規system workflow
+- 新規system + realtime IaC integrated workflow
 - 新機能 / 保守開発 workflow
 - リアルタイムシステム向けIaC workflow
 - corrective action report / fix workflow

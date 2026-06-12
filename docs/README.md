@@ -28,6 +28,7 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 | [Workflow Index](workflows/README.md) | 全workflowの選択基準と入出力 |
 | [Requirement Discovery](workflows/requirement-discovery.md) | 箇条書き草案から完成版要件定義書を作る |
 | [Robotics New System](workflows/robotics-new-system.md) | 新しいrobotics systemを立ち上げる |
+| [Robotics New System + IaC](workflows/robotics-new-system-iac.md) | 新システム設計からShared Artifacts検証、realtime IaC連携までを一気通貫で行う |
 | [Robotics Feature Maintenance](workflows/robotics-feature-maintenance.md) | 既存systemの新機能追加、bug fix、保守開発を行う |
 | [Realtime IaC](workflows/realtime-iac.md) | リアルタイムシステム向けIaCを設計、生成、レビュー、検証、文書化する |
 | [Corrective Action Report](workflows/corrective-action-report.md) | repository / branchをread-onlyで調査し、改善reportを作る |

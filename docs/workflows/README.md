@@ -8,6 +8,7 @@
 | --- | --- | --- | --- |
 | `/requirement-discovery` | 箇条書き草案から要件定義書を完成させたい | `work/requirements/draft/<draft>` | `work/requirements/<requirements>.md` |
 | `/robotics-new-system` | 新しいrobotics system、runtime、remote operation、device integrationを開始する | 完成版要件定義書 | `work/<receipt-id>/` |
+| `/robotics-new-system-iac` | 新しいrobotics systemを設計し、Shared Artifactsを検証してからrealtime IaCへ渡す | 完成版要件定義書 | `work/<receipt-id>/`, validated Shared Artifacts, IaC artifacts |
 | `/robotics-feature-maintenance` | 既存robotics systemの新機能追加、bug fix、保守開発を行う | 完成版要件定義書 | `work/<receipt-id>/` |
 | `/realtime-iac` | リアルタイムシステム向けIaCを設計、生成、レビュー、検証、文書化する | 完成版要件定義書、共有通信/port/network成果物 | `work/<receipt-id>/`, IaC artifacts |
 | `/corrective-action-report` | repository / branchをread-onlyで調査し、改善reportだけ作る | target repository, target branch | `rag/corrective-action-report/*.md` |
@@ -26,6 +27,7 @@
 | --- | --- |
 | まだ要件が箇条書きだけ | [Requirement Discovery](requirement-discovery.md) |
 | 新しいrobotics systemを作る | [Robotics New System](robotics-new-system.md) |
+| 新しいrobotics systemを作り、そのままDocker Compose、systemd、firewall、監視などのIaCまで連携したい | [Robotics New System + IaC](robotics-new-system-iac.md) |
 | 既存systemへ機能追加、bug fix、保守対応をする | [Robotics Feature Maintenance](robotics-feature-maintenance.md) |
 | Docker Compose、systemd、firewall、reverse proxy、監視などのIaCを整備したい | [Realtime IaC](realtime-iac.md) |
 | まず改善点を洗い出したいが、sourceは変更しない | [Corrective Action Report](corrective-action-report.md) |
@@ -45,6 +47,7 @@
 - GitHub Issue title は workflow label をprefixにします: `[新規機能フロー]`、`[改善フロー]`、`[初期開発]`、`[IaC]`。
 - `work/<branch>/` はbase調査用、`work/issue-<number>/` は実装修正用に分けます。
 - 成果物は `work/<id>/context/artifact-index.json` に登録できる形で残します。
+- `/robotics-new-system-iac` では、新システム設計後に Shared Artifacts を生成し、Shared Artifact Validator の `pass` または human-approved `conditional-pass` を得るまで IaC に進みません。
 - RAG化する成果物は、metadata、evidence、open questions、stable section order を保ちます。
 - 外部Web RAGは current code、test evidence、人間承認済み運用知見を上書きしません。
 - 改善flowで外部WebRAGを使う場合、findingは必ず対象repository evidenceへ結び直します。

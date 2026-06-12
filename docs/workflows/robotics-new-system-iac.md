@@ -1,0 +1,106 @@
+# Robotics New System + Realtime IaC
+
+新しい robotics system を作り、その設計結果を Shared Artifacts として固定してから realtime IaC workflow へ渡す統合workflowです。
+
+## Command
+
+```text
+/robotics-new-system-iac
+```
+
+## Flow
+
+```text
+新システムワークフロー
+  -> Shared Artifacts生成
+  -> Shared Artifact Validator
+  -> IaCワークフロー
+```
+
+## Required Input
+
+完成版の要件定義書が必要です。
+
+```text
+work/requirements/<completed-requirements>.md
+```
+
+要件定義書には `Repository Control` を含めます。
+
+## Phase Overview
+
+```text
+Intake
+  -> Pre-development Preparation
+  -> New System Workflow
+  -> Shared Artifacts Generation
+  -> Shared Artifact Validator
+  -> Realtime IaC Handoff
+  -> Realtime IaC Workflow
+  -> Commit / Push / Pull Request
+```
+
+## Shared Artifacts
+
+必須成果物:
+
+```text
+work/<receipt-id>/design-document/shared-artifacts-index.md
+work/<receipt-id>/design-document/requirements.md
+work/<receipt-id>/design-document/communication-specification.md
+work/<receipt-id>/design-document/port-definition.md
+work/<receipt-id>/design-document/network-boundary-definition.md
+work/<receipt-id>/design-document/architecture-decision-record.md
+work/<receipt-id>/process-report/shared-artifact-validation.md
+work/<receipt-id>/context/shared-artifact-validation.json
+work/<receipt-id>/context/realtime-iac-handoff.json
+```
+
+必要に応じて:
+
+```text
+work/<receipt-id>/design-document/software-inventory.md
+```
+
+## Shared Artifact Validator
+
+Validatorは、Shared ArtifactsがIaC workflowへ渡せる品質かを判定します。
+
+| Judgment | Meaning | Next Step |
+| --- | --- | --- |
+| pass | IaCへ渡せる | `/realtime-iac` |
+| conditional-pass | 一部制約付きでIaCへ渡せる | residual riskを記録して `/realtime-iac` |
+| fail | IaCへ渡すと危険または不完全 | 新システム設計またはShared Artifacts生成へ戻る |
+
+## Stop Rules
+
+次の場合はIaCへ進みません。
+
+- requirementsが未完成
+- communication specificationが不足または矛盾
+- port definitionが不足または矛盾
+- network boundary definitionが不足または矛盾
+- ADRが主要decisionを説明していない
+- safety behaviorがtraceできない
+- repository modeが不明
+- software inventoryが必要なのに不足
+- Validator judgmentが`fail`
+
+## Templates
+
+```text
+templates/shared-artifacts/shared-artifacts-index-template.md
+templates/shared-artifacts/port-definition-template.md
+templates/shared-artifacts/network-boundary-definition-template.md
+templates/shared-artifacts/architecture-decision-record-template.md
+templates/iac/communication-specification-template.md
+templates/iac/software-inventory-template.md
+```
+
+## Source Skills
+
+```text
+skills/robotics-new-system/SKILL.md
+skills/realtime-iac/SKILL.md
+skills/robotics-new-system-iac/SKILL.md
+```

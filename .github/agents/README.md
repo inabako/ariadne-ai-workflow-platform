@@ -20,6 +20,7 @@
 | `external-web-rag-dispatcher-agent.prompt.md` | 蓄積済み外部Web RAGをカテゴリ別に検索・集約し、要件定義/設計/改善flowへ渡す | `rag/external-web/retrieval/*-aggregate.md` |
 | `docs-drift-analyzer-agent.prompt.md` | 実装とdocsの差分検出、JSON化、Issue材料作成 | `work/<branch>/context/docs-drift-analysis.json` |
 | `robotics-architect-agent.prompt.md` | システム構造と責務境界 | `architecture.md` |
+| `shared-artifact-validator-agent.prompt.md` | 新システム設計成果物をIaC投入可能なShared Artifactsとして検証 | `shared-artifact-validation.md`, `shared-artifact-validation.json` |
 | `robotics-runtime-agent.prompt.md` | process model、lifecycle、restart、watchdog | `runtime-design.md` |
 | `network-migration-planner-agent.prompt.md` | LAN -> VPN -> Relay -> Remote Ops の移行計画 | `network-migration-plan.md` |
 | `remote-gateway-architect-agent.prompt.md` | remote gateway のサービス境界 | `remote-gateway-architecture.md` |
@@ -71,6 +72,7 @@ draft bullets
   -> network migration planner
   -> remote gateway architect
   -> deployment architect
+  -> shared artifact validator when new-system output feeds IaC
   -> safety / security / network / observability reviews
   -> robotics tester
   -> realtime IaC agents when IaC is in scope

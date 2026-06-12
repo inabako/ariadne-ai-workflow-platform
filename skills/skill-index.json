@@ -29,6 +29,15 @@
       "description": "新しい robotics system、runtime、remote operation system、device integration、architecture-level launch を開始する。"
     },
     {
+      "slash_command": "/robotics-new-system-iac",
+      "skill": "robotics-new-system-iac",
+      "skill_path": "skills/robotics-new-system-iac/SKILL.md",
+      "delegated_prompt": "/robotics-new-system-iac",
+      "prompt_path": ".github/prompts/robotics-new-system-iac.prompt.md",
+      "workflow": "robotics-new-system-iac",
+      "description": "Start a new robotics system workflow, generate and validate Shared Artifacts, then hand off to the realtime IaC workflow."
+    },
+    {
       "slash_command": "/robotics-feature-maintenance",
       "skill": "robotics-feature-maintenance",
       "skill_path": "skills/robotics-feature-maintenance/SKILL.md",

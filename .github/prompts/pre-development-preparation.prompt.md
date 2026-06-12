@@ -96,6 +96,7 @@ Issue title prefix:
 | 新規機能 / 保守開発 | `[新規機能フロー]` | `--flow-label new-feature` |
 | 改善 / docs sync | `[改善フロー]` | `--flow-label improvement` |
 | 新システム / 初期開発 | `[初期開発]` | `--flow-label initial-development` |
+| 新システム + IaC統合 | `[初期開発][IaC]` | `--flow-label initial-development` |
 
 Runtime:
 
@@ -166,6 +167,7 @@ feature/issue-<issue-number>
 代表例:
 
 - `/new-robotics-system-development`
+- `/robotics-new-system-iac`
 - `/robotics-maintenance-development`
 - `/robotics-safety-gates`
 - `/robotics-test-strategy`

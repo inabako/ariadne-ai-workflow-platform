@@ -17,7 +17,9 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 | `requirement-discovery.prompt.md` | `/requirement-discovery` Skill entrypoint |
 | `docs-sync.prompt.md` | `/docs-sync` Skill entrypoint |
 | `robotics-new-system.prompt.md` | `/robotics-new-system` Skill entrypoint |
+| `robotics-new-system-iac.prompt.md` | `/robotics-new-system-iac` Skill entrypoint |
 | `robotics-feature-maintenance.prompt.md` | `/robotics-feature-maintenance` Skill entrypoint |
+| `realtime-iac.prompt.md` | `/realtime-iac` Skill entrypoint |
 | `corrective-action-report.prompt.md` | `/corrective-action-report` Skill entrypoint |
 | `pre-development-preparation.prompt.md` | 開発前準備、repository sync、Issue、branch 作成 |
 | `new-robotics-system-development.prompt.md` | 新システム開発の標準フロー |
@@ -34,7 +36,9 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 | `/requirement-discovery` | `skills/requirement-discovery/SKILL.md` | requirement discovery and human review |
 | `/docs-sync` | `skills/docs-sync/SKILL.md` | implementation/docs drift analysis and docs-only issue branch |
 | `/robotics-new-system` | `skills/robotics-new-system/SKILL.md` | `/new-robotics-system-development` |
+| `/robotics-new-system-iac` | `skills/robotics-new-system-iac/SKILL.md` | Shared Artifacts validation then `/realtime-iac` |
 | `/robotics-feature-maintenance` | `skills/robotics-feature-maintenance/SKILL.md` | `/robotics-maintenance-development` |
+| `/realtime-iac` | `skills/realtime-iac/SKILL.md` | realtime IaC design, generation, validation, and docs |
 | `/corrective-action-report` | `skills/corrective-action-report/SKILL.md` | read-only improvement report |
 | `/knowledge-capture` | `skills/knowledge-capture/SKILL.md` | finalization and knowledge recovery |
 
@@ -67,6 +71,17 @@ Completion は、人間レビューで OK が出た後に `work/requirements/` �
 - safety requirement と hazard analysis
 - simulation / bench / field の段階検証
 - operator handover と運用手順
+
+### 新システム + IaC 統合
+
+新しい system を設計した後、その設計成果物を Shared Artifacts として固定し、validator を通してから realtime IaC workflow へ渡します。
+
+主な関心:
+
+- 要件定義、通信仕様、port定義、境界定義、ADRの整合
+- software inventory と infrastructure ownership
+- IaCが推測で port、route、public exposure、secret、runtime unit を決めないこと
+- validator の `pass` または human-approved `conditional-pass`
 
 ### 保守開発
 
@@ -106,6 +121,7 @@ intent / requirements
   -> network migration planner
   -> remote gateway architect
   -> deployment architect
+  -> shared artifact validator when IaC is in scope
   -> safety / security / network / observability reviews
   -> robotics tester
   -> implementer

@@ -139,11 +139,20 @@ rag/specialist-review/<domain>/*.md
 | --- | --- | --- |
 | `/requirement-discovery` | 要件の質問品質に専門知識が必要、または未知の安全/通信/runtime領域がある | requirement review draftへRAG path、未確認事項、専門QAを残す |
 | `/robotics-new-system` | architecture、runtime、network、deployment、safety、test strategyの専門前提が成果物を左右する | implementation前にspecialist reviewを実行し、high/critical findingはdesignへ戻す |
+| `/robotics-new-system-iac` | 新システム設計成果物をIaCへ渡す前に、要件、通信仕様、port、network boundary、ADR、software inventoryの整合性が成果物を左右する | Shared Artifact Validatorを実行し、`pass` または human-approved `conditional-pass` 以外ではIaCへ進めない |
 | `/robotics-feature-maintenance` | 既存挙動、STOP、network authority、runtime ownership、operator workflowへ影響する | impact analysis、change design、test planの前後でspecialist reviewを実行する |
 | `/corrective-action-report` | finding品質が専門知識に依存する | external-webだけでfinding化せず、repo evidenceとspecialist reviewをsupporting referenceとして記録する |
 | `/corrective-action-fix` | 実装方針、Issue scope、test specificationが専門知識に依存する | Issue作成前または実装前にspecialist reviewを実行し、採用知識と検証方法をtest evidenceへつなぐ |
 | `/realtime-iac` | port / network boundary / runtime / firewall / systemd / Docker / observability / security / evidence strategyが成果物を左右する | 共有成果物gate後にIaC設計Agent群へ渡し、実装前と検証前にspecialist reviewを実行する |
 | `/knowledge-capture` | 完了Issueに専門review、採用外部知識、review escapeが含まれる | RAG candidatesとして抽出し、人間承認後に内部RAGへ吸収する |
+
+## Shared Artifact Validator
+
+`/robotics-new-system-iac` は、新システムworkflowの設計成果物を realtime IaC workflow へ渡す前に、専用validator promptを使います。
+
+| Agent | Type | Workflow Phase | Responsibility | Main Outputs |
+| --- | --- | --- | --- | --- |
+| `shared-artifact-validator-agent.prompt.md` | reviewer | shared artifact validation | requirements、communication specification、port definition、network boundary、ADR、software inventory、safety traceability、IaC readinessを検証し、不足・矛盾・human approval項目を明示する | `shared-artifact-validation.md`, `shared-artifact-validation.json` |
 
 ## Realtime IaC Agent Set
 

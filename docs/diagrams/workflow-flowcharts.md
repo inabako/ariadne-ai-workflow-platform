@@ -45,6 +45,37 @@ flowchart TD
   O --> P[Release / handover]
 ```
 
+## Robotics New System + Realtime IaC
+
+```mermaid
+flowchart TD
+  A[Completed requirement] --> B[New system workflow]
+  B --> C[Intent / safety / architecture]
+  C --> D[Runtime / network / deployment design]
+  D --> E[Shared Artifacts generation]
+  E --> F[Requirements]
+  E --> G[Communication specification]
+  E --> H[Port definition]
+  E --> I[Network boundary definition]
+  E --> J[ADR]
+  E --> K[Software inventory]
+  F --> L[Shared Artifact Validator]
+  G --> L
+  H --> L
+  I --> L
+  J --> L
+  K --> L
+  L --> M{Validation judgment}
+  M -- fail --> N[Open questions / return to design]
+  N --> D
+  M -- conditional-pass --> O{Human approves conditions?}
+  O -- no --> N
+  O -- yes --> P[Realtime IaC handoff]
+  M -- pass --> P
+  P --> Q[Realtime IaC workflow]
+  Q --> R[IaC design / generation / validation / docs]
+```
+
 ## Robotics Feature Maintenance
 
 ```mermaid

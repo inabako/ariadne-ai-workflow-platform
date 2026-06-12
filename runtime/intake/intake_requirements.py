@@ -46,7 +46,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--workflow",
         default="new-robotics-system-development",
-        choices=["new-robotics-system-development", "robotics-maintenance-development", "realtime-iac"],
+        choices=[
+            "new-robotics-system-development",
+            "robotics-maintenance-development",
+            "robotics-new-system-iac",
+            "realtime-iac",
+        ],
     )
     parser.add_argument("--phase", default="intake")
     parser.add_argument("--intent-summary", default="Requirement document intake")
@@ -112,6 +117,50 @@ def unique_destination(directory: Path, filename: str) -> Path:
         counter += 1
 
 
+def command_for_workflow(workflow: str) -> str:
+    if workflow == "robotics-maintenance-development":
+        return "/robotics-maintenance-development"
+    if workflow == "robotics-new-system-iac":
+        return "/robotics-new-system-iac"
+    if workflow == "realtime-iac":
+        return "/realtime-iac"
+    return "/new-robotics-system-development"
+
+
+def open_questions_for_workflow(workflow: str) -> list[str]:
+    if workflow == "realtime-iac":
+        return [
+            "Communication specification is not confirmed at intake.",
+            "Port definition list is not confirmed at intake.",
+            "Network boundary definition is not confirmed at intake.",
+            "Public exposure scope and secret handling are not confirmed at intake.",
+        ]
+    if workflow == "robotics-new-system-iac":
+        return [
+            "STOP / emergency stop behavior is not confirmed at intake.",
+            "Communication loss behavior is not confirmed at intake.",
+            "Shared Artifacts readiness for IaC handoff is not confirmed at intake.",
+            "Software inventory for infrastructure ownership is not confirmed at intake.",
+            "Communication specification, port definition, and network boundary definition must be validated before IaC starts.",
+        ]
+    return [
+        "STOP / emergency stop behavior is not confirmed at intake.",
+        "Communication loss behavior is not confirmed at intake.",
+    ]
+
+
+def consumed_by_for_workflow(workflow: str) -> list[str]:
+    if workflow == "realtime-iac":
+        return ["iac-requirements-agent"]
+    if workflow == "robotics-new-system-iac":
+        return [
+            "robotics-architect-agent",
+            "shared-artifact-validator-agent",
+            "iac-requirements-agent",
+        ]
+    return ["robotics-architect-agent"]
+
+
 def initialize_context(
     repo_root: Path,
     work_dir: Path,
@@ -124,23 +173,8 @@ def initialize_context(
     risk_level: str,
 ) -> None:
     context_dir = work_dir / "context"
-    command = "/new-robotics-system-development"
-    if workflow == "robotics-maintenance-development":
-        command = "/robotics-maintenance-development"
-    elif workflow == "realtime-iac":
-        command = "/realtime-iac"
-
-    open_safety_questions = [
-        "STOP / emergency stop behavior is not confirmed at intake.",
-        "Communication loss behavior is not confirmed at intake.",
-    ]
-    if workflow == "realtime-iac":
-        open_safety_questions = [
-            "Communication specification is not confirmed at intake.",
-            "Port definition list is not confirmed at intake.",
-            "Network boundary definition is not confirmed at intake.",
-            "Public exposure scope and secret handling are not confirmed at intake.",
-        ]
+    command = command_for_workflow(workflow)
+    open_safety_questions = open_questions_for_workflow(workflow)
     agent_context = {
         "schema_version": "1.0",
         "project": {
@@ -273,11 +307,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
                 "created_at": now,
                 "updated_at": now,
                 "depends_on": [],
-                "consumed_by": [
-                    "iac-requirements-agent"
-                    if args.workflow == "realtime-iac"
-                    else "robotics-architect-agent"
-                ],
+                "consumed_by": consumed_by_for_workflow(args.workflow),
                 "summary": "Requirement document accepted by runtime intake.",
                 "unresolved_items": [],
             },

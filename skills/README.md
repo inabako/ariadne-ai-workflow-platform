@@ -9,6 +9,7 @@
 | `/requirement-discovery` | `requirement-discovery/` | `/requirement-discovery` | `work/requirements/draft/` の箇条書き草案を精査し、質問と人間レビューを経て完成版要件定義書を `work/requirements/` に保存する |
 | `/docs-sync` | `docs-sync/` | `/docs-sync` | 実装と `docs/` の差分をJSON化し、Issue branchでdocsのみ修正してRAG/archive準備まで行う |
 | `/robotics-new-system` | `robotics-new-system/` | `/new-robotics-system-development` | 新しい robotics system を立ち上げる |
+| `/robotics-new-system-iac` | `robotics-new-system-iac/` | `/robotics-new-system-iac` | 新システム設計、Shared Artifacts生成・検証、realtime IaC連携を一気通貫で行う |
 | `/robotics-feature-maintenance` | `robotics-feature-maintenance/` | `/robotics-maintenance-development` | 既存 robotics system の新機能追加または保守開発を行う |
 | `/realtime-iac` | `realtime-iac/` | `/realtime-iac` | リアルタイムシステム向けIaCを設計、生成、レビュー、検証、文書化する |
 | `/corrective-action-report` | `corrective-action-report/` | `/corrective-action-report` | 指定repository / branchの改善点をreport化する |
@@ -58,6 +59,9 @@ C:\Users\User\.codex\skills\docs-sync
 
 C:\Users\User\.codex\skills\robotics-new-system
   -> C:\github\intent-driven-robotics-ai-workflow\skills\robotics-new-system
+
+C:\Users\User\.codex\skills\robotics-new-system-iac
+  -> C:\github\intent-driven-robotics-ai-workflow\skills\robotics-new-system-iac
 
 C:\Users\User\.codex\skills\robotics-feature-maintenance
   -> C:\github\intent-driven-robotics-ai-workflow\skills\robotics-feature-maintenance
