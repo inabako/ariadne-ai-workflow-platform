@@ -20,6 +20,15 @@
       "description": "Compare implementation and docs on a target branch, store docs drift analysis as JSON, create an Issue, update docs only on feature/issue-XXX, push after approval, and prepare RAG/archive."
     },
     {
+      "slash_command": "/vscode-environment",
+      "skill": "vscode-environment",
+      "skill_path": "skills/vscode-environment/SKILL.md",
+      "delegated_prompt": "/vscode-environment",
+      "prompt_path": ".github/prompts/vscode-environment.prompt.md",
+      "workflow": "vscode-environment",
+      "description": "Build or maintain reproducible VSCode Workspace-as-Code settings, tasks, launch configs, extensions, terminal profiles, AI workflow tasks, tests, evidence, and setup docs."
+    },
+    {
       "slash_command": "/robotics-new-system",
       "skill": "robotics-new-system",
       "skill_path": "skills/robotics-new-system/SKILL.md",

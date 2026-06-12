@@ -171,6 +171,20 @@ rag/specialist-review/<domain>/*.md
 | `iac-integration-test-agent.prompt.md` | tester | integration validation | control、video、telemetry、gateway、recoveryの疎通を確認する | `integration-test.md` |
 | `iac-documentation-agent.prompt.md` | knowledge | documentation | setup、operation、troubleshooting、architecture/network overviewを整える | README, docs, `iac-documentation.md` |
 
+## VSCode Environment Agent Set
+
+`/vscode-environment` uses a dedicated set of agents to build VSCode Workspace-as-Code artifacts before touching `.vscode` files.
+
+| Agent | Type | Workflow Phase | Responsibility | Main Outputs |
+| --- | --- | --- | --- | --- |
+| `workspace-requirements-analyst-agent.prompt.md` | full-stack | requirements | tools, extensions, terminal profiles, tasks, launch targets, AI workflow entrypoints, evidence requirements | `workspace-requirements.md`, `open-questions.md` |
+| `workspace-shared-artifact-validator-agent.prompt.md` | reviewer | validation | check required workspace artifacts and stop on missing or contradictory items | `workspace-shared-artifact-validation.json`, `workspace-shared-artifact-validation.md` |
+| `vscode-architect-agent.prompt.md` | full-stack | design | design settings, tasks, launch configs, extensions, and workspace file | `vscode-design.md` |
+| `terminal-architect-agent.prompt.md` | full-stack | design | design terminal profiles, default shell policy, and terminal roles | `terminal-design.md` |
+| `workspace-implementer-agent.prompt.md` | implementer | implementation | implement approved `.vscode` and workspace files without overwriting user settings blindly | `.vscode/*`, `workspace-implementation.md` |
+| `workspace-test-agent.prompt.md` | reviewer | test | verify JSON, tasks, terminal profiles, launch configs, Docker/runtime checks, and evidence | `workspace-test.md`, `test-evidence/evidence/` |
+| `workspace-documentation-writer-agent.prompt.md` | knowledge | documentation | document setup, extensions, tasks, terminal usage, troubleshooting, and evidence capture | README/setup docs, `workspace-documentation.md` |
+
 ## Escalation Rules
 
 - Full-stack Agentは、知らない技術領域を無理に決めません。

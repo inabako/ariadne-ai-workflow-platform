@@ -19,6 +19,13 @@
 | `external-web-source-reviewer-agent.prompt.md` | 不足知識に対して外部Web一次情報を精査し、外部Web RAG候補へ要約する | `rag/external-web/<category>/*.md` |
 | `external-web-rag-dispatcher-agent.prompt.md` | 蓄積済み外部Web RAGをカテゴリ別に検索・集約し、要件定義/設計/改善flowへ渡す | `rag/external-web/retrieval/*-aggregate.md` |
 | `docs-drift-analyzer-agent.prompt.md` | 実装とdocsの差分検出、JSON化、Issue材料作成 | `work/<branch>/context/docs-drift-analysis.json` |
+| `workspace-requirements-analyst-agent.prompt.md` | VSCode workspace要件、tool、extension、terminal、task整理 | `workspace-requirements.md` |
+| `workspace-shared-artifact-validator-agent.prompt.md` | VSCode環境構築前の必須artifact検証 | `workspace-shared-artifact-validation.json`, `workspace-shared-artifact-validation.md` |
+| `vscode-architect-agent.prompt.md` | settings/tasks/launch/extensions/workspace設計 | `vscode-design.md` |
+| `terminal-architect-agent.prompt.md` | terminal profileとAI workflow terminal role設計 | `terminal-design.md` |
+| `workspace-implementer-agent.prompt.md` | 承認済み設計に基づく.vscode/workspace実装 | `.vscode/*`, `workspace-implementation.md` |
+| `workspace-test-agent.prompt.md` | task、terminal、launch、Docker/runtime、AI workflow起動検証 | `workspace-test.md`, `test-evidence/evidence/` |
+| `workspace-documentation-writer-agent.prompt.md` | VSCode setup/troubleshooting/evidence docs整理 | README/setup docs, `workspace-documentation.md` |
 | `robotics-architect-agent.prompt.md` | システム構造と責務境界 | `architecture.md` |
 | `shared-artifact-validator-agent.prompt.md` | 新システム設計成果物をIaC投入可能なShared Artifactsとして検証 | `shared-artifact-validation.md`, `shared-artifact-validation.json` |
 | `robotics-runtime-agent.prompt.md` | process model、lifecycle、restart、watchdog | `runtime-design.md` |

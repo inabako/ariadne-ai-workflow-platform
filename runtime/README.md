@@ -34,6 +34,7 @@ Runtime は `runtime/common/env.py` を通じて `.env` を読み込みます。
 runtime/intake/intake_requirements.py
 runtime/environment/preflight.py
 runtime/workflow/init_corrective_action_fix.py
+runtime/workflow/vscode_environment.py
 runtime/retrieval/task_runner.py
 runtime/scm/prepare_repository.py
 runtime/scm/compare_requirements.py
@@ -57,6 +58,8 @@ runtime/rag/standardize_corrective_report_names.py
 `preflight.py` は、workflow や target repository の作業前に必要な executable / Python module / Python package / MSYS2 package / fallback support repository を確認し、不足時は install list を `work/<id>/process-report/` に出力します。`--install --human-check approved` が指定された場合のみ install を実行します。Localty の MSYS2 profile では公開済み `localty-system-protocol>=0.1.0` を優先し、取得できない場合だけ `localty-system-protocol` repository を support repository として準備します。
 
 `init_corrective_action_fix.py` は、corrective action fix 用に repository / branch 引数から `work/<branch>/` または `work/issue-<issue-number>/` と初期contextを作成します。
+
+`vscode_environment.py` は、VSCode Environment workflow 用に `work/<id>/` を初期化し、`workspace-requirements.md` と `workspace-shared-artifact-validation` のscaffoldを作成します。
 
 `task_runner.py` は、`task-plan.schema.json` に沿ったtask planを読み込み、sequential / parallel に処理して `process-report/` へ実行レポートを出力します。
 

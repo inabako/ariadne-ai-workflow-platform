@@ -186,6 +186,26 @@ flowchart TD
   H --> I[Knowledge capture candidates]
 ```
 
+## VSCode Environment
+
+```mermaid
+flowchart TD
+  A[Target workspace] --> B[Workspace requirements]
+  B --> C[Shared artifact validation]
+  C --> D{Validation judgment}
+  D -- fail --> E[open-questions.md]
+  E --> B
+  D -- conditional-pass --> F{Human approves conditions?}
+  F -- no --> E
+  F -- yes --> G[VSCode design]
+  D -- pass --> G
+  G --> H[Terminal design]
+  H --> I[Environment preflight]
+  I --> J[Implement .vscode files]
+  J --> K[Workspace tests and evidence]
+  K --> L[Setup and troubleshooting docs]
+```
+
 ## Knowledge Capture
 
 ```mermaid

@@ -246,6 +246,40 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
             install_command="uv run --with pytest python -m pytest --version",
         ))
 
+    if args.profile == "vscode-environment":
+        checks.append(which_check(
+            "code",
+            required=True,
+            install_hint="Install Visual Studio Code and ensure the code command is on PATH.",
+            install_command="winget install --id Microsoft.VisualStudioCode -e",
+        ))
+        checks.append(which_check(
+            "docker",
+            required=False,
+            install_hint="Required only when the workspace uses Docker Desktop tasks.",
+            install_command="winget install --id Docker.DockerDesktop -e",
+        ))
+        checks.append(which_check(
+            "node",
+            required=False,
+            install_hint="Required only when the workspace uses Node.js tasks.",
+            install_command="winget install --id OpenJS.NodeJS.LTS -e",
+        ))
+        checks.append(which_check(
+            "java",
+            required=False,
+            install_hint="Required only when the workspace uses Java tasks.",
+            install_command="winget install --id EclipseAdoptium.Temurin.21.JDK -e",
+        ))
+        if source_dir:
+            checks.append(path_check(
+                source_dir,
+                check_id="path:target-workspace",
+                label="target workspace directory",
+                required=True,
+                install_hint="Pass --source-dir pointing at the target workspace root.",
+            ))
+
     return checks
 
 
@@ -342,7 +376,7 @@ def install_missing(checks: list[Check]) -> list[dict[str, Any]]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Check workflow environment dependencies and produce an install plan.")
-    parser.add_argument("--profile", choices=["corrective-action-fix", "localty-msys2"], default="corrective-action-fix")
+    parser.add_argument("--profile", choices=["corrective-action-fix", "localty-msys2", "vscode-environment"], default="corrective-action-fix")
     parser.add_argument("--work-id", default="")
     parser.add_argument("--source-dir", default="")
     parser.add_argument("--protocol-dir", default="")

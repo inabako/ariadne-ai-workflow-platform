@@ -1,0 +1,4 @@
+interface:
+  display_name: "VSCode Environment"
+  short_description: "Build reproducible VSCode workspaces."
+  default_prompt: "/vscode-environment\n日本語で出力してください。"

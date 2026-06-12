@@ -26,6 +26,7 @@ Workflow を選ぶ場合:
 | repository / branchをread-onlyで調査し、改善reportを作る | `/corrective-action-report` | [Corrective Action Report](docs/workflows/corrective-action-report.md) |
 | 改善reportからIssue、branch、修正、test、pushまで進める | `/corrective-action-fix` | [Corrective Action Fix](docs/workflows/corrective-action-fix.md) |
 | 実装とdocsのズレを検出し、docsだけ修正する | `/docs-sync` | [Docs Sync](docs/workflows/docs-sync.md) |
+| VSCode workspace as codeを整備する | `/vscode-environment` | [VSCode Environment](docs/workflows/vscode-environment.md) |
 | 完了IssueからPR材料、RAG候補、docs候補、archive準備を作る | `/knowledge-capture` | [Knowledge Capture](docs/workflows/knowledge-capture.md) |
 | reportをRAG化する、または開発前にRAGを読む | `/rag-build`, `/rag-load` | [RAG Build / Load](docs/workflows/rag-build-load.md) |
 
@@ -107,6 +108,7 @@ GITHUB_TOKEN=
 - リアルタイムシステム向けIaC workflow
 - corrective action report / fix workflow
 - docs-sync workflow
+- VSCode environment workflow
 - knowledge capture workflow
 - GitHub Issue / branch / commit / push補助runtime
 - environment preflight

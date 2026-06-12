@@ -76,6 +76,7 @@ Current prompt set:
 - `/robotics-workflow`
 - `/requirement-discovery`
 - `/docs-sync`
+- `/vscode-environment`
 - `/robotics-new-system`
 - `/robotics-feature-maintenance`
 - `/corrective-action-report`
@@ -97,6 +98,7 @@ Current Skill entrypoints:
 
 - `/requirement-discovery` -> `skills/requirement-discovery/SKILL.md` -> `work/requirements/draft/`, then `work/requirements/` after human OK
 - `/docs-sync` -> `skills/docs-sync/SKILL.md` -> `work/<target-branch>/context/docs-drift-analysis.json`, then docs-only `feature/issue-<number>`
+- `/vscode-environment` -> `skills/vscode-environment/SKILL.md` -> `work/<work-id>/`, `.vscode/*`, optional `workspace.code-workspace`
 - `/robotics-new-system` -> `skills/robotics-new-system/SKILL.md` -> `/new-robotics-system-development`
 - `/robotics-feature-maintenance` -> `skills/robotics-feature-maintenance/SKILL.md` -> `/robotics-maintenance-development`
 - `/corrective-action-report` -> `skills/corrective-action-report/SKILL.md` -> `rag/corrective-action-report/`
