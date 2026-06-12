@@ -56,6 +56,11 @@ python runtime/workflow/vscode_environment.py requirements-template `
 
 python runtime/workflow/vscode_environment.py validation-template `
   --work-id vscode-environment
+
+python runtime/workflow/vscode_environment.py rag-template `
+  --work-id vscode-environment `
+  --topic localty-vscode-environment `
+  --repository localty
 ```
 
 Primary artifacts:
@@ -65,6 +70,7 @@ work/<work-id>/design-document/workspace-requirements.md
 work/<work-id>/design-document/open-questions.md
 work/<work-id>/context/workspace-shared-artifact-validation.json
 work/<work-id>/process-report/workspace-shared-artifact-validation.md
+rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 ```
 
 This command does not edit the target workspace, install tools, or change VSCode files by itself.

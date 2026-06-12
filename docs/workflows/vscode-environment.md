@@ -59,12 +59,32 @@ workspace.code-workspace
 11. Test tasks, terminal startup, Docker/runtime integration, and AI workflow entry tasks.
 12. Record evidence.
 13. Update setup and troubleshooting docs.
+14. Capture reusable workspace knowledge under `rag/workspace-environment/` when it should feed future RAG.
 
 ## Stop Rules
 
 Stop and create `open-questions.md` when the command has no target argument, no txt draft exists, or required tools, extensions, terminal profiles, AI workflow entry tasks, or evidence requirements are missing or contradictory.
 
 Stop for human approval before installing tools/extensions, replacing existing `.vscode` files, changing default terminal behavior, or accepting `conditional-pass`.
+
+## RAG Capture
+
+Reusable Localty VSCode environment knowledge is stored as source Markdown under:
+
+```text
+rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
+```
+
+Create a correctly named note with:
+
+```powershell
+uv run python runtime/workflow/vscode_environment.py rag-template `
+  --work-id "vscode-environment" `
+  --topic "localty-vscode-environment" `
+  --repository "localty"
+```
+
+After human approval, normalize it as `workspace-environment-pattern` through the file-based RAG pipeline.
 
 ## Source Skill
 

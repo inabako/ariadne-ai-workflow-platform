@@ -1,5 +1,22 @@
 # RAG
 
+## Workspace Environment Source
+
+VSCode Workspace-as-Code knowledge is stored as internal project RAG:
+
+```text
+rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
+```
+
+Normalize approved notes with:
+
+```powershell
+uv run python runtime/rag/normalize_documents.py `
+  --source-dir rag/workspace-environment `
+  --output-dir rag/normalized `
+  --document-type workspace-environment-pattern
+```
+
 このrepoのRAGは、現場やreviewから得た知識、または外部Webの一次情報から抽出した補助知識を、次のworkflowで再利用するためのfile-based pipelineです。
 
 ## Source Reports

@@ -96,6 +96,15 @@ uv run python runtime/workflow/vscode_environment.py validation-template `
   --work-id "vscode-environment"
 ```
 
+Create a reusable VSCode environment RAG source note:
+
+```powershell
+uv run python runtime/workflow/vscode_environment.py rag-template `
+  --work-id "vscode-environment" `
+  --topic "localty-vscode-environment" `
+  --repository "localty"
+```
+
 Run environment preflight:
 
 ```powershell
@@ -204,6 +213,25 @@ Use `.github/agents/workspace-documentation-writer-agent.prompt.md`.
 
 Update the target workspace README or setup docs with setup steps, recommended extensions, tasks, troubleshooting, and evidence capture instructions.
 
+### 9. RAG Capture
+
+When the VSCode environment pattern is reusable for Localty or another robotics workspace, save a Markdown source note under:
+
+```text
+rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
+```
+
+Use the runtime helper to create a correctly named draft:
+
+```powershell
+uv run python runtime/workflow/vscode_environment.py rag-template `
+  --work-id "<work-id>" `
+  --topic "localty-vscode-environment" `
+  --repository "localty"
+```
+
+After human approval, build it through the file-based RAG pipeline with `--source-dir rag/workspace-environment` and `--document-type workspace-environment-pattern`.
+
 ## Human Gates
 
 Stop for human approval before:
@@ -233,3 +261,4 @@ The workflow is complete when:
 - required task and launch entries are testable or have recorded human-check evidence
 - Docker / Git / runtime checks are recorded
 - setup and troubleshooting docs are updated
+- reusable VSCode environment knowledge is captured under `rag/workspace-environment/` when it should feed future RAG

@@ -44,6 +44,7 @@ If any required input is missing from the draft, stop and create `open-questions
 10. Implement `.vscode/settings.json`, `tasks.json`, `launch.json`, `extensions.json`, and optional `workspace.code-workspace`.
 11. Run workspace tests and record evidence.
 12. Update setup / troubleshooting docs.
+13. If the environment pattern is reusable, capture it under `rag/workspace-environment/` as `YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md`.
 
 ## Agents
 
@@ -63,3 +64,16 @@ If any required input is missing from the draft, stop and create `open-questions
 - Do not use personal absolute paths in committed workspace files unless the user explicitly asks for local-only setup.
 - Use placeholders for machine-specific paths.
 - Record all skipped tests and human-check items.
+
+## RAG Capture
+
+For Localty workspace environment knowledge, use:
+
+```powershell
+uv run python runtime/workflow/vscode_environment.py rag-template `
+  --work-id "vscode-environment" `
+  --topic "localty-vscode-environment" `
+  --repository "localty"
+```
+
+Build approved notes with `runtime/rag/normalize_documents.py --source-dir rag/workspace-environment --document-type workspace-environment-pattern`.

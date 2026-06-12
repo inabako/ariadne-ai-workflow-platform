@@ -2,17 +2,22 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
+import secrets
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Sequence
 
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.common import find_repo_root, relative_to_repo, slugify, utc_now_iso, write_json  # noqa: E402
 
 
 DEFAULT_DRAFT_DIR = "work/devlop-edit-draft"
+DEFAULT_RAG_SOURCE_DIR = "rag/workspace-environment"
+CROCKFORD_BASE32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -42,6 +47,15 @@ def build_parser() -> argparse.ArgumentParser:
     questions.add_argument("--work-id", default="vscode-environment")
     questions.add_argument("--draft-dir", default=DEFAULT_DRAFT_DIR)
     questions.add_argument("--repo-root", default="")
+
+    rag = subparsers.add_parser("rag-template", help="Create a VSCode environment RAG source Markdown file.")
+    rag.add_argument("--work-id", default="vscode-environment")
+    rag.add_argument("--source-dir", default=DEFAULT_RAG_SOURCE_DIR)
+    rag.add_argument("--topic", default="localty-vscode-environment")
+    rag.add_argument("--repository", default="localty")
+    rag.add_argument("--target-workspace", default="")
+    rag.add_argument("--status", default="draft")
+    rag.add_argument("--repo-root", default="")
 
     return parser
 
@@ -294,6 +308,164 @@ def write_open_questions(args: argparse.Namespace) -> dict[str, Any]:
     return {"open_questions_path": relative_to_repo(repo_root, path), "state_path": relative_to_repo(repo_root, state_path), "draft_files": draft_paths}
 
 
+def random_token(length: int = 6) -> str:
+    return "".join(secrets.choice(CROCKFORD_BASE32) for _ in range(length))
+
+
+def rag_filename(topic: str) -> str:
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    topic_slug = slugify(topic).lower()
+    topic_slug = re.sub(r"-+", "-", topic_slug).strip("-._") or "vscode-environment"
+    return f"{timestamp}_{random_token()}_{topic_slug}.md"
+
+
+def rag_template_text(args: argparse.Namespace, source_path: str) -> str:
+    target_workspace = args.target_workspace or "TBD"
+    return f"""---
+title: Localty VSCode Environment Pattern
+type: workspace-environment-pattern
+project: localty
+repository: {args.repository}
+branch: TBD
+commit: unknown
+workflow: vscode-environment
+phase: knowledge-capture
+status: {args.status}
+created_at: {utc_now_iso()}
+source: {source_path}
+tags:
+  - localty
+  - vscode-environment
+  - workspace-as-code
+  - ai-workflow
+areas:
+  - VSCode
+  - terminal
+  - tasks
+  - launch
+  - extensions
+  - environment-preflight
+  - evidence
+---
+
+# Localty VSCode Environment Pattern
+
+## Summary
+
+Localty repositories should treat VSCode configuration as Workspace as Code. The environment starts from a human-readable txt draft, turns unknowns into `open-questions.md`, waits for human approval, then creates `.vscode` artifacts and trial-run evidence.
+
+## Scope
+
+- target_workspace: `{target_workspace}`
+- work_id: `{args.work_id}`
+- source_rag_path: `{source_path}`
+- source_type: internal project RAG
+
+## Intake Pattern
+
+1. Save a human draft under `work/devlop-edit-draft/*.txt`.
+2. When `/vscode-environment` has no target argument or the draft is incomplete, create `work/<work-id>/design-document/open-questions.md`.
+3. Wait for human answers and approval.
+4. Initialize `work/<work-id>` with the confirmed target workspace.
+5. Implement target `.vscode` files only after requirements and validation pass.
+
+## Required Workspace Artifacts
+
+- `.vscode/settings.json`
+- `.vscode/tasks.json`
+- `.vscode/launch.json`
+- `.vscode/extensions.json`
+- optional `<name>.code-workspace`
+- `work/<work-id>/design-document/workspace-requirements.md`
+- `work/<work-id>/design-document/vscode-design.md`
+- `work/<work-id>/design-document/terminal-design.md`
+- `work/<work-id>/context/workspace-shared-artifact-validation.json`
+- `work/<work-id>/test-evidence/workspace-test.md`
+
+## Localty Runtime Policy
+
+- Prefer published Python packages for shared protocol dependencies, such as `localty-system-protocol>=0.1.0`.
+- If package install or import verification fails, use the direct support repository fallback only after recording the reason.
+- Keep MSYS2, uv, Python, Docker, and VSCode checks explicit in preflight evidence.
+- Do not store tokens, secrets, or personal-only absolute paths in committed workspace files.
+
+## Terminal Role Pattern
+
+Recommended terminal roles:
+
+| Role | Purpose |
+| --- | --- |
+| Dispatcher | Run AI workflow commands and coordinate artifacts. |
+| Software Workflow | Run Python, test, lint, and application commands. |
+| IaC Workflow | Run Docker, compose, gateway, network, and deployment checks. |
+| Docker Test | Isolate Docker Desktop and compose validation commands. |
+| Evidence | Capture logs, screenshots, manual checks, and skipped-test notes. |
+
+## Task Pattern
+
+VSCode tasks should expose stable workflow commands instead of personal shell history. Prefer labels that map to workflow intent, such as:
+
+- `workflow:vscode-open-questions`
+- `workflow:vscode-preflight`
+- `workflow:vscode-test`
+- `workflow:corrective-action-fix`
+- `workflow:rag-load`
+- `workflow:rag-build`
+
+## Evidence Pattern
+
+Record trial-run evidence under:
+
+```text
+work/<work-id>/test-evidence/
+```
+
+Evidence should include JSON validity, task labels, terminal profile startup, launch configuration checks, runtime version checks, Docker checks when applicable, and human-check items when UI observation is required.
+
+## RAG Capture Rule
+
+When a Localty VSCode environment pattern becomes reusable, store the Markdown source under:
+
+```text
+rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
+```
+
+Then build it with:
+
+```powershell
+uv run python runtime/rag/standardize_corrective_report_names.py `
+  --source-dir rag/workspace-environment `
+  --replace-references
+
+uv run python runtime/rag/normalize_documents.py `
+  --source-dir rag/workspace-environment `
+  --output-dir rag/normalized `
+  --document-type workspace-environment-pattern
+```
+
+## Open Questions
+
+- Which Localty repository is the first target: GUI, robot, simulator, protocol, or a multi-root workspace?
+- Which terminal profile should be the default for each repository?
+- Which tasks should be required and which should be recommended only?
+- Which checks require human observation because VSCode UI state cannot be proven from CLI output alone?
+"""
+
+
+def write_rag_template(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = repo_root_from(args)
+    source_dir = (repo_root / args.source_dir).resolve()
+    try:
+        source_dir.relative_to(repo_root.resolve())
+    except ValueError:
+        raise ValueError(f"RAG source directory must be inside repo root: {source_dir}")
+    source_dir.mkdir(parents=True, exist_ok=True)
+    path = source_dir / rag_filename(args.topic)
+    source_path = relative_to_repo(repo_root, path)
+    path.write_text(rag_template_text(args, source_path), encoding="utf-8")
+    return {"path": source_path, "document_type": "workspace-environment-pattern"}
+
+
 def requirements_text(work_id: str) -> str:
     return f"""# Workspace Requirements
 
@@ -446,6 +618,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             result = write_draft_template(args)
         elif args.command == "open-questions":
             result = write_open_questions(args)
+        elif args.command == "rag-template":
+            result = write_rag_template(args)
         else:  # pragma: no cover
             parser.error(f"Unknown command: {args.command}")
     except Exception as exc:

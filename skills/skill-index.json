@@ -119,6 +119,7 @@
     "requires_repository_control": true
   },
   "report_outputs": {
-    "corrective_action_report": "rag/corrective-action-report"
+    "corrective_action_report": "rag/corrective-action-report",
+    "workspace_environment": "rag/workspace-environment"
   }
 }

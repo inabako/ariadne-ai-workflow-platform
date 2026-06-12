@@ -7,6 +7,7 @@
 ```text
 rag/
   corrective-action-report/
+  workspace-environment/
   normalized/
   chunks/
   indexes/
@@ -36,6 +37,16 @@ runtime/rag/normalize_documents.py
 現段階では file-based RAG として運用します。
 
 将来的には、`rag/indexes/chunks.jsonl` を embeddings / vector DB / SQL DB に投入できます。
+
+## Workspace Environment RAG
+
+Store reusable VSCode environment knowledge in:
+
+```text
+rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
+```
+
+Use this source area for patterns such as Localty terminal roles, VSCode tasks, launch configurations, extension policy, runtime preflight, and trial-run evidence.
 
 ## Local Context Compression
 
