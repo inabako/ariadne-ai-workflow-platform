@@ -11,6 +11,7 @@
 | `agent-handoff.md` | Agent間の引き継ぎルール |
 | `artifact-management.md` | artifact index と保存先の扱い |
 | `localty-principles.md` | Localty の共通判断原則 |
+| `output-language-policy.md` | report / document / evidence / RAG source の既定言語ルール |
 | `risk-and-severity.md` | risk level と severity の共通定義 |
 
 ## Rule
@@ -18,4 +19,3 @@
 Agent は、自分の成果物だけで完結しません。
 
 次のAgentが判断できるように、decision、reason、evidence、open QA、risk、artifact path を残します。
-

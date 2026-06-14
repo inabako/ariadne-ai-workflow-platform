@@ -1,5 +1,9 @@
 ﻿# Robotics Release And Field Operation
 
+## Output Language
+
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+
 ## Purpose
 
 Robotics system を現場へ出す前後の release、rollback、operation handover、incident capture を定義します。
@@ -23,6 +27,7 @@ Release は software deployment だけではありません。operator、robot�
 
 ```markdown
 # Release Plan
+
 
 ## Release Intent
 

@@ -7,6 +7,7 @@ commit:
 workflow: new-robotics-system-development
 phase: boilerplate-template-selection
 status: draft
+language: ja-JP
 created_at:
 ---
 

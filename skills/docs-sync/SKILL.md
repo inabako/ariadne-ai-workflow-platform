@@ -7,7 +7,7 @@ description: Compare implementation and docs on a target branch, store docs drif
 
 ## Default Language
 
-Respond to the user in Japanese by default.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
 
 ## Purpose
 

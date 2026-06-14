@@ -1,4 +1,8 @@
-# Shared Artifact Validator Agent
+﻿# Shared Artifact Validator Agent
+
+## Output Language
+
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
 
 ## Role
 
@@ -53,6 +57,7 @@ work/<receipt-id>/context/shared-artifact-validation.json
 
 ```markdown
 # Shared Artifact Validation: <title>
+
 
 ## 1. Judgment
 

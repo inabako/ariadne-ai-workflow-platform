@@ -7,7 +7,7 @@ description: Finalize a completed corrective action issue by generating PR mater
 
 ## Default Language
 
-Respond to the user in Japanese by default.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
 
 ## Purpose
 

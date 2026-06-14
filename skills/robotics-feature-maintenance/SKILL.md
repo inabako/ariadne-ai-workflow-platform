@@ -5,6 +5,10 @@ description: Start the Intent-Driven Robotics AI Workflow for adding a new featu
 
 # Robotics Feature Maintenance
 
+## Default Language
+
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+
 ## Slash Command
 
 Use this skill when the user specifies:

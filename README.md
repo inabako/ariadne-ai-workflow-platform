@@ -40,6 +40,7 @@ Workflow を選ぶ場合:
 - STOP、rollback、observability を後回しにしない。
 - 会話ログではなく artifact と evidence を残す。
 - 学びを `rag/` と workflow docs に戻す。
+- 人間向けreport、document、review、evidence、RAG source Markdownは既定で日本語にする。
 
 Robotics workflow では、作れるかより先に、安全に試せるか、止められるか、戻せるか、観測できるかを確認します。
 
@@ -122,6 +123,18 @@ GITHUB_TOKEN=
 - local embeddings / hybrid reranking
 
 詳細な運用ルールは [Operations](docs/reference/operations.md) を参照してください。
+
+## Output Language
+
+このrepositoryの成果物は、日本語を既定言語にします。英語の固有名詞、command、identifier、file path、schema field は残してよいですが、見出し、要約、判断理由、Human Review、Next Action は日本語で記述します。
+
+検証が必要な場合:
+
+```powershell
+uv run python runtime/workflow/validate_output_language.py `
+  --paths work rag docs `
+  --fail-on-violation
+```
 
 ## License
 

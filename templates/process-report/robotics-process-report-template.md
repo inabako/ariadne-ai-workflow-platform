@@ -9,6 +9,7 @@ commit: ""
 workflow: ""
 phase: ""
 status: draft
+language: ja-JP
 owner_agent: ""
 created_at: ""
 updated_at: ""
@@ -139,3 +140,4 @@ tags:
 | Open QA is explicit | yes / no |  |
 | Generated artifacts are indexed | yes / no / not-applicable |  |
 | Safety blockers are not hidden | yes / no / not-applicable |  |
+| Human-facing text is written in Japanese by default | yes / no / not-applicable |  |

@@ -1,4 +1,4 @@
----
+﻿---
 name: github-knowledge-maintenance
 description: Maintain a GitHub repository as a reusable knowledge asset without erasing Git history or changing commit source.
 argument-hint: "<target-repository> <scan-mode> <repair-mode> [rag]"
@@ -6,6 +6,10 @@ agent: agent
 ---
 
 # GitHub Repository Knowledge Maintenance Workflow
+
+## Output Language
+
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
 
 ## Purpose
 

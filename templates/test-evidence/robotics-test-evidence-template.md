@@ -9,6 +9,7 @@ commit: ""
 workflow: ""
 phase: verification
 status: draft
+language: ja-JP
 owner_agent: ""
 created_at: ""
 updated_at: ""

@@ -1,4 +1,4 @@
----
+﻿---
 name: requirement-discovery
 description: Human bullet-list draft files under work/requirements/draft are inspected, clarified through questions, converted into a reviewed robotics requirement document, and saved to work/requirements after human OK.
 argument-hint: "[draft-file]"
@@ -6,6 +6,10 @@ agent: agent
 ---
 
 # Requirement Discovery Workflow
+
+## Output Language
+
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
 
 ## Purpose
 

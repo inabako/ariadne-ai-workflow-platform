@@ -5,6 +5,10 @@ description: Run the realtime-system Infrastructure as Code workflow for robotic
 
 # Realtime IaC
 
+## Default Language
+
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+
 ## Slash Command
 
 Use this skill when the user specifies:

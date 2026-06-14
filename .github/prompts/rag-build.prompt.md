@@ -1,4 +1,8 @@
-# /rag-build
+﻿# /rag-build
+
+## Output Language
+
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
 
 RAG Build Skill を使って、Intent-Driven Robotics AI Workflow の Markdown report を file-based RAG artifact に変換してください。
 

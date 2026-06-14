@@ -1,5 +1,9 @@
 ﻿# Robotics Safety Gates
 
+## Output Language
+
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+
 ## Purpose
 
 Robotics workflow の各段階で、安全に次へ進めるかを判断するための gate です。
@@ -127,6 +131,7 @@ Fail 条件:
 
 ```markdown
 # Safety Gate Record
+
 
 ## Gate
 

@@ -1,5 +1,9 @@
 ﻿# Robotics Maintenance Development Flow
 
+## Output Language
+
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+
 ## Purpose
 
 既存 robotics system に対する bug fix、改善、hardware 交換、network 変更、field issue 対応を安全に進めるための flow です。

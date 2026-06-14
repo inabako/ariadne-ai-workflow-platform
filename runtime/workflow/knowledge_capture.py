@@ -16,21 +16,21 @@ RAG_SOURCE_DIRS = ["process-report", "test-specifications", "test-evidence"]
 EXPECTED_TEST_SPEC_FILES = ["unit-test-cases.md", "integration-test-cases.md", "human-check-list.md"]
 SCAFFOLD_FILE_NAMES = {"README.md"}
 EVIDENCE_SCAFFOLD = {
-    "": "# Issue Evidence\n\nStore durable test specifications and evidence for this issue here.\n",
+    "": "# Issue Evidence\n\nこのIssueの再利用可能なtest specificationとevidenceを保存します。\n",
     "test_specifications": (
         "# Test Specifications\n\n"
-        "Store test case tables and test specifications here.\n\n"
-        "Recommended files:\n\n"
+        "test case tableとtest specificationを保存します。\n\n"
+        "推奨file:\n\n"
         "- `unit-test-cases.md`\n"
         "- `integration-test-cases.md`\n"
         "- `human-check-list.md`\n"
     ),
-    "ut": "# Unit Test Evidence\n\nStore unit test commands, logs, and results here.\n",
-    "integration": "# Integration Evidence\n\nStore integration evidence under qtest, manual, and startup subdirectories.\n",
-    "integration/qtest": "# QTest Evidence\n\nStore PyQt / Qt QTest commands, logs, and results here.\n",
-    "integration/manual": "# Manual Integration Evidence\n\nStore manual integration check steps, observations, and results here.\n",
-    "integration/startup": "# Startup Evidence\n\nStore startup commands, logs, external I/O notes, and results here.\n",
-    "human_check": "# Human Check Evidence\n\nStore human confirmation items, approver, date, and results here.\n",
+    "ut": "# Unit Test Evidence\n\nunit testのcommand、log、resultを保存します。\n",
+    "integration": "# Integration Evidence\n\nintegration evidenceはqtest、manual、startupのsubdirectoryへ分けて保存します。\n",
+    "integration/qtest": "# QTest Evidence\n\nPyQt / Qt QTestのcommand、log、resultを保存します。\n",
+    "integration/manual": "# Manual Integration Evidence\n\n手動integration checkの手順、観察結果、判定を保存します。\n",
+    "integration/startup": "# Startup Evidence\n\nstartup command、log、external I/O note、resultを保存します。\n",
+    "human_check": "# Human Check Evidence\n\n人間確認項目、承認者、日付、結果を保存します。\n",
 }
 DOCS_CANDIDATE_KEYWORDS = [
     "Docker",
@@ -170,11 +170,11 @@ def build_pr_title(issue: str, repository: str, issue_title: str = "") -> str:
     if issue_title:
         return issue_title
     repo_label = repository or "target repository"
-    return f"{issue}: finalize corrective action evidence for {repo_label}"
+    return f"{issue}: corrective action evidenceを確定する for {repo_label}"
 
 
 def build_pr_description(issue: str, repository: str, branch: str, docs_status: dict[str, Any]) -> str:
-    return f"""# Pull Request Description
+    return f"""# Pull Request説明
 
 ## Issue
 
@@ -186,19 +186,19 @@ def build_pr_description(issue: str, repository: str, branch: str, docs_status: 
 | --- | --- |
 | Repository | {repository or "unknown"} |
 | Branch | {branch or "unknown"} |
-| PR Title Source | GitHub Issue title when available |
+| PR Title Source | GitHub Issue titleが取得できる場合はそれを使用 |
 
-## Improvement Purpose
+## 改善目的
 
-Finalize the corrective action implementation with traceable test specifications, evidence, and knowledge-capture artifacts.
+追跡可能なtest specification、evidence、knowledge-capture artifactとともに、corrective action implementationを完了状態にします。
 
-## Changes
+## 変更内容
 
-- Corrective implementation completed in the issue branch.
-- Test specifications and evidence prepared for unit and integration / connectivity checks.
-- PR materials and knowledge-capture report generated.
+- issue branchでcorrective implementationを完了。
+- unitおよびintegration / connectivity check向けのtest specificationとevidenceを準備。
+- PR資料とknowledge-capture reportを生成。
 
-## Change Sequence
+## 変更の流れ
 
 ```mermaid
 sequenceDiagram
@@ -214,7 +214,7 @@ sequenceDiagram
   PR->>Develop: open pull request to develop
 ```
 
-## Tests
+## Test
 
 - Test specification docs directory: `{docs_status["test_specifications"]["relative_path"]}`
 - Unit test evidence directory: `{docs_status["ut"]["relative_path"]}`
@@ -223,24 +223,24 @@ sequenceDiagram
 
 ## Human Confirmation
 
-- Confirm the evidence documents are present under `docs/evidence/{issue}/`.
-- Confirm the integration / connectivity result is accepted.
-- Confirm this branch is ready to push and open / merge the pull request.
+- `docs/evidence/{issue}/` 配下にevidence documentsが存在することを確認する。
+- integration / connectivity resultを承認できることを確認する。
+- このbranchをpushし、pull requestをopen / mergeできる状態であることを確認する。
 """
 
 
 def build_merge_comment(issue: str) -> str:
     return f"""# Merge Comment
 
-Merged corrective action for `{issue}` after confirming:
+`{issue}` のcorrective actionについて、次を確認した上でmergeしました。
 
-- PR title and description were prepared.
-- Test specifications were stored under `docs/evidence/{issue}/test_specifications`.
-- Unit test evidence was stored under `docs/evidence/{issue}/ut`.
-- Integration / connectivity evidence was stored under `docs/evidence/{issue}/integration`.
-- Human check evidence was stored under `docs/evidence/{issue}/human_check` when required.
-- Human integration check was accepted.
-- Knowledge-capture report identified RAG and docs candidates.
+- PR titleとdescriptionを準備済み。
+- Test specificationを `docs/evidence/{issue}/test_specifications` に保存済み。
+- Unit test evidenceを `docs/evidence/{issue}/ut` に保存済み。
+- Integration / connectivity evidenceを `docs/evidence/{issue}/integration` に保存済み。
+- 必要な場合、Human check evidenceを `docs/evidence/{issue}/human_check` に保存済み。
+- Human integration checkを承認済み。
+- Knowledge-capture reportでRAG候補とdocs候補を整理済み。
 """
 
 
@@ -340,11 +340,11 @@ def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
 
 `{args.issue}`
 
-## Summary
+## 要約
 
-Finalization and knowledge recovery package for `{repository or "unknown repository"}` / `{branch or "unknown branch"}`.
+`{repository or "unknown repository"}` / `{branch or "unknown branch"}` のfinalizationとknowledge recovery packageです。
 
-## PR Documents
+## PR資料
 
 - `{relative_to_repo(repo_root, output_paths["pull_request_title"])}`
 - `{relative_to_repo(repo_root, output_paths["pull_request_description"])}`
@@ -359,7 +359,7 @@ Finalization and knowledge recovery package for `{repository or "unknown reposit
 | Integration / Connectivity Test | `{docs_status["integration"]["relative_path"]}` | {docs_status["integration"]["exists"]} | {docs_status["integration"]["file_count"]} | {docs_status["integration"]["evidence_file_count"]} |
 | Human Check | `{docs_status["human_check"]["relative_path"]}` | {docs_status["human_check"]["exists"]} | {docs_status["human_check"]["file_count"]} | {docs_status["human_check"]["evidence_file_count"]} |
 
-## Expected Test Case Tables
+## 想定Test Case Table
 
 | File | Exists | Size |
 | --- | --- | --- |
@@ -367,11 +367,11 @@ Finalization and knowledge recovery package for `{repository or "unknown reposit
 | `{test_spec_file_status["integration-test-cases.md"]["relative_path"]}` | {test_spec_file_status["integration-test-cases.md"]["exists"]} | {test_spec_file_status["integration-test-cases.md"]["size"]} |
 | `{test_spec_file_status["human-check-list.md"]["relative_path"]}` | {test_spec_file_status["human-check-list.md"]["exists"]} | {test_spec_file_status["human-check-list.md"]["size"]} |
 
-## RAG Candidates
+## RAG候補
 
 {markdown_path_list(repo_root, rag_files)}
 
-## Docs Candidates
+## Docs候補
 
 {markdown_path_list(repo_root, [Path(item["source_path"]) for item in docs_candidates]) if docs_candidates else "- None"}
 
@@ -396,11 +396,11 @@ Finalization and knowledge recovery package for `{repository or "unknown reposit
 
 ## Human Action
 
-- Confirm docs evidence is stored under `docs/evidence/{args.issue}/test_specifications`, `docs/evidence/{args.issue}/ut`, `docs/evidence/{args.issue}/integration`, and `docs/evidence/{args.issue}/human_check` when required.
-- Push `feature/{args.issue}` only after docs evidence is committed in the feature branch.
-- Run RAG build for selected candidates after approval.
-- Preserve `work/<base-work-id>/process-report` under `work/close/{args.issue}/process-report/base-work-<base-work-id>` before deleting the base work folder.
-- Move `work/{args.issue}` to `work/close/{args.issue}` after approval.
+- docs evidenceが `docs/evidence/{args.issue}/test_specifications`, `docs/evidence/{args.issue}/ut`, `docs/evidence/{args.issue}/integration`, 必要に応じて `docs/evidence/{args.issue}/human_check` に保存されていることを確認する。
+- feature branchにdocs evidenceをcommitした後にのみ `feature/{args.issue}` をpushする。
+- 承認後、選択した候補に対してRAG buildを実行する。
+- base work folderを削除する前に、`work/<base-work-id>/process-report` を `work/close/{args.issue}/process-report/base-work-<base-work-id>` に保存する。
+- 承認後、`work/{args.issue}` を `work/close/{args.issue}` へ移動する。
 """
     write_markdown(output_paths["knowledge_capture_report"], report, args.dry_run)
 
@@ -427,10 +427,10 @@ Finalization and knowledge recovery package for `{repository or "unknown reposit
         },
         "base_work_reset": base_work_status,
         "human_actions": [
-            f"Push {branch or 'feature/issue-XXX'} after docs evidence is committed.",
-            f"Run RAG build for approved candidates from work/{args.issue}.",
-            "Preserve base work process-report before deleting the base work folder.",
-            f"Move work/{args.issue} to work/close/{args.issue} after approval.",
+            f"docs evidenceをcommitした後に {branch or 'feature/issue-XXX'} をpushする。",
+            f"承認済み候補について work/{args.issue} からRAG buildを実行する。",
+            "base work folderを削除する前にbase work process-reportを保存する。",
+            f"承認後、work/{args.issue} を work/close/{args.issue} へ移動する。",
         ],
     }
     if not args.dry_run:

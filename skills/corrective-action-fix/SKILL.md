@@ -7,7 +7,7 @@ description: Create a corrective action report for a specified GitHub repository
 
 ## Default Language
 
-Respond to the user in Japanese by default.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
 
 ## Required Inputs
 

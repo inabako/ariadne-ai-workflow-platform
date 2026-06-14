@@ -33,6 +33,7 @@
 | `runtime/workflow/init_corrective_action_fix.py` | corrective-action-fixのbase / issue work folderを初期化する |
 | `runtime/workflow/vscode_environment.py` | VSCode Environment workflowのwork folder、requirements scaffold、validation scaffoldを作る |
 | `runtime/workflow/knowledge_capture.py` | PR材料、knowledge capture report、archive readinessを作り、target repository側の `docs/evidence/<issue-id>/` scaffoldを自動生成する |
+| `runtime/workflow/validate_output_language.py` | 生成済みMarkdownが英語主体になっていないか検出する |
 | `runtime/rag/rag_dispatcher.py` | 複数queryのRAG loadを計画・実行・集約する |
 
 ## Environment Files
@@ -84,4 +85,12 @@ Windows環境では `python` / `py` がStore aliasに当たる場合がありま
 
 ```powershell
 uv run python <script>
+```
+
+生成物の既定言語を確認する場合:
+
+```powershell
+uv run python runtime/workflow/validate_output_language.py `
+  --paths work rag docs `
+  --fail-on-violation
 ```

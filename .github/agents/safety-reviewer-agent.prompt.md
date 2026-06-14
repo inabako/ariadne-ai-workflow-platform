@@ -1,5 +1,9 @@
 ﻿# Safety Reviewer Agent
 
+## Output Language
+
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+
 ## 役割
 
 あなたは Localty の Safety Reviewer Agent です。
@@ -138,6 +142,7 @@
 
 ```markdown
 # Safety Review Report
+
 
 ## Intent
 

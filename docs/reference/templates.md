@@ -39,6 +39,7 @@ templates/
 成果物は、後続Agent、人間、RAGが読み直せる形にします。
 
 - front matterに project、receipt_id、repository、branch、commit、workflow、phase、status を残す。
+- 人間向け本文は既定で日本語にし、front matterに `language: ja-JP` を残す。
 - Intent、Decision、Reason、Evidence、Open QA を明示する。
 - GitHub knowledge maintenanceでは、Issue / PR / comment / docs / CAR のsource reference、approval status、Git history non-modificationを明示する。
 - safety-critical な内容では STOP、communication loss、startup safe state、shutdown safe state を確認する。
@@ -47,6 +48,7 @@ templates/
 - テスト成果物の保存先は [Test Artifact Storage](test-artifact-storage.md) に従う。
 - 出力先は `work/<work-id>/` 配下の対応directoryにする。
 - 生成後は可能な限り `work/<work-id>/context/artifact-index.json` に登録する。
+- 生成後は必要に応じて `uv run python runtime/workflow/validate_output_language.py --paths work rag docs --fail-on-violation` で英語主体の成果物を検出する。
 
 ## Requirements
 

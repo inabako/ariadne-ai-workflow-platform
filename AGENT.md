@@ -160,6 +160,23 @@ Agent は、次のAgentが必要とする情報を schema に沿って残して�
 - `risk-and-severity.md`
 - `artifact-management.md`
 - `agent-handoff.md`
+- `output-language-policy.md`
+
+## Output Language
+
+人間向けのreport、document、review、evidence、RAG source Markdownは、既定で日本語で出力します。
+
+source code、identifier、command、file path、URL、API名、GitHub / VSCode / Docker などの固有名詞は英語のままでかまいません。見出し、要約、判断理由、Human Review、Next Action は日本語で書きます。
+
+Markdown source artifact の front matter には、可能な限り `language: ja-JP` を入れてください。
+
+生成後は、必要に応じて次を実行して英語主体の成果物を検出します。
+
+```powershell
+uv run python runtime/workflow/validate_output_language.py `
+  --paths work rag docs `
+  --fail-on-violation
+```
 
 ## Artifact Handling
 

@@ -1,4 +1,8 @@
-# Python Runtime Specialist Agent
+﻿# Python Runtime Specialist Agent
+
+## Output Language
+
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
 
 ## Role
 
@@ -61,6 +65,7 @@ Use this structure:
 
 ```markdown
 # Specialist Review: Python Runtime
+
 
 ## Review Target
 

@@ -188,30 +188,31 @@ def discover_drafts(draft_dir: Path) -> list[Path]:
 
 
 def open_questions_text(work_id: str, draft_dir: str, draft_paths: list[str]) -> str:
-    draft_list = "\n".join(f"- `{path}`" for path in draft_paths) if draft_paths else "- none"
+    draft_list = "\n".join(f"- `{path}`" for path in draft_paths) if draft_paths else "- なし"
     scaffold_path = f"{draft_dir}/{DEFAULT_DRAFT_SCAFFOLD}".replace("\\", "/")
-    return f"""# Open Questions: VSCode Environment
+    return f"""# 未解決事項: VSCode Environment
 
 - workflow: `vscode-environment`
 - work_id: `{work_id}`
 - status: `blocked`
+- language: `ja-JP`
 - draft_dir: `{draft_dir}`
 - created_at: `{utc_now_iso()}`
 - owner_agent: `workspace-requirements-analyst`
 
-## Stop Reason
+## 停止理由
 
-The VSCode Environment workflow starts from a human-editable scaffold and filled draft files. `{scaffold_path}` is the scaffold. Filled drafts should use `README_*.md`; legacy `.txt` drafts are also listed when present. Required information must be confirmed by a human before `.vscode` files are created or changed.
+VSCode Environment workflowは、人間が編集するscaffoldと記入済みdraft fileから開始します。`{scaffold_path}` はscaffoldです。記入済みdraftは `README_*.md` を使います。legacy `.txt` draftがある場合も確認対象に含めます。`.vscode` filesを作成・変更する前に、必要情報を人間が確認する必要があります。
 
 ## Scaffold File
 
 - `{scaffold_path}`
 
-## Filled Draft Files
+## 記入済みDraft File
 
 {draft_list}
 
-## Required Confirmation Flow
+## 必須確認Flow
 
 ```text
 README.md scaffold
@@ -223,24 +224,24 @@ README.md scaffold
   -> trial run / evidence
 ```
 
-## Missing Required Inputs
+## 不足している必須入力
 
-| ID | Missing Item | Why Required | Required Answer |
+| ID | 不足項目 | 必要な理由 | 必須回答 |
 | --- | --- | --- | --- |
-| VSCODE-Q001 | target workspace path | `.vscode` files need a concrete target directory. | Absolute path to target repository / workspace |
-| VSCODE-Q002 | workflow entrypoints | `tasks.json` needs explicit AI workflow commands. | Slash commands or task names to expose |
-| VSCODE-Q003 | required tools / runtimes | preflight and task commands depend on these tools. | Git, Docker, Python, uv, Node.js, Java, MSYS2, etc. |
-| VSCODE-Q004 | required VSCode extensions | `extensions.json` must list extension IDs. | Extension ID list |
-| VSCODE-Q005 | terminal roles | terminal profiles and default shell must be explicit. | Dispatcher / Software / IaC / Docker / Evidence terminal settings |
-| VSCODE-Q006 | trial run checks | completion needs concrete evidence. | Tasks, launch configs, Docker/runtime checks, human checks |
+| VSCODE-Q001 | target workspace path | `.vscode` filesには具体的なtarget directoryが必要です。 | target repository / workspace のabsolute path |
+| VSCODE-Q002 | workflow entrypoints | `tasks.json` には明示的なAI workflow commandが必要です。 | 公開するslash commandまたはtask name |
+| VSCODE-Q003 | required tools / runtimes | preflightとtask commandがこれらのtoolに依存します。 | Git、Docker、Python、uv、Node.js、Java、MSYS2など |
+| VSCODE-Q004 | required VSCode extensions | `extensions.json` にはextension ID一覧が必要です。 | Extension ID list |
+| VSCODE-Q005 | terminal roles | terminal profileとdefault shellを明示する必要があります。 | Dispatcher / Software / IaC / Docker / Evidence terminal settings |
+| VSCODE-Q006 | trial run checks | 完了判断には具体的なevidenceが必要です。 | Tasks、launch configs、Docker/runtime checks、human checks |
 
-## Questions For Human
+## 人間への確認事項
 
 ### VSCODE-Q001
 
-Which workspace / repository should receive the VSCode environment files?
+VSCode environment filesを配置するworkspace / repositoryはどれですか。
 
-Answer:
+回答:
 
 ```text
 
@@ -248,9 +249,9 @@ Answer:
 
 ### VSCODE-Q002
 
-Which AI workflow commands should be runnable from VSCode tasks?
+VSCode tasksから実行可能にするAI workflow commandsはどれですか。
 
-Answer:
+回答:
 
 ```text
 
@@ -258,9 +259,9 @@ Answer:
 
 ### VSCODE-Q003
 
-Which tools and runtimes are required for this workspace?
+このworkspaceに必要なtoolとruntimeはどれですか。
 
-Answer:
+回答:
 
 ```text
 
@@ -268,9 +269,9 @@ Answer:
 
 ### VSCODE-Q004
 
-Which VSCode extensions are required or recommended?
+必須または推奨するVSCode extensionsはどれですか。
 
-Answer:
+回答:
 
 ```text
 
@@ -278,9 +279,9 @@ Answer:
 
 ### VSCODE-Q005
 
-What terminal profiles and roles should be created?
+作成するterminal profileと役割は何ですか。
 
-Answer:
+回答:
 
 ```text
 
@@ -288,17 +289,17 @@ Answer:
 
 ### VSCODE-Q006
 
-What trial run should prove the VSCode environment works?
+VSCode environmentが機能することを証明するtrial runは何ですか。
 
-Answer:
+回答:
 
 ```text
 
 ```
 
-## Resume Instructions
+## 再開手順
 
-After human answers are added and approved, initialize the work area with the confirmed target:
+人間の回答を追記し、承認後、確定したtargetでwork areaを初期化します。
 
 ```powershell
 uv run python runtime/workflow/vscode_environment.py init `
@@ -347,7 +348,7 @@ def rag_filename(topic: str) -> str:
 def rag_template_text(args: argparse.Namespace, source_path: str) -> str:
     target_workspace = args.target_workspace or "TBD"
     return f"""---
-title: Localty VSCode Environment Pattern
+title: Localty VSCode環境パターン
 type: workspace-environment-pattern
 project: localty
 repository: {args.repository}
@@ -356,6 +357,7 @@ commit: unknown
 workflow: vscode-environment
 phase: knowledge-capture
 status: {args.status}
+language: ja-JP
 created_at: {utc_now_iso()}
 source: {source_path}
 tags:
@@ -373,29 +375,29 @@ areas:
   - evidence
 ---
 
-# Localty VSCode Environment Pattern
+# Localty VSCode環境パターン
 
-## Summary
+## 要約
 
-Localty repositories should treat VSCode configuration as Workspace as Code. The environment starts from a human-readable draft README, turns unknowns into `open-questions.md`, waits for human approval, then creates `.vscode` artifacts and trial-run evidence.
+Localty repositoryでは、VSCode設定をWorkspace as Codeとして扱います。人間が読める草案READMEから開始し、不明点を `open-questions.md` に整理し、人間承認後に `.vscode` artifacts と試行証跡を作成します。
 
-## Scope
+## 範囲
 
 - target_workspace: `{target_workspace}`
 - work_id: `{args.work_id}`
 - source_rag_path: `{source_path}`
 - source_type: internal project RAG
 
-## Intake Pattern
+## 受領パターン
 
-1. Keep the human-editable scaffold at `work/requirements/devlop-edit-draft/README.md`.
-2. Save filled drafts as `work/requirements/devlop-edit-draft/README_YYYYMMDD.md` or another `README_*.md` file.
-3. When `/vscode-environment` has no target argument, read `work/requirements/devlop-edit-draft/`, inspect filled drafts, and create `work/<work-id>/design-document/open-questions.md` for missing or contradictory items.
-4. Wait for human answers and approval.
-5. Initialize `work/<work-id>` with the confirmed target workspace.
-6. Implement target `.vscode` files only after requirements and validation pass.
+1. 人間が編集するscaffoldを `work/requirements/devlop-edit-draft/README.md` に置く。
+2. 記入済み草案は `work/requirements/devlop-edit-draft/README_YYYYMMDD.md` または `README_*.md` として保存する。
+3. `/vscode-environment` にtarget argumentが無い場合は、`work/requirements/devlop-edit-draft/` を読み、記入済み草案を確認し、不足や矛盾を `work/<work-id>/design-document/open-questions.md` に整理する。
+4. 人間の回答と承認を待つ。
+5. 確定したtarget workspaceで `work/<work-id>` を初期化する。
+6. requirementsとvalidationが通った後にのみ、target `.vscode` filesを実装する。
 
-## Required Workspace Artifacts
+## 必須Workspace成果物
 
 - `.vscode/settings.json`
 - `.vscode/tasks.json`
@@ -408,28 +410,28 @@ Localty repositories should treat VSCode configuration as Workspace as Code. The
 - `work/<work-id>/context/workspace-shared-artifact-validation.json`
 - `work/<work-id>/test-evidence/workspace-test.md`
 
-## Localty Runtime Policy
+## Localty Runtime方針
 
-- Prefer published Python packages for shared protocol dependencies, such as `localty-system-protocol>=0.1.0`.
-- If package install or import verification fails, use the direct support repository fallback only after recording the reason.
-- Keep MSYS2, uv, Python, Docker, and VSCode checks explicit in preflight evidence.
-- Do not store tokens, secrets, or personal-only absolute paths in committed workspace files.
+- shared protocol dependencyは、`localty-system-protocol>=0.1.0` のような公開済みPython packageを優先する。
+- package installまたはimport verificationに失敗した場合のみ、理由を記録してsupport repository fallbackを使う。
+- MSYS2、uv、Python、Docker、VSCodeの確認はpreflight evidenceに明示する。
+- token、secret、個人専用absolute pathをcommit対象workspace fileに保存しない。
 
-## Terminal Role Pattern
+## Terminal役割パターン
 
-Recommended terminal roles:
+推奨するterminal role:
 
-| Role | Purpose |
+| Role | 目的 |
 | --- | --- |
-| Dispatcher | Run AI workflow commands and coordinate artifacts. |
-| Software Workflow | Run Python, test, lint, and application commands. |
-| IaC Workflow | Run Docker, compose, gateway, network, and deployment checks. |
-| Docker Test | Isolate Docker Desktop and compose validation commands. |
-| Evidence | Capture logs, screenshots, manual checks, and skipped-test notes. |
+| Dispatcher | AI workflow commandを実行し、artifactを調整する。 |
+| Software Workflow | Python、test、lint、application commandを実行する。 |
+| IaC Workflow | Docker、compose、gateway、network、deployment checkを実行する。 |
+| Docker Test | Docker Desktopとcompose validation commandを分離して実行する。 |
+| Evidence | log、screenshot、manual check、skipped-test noteを記録する。 |
 
-## Task Pattern
+## Taskパターン
 
-VSCode tasks should expose stable workflow commands instead of personal shell history. Prefer labels that map to workflow intent, such as:
+VSCode taskは、個人のshell履歴ではなく、安定したworkflow commandを公開します。workflow intentに対応するlabelを優先します。
 
 - `workflow:vscode-open-questions`
 - `workflow:vscode-preflight`
@@ -438,25 +440,25 @@ VSCode tasks should expose stable workflow commands instead of personal shell hi
 - `workflow:rag-load`
 - `workflow:rag-build`
 
-## Evidence Pattern
+## Evidenceパターン
 
-Record trial-run evidence under:
+試行証跡は次の場所へ記録します。
 
 ```text
 work/<work-id>/test-evidence/
 ```
 
-Evidence should include JSON validity, task labels, terminal profile startup, launch configuration checks, runtime version checks, Docker checks when applicable, and human-check items when UI observation is required.
+Evidenceには、JSON妥当性、task label、terminal profile起動、launch configuration確認、runtime version確認、必要に応じたDocker確認、UI観察が必要なhuman-check項目を含めます。
 
-## RAG Capture Rule
+## RAG保存ルール
 
-When a Localty VSCode environment pattern becomes reusable, store the Markdown source under:
+Localty VSCode環境パターンが再利用可能になった場合、Markdown sourceを次の場所へ保存します。
 
 ```text
 rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 ```
 
-Then build it with:
+その後、次の順序でRAG artifactを生成します。
 
 ```powershell
 uv run python runtime/rag/standardize_corrective_report_names.py `
@@ -469,12 +471,12 @@ uv run python runtime/rag/normalize_documents.py `
   --document-type workspace-environment-pattern
 ```
 
-## Open Questions
+## 未解決事項
 
-- Which Localty repository is the first target: GUI, robot, simulator, protocol, or a multi-root workspace?
-- Which terminal profile should be the default for each repository?
-- Which tasks should be required and which should be recommended only?
-- Which checks require human observation because VSCode UI state cannot be proven from CLI output alone?
+- 最初のtargetはLocalty GUI、robot、simulator、protocol、multi-root workspaceのどれか。
+- 各repositoryのdefault terminal profileはどれか。
+- 必須taskと推奨taskをどう分けるか。
+- VSCode UI状態をCLIだけで証明できず、人間観察が必要なcheckはどれか。
 """
 
 
@@ -493,25 +495,26 @@ def write_rag_template(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def requirements_text(work_id: str) -> str:
-    return f"""# Workspace Requirements
+    return f"""# Workspace要件
 
 - workflow: `vscode-environment`
 - work_id: `{work_id}`
 - status: `draft`
+- language: `ja-JP`
 
-## Intent
+## 意図
 
-TODO: Describe why this VSCode workspace is needed and which AI/human workflows it must support.
+TODO: このVSCode workspaceが必要な理由と、支援するAI / human workflowを記載する。
 
-## Target Workspace
+## 対象Workspace
 
 - path: TODO
 - repository: TODO
 - branch: TODO
 
-## Required Tools
+## 必須Tool
 
-| Tool | Required | Version Policy | Install / Check Command | Notes |
+| Tool | 必須 | Version方針 | Install / Check Command | Notes |
 | --- | --- | --- | --- | --- |
 | Git | yes | TODO | `git --version` | TODO |
 | Docker Desktop | TODO | TODO | `docker version` | TODO |
@@ -519,15 +522,15 @@ TODO: Describe why this VSCode workspace is needed and which AI/human workflows 
 | Node.js | TODO | TODO | `node --version` | TODO |
 | Java | TODO | TODO | `java --version` | TODO |
 
-## Required VSCode Extensions
+## 必須VSCode Extension
 
-| Extension ID | Required | Reason |
+| Extension ID | 必須 | 理由 |
 | --- | --- | --- |
 | TODO | yes | TODO |
 
-## Terminal Profiles
+## Terminal Profile
 
-| Role | Profile Name | Shell | Working Directory | Startup Command |
+| Role | Profile名 | Shell | Working Directory | Startup Command |
 | --- | --- | --- | --- | --- |
 | Dispatcher | TODO | TODO | TODO | TODO |
 | Software Workflow | TODO | TODO | TODO | TODO |
@@ -541,31 +544,31 @@ TODO: Describe why this VSCode workspace is needed and which AI/human workflows 
 | --- | --- | --- | --- |
 | TODO | TODO | TODO | TODO |
 
-## Debug / Launch Targets
+## Debug / Launch Target
 
-| Name | Runtime | Program | Preconditions |
+| Name | Runtime | Program | 事前条件 |
 | --- | --- | --- | --- |
 | TODO | TODO | TODO | TODO |
 
-## AI Workflow Entrypoints
+## AI Workflow入口
 
 | Task Label | Workflow | Command | Evidence |
 | --- | --- | --- | --- |
 | TODO | TODO | TODO | TODO |
 
-## Docker / Runtime Integration
+## Docker / Runtime連携
 
-TODO: Describe Docker Desktop, compose files, exposed ports, health checks, and logs.
+TODO: Docker Desktop、compose file、公開port、health check、logを記載する。
 
 ## Evidence Workflow
 
-TODO: Describe where test evidence, screenshots, logs, and human checks are stored.
+TODO: test evidence、screenshot、log、human checkの保存先を記載する。
 
-## Personal Values And Placeholders
+## 個人値とPlaceholder
 
-TODO: List paths, secrets, tokens, machine names, or devices that must stay placeholders.
+TODO: placeholderのまま残すべきpath、secret、token、machine名、deviceを列挙する。
 
-## Open Questions
+## 未解決事項
 
 - TODO
 """
@@ -585,17 +588,18 @@ def validation_markdown(data: dict[str, Any]) -> str:
     missing = data.get("missing_required_items", [])
     questions = data.get("open_questions", [])
     lines = [
-        "# Workspace Shared Artifact Validation",
+        "# Workspace共有Artifact検証",
         "",
         f"- status: `{data['status']}`",
         f"- created_at: `{data['created_at']}`",
+        "- language: `ja-JP`",
         "",
-        "## Missing Required Items",
+        "## 不足している必須項目",
         "",
     ]
-    lines.extend([f"- {item}" for item in missing] or ["- none"])
-    lines.extend(["", "## Open Questions", ""])
-    lines.extend([f"- {item}" for item in questions] or ["- none"])
+    lines.extend([f"- {item}" for item in missing] or ["- なし"])
+    lines.extend(["", "## 未解決事項", ""])
+    lines.extend([f"- {item}" for item in questions] or ["- なし"])
     return "\n".join(lines) + "\n"
 
 
@@ -611,15 +615,15 @@ def write_validation_template(args: argparse.Namespace) -> dict[str, Any]:
         "created_at": utc_now_iso(),
         "status": args.status,
         "missing_required_items": [
-            "required tool list",
-            "required VSCode extension list",
-            "terminal profile structure",
-            "AI workflow entry task list",
+            "必須tool一覧",
+            "必須VSCode extension一覧",
+            "terminal profile構成",
+            "AI workflow入口task一覧",
         ],
         "conditions": [],
         "open_questions": [
-            "Which target workspace should receive .vscode files?",
-            "Which tasks must be available from VSCode?",
+            "どのtarget workspaceへ .vscode files を配置するか。",
+            "VSCodeから利用可能にする必須taskはどれか。",
         ],
         "evidence": [],
     }

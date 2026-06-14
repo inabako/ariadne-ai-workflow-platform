@@ -1,4 +1,8 @@
-# Requirement Discovery Agent
+﻿# Requirement Discovery Agent
+
+## Output Language
+
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
 
 ## Role
 
@@ -118,6 +122,7 @@ Use this format:
 ```markdown
 # Requirement Discovery Knowledge Gaps
 
+
 | ID | Area | Why It Matters | Possible Source Category | Blocks Requirement Completion |
 | --- | --- | --- | --- | --- |
 | KG-001 |  |  |  | yes/no |
@@ -141,6 +146,7 @@ Question format:
 
 ```markdown
 # Requirement Discovery Questions
+
 
 ## Blocking Questions
 

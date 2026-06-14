@@ -127,7 +127,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
     context_dir = work_dir / "context"
     now = utc_now_iso()
     intent_summary = args.intent_summary or (
-        f"Maintain GitHub knowledge assets for {repository} without erasing Git history or changing source code."
+        f"{repository} のGitHub knowledge assetsを、Git historyを消さずsource codeを変更せずに保守する。"
     )
     scan_modes = sorted(set(args.scan_mode), key=args.scan_mode.index)
 
@@ -156,19 +156,19 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
         "intent": {
             "summary": intent_summary,
             "non_goals": [
-                "Do not erase Git history or hide historical evidence.",
-                "Do not alter commit source, source code, README content, or configuration content in the target repository.",
-                "Do not rewrite existing commit messages unless the human explicitly approves that item-level high-risk path.",
-                "Do not clone the repository unless GitHub CLI/API evidence is insufficient and the human approves.",
+                "Git historyを消したり、過去の証跡を隠したりしない。",
+                "target repositoryのcommit source、source code、README本文、configuration contentを変更しない。",
+                "既存commit messageを書き換える場合は、人間がitem単位でhigh-risk pathを明示承認した場合に限る。",
+                "GitHub CLI/APIの証跡が不足し、人間が承認した場合を除き、repositoryをcloneしない。",
             ],
             "success_criteria": [
-                "GitHub metadata collection plan is explicit.",
-                "Knowledge assets and narrative gaps are recorded as JSON.",
-                "Human-reviewed repair proposals are prepared.",
-                "Commit repair proposals include a semantic subject that is meaningful in GitHub commit-list view.",
-                "PR title repair proposals include a semantic title that is meaningful in GitHub PR-list view.",
-                "Approved GitHub documentation sync actions are separated from draft proposals.",
-                "Knowledge DB and RAG candidates are generated when requested.",
+                "GitHub metadata collection planが明示されている。",
+                "Knowledge assetsとnarrative gapsがJSONに記録されている。",
+                "人間レビュー可能なrepair proposalsが準備されている。",
+                "Commit repair proposalsに、GitHub commit-list viewだけで意味が分かるsemantic subjectが含まれている。",
+                "PR title repair proposalsに、GitHub PR-list viewだけで意味が分かるsemantic titleが含まれている。",
+                "承認済みGitHub documentation sync actionsがdraft proposalsと分離されている。",
+                "要求された場合、Knowledge DB candidatesとRAG candidatesが生成されている。",
             ],
         },
         "assumptions": [
@@ -180,14 +180,14 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
             f"rag_output={bool(args.rag_output)}",
         ],
         "constraints": [
-            "Git history is historical evidence and must not be erased.",
-            "Existing commit-message/body rewrite is allowed only with explicit item-level human approval, before/after SHA mapping, rollback plan, and reviewed force-push command when needed.",
-            "Commit message repair must evaluate the GitHub commit-list subject separately from the body.",
-            "Commit source and source files must not be changed by this workflow.",
-            "GitHub mutations require explicit human approval.",
-            "Repair mode 'proposal' may not execute gh edit/comment commands.",
-            "Repair mode 'apply' still requires item-level human approval before each mutation.",
-            "Clone requires explicit human approval and a recorded reason.",
+            "Git historyは歴史的証跡であり、消してはいけない。",
+            "既存commit-message/body rewriteは、item単位の明示的な人間承認、before/after SHA mapping、rollback plan、必要時のreview済みforce-push commandがある場合のみ許可する。",
+            "Commit message repairでは、GitHub commit-list subjectをbodyとは別に評価する。",
+            "このworkflowではcommit sourceとsource filesを変更しない。",
+            "GitHub mutationには明示的な人間承認が必要。",
+            "Repair mode 'proposal' では gh edit/comment commandを実行しない。",
+            "Repair mode 'apply' でも、各mutation前にitem単位の人間承認が必要。",
+            "Cloneには明示的な人間承認と記録済み理由が必要。",
         ],
     }
     write_json(context_dir / "agent-context.json", agent_context)
@@ -218,14 +218,14 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
             "risks": [],
             "required_next_actions": [
                 "Create the analysis scaffold.",
-                "Collect GitHub metadata with gh issue/pr/api commands.",
-                "Record knowledge assets, narrative gaps, semantic subject gaps, PR title gaps, and repair proposals in JSON.",
+                "gh issue/pr/api commandでGitHub metadataを収集する。",
+                "knowledge assets、narrative gaps、semantic subject gaps、PR title gaps、repair proposalsをJSONへ記録する。",
             ],
             "stop_conditions": [
-                "Stop before GitHub or Git mutation until human approval is recorded.",
-                "Stop before existing commit-message rewrite until before/after SHA mapping and rollback plan are reviewed.",
-                "Stop before commit-message rewrite if the proposed semantic subject is still vague in GitHub commit-list view.",
-                "Stop before clone until human approval and reason are recorded.",
+                "人間承認が記録されるまでGitHubまたはGit mutation前で停止する。",
+                "既存commit-message rewriteは、before/after SHA mappingとrollback planがreviewされるまで停止する。",
+                "提案semantic subjectがGitHub commit-list viewでまだ曖昧な場合、commit-message rewrite前で停止する。",
+                "人間承認と理由が記録されるまでclone前で停止する。",
             ],
         },
     )
@@ -244,7 +244,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
             "updated_at": now,
             "depends_on": [],
             "consumed_by": ["repository-discovery-agent", "github-metadata-collector"],
-            "summary": "Workflow context for GitHub repository knowledge maintenance.",
+            "summary": "GitHub repository knowledge maintenanceのworkflow context。",
             "unresolved_items": [],
         },
     )
@@ -278,27 +278,27 @@ def default_analysis(work_dir: Path) -> dict[str, Any]:
         "repair_mode": assumption_map.get("repair_mode", "proposal"),
         "rag_output": assumption_map.get("rag_output", "False").lower() == "true",
         "generated_at": utc_now_iso(),
-        "summary": "TBD: summarize GitHub repository knowledge maintenance findings.",
+        "summary": "TBD: GitHub repository knowledge maintenanceの調査結果を要約する。",
         "collection_plan": [
             {
                 "id": "COLLECT-000",
                 "source_type": "api",
                 "command": "gh --version; if missing, request human approval then run: winget install --id GitHub.cli",
-                "purpose": "Ensure GitHub CLI is available before collecting Issue, PR, comment, label, branch, tag, and release metadata.",
+                "purpose": "Issue、PR、comment、label、branch、tag、release metadataを収集する前にGitHub CLIが利用可能であることを確認する。",
                 "status": "planned",
             },
             {
                 "id": "COLLECT-001",
                 "source_type": "issue",
                 "command": "gh issue list --repo <owner/repo> --state all --limit 100",
-                "purpose": "Collect issue intent and maintenance context.",
+                "purpose": "Issueのintentとmaintenance contextを収集する。",
                 "status": "planned",
             },
             {
                 "id": "COLLECT-002",
                 "source_type": "pull-request",
                 "command": "gh pr list --repo <owner/repo> --state all --limit 100",
-                "purpose": "Collect PR implementation narratives and review context.",
+                "purpose": "PRのimplementation narrativeとreview contextを収集する。",
                 "status": "planned",
             },
         ],
@@ -311,15 +311,15 @@ def default_analysis(work_dir: Path) -> dict[str, Any]:
         "rag_candidates": [],
         "open_questions": [],
         "guardrails": [
-            "Do not erase Git history or hide historical evidence.",
-            "Do not change commit source or target repository source files.",
-            "Existing commit-message/body rewrite requires explicit item-level human approval, before/after SHA mapping, rollback plan, and reviewed force-push command when needed.",
-            "Do not accept body-only commit repairs when the GitHub commit-list subject remains vague.",
-            "Commit repair proposals must include a semantic subject using type(scope): responsibility/result.",
-            "PR title repair proposals must include a semantic title that is useful in GitHub PR-list view without opening the body.",
-            "Do not change source code.",
-            "Do not run gh edit/comment/api mutation commands without human approval.",
-            "Prefer GitHub CLI/API collection; clone only with explicit approval.",
+            "Git historyを消したり、歴史的証跡を隠したりしない。",
+            "commit sourceまたはtarget repositoryのsource filesを変更しない。",
+            "既存commit-message/body rewriteには、item単位の明示的な人間承認、before/after SHA mapping、rollback plan、必要時のreview済みforce-push commandが必要。",
+            "GitHub commit-list subjectが曖昧なままの場合、bodyのみのcommit repairを承認しない。",
+            "Commit repair proposalsには `type(scope): responsibility/result` 形式のsemantic subjectを含める。",
+            "PR title repair proposalsには、bodyを開かなくてもGitHub PR-list viewで意味が分かるsemantic titleを含める。",
+            "source codeを変更しない。",
+            "人間承認なしに gh edit/comment/api mutation commandを実行しない。",
+            "GitHub CLI/API収集を優先し、cloneは明示承認がある場合のみ行う。",
         ],
     }
 

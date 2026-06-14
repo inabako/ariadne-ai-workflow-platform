@@ -1,4 +1,4 @@
----
+﻿---
 name: corrective-action-fix
 description: GitHub repository / branch を受け取り、work/<branch> に原本を取得し、corrective action report、RAG build/load、GitHub Issue、work/issue-XXX + feature/issue-XXX、修正、単体テスト、起動/結合確認、人間チェック、push まで進めます。
 argument-hint: "<target-repository> <target-branch>"
@@ -6,6 +6,10 @@ agent: agent
 ---
 
 # Corrective Action Fix Skill Entrypoint
+
+## Output Language
+
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
 
 Readable workflow additions:
 
