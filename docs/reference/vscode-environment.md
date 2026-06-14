@@ -12,7 +12,7 @@
 | `.vscode/tasks.json` | workflow entry task、preflight、JSON check、runtime smoke |
 | `.vscode/launch.json` | Python runtime helper debug launch |
 | `.vscode/extensions.json` | recommended VSCode extensions |
-| `intent-driven-robotics-ai-workflow.code-workspace` | workspace entry file |
+| `.vscode/intent-driven-robotics-ai-workflow.code-workspace` | workspace entry file。`path: ".."` で repository root を開く |
 
 ## Terminal Profiles
 

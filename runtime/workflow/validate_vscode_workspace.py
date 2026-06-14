@@ -11,7 +11,7 @@ DEFAULT_FILES = [
     ".vscode/tasks.json",
     ".vscode/launch.json",
     ".vscode/extensions.json",
-    "intent-driven-robotics-ai-workflow.code-workspace",
+    ".vscode/intent-driven-robotics-ai-workflow.code-workspace",
 ]
 
 

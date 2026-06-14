@@ -401,7 +401,7 @@ Localty repositories should treat VSCode configuration as Workspace as Code. The
 - `.vscode/tasks.json`
 - `.vscode/launch.json`
 - `.vscode/extensions.json`
-- optional `<name>.code-workspace`
+- optional `.vscode/<name>.code-workspace`
 - `work/<work-id>/design-document/workspace-requirements.md`
 - `work/<work-id>/design-document/vscode-design.md`
 - `work/<work-id>/design-document/terminal-design.md`

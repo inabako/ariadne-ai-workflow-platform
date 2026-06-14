@@ -61,7 +61,7 @@ Workspace files are written only to the target workspace after requirements and 
 <target-workspace>/.vscode/tasks.json
 <target-workspace>/.vscode/launch.json
 <target-workspace>/.vscode/extensions.json
-<target-workspace>/<name>.code-workspace
+<target-workspace>/.vscode/<name>.code-workspace
 ```
 
 ## Runtime Helpers

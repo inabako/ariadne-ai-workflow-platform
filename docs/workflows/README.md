@@ -15,7 +15,7 @@
 | `/corrective-action-fix` | 改善reportからIssue、branch、修正、test、pushまで進める | target repository, target branch | `work/<branch>/`, `work/issue-<number>/` |
 | `/docs-sync` | 実装とdocsのズレを検出し、docsだけ修正する | target repository, target branch | `docs-drift-analysis.json`, issue branch |
 | `/github-knowledge-maintenance` | GitHub Issue / PR / docs / CARを知識資産として保守する | target repository, scan mode, repair mode | `github-knowledge-analysis.json`, repair plan, RAG candidates |
-| `/vscode-environment` | VSCode workspace as code、task、terminal、AI workflow、evidenceを整備する | target workspace path | `.vscode/*`, `workspace.code-workspace`, `workspace-test.md` |
+| `/vscode-environment` | VSCode workspace as code、task、terminal、AI workflow、evidenceを整備する | target workspace path | `.vscode/*`, `.vscode/workspace.code-workspace`, `workspace-test.md` |
 | `/knowledge-capture` | 完了IssueのPR材料、RAG候補、docs候補、archive準備を作る | `work/issue-<number>` | `knowledge-capture-report.md` |
 | `/rag-build` | Markdown reportをRAG artifactへ変換する | `rag/corrective-action-report/*.md` | `rag/normalized/`, `rag/chunks/`, `rag/indexes/`, `rag/embeddings/` |
 | `/rag-load` | 開発前に過去知識を検索し、圧縮contextを読む | task, repository, branch | `rag/retrieval/*.json` |

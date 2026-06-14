@@ -43,7 +43,7 @@ Target workspace artifacts:
 .vscode/tasks.json
 .vscode/launch.json
 .vscode/extensions.json
-workspace.code-workspace
+.vscode/workspace.code-workspace
 ```
 
 Reference: [VSCode Environment](../reference/vscode-environment.md)
