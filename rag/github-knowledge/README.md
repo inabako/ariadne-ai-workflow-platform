@@ -1,35 +1,35 @@
 # GitHub Knowledge RAG
 
-This directory stores approved GitHub Repository Knowledge Maintenance source reports.
+このdirectoryは、承認済みのGitHub Repository Knowledge Maintenance source reportを保存します。
 
-Use it for knowledge extracted from Issues, Pull Requests, comments, documentation, Corrective Action Reports, and approved repair outcomes.
+Issue、Pull Request、comment、documentation、Corrective Action Report、承認済みrepair outcomeから抽出したknowledgeを保存するために使います。
 
-Do not store raw GitHub thread dumps. Keep concise source references, evidence summaries, limits, and reusable knowledge.
+raw GitHub thread dumpは保存しません。source reference、evidence summary、limit、再利用可能knowledgeを簡潔に残します。
 
 ## Naming
 
-Use the same Markdown report naming style as the rest of the RAG source areas:
+RAG source area共通のMarkdown report naming styleを使います。
 
 ```text
 YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 ```
 
-Example:
+例:
 
 ```text
 20260614203235_Q7M4KD_localty-system-robot-github-knowledge.md
 ```
 
-Keep this directory limited to:
+このdirectoryには次だけを置きます。
 
 - `README.md`
-- approved source Markdown files named `YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md`
+- `YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md` 形式のapproved source Markdown file
 
-Do not store sidecar JSON, normalized JSON, chunk JSON, indexes, embeddings, or retrieval results in this directory.
+sidecar JSON、normalized JSON、chunk JSON、indexes、embeddings、retrieval resultsはこのdirectoryに置きません。
 
 ## Publish Flow
 
-Generate candidates under `work/<work-id>/process-report/` first. Publish source Markdown here only after human approval:
+まず `work/<work-id>/process-report/` にcandidateを生成します。Human approval後にのみ、source Markdownをこのdirectoryへpublishします。
 
 ```powershell
 uv run python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
@@ -38,12 +38,12 @@ uv run python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
   --human-check approved
 ```
 
-Then regenerate RAG artifacts in this order:
+その後、RAG artifactを次の順序で再生成します。
 
-1. normalize approved source Markdown into UUID JSON
-2. chunk normalized JSON
-3. rebuild indexes
-4. rebuild embeddings
+1. approved source MarkdownをUUID JSONへnormalizeする。
+2. normalized JSONをchunk化する。
+3. indexesを再構築する。
+4. embeddingsを再構築する。
 
 Normalize:
 
@@ -79,13 +79,13 @@ uv run python runtime/rag/embed_chunks.py `
   --output rag/embeddings/chunks-embeddings.jsonl
 ```
 
-Final landing:
+最終着地:
 
 ```text
 rag/normalized/<uuid>.json
 ```
 
-Use the normalized UUID JSON as the durable machine-readable RAG record. Chunk JSON, indexes, embeddings, retrieval results, and context packs are derived artifacts.
+normalized UUID JSONを耐久的なmachine-readable RAG recordとして扱います。Chunk JSON、indexes、embeddings、retrieval results、context packsは派生artifactです。
 
 ## Current Normalized Output
 
