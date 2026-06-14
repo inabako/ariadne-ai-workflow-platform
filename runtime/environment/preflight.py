@@ -255,9 +255,21 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
         ))
         checks.append(which_check(
             "docker",
-            required=False,
-            install_hint="Required only when the workspace uses Docker Desktop tasks.",
+            required=True,
+            install_hint="Required for local gateway and IaC validation tasks.",
             install_command="winget install --id Docker.DockerDesktop -e",
+        ))
+        checks.append(which_check(
+            "go",
+            required=True,
+            install_hint="Required for future realtime gateway development.",
+            install_command="winget install --id GoLang.Go -e",
+        ))
+        checks.append(which_check(
+            "kubectl",
+            required=False,
+            install_hint="Recommended for future k3s migration checks.",
+            install_command="winget install --id Kubernetes.kubectl -e",
         ))
         checks.append(which_check(
             "node",
@@ -271,6 +283,16 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
             install_hint="Required only when the workspace uses Java tasks.",
             install_command="winget install --id EclipseAdoptium.Temurin.21.JDK -e",
         ))
+        checks.append(path_check(
+            bash_path,
+            check_id="path:msys2-bash",
+            label="MSYS2 bash.exe",
+            required=True,
+            install_hint="Install MSYS2 to C:\\msys64 or pass --msys2-root.",
+        ))
+        checks.append(msys2_package_check(bash_path, "mingw-w64-x86_64-python", required=True))
+        checks.append(msys2_package_check(bash_path, "mingw-w64-x86_64-gstreamer", required=True))
+        checks.append(msys2_package_check(bash_path, "mingw-w64-x86_64-gst-plugins-base", required=True))
         if source_dir:
             checks.append(path_check(
                 source_dir,

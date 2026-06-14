@@ -15,7 +15,7 @@ Corrective Action Report などのMarkdown reportを file-based RAG artifactへ�
 
 ```text
 source markdown
-  -> normalized JSON document
+  -> normalized UUID JSON document
   -> chunk JSON
   -> JSONL indexes
   -> local embeddings
@@ -114,7 +114,7 @@ python runtime/rag/rag_dispatcher.py `
 
 | Path | Purpose |
 | --- | --- |
-| `rag/normalized/*.json` | Markdown reportをmetadata付きdocumentに変換したもの |
+| `rag/normalized/*.json` | Markdown reportをmetadata付きUUID JSON documentに変換した最終knowledge record |
 | `rag/chunks/*.json` | retrieval / embeddings用chunk |
 | `rag/indexes/documents.jsonl` | document-level index |
 | `rag/indexes/chunks.jsonl` | chunk-level index |

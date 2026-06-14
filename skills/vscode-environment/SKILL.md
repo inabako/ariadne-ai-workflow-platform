@@ -15,14 +15,18 @@ Manage a VSCode development environment as Workspace as Code so AI agents and hu
 
 ## Required Inputs
 
-- draft README under `work/requirements/devlop-edit-draft/`
+- filled draft README such as `README_20260614.md` under `work/requirements/devlop-edit-draft/`
 - target workspace or repository path, either in the draft or human answers
 - intended workflow entry points, such as software workflow, IaC workflow, test workflow, evidence workflow
 - required tools and runtimes
 - required VSCode extensions
 - terminal profiles and default shell policy
 
-If `/vscode-environment` has no argument, do not infer a target workspace from the current directory. Read the draft README from `work/requirements/devlop-edit-draft/`, create `open-questions.md`, and stop before implementation.
+`work/requirements/devlop-edit-draft/README.md` is the human-editable scaffold. Treat it as a template, not as a filled requirement draft.
+
+Filled drafts should be saved in the same directory as `README_*.md`, for example `README_20260614.md`. Legacy `.txt` drafts in that directory may also be inspected.
+
+If `/vscode-environment` has no argument, do not infer a target workspace from the current directory. Read `work/requirements/devlop-edit-draft/`, inspect filled draft files such as `README_*.md`, create `open-questions.md` for blank, `TODO`, missing, or contradictory items, and stop before implementation.
 
 If any required item is missing from the draft, do not infer silently. Create `open-questions.md` and stop before implementation.
 
@@ -34,10 +38,11 @@ Example:
 
 ## Directory Model
 
-Draft intake:
+Draft scaffold / intake:
 
 ```text
 work/requirements/devlop-edit-draft/README.md
+work/requirements/devlop-edit-draft/README_YYYYMMDD.md
 ```
 
 Workflow artifacts stay in this repository:
@@ -61,7 +66,7 @@ Workspace files are written only to the target workspace after requirements and 
 
 ## Runtime Helpers
 
-Create a draft README scaffold:
+Create or refresh the draft README scaffold:
 
 ```powershell
 uv run python runtime/workflow/vscode_environment.py draft-template
@@ -118,13 +123,14 @@ uv run python runtime/environment/preflight.py `
 
 ### 1. Draft Intake
 
-Start from a human-editable draft README:
+Start from a human-editable draft README scaffold and a filled draft:
 
 ```text
-work/requirements/devlop-edit-draft/README.md
+work/requirements/devlop-edit-draft/README.md           # scaffold
+work/requirements/devlop-edit-draft/README_YYYYMMDD.md  # filled draft
 ```
 
-If the command has no argument or the draft is incomplete, create:
+If the command has no argument, inspect `work/requirements/devlop-edit-draft/` for filled drafts. If no filled draft exists, the filled draft is incomplete, or required items are missing, create:
 
 ```text
 work/<work-id>/design-document/open-questions.md
@@ -213,7 +219,7 @@ Use `.github/agents/workspace-documentation-writer-agent.prompt.md`.
 
 Update the target workspace README or setup docs with setup steps, recommended extensions, tasks, troubleshooting, and evidence capture instructions.
 
-### 9. RAG Capture
+### 9. RAG Capture And UUID JSON Finalization
 
 When the VSCode environment pattern is reusable for Localty or another robotics workspace, save a Markdown source note under:
 
@@ -230,7 +236,24 @@ uv run python runtime/workflow/vscode_environment.py rag-template `
   --repository "localty"
 ```
 
-After human approval, build it through the file-based RAG pipeline with `--source-dir rag/workspace-environment` and `--document-type workspace-environment-pattern`.
+The Markdown file is the human-reviewable source note. It is not the final machine-readable knowledge artifact.
+
+After human approval, normalize the approved source through the file-based RAG pipeline with `--source-dir rag/workspace-environment` and `--document-type workspace-environment-pattern`.
+
+```powershell
+uv run python runtime/rag/normalize_documents.py `
+  --source-dir rag/workspace-environment `
+  --output-dir rag/normalized `
+  --document-type workspace-environment-pattern
+```
+
+The final durable knowledge record is the generated UUID-named JSON document:
+
+```text
+rag/normalized/<uuid>.json
+```
+
+Chunk JSON, indexes, embeddings, and retrieval context packs are derived artifacts from that UUID-named normalized JSON. Use `rag/jsonized/<uuid>.json` only as a wrapper for existing non-UUID artifacts; it does not replace the normalized RAG document.
 
 ## Human Gates
 
@@ -262,3 +285,4 @@ The workflow is complete when:
 - Docker / Git / runtime checks are recorded
 - setup and troubleshooting docs are updated
 - reusable VSCode environment knowledge is captured under `rag/workspace-environment/` when it should feed future RAG
+- approved reusable knowledge is normalized into UUID-named JSON under `rag/normalized/` as the final RAG knowledge artifact

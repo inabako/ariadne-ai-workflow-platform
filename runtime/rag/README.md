@@ -6,7 +6,7 @@
 
 ```text
 source markdown
-  -> normalized JSON document
+  -> normalized UUID JSON document
   -> chunk JSON
   -> JSONL indexes
   -> local embeddings
@@ -145,7 +145,7 @@ python runtime/rag/jsonize_rag_tree.py `
 
 | Path | Purpose |
 | --- | --- |
-| `rag/normalized/*.json` | source report を metadata 付きの RAG document として保存 |
+| `rag/normalized/*.json` | source report を metadata 付きのUUID名 RAG document として保存する最終knowledge record |
 | `rag/chunks/*.json` | retrieval しやすい単位に分割した chunk |
 | `rag/indexes/documents.jsonl` | document-level index |
 | `rag/indexes/chunks.jsonl` | chunk-level index |

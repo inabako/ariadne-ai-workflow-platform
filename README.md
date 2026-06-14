@@ -66,6 +66,7 @@ work/       per-workflow artifacts and cloned sources
 | Runtime CLI | [docs/reference/runtime.md](docs/reference/runtime.md) |
 | Templates | [docs/reference/templates.md](docs/reference/templates.md) |
 | Skill discovery | [docs/reference/skill-discovery.md](docs/reference/skill-discovery.md) |
+| VSCode Environment | [docs/reference/vscode-environment.md](docs/reference/vscode-environment.md) |
 | Data model | [docs/reference/data-model.md](docs/reference/data-model.md) |
 | RAG | [docs/reference/rag.md](docs/reference/rag.md) |
 | Operations | [docs/reference/operations.md](docs/reference/operations.md) |

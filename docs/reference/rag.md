@@ -2,13 +2,13 @@
 
 ## Workspace Environment Source
 
-VSCode Workspace-as-Code knowledge is stored as internal project RAG:
+VSCode Workspace-as-Code knowledge starts as human-reviewable internal project RAG source Markdown:
 
 ```text
 rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 ```
 
-Normalize approved notes with:
+After human approval, normalize approved notes with:
 
 ```powershell
 uv run python runtime/rag/normalize_documents.py `
@@ -16,6 +16,14 @@ uv run python runtime/rag/normalize_documents.py `
   --output-dir rag/normalized `
   --document-type workspace-environment-pattern
 ```
+
+The final durable knowledge record is the generated UUID-named JSON:
+
+```text
+rag/normalized/<uuid>.json
+```
+
+Chunk JSON, indexes, embeddings, retrieval results, and context packs are derived from this normalized JSON. `rag/jsonized/<uuid>.json` is only a wrapper path for existing non-UUID artifacts and is not the primary final RAG knowledge record.
 
 ## GitHub Knowledge Source
 
@@ -68,7 +76,7 @@ YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md
 
 ```text
 source markdown
-  -> normalized JSON document
+  -> normalized UUID JSON document
   -> chunk JSON
   -> JSONL indexes
   -> local embeddings
@@ -79,7 +87,7 @@ source markdown
 
 | Path | Purpose |
 | --- | --- |
-| `rag/normalized/*.json` | Markdown reportをmetadata付きdocumentに変換したもの |
+| `rag/normalized/*.json` | Markdown reportをmetadata付きUUID JSON documentに変換した最終knowledge record |
 | `rag/chunks/*.json` | retrieval / embeddings用chunk |
 | `rag/indexes/documents.jsonl` | document-level index |
 | `rag/indexes/chunks.jsonl` | chunk-level index |

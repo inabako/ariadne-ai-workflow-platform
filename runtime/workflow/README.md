@@ -108,9 +108,12 @@ work/<work-id>/design-document/open-questions.md
 work/<work-id>/context/workspace-shared-artifact-validation.json
 work/<work-id>/process-report/workspace-shared-artifact-validation.md
 rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
+rag/normalized/<uuid>.json
 ```
 
-This command does not edit the target workspace, install tools, or change VSCode files by itself.
+The workspace-environment Markdown is the human-reviewable source note. After human approval, the final reusable knowledge must be normalized into UUID-named JSON under `rag/normalized/`.
+
+This command does not edit the target workspace, install tools, change VSCode files, or run the RAG normalization pipeline by itself.
 
 ### `knowledge_capture.py`
 

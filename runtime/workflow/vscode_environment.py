@@ -16,6 +16,7 @@ from runtime.common import find_repo_root, relative_to_repo, slugify, utc_now_is
 
 
 DEFAULT_DRAFT_DIR = "work/requirements/devlop-edit-draft"
+DEFAULT_DRAFT_SCAFFOLD = "README.md"
 DEFAULT_RAG_SOURCE_DIR = "rag/workspace-environment"
 CROCKFORD_BASE32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 
@@ -39,11 +40,11 @@ def build_parser() -> argparse.ArgumentParser:
     validation.add_argument("--repo-root", default="")
     validation.add_argument("--status", choices=["pass", "conditional-pass", "fail"], default="fail")
 
-    draft = subparsers.add_parser("draft-template", help="Create a draft README scaffold for the VSCode environment workflow.")
+    draft = subparsers.add_parser("draft-template", help="Create a human-editable draft README scaffold for the VSCode environment workflow.")
     draft.add_argument("--draft-dir", default=DEFAULT_DRAFT_DIR)
     draft.add_argument("--repo-root", default="")
 
-    questions = subparsers.add_parser("open-questions", help="Create open-questions.md from draft intake.")
+    questions = subparsers.add_parser("open-questions", help="Create open-questions.md from filled draft intake.")
     questions.add_argument("--work-id", default="vscode-environment")
     questions.add_argument("--draft-dir", default=DEFAULT_DRAFT_DIR)
     questions.add_argument("--repo-root", default="")
@@ -164,7 +165,7 @@ def write_draft_template(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = repo_root_from(args)
     draft_dir = (repo_root / args.draft_dir).resolve()
     draft_dir.mkdir(parents=True, exist_ok=True)
-    path = draft_dir / "README.md"
+    path = draft_dir / DEFAULT_DRAFT_SCAFFOLD
     created = False
     if not path.exists():
         path.write_text(draft_template_text(), encoding="utf-8")
@@ -178,12 +179,17 @@ def discover_drafts(draft_dir: Path) -> list[Path]:
     return sorted(
         path
         for path in draft_dir.iterdir()
-        if path.is_file() and (path.name.lower() == "readme.md" or path.suffix.lower() == ".txt")
+        if path.is_file()
+        and (
+            (path.name.lower().startswith("readme_") and path.suffix.lower() in {".md", ".markdown"})
+            or path.suffix.lower() == ".txt"
+        )
     )
 
 
 def open_questions_text(work_id: str, draft_dir: str, draft_paths: list[str]) -> str:
     draft_list = "\n".join(f"- `{path}`" for path in draft_paths) if draft_paths else "- none"
+    scaffold_path = f"{draft_dir}/{DEFAULT_DRAFT_SCAFFOLD}".replace("\\", "/")
     return f"""# Open Questions: VSCode Environment
 
 - workflow: `vscode-environment`
@@ -195,16 +201,21 @@ def open_questions_text(work_id: str, draft_dir: str, draft_paths: list[str]) ->
 
 ## Stop Reason
 
-The VSCode Environment workflow starts from a draft README. Required information must be confirmed by a human before `.vscode` files are created or changed.
+The VSCode Environment workflow starts from a human-editable scaffold and filled draft files. `{scaffold_path}` is the scaffold. Filled drafts should use `README_*.md`; legacy `.txt` drafts are also listed when present. Required information must be confirmed by a human before `.vscode` files are created or changed.
 
-## Draft Files
+## Scaffold File
+
+- `{scaffold_path}`
+
+## Filled Draft Files
 
 {draft_list}
 
 ## Required Confirmation Flow
 
 ```text
-draft README
+README.md scaffold
+  -> README_*.md filled draft
   -> open-questions.md
   -> human review / answers
   -> approval
@@ -377,11 +388,12 @@ Localty repositories should treat VSCode configuration as Workspace as Code. The
 
 ## Intake Pattern
 
-1. Save a human draft under `work/requirements/devlop-edit-draft/README.md`.
-2. When `/vscode-environment` has no target argument or the draft is incomplete, create `work/<work-id>/design-document/open-questions.md`.
-3. Wait for human answers and approval.
-4. Initialize `work/<work-id>` with the confirmed target workspace.
-5. Implement target `.vscode` files only after requirements and validation pass.
+1. Keep the human-editable scaffold at `work/requirements/devlop-edit-draft/README.md`.
+2. Save filled drafts as `work/requirements/devlop-edit-draft/README_YYYYMMDD.md` or another `README_*.md` file.
+3. When `/vscode-environment` has no target argument, read `work/requirements/devlop-edit-draft/`, inspect filled drafts, and create `work/<work-id>/design-document/open-questions.md` for missing or contradictory items.
+4. Wait for human answers and approval.
+5. Initialize `work/<work-id>` with the confirmed target workspace.
+6. Implement target `.vscode` files only after requirements and validation pass.
 
 ## Required Workspace Artifacts
 

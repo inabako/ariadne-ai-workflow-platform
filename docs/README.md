@@ -49,6 +49,7 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 | [Runtime](reference/runtime.md) | runtime CLI、GitHub/SCM/環境ファイル |
 | [Templates](reference/templates.md) | templates配下の成果物ひな形と品質ルール |
 | [Test Artifact Storage](reference/test-artifact-storage.md) | テスト仕様書、QTest、結合疎通証跡の保存先 |
+| [VSCode Environment](reference/vscode-environment.md) | VSCode Workspace as Code、terminal profiles、task labels、preflight |
 | [Skill Discovery](reference/skill-discovery.md) | VS Code prompt候補とCodex Skill候補の違い |
 | [Agent Inventory](reference/agent-inventory.md) | 既存Agentの責務、RAG利用、専門Agent候補の棚卸し |
 | [Data Model](reference/data-model.md) | `.github/schemas/` と `work/<id>/context/*.json` |

@@ -18,7 +18,7 @@ rag/
 | Directory | Purpose |
 | --- | --- |
 | `corrective-action-report/` | 人間が読む元の改善レポート |
-| `normalized/` | RAG投入用に metadata と本文をJSON化した document |
+| `normalized/` | RAG投入用に metadata と本文をJSON化したUUID名の最終knowledge document |
 | `chunks/` | retrieval しやすい単位に分割した chunk JSON |
 | `indexes/` | document / chunk の JSONL index |
 | `embeddings/` | local sparse embedding index |
@@ -47,6 +47,12 @@ rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 ```
 
 Use this source area for patterns such as Localty terminal roles, VSCode tasks, launch configurations, extension policy, runtime preflight, and trial-run evidence.
+
+This Markdown is the human-reviewable source. After approval, the final machine-readable knowledge lands as:
+
+```text
+rag/normalized/<uuid>.json
+```
 
 ## Local Context Compression
 
