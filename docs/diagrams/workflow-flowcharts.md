@@ -186,6 +186,35 @@ flowchart TD
   H --> I[Knowledge capture candidates]
 ```
 
+## GitHub Knowledge Maintenance
+
+```mermaid
+flowchart TD
+  A[Target repository / scan mode / repair mode] --> B[Initialize work context]
+  B --> C[GitHub metadata collection plan]
+  C --> D[Read GitHub Issues / PRs / comments / releases]
+  D --> E{GitHub CLI / API evidence enough?}
+  E -- no --> F{Human approves clone?}
+  F -- no --> G[Record open question and stop]
+  F -- yes --> H[Clone for approved read-only analysis]
+  E -- yes --> I[Knowledge asset discovery]
+  H --> I
+  I --> J[Intent / scope / decision / maintenance knowledge]
+  J --> K[Narrative analysis]
+  K --> L[Issue -> PR -> Review -> Comment -> Docs consistency]
+  L --> M[Repair proposals]
+  M --> N[Human Review]
+  N --> O{Approved GitHub sync actions?}
+  O -- no --> P[Keep proposal / update analysis JSON]
+  P --> M
+  O -- yes --> Q[GitHub documentation sync]
+  Q --> R[Issue / PR edit or comment]
+  R --> S[Knowledge DB candidates]
+  S --> T{RAG output approved?}
+  T -- no --> U[Keep RAG candidate in work report]
+  T -- yes --> V[Publish approved RAG candidate]
+```
+
 ## VSCode Environment
 
 ```mermaid
