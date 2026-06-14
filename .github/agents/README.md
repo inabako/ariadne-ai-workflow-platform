@@ -91,6 +91,7 @@ draft bullets
   -> safety / security / network / observability reviews
   -> robotics tester
   -> realtime IaC agents when IaC is in scope
+  -> boilerplate template selection before implementation
   -> implementer
   -> documentation writer
   -> knowledge capture
@@ -125,8 +126,11 @@ Implementer は以下を黙って変更しません。
 - safety timeout
 - authentication model
 - operator authority model
+- boilerplate template responsibility boundaries
 
 実装中に曖昧さが見つかった場合は、QAとして返します。
+
+新システム実装で `templates/boilerplate-templates/` に対象templateが存在する場合、Implementer はtemplateをコピーしてコピー先だけを編集します。対象templateが存在しない組み合わせでは、選定reportに理由を残して従来どおりcodingします。
 
 ## RAG Capture Rule
 

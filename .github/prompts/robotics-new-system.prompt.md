@@ -37,3 +37,9 @@ Do not proceed from chat history alone.
 After intake succeeds, run `/pre-development-preparation`, then run `/rag-load`, then continue with `/new-robotics-system-development`.
 
 `/rag-load` must search prior corrective action reports in parallel where possible and use `runtime/rag/retrieve_context.py` to generate compressed context packs before development design starts.
+
+Before implementation starts, run the Boilerplate Template Selection Gate from `/new-robotics-system-development`.
+
+- If a matching template exists under `templates/boilerplate-templates/`, copy it and implement only in the copied destination.
+- If no matching template exists, record the fallback reason and continue with traditional coding.
+- Record the result in `work/<receipt-id>/process-report/boilerplate-template-selection.md`.

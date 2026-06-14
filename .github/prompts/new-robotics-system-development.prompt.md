@@ -218,9 +218,45 @@ PyQt / Qt GUIを含む場合:
 - external I/Oは原則stub / disableし、実I/Oが必要な場合はtest caseに明示する
 - 実robot、実camera、physical STOP、field networkはbench / human-check evidenceとして残す
 
+## Phase 6.5: Boilerplate Template Selection
+
+実装前に、承認済みarchitectureとtest strategyに対して、利用可能なboilerplate templateがあるかを確認します。
+
+Template root:
+
+```text
+templates/boilerplate-templates/
+```
+
+現在の対応:
+
+| 対象 | Template | 組み込み指示書 |
+| --- | --- | --- |
+| Go gateway service | `templates/boilerplate-templates/gateway-template/` | `gateway-template_組み込み指示書.md` |
+| PyQt / Qt GUI app | `templates/boilerplate-templates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
+
+出力:
+
+- `work/<採番ID>/process-report/boilerplate-template-selection.md`
+
+判定:
+
+- 対象systemがGo gatewayを含み、`gateway-template/` が存在する場合は、`gateway-template_組み込み指示書.md` に従ってtemplateをコピーしてから実装する。
+- 対象systemがPyQt / Qt GUIを含み、`pyqt-template/` が存在する場合は、`pyqt-template_組み込み指示書.md` に従ってtemplateをコピーしてから実装する。
+- 対応するtemplateが存在しない場合、`decision: traditional-coding` と理由を記録し、従来どおり小さく実装する。
+- template本体は直接編集しない。編集対象はコピー先service / appのみ。
+- template採用時も、STOP、communication loss、startup safe state、shutdown safe state、test case table、evidence planは省略しない。
+- template採用によりarchitecture、protocol、port、safety behaviorを黙って変更してはいけない。
+
+Quality Gate:
+
+- boilerplate template selection resultが記録されていない場合、Phase 7へ進まない。
+- templateを採用する場合、コピー元、コピー先、採用理由、削除/無効化したcomponent、残した責務境界、必要testを記録する。
+- templateがない場合、従来実装へ進む理由を記録する。
+
 ## Phase 7: Implementation
 
-承認された architecture、test strategy、PyQt QTest source plan に沿って実装します。
+承認された architecture、test strategy、PyQt QTest source plan、boilerplate template selection result に沿って実装します。
 
 原則:
 
@@ -229,12 +265,17 @@ PyQt / Qt GUIを含む場合:
 - protocol / port / timeout を黙って変えない
 - STOP path を常に優先する
 - logs / telemetry を後付けにしない
+- matching boilerplate templateが存在する場合は、それをコピーして開始する
+- matching boilerplate templateが存在しない場合は、従来どおりにcodingする
+- boilerplate template本体を直接編集しない
+- template由来の責務分離を崩す場合は、承認済みarchitecture上の理由をimplementation reportに記録する
 
 出力:
 
 - source code
 - tests
 - implementation report
+- boilerplate application notes when a template is used
 - unresolved QA
 
 ## Phase 8: Integration / Bench Test

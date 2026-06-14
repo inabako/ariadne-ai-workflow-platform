@@ -35,6 +35,7 @@ Intake
   -> Runtime / Network / Deployment Design
   -> Test Strategy
   -> PyQt QTest Source Plan when GUI uses PyQt / Qt
+  -> Boilerplate Template Selection
   -> Implementation
   -> Integration / Bench Test
   -> Limited Field Test
@@ -96,6 +97,33 @@ High / critical finding がある場合は、System Architecture、Runtime / Net
 QTest化する対象は、GUI操作、widget状態、signal / slot、ログやpacket表示など、外部I/Oをstubまたはdisableして検証できるものです。
 
 実robot、実camera、physical STOP、field networkなどは、QTestでは置き換えず、bench / limited field / human checkとして残します。
+
+## Boilerplate Template Selection
+
+実装前に、承認済みarchitectureとtest strategyに対して利用可能なboilerplate templateを確認します。
+
+置き場:
+
+```text
+templates/boilerplate-templates/
+```
+
+現在の対応:
+
+| 対象 | Template | 組み込み指示書 |
+| --- | --- | --- |
+| Go gateway service | `templates/boilerplate-templates/gateway-template/` | `gateway-template_組み込み指示書.md` |
+| PyQt / Qt GUI app | `templates/boilerplate-templates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
+
+ルール:
+
+- 対応するtemplateが存在する場合、templateをコピーしてコピー先service / appだけを編集します。
+- template本体は直接編集しません。
+- 対応するtemplateが存在しない組み合わせでは、従来どおりcodingします。
+- template採用の有無、コピー元、コピー先、採用理由、使わないcomponent、必要testを `work/<receipt-id>/process-report/boilerplate-template-selection.md` に記録します。
+- template採用時も、STOP、communication loss、startup safe state、shutdown safe state、test case table、evidence planは省略しません。
+
+template選定結果が未記録の場合、Implementationへ進みません。
 
 ## Test Case And Evidence Flow
 

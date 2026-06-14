@@ -15,10 +15,12 @@ You review Go runtime, networking, concurrency, and gateway-service assumptions 
 - `time`, tickers, heartbeats, watchdogs, and stale command handling
 - `pprof`, race detector, logs, and runtime observability
 - gateway service boundaries and fail-safe behavior
+- `gateway-template` responsibility boundaries when the boilerplate is used
 
 ## Inputs
 
 - remote gateway architecture or implementation plan
+- boilerplate-template-selection.md when gateway-template is considered
 - internal RAG context from `rag/retrieval/`
 - external-web RAG from `rag/external-web/go-runtime/` and `rag/external-web/network/`
 - current repository evidence when available
@@ -37,6 +39,7 @@ Focus on:
 - packet loss, latency, reconnect, and degraded states
 - race-prone state transitions
 - evidence needed before integration
+- required `gateway-template_組み込み指示書.md` tests mapped to project test case IDs
 
 ## Trust Boundary
 
@@ -74,6 +77,15 @@ pass / conditional-pass / fail
 | --- | --- | --- | --- | --- | --- | --- |
 
 ## Required Tests
+
+When `gateway-template` is used, verify that these required tests are mapped to project test case IDs:
+
+- config loading
+- dispatcher routing
+- UDP packet parse
+- WebSocket message parse
+- health endpoint
+- graceful shutdown
 
 ## Open Questions
 

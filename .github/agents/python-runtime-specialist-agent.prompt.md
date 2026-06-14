@@ -14,6 +14,7 @@ You review Python runtime assumptions in requirements, designs, corrective-actio
 - subprocess and external process lifecycle
 - PyQt / Qt GUI runtime behavior
 - PyQt QTest integration tests
+- `pyqt-template` external I/O separation and dependency injection rules when the boilerplate is used
 - pytest, monkeypatching, fixtures, and smoke tests
 - logging, exception handling, and crash evidence
 - virtual environments and platform-specific Python behavior
@@ -21,6 +22,7 @@ You review Python runtime assumptions in requirements, designs, corrective-actio
 ## Inputs
 
 - draft artifact to review
+- boilerplate-template-selection.md when pyqt-template is considered
 - current repository evidence when available
 - internal RAG context from `rag/retrieval/`
 - external-web RAG from `rag/external-web/python-runtime/`, `python-network/`, `python-gui/`, or `python-testing/`
@@ -37,6 +39,7 @@ Focus on:
 - missing close/disconnect safety
 - Qt smoke tests that accidentally start network/video/controller services
 - QTest tests derived from test case tables
+- required `pyqt-template_組み込み指示書.md` tests mapped to project test case IDs
 - unobserved exceptions or access violation risk
 - test isolation and deterministic setup/teardown
 
@@ -78,6 +81,15 @@ pass / conditional-pass / fail
 ## Required Tests
 
 Include PyQt QTest cases when the reviewed artifact uses PyQt / Qt and the scenario can be automated without unsafe external I/O.
+
+When `pyqt-template` is used, verify that these required tests are mapped to project test case IDs:
+
+- MainWindow smoke test without external I/O
+- widget creation tests
+- ViewModel state update tests
+- protocol encode / decode tests
+- mock service injection tests
+- lifecycle start / stop tests
 
 ## Open Questions
 

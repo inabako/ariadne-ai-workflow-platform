@@ -1,0 +1,16 @@
+services:
+  gateway:
+    build: .
+    environment:
+      SERVICE_NAME: gateway-template
+      HTTP_ADDR: ":8080"
+      WEBSOCKET_ADDR: ":8081"
+      UDP_CONTROL_ADDR: ":5005"
+      UDP_ANNOUNCE_ADDR: ":5006"
+      UDP_TELEMETRY_ADDR: ":5007"
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+      - "5005:5005/udp"
+      - "5006:5006/udp"
+      - "5007:5007/udp"

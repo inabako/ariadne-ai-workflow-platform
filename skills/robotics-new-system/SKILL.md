@@ -43,8 +43,9 @@ Do not treat chat history as a substitute for an accepted requirement document.
 4. If architecture, runtime, network, deployment, safety, or test strategy depends on specialist knowledge, run the relevant Specialist Agent review before implementation.
 5. Run `/new-robotics-system-development` only after relevant RAG context has been loaded and summarized.
 6. Before implementation, create the issue test case tables and evidence plan.
-7. Preserve artifacts under `work/<receipt-id>/`.
-8. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, and handoff context as JSON where schemas exist.
+7. Before implementation, run the Boilerplate Template Selection Gate. If a matching boilerplate template exists under `templates/boilerplate-templates/`, use it as the starting point. If no matching template exists, record the reason and continue with traditional coding.
+8. Preserve artifacts under `work/<receipt-id>/`.
+9. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, boilerplate selection result, and handoff context as JSON where schemas exist.
 
 ## Required Focus
 
@@ -54,10 +55,44 @@ Do not treat chat history as a substitute for an accepted requirement document.
 - system architecture
 - runtime / network / deployment design
 - test strategy before implementation
+- boilerplate template applicability before implementation
 - PyQt QTest source plan when the system includes a PyQt / Qt GUI
 - integration, bench test, limited field test, release handover
 
 Implementation must not start while STOP behavior, communication loss behavior, startup safe state, or shutdown safe state is unresolved.
+
+## Boilerplate Template Selection Gate
+
+Run this gate after architecture, runtime / network / deployment design, and test strategy are approved, and before implementation starts.
+
+Template root:
+
+```text
+templates/boilerplate-templates/
+```
+
+Current supported mappings:
+
+| Target | Template path | Instruction |
+| --- | --- | --- |
+| Go gateway service | `templates/boilerplate-templates/gateway-template/` | `gateway-template_組み込み指示書.md` |
+| PyQt / Qt GUI app | `templates/boilerplate-templates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
+
+Rules:
+
+- Inspect the target system components and decide whether a supported boilerplate combination applies.
+- Check that the mapped template directory exists and contains the expected files before using it.
+- If the matching template exists, copy the template to the new service / app directory and edit only the copied destination.
+- Do not edit the boilerplate template itself during product implementation.
+- Preserve the template's responsibility boundaries unless the approved architecture explicitly changes them.
+- If no matching boilerplate template exists, record `decision: traditional-coding` and implement with the existing workflow.
+- Save the selection result under `work/<receipt-id>/process-report/boilerplate-template-selection.md`.
+
+Required report template:
+
+```text
+templates/process-report/boilerplate-template-selection-report-template.md
+```
 
 ## Test Case And Evidence Flow
 

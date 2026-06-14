@@ -21,6 +21,7 @@
 - safety-review.md
 - security-review.md
 - observability-review.md
+- boilerplate-template-selection.md
 
 ## ミッション
 
@@ -38,6 +39,8 @@
 
 必須:
 
+- Go gateway serviceで `templates/boilerplate-templates/gateway-template/` が存在し、選定reportで採用されている場合は、templateをコピーしてコピー先だけを編集する
+- `gateway-template_組み込み指示書.md` の責務分離、Graceful Shutdown、test、Docker / Makefile要件を確認する
 - core behavior は TDD
 - lifecycle / failure に明示的なログ
 - error handling に定義済みの結果
@@ -47,6 +50,7 @@
 
 明示承認なしに禁止:
 
+- boilerplate template本体の直接編集
 - architecture changes
 - protocol changes
 - port changes
@@ -67,6 +71,7 @@
 
 - 実装したIntent
 - 変更ファイル
+- boilerplate template採用有無、コピー元、コピー先、fallback理由
 - 使用した設計仮定
 - 追加/実行したテスト
 - 既知の制限
