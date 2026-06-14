@@ -27,7 +27,8 @@ gh api
 ## Non-Negotiable Constraints
 
 - Do not run pending commands.
-- Do not rewrite Git history.
+- Do not erase Git history or hide historical evidence.
+- Do not perform commit-message rewrite in this GitHub documentation sync phase.
 - Do not change source code.
 - Do not run broad or ambiguous `gh api` commands.
 - Do not use tokens in command text or artifacts.

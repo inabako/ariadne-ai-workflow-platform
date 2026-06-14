@@ -61,9 +61,11 @@ test:go-version
 
 Slash command workflow tasks show the Codex command and Skill path. They do not mutate repository state by themselves.
 
+Workflow and smoke-check tasks run as VSCode `process` tasks through `runtime/workflow/vscode_task_runner.py`. This avoids long inline PowerShell command strings, nested PowerShell startup, and `ExecutionPolicy Bypass` patterns that can trigger AMSI / security-product heuristics.
+
 `test:vscode-json` calls `runtime/workflow/validate_vscode_workspace.py` instead of inline `python -c` so PowerShell quoting does not break the task.
 
-`workflow:vscode-preflight` and `test:go-version` refresh Machine/User PATH inside the task before checking Go. This avoids stale PATH problems when Go was installed while VSCode was already open.
+`workflow:vscode-preflight` and `test:go-version` refresh Machine/User PATH in the Python task runner before checking Go. This avoids stale PATH problems when Go was installed while VSCode was already open.
 
 ## Preflight
 
@@ -133,4 +135,6 @@ After opening the workspace in VSCode:
 - Do not store secrets in `.vscode` or `.code-workspace`.
 - Keep `.vscode` changes additive unless replacement is explicitly approved.
 - Keep machine-specific values documented and reviewable.
+- Prefer VSCode `process` tasks plus repo-local helper scripts over inline PowerShell or `python -c`.
+- Do not add `ExecutionPolicy Bypass` to workspace tasks or generated install plans.
 - Treat VSCode UI behavior as human-check evidence when CLI cannot prove it.

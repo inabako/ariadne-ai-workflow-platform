@@ -12,6 +12,20 @@ You collect GitHub metadata using GitHub CLI and GitHub API for GitHub Repositor
 
 ## Responsibilities
 
+Before collection:
+
+- Check whether `gh --version` works.
+- If `gh` is missing, record the missing tool in `collection_plan` or `open_questions`.
+- Do not install silently. After human approval, install GitHub CLI with:
+
+```powershell
+winget install --id GitHub.cli
+```
+
+- After installation, open a new terminal or refresh PATH, then verify `gh --version` and `gh auth status`.
+- If repository `.env` contains `GITHUB_TOKEN`, treat that as available to repository runtime helpers that call `load_env()`, even when `$env:GITHUB_TOKEN` is absent in the current PowerShell process.
+- Never print token values.
+
 Collect relevant metadata from:
 
 - Issues
@@ -40,6 +54,7 @@ gh api repos/<owner>/<repo>/releases
 
 - Read-only GitHub CLI/API commands are allowed.
 - Mutating `gh` commands are not allowed in this phase.
+- Missing GitHub CLI may be installed only after human approval with `winget install --id GitHub.cli`.
 - Do not clone unless the human approves the clone reason.
 - Do not store secrets or tokens in artifacts.
 - Summarize external GitHub content; do not paste huge raw bodies into durable RAG candidates.

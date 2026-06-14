@@ -3,8 +3,18 @@
   "tasks": [
     {
       "label": "workflow:requirement-discovery",
-      "type": "shell",
-      "command": "Write-Host 'Codex Skill: /requirement-discovery'; Write-Host 'Skill file: skills/requirement-discovery/SKILL.md'",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/requirement-discovery",
+        "--skill",
+        "skills/requirement-discovery/SKILL.md"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -12,8 +22,18 @@
     },
     {
       "label": "workflow:robotics-new-system",
-      "type": "shell",
-      "command": "Write-Host 'Codex Skill: /robotics-new-system'; Write-Host 'Skill file: skills/robotics-new-system/SKILL.md'",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/robotics-new-system",
+        "--skill",
+        "skills/robotics-new-system/SKILL.md"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -21,8 +41,18 @@
     },
     {
       "label": "workflow:robotics-new-system-iac",
-      "type": "shell",
-      "command": "Write-Host 'Codex Skill: /robotics-new-system-iac'; Write-Host 'Skill file: skills/robotics-new-system-iac/SKILL.md'",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/robotics-new-system-iac",
+        "--skill",
+        "skills/robotics-new-system-iac/SKILL.md"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -30,8 +60,18 @@
     },
     {
       "label": "workflow:robotics-feature-maintenance",
-      "type": "shell",
-      "command": "Write-Host 'Codex Skill: /robotics-feature-maintenance'; Write-Host 'Skill file: skills/robotics-feature-maintenance/SKILL.md'",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/robotics-feature-maintenance",
+        "--skill",
+        "skills/robotics-feature-maintenance/SKILL.md"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -39,8 +79,18 @@
     },
     {
       "label": "workflow:realtime-iac",
-      "type": "shell",
-      "command": "Write-Host 'Codex Skill: /realtime-iac'; Write-Host 'Skill file: skills/realtime-iac/SKILL.md'",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/realtime-iac",
+        "--skill",
+        "skills/realtime-iac/SKILL.md"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -48,8 +98,18 @@
     },
     {
       "label": "workflow:corrective-action-report",
-      "type": "shell",
-      "command": "Write-Host 'Codex Skill: /corrective-action-report'; Write-Host 'Skill file: skills/corrective-action-report/SKILL.md'",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/corrective-action-report",
+        "--skill",
+        "skills/corrective-action-report/SKILL.md"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -57,8 +117,18 @@
     },
     {
       "label": "workflow:corrective-action-fix",
-      "type": "shell",
-      "command": "Write-Host 'Codex Skill: /corrective-action-fix'; Write-Host 'Skill file: skills/corrective-action-fix/SKILL.md'",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/corrective-action-fix",
+        "--skill",
+        "skills/corrective-action-fix/SKILL.md"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -66,8 +136,18 @@
     },
     {
       "label": "workflow:docs-sync",
-      "type": "shell",
-      "command": "Write-Host 'Codex Skill: /docs-sync'; Write-Host 'Skill file: skills/docs-sync/SKILL.md'",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/docs-sync",
+        "--skill",
+        "skills/docs-sync/SKILL.md"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -75,8 +155,18 @@
     },
     {
       "label": "workflow:github-knowledge-maintenance",
-      "type": "shell",
-      "command": "Write-Host 'Codex Skill: /github-knowledge-maintenance'; Write-Host 'Skill file: skills/github-knowledge-maintenance/SKILL.md'",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/github-knowledge-maintenance",
+        "--skill",
+        "skills/github-knowledge-maintenance/SKILL.md"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -84,8 +174,18 @@
     },
     {
       "label": "workflow:vscode-environment",
-      "type": "shell",
-      "command": "Write-Host 'Codex Skill: /vscode-environment'; Write-Host 'Skill file: skills/vscode-environment/SKILL.md'",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/vscode-environment",
+        "--skill",
+        "skills/vscode-environment/SKILL.md"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -93,8 +193,18 @@
     },
     {
       "label": "workflow:knowledge-capture",
-      "type": "shell",
-      "command": "Write-Host 'Codex Skill: /knowledge-capture'; Write-Host 'Skill file: skills/knowledge-capture/SKILL.md'",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/knowledge-capture",
+        "--skill",
+        "skills/knowledge-capture/SKILL.md"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -102,8 +212,18 @@
     },
     {
       "label": "workflow:rag-build",
-      "type": "shell",
-      "command": "Write-Host 'Codex Skill: /rag-build'; Write-Host 'Skill file: skills/rag-build/SKILL.md'",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/rag-build",
+        "--skill",
+        "skills/rag-build/SKILL.md"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -111,8 +231,18 @@
     },
     {
       "label": "workflow:rag-load",
-      "type": "shell",
-      "command": "Write-Host 'Codex Skill: /rag-load'; Write-Host 'Skill file: skills/rag-load/SKILL.md'",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/rag-load",
+        "--skill",
+        "skills/rag-load/SKILL.md"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -120,8 +250,16 @@
     },
     {
       "label": "workflow:vscode-open-questions",
-      "type": "shell",
-      "command": "uv run python runtime/workflow/vscode_environment.py open-questions --work-id vscode-environment",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "open-questions",
+        "--work-id",
+        "vscode-environment"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -129,8 +267,18 @@
     },
     {
       "label": "workflow:vscode-preflight",
-      "type": "shell",
-      "command": "$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User') + ';' + $env:Path; uv run python runtime/environment/preflight.py --profile vscode-environment --work-id vscode-environment --source-dir ${workspaceFolder}",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "preflight",
+        "--work-id",
+        "vscode-environment",
+        "--source-dir",
+        "${workspaceFolder}"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -154,8 +302,14 @@
     },
     {
       "label": "test:vscode-helper-help",
-      "type": "shell",
-      "command": "uv run python runtime/workflow/vscode_environment.py --help",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "helper-help"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -163,21 +317,29 @@
     },
     {
       "label": "test:msys2-localty-smoke",
-      "type": "shell",
-      "command": "C:\\msys64\\usr\\bin\\bash.exe -lc \"python --version; gst-launch-1.0 --version\"",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "msys2-localty-smoke"
+      ],
       "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "MSYSTEM": "MINGW64",
-          "CHERE_INVOKING": "1"
-        }
+        "cwd": "${workspaceFolder}"
       },
       "problemMatcher": []
     },
     {
       "label": "test:docker-version",
-      "type": "shell",
-      "command": "docker version",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "docker-version"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -185,8 +347,14 @@
     },
     {
       "label": "test:go-version",
-      "type": "shell",
-      "command": "$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User') + ';' + $env:Path; $go = (Get-Command go -ErrorAction SilentlyContinue).Source; if (-not $go -and (Test-Path 'C:\\Program Files\\Go\\bin\\go.exe')) { $go = 'C:\\Program Files\\Go\\bin\\go.exe' }; if (-not $go) { throw 'go executable was not found. Restart VSCode or install Go.' }; & $go version",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "go-version"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },

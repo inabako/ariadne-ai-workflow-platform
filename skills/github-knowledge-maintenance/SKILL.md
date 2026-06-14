@@ -1,6 +1,6 @@
 ---
 name: github-knowledge-maintenance
-description: Maintain a GitHub repository as a long-lived knowledge asset without rewriting Git history or changing source code. Use GitHub CLI/API first, discover Issue/PR/docs/CAR knowledge gaps, create human-reviewed repair proposals, optionally sync approved GitHub documentation assets, and prepare Knowledge DB/RAG candidates.
+description: Maintain a GitHub repository as a long-lived knowledge asset without erasing Git history. Use GitHub CLI/API first, discover Issue/PR/docs/CAR/commit-source/commit-message/semantic-subject knowledge gaps, create human-reviewed repair proposals, optionally sync approved GitHub documentation assets, and prepare Knowledge DB/RAG candidates.
 ---
 
 # GitHub Knowledge Maintenance Skill
@@ -13,7 +13,9 @@ Respond to the user in Japanese by default.
 
 GitHub Repositoryを、未来のAI workflowとRAGが再利用できるKnowledge Baseとして継続保守します。
 
-This workflow does not rewrite Git history, amend commits, force push, or change source code.
+This workflow does not erase Git history or make historical evidence disappear. If commit semantic subjects, commit bodies, PR bodies, or source documentation are missing, vague, or misleading, record the gap, prepare a reviewed repair proposal, and route the learned content to RAG. Existing commit rewriting is a separate high-risk action and requires explicit item-level approval plus before/after SHA mapping.
+
+Semantic commit quality is part of the repair target. The commit subject shown in the GitHub commit list must carry useful meaning by itself, using `type(scope): responsibility/result`, and the body must preserve intent, scope, decision, impact, and reusable maintenance knowledge.
 
 ## Required Inputs
 
@@ -45,10 +47,69 @@ work/<work-id>/process-report/github-documentation-sync-plan-*.md
 work/<work-id>/process-report/github-knowledge-rag-candidate-*.md
 ```
 
+Reference guideline:
+
+```text
+docs/reference/semantic-commit-message-guideline.md
+```
+
 Approved RAG publication target:
 
 ```text
 rag/github-knowledge/
+```
+
+This target stores approved source Markdown reports named:
+
+```text
+YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
+```
+
+After publishing source Markdown, regenerate the RAG artifacts in this order:
+
+1. normalize approved source Markdown into UUID JSON
+2. chunk normalized JSON
+3. rebuild indexes
+4. rebuild embeddings
+
+Normalize:
+
+```powershell
+uv run python runtime/rag/normalize_documents.py `
+  --source-dir rag/github-knowledge `
+  --output-dir rag/normalized `
+  --document-type github-repository-knowledge
+```
+
+Chunk:
+
+```powershell
+uv run python runtime/rag/chunk_documents.py `
+  --input-dir rag/normalized `
+  --output-dir rag/chunks
+```
+
+Index:
+
+```powershell
+uv run python runtime/rag/build_index.py `
+  --normalized-dir rag/normalized `
+  --chunks-dir rag/chunks `
+  --output-dir rag/indexes
+```
+
+Embedding:
+
+```powershell
+uv run python runtime/rag/embed_chunks.py `
+  --chunks-index rag/indexes/chunks.jsonl `
+  --output rag/embeddings/chunks-embeddings.jsonl
+```
+
+Final durable landing:
+
+```text
+rag/normalized/<uuid>.json
 ```
 
 ## Workflow
@@ -108,6 +169,27 @@ Use:
 .github/agents/github-metadata-collector-agent.prompt.md
 ```
 
+Before metadata collection, check whether GitHub CLI is available:
+
+```powershell
+gh --version
+```
+
+If `gh` is not available, record the missing tool in the analysis JSON, ask for human approval, then install GitHub CLI with:
+
+```powershell
+winget install --id GitHub.cli
+```
+
+After installation, open a new terminal or refresh PATH, then verify:
+
+```powershell
+gh --version
+gh auth status
+```
+
+If the repository `.env` contains `GITHUB_TOKEN`, note that the token is available to repository runtime helpers via `load_env()`, even when `$env:GITHUB_TOKEN` is not set in the current PowerShell process. Do not print token values.
+
 Prefer GitHub CLI/API:
 
 ```powershell
@@ -138,6 +220,8 @@ Extract:
 - Maintenance Knowledge
 - Shared Artifact
 - Future RAG Candidate
+- Commit Source / Message Gap
+- Semantic Commit Subject Gap
 
 Record findings in `github-knowledge-analysis.json`.
 
@@ -181,8 +265,10 @@ Before any GitHub mutation, the human must confirm:
 - repair reason
 - repair target
 - before / after summary
-- no Git history rewrite
-- exact GitHub CLI/API command
+- whether the action is additive repair or approved commit-message/source correction
+- whether the proposed semantic subject is meaningful in GitHub commit list view
+- for any commit rewrite, the before/after SHA mapping and rollback plan
+- exact Git / GitHub CLI/API command
 
 ### 9. GitHub Documentation Sync
 
@@ -235,15 +321,23 @@ uv run python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
   --human-check approved
 ```
 
+Then normalize the approved published report to UUID JSON with `runtime/rag/normalize_documents.py`, and rebuild chunks, indexes, and embeddings.
+
 ## Guardrails
 
-- Do not rewrite Git history.
-- Do not use `git rebase`, `git commit --amend`, force push, or any operation that changes commit SHA history.
+- Do not erase Git history or hide historical evidence.
+- Do not treat "no history erasure" as permission to leave weak commit messages or source explanations uncorrected.
+- Do not leave semantic commit subjects vague. Avoid broad scopes and weak wording such as "対応", "修正", "更新", or repository-name-only scopes when a more precise responsibility scope exists.
+- For commit message repair, propose both a GitHub-list-readable subject and a body that records intent, scope, decision, impact, and reusable maintenance knowledge.
+- Prefer additive repair first: PR body, follow-up documentation commit, README/docs supplement, CAR supplement, or RAG candidate.
+- Existing commit-message/source correction with `git rebase`, `git commit --amend`, or force push is allowed only when the human explicitly approves that high-risk path and a before/after SHA mapping is recorded.
 - Do not change source code.
 - Do not clone by default.
 - Do not mutate GitHub without explicit human approval.
+- Do not install missing tools silently. For missing `gh`, record the install command `winget install --id GitHub.cli`, get human approval, then verify with `gh --version`.
 - Do not convert a free-form observation into a GitHub update; write it to `github-knowledge-analysis.json` first.
 - Do not run RAG publication without explicit human approval.
+- Route the knowledge learned from commit-source/message repairs into RAG candidates after human review.
 - If evidence is missing, record an open question instead of guessing.
 
 ## Output Summary

@@ -142,7 +142,7 @@
         "asset_ref": { "type": "string" },
         "gap_type": {
           "type": "string",
-          "enum": ["intent-gap", "scope-gap", "decision-gap", "impact-gap", "maintenance-gap", "rag-value-gap", "evidence-gap"]
+          "enum": ["intent-gap", "scope-gap", "decision-gap", "impact-gap", "maintenance-gap", "rag-value-gap", "evidence-gap", "semantic-subject-gap"]
         },
         "severity": {
           "type": "string",
@@ -164,7 +164,7 @@
         "target": { "type": "string" },
         "proposal_type": {
           "type": "string",
-          "enum": ["issue-supplement", "pr-supplement", "car-supplement", "readme-supplement", "docs-supplement", "adr-supplement"]
+          "enum": ["issue-supplement", "pr-supplement", "commit-message-supplement", "car-supplement", "readme-supplement", "docs-supplement", "adr-supplement"]
         },
         "reason": { "type": "string" },
         "before_summary": { "type": "string" },

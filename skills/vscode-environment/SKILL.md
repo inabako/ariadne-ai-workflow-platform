@@ -119,6 +119,8 @@ uv run python runtime/environment/preflight.py `
   --source-dir "<target-workspace>"
 ```
 
+For VSCode tasks, prefer `type: "process"` plus a repo-local helper script over long inline PowerShell command strings. Do not put `ExecutionPolicy Bypass`, nested PowerShell launchers, or complex `python -c` snippets in `.vscode/tasks.json`.
+
 ## Workflow
 
 ### 1. Draft Intake
@@ -274,6 +276,8 @@ Stop for human approval before:
 - Do not overwrite existing workspace files without reading and preserving useful content.
 - Keep machine-specific values as placeholders when the workflow output is meant for a repository.
 - Keep generated evidence under `work/<work-id>/test-evidence/`; put durable target-repository docs in the target workspace only when approved.
+- Avoid long inline PowerShell / `python -c` in VSCode tasks. Use process tasks that call committed helper scripts such as `runtime/workflow/vscode_task_runner.py`.
+- Do not recommend or generate `ExecutionPolicy Bypass` in workspace tasks or install-plan evidence.
 
 ## Completion
 

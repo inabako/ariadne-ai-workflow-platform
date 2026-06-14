@@ -24,7 +24,8 @@ You identify the target GitHub repository, scan scope, repair mode, and executio
 
 - Do not clone by default.
 - Do not mutate GitHub.
-- Do not rewrite Git history.
+- Do not erase Git history or hide historical evidence.
+- Do not perform commit-message rewrite during discovery. Existing commit-message rewrite belongs to the approved high-risk repair phase.
 - Do not infer repository ownership when it cannot be resolved from input or environment.
 
 ## Output

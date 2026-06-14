@@ -201,7 +201,11 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
 
     checks: list[Check] = [
         which_check("git", required=True, install_hint="Install Git for Windows and ensure git is on PATH."),
-        which_check("uv", required=True, install_hint="Install uv and ensure uv is on PATH.", install_command="powershell -NoProfile -ExecutionPolicy Bypass -c \"irm https://astral.sh/uv/install.ps1 | iex\""),
+        which_check(
+            "uv",
+            required=True,
+            install_hint="Install uv with an approved installer or package manager and ensure uv is on PATH.",
+        ),
         which_check("python", required=False, install_hint="Optional when uv provides Python. Install Python or use uv run python."),
     ]
 

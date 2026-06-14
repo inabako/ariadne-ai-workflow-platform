@@ -43,7 +43,8 @@ Target workspace artifacts:
 .vscode/tasks.json
 .vscode/launch.json
 .vscode/extensions.json
-.vscode/workspace.code-workspace
+.vscode/<repository-name>.code-workspace
+runtime/workflow/vscode_task_runner.py
 ```
 
 Reference: [VSCode Environment](../reference/vscode-environment.md)
@@ -61,18 +62,21 @@ Reference: [VSCode Environment](../reference/vscode-environment.md)
 9. Design VSCode settings, tasks, launch configs, extensions, and workspace file.
 10. Design terminal profiles and terminal roles.
 11. Implement `.vscode` files after validation.
-12. Test tasks, terminal startup, Docker/runtime integration, and AI workflow entry tasks.
-13. Record evidence.
-14. Update setup and troubleshooting docs.
-15. Capture reusable workspace knowledge under `rag/workspace-environment/` as human-reviewable source Markdown.
-16. After human approval, normalize the source Markdown into UUID-named JSON under `rag/normalized/`.
-17. Treat `rag/normalized/<uuid>.json` as the final machine-readable knowledge artifact; chunk, index, embedding, and retrieval files are derived from it.
+12. Prefer VSCode `process` tasks plus repo-local helper scripts instead of long inline PowerShell commands.
+13. Test tasks, terminal startup, Docker/runtime integration, and AI workflow entry tasks.
+14. Record evidence.
+15. Update setup and troubleshooting docs.
+16. Capture reusable workspace knowledge under `rag/workspace-environment/` as human-reviewable source Markdown.
+17. After human approval, normalize the source Markdown into UUID-named JSON under `rag/normalized/`.
+18. Treat `rag/normalized/<uuid>.json` as the final machine-readable knowledge artifact; chunk, index, embedding, and retrieval files are derived from it.
 
 ## Stop Rules
 
 Stop and create `open-questions.md` when the command has no target argument, no filled `README_*.md` draft exists, unresolved `TODO` items remain, or required tools, extensions, terminal profiles, AI workflow entry tasks, or evidence requirements are missing or contradictory.
 
 Stop for human approval before installing tools/extensions, replacing existing `.vscode` files, changing default terminal behavior, or accepting `conditional-pass`.
+
+Do not generate `.vscode/tasks.json` entries that rely on `ExecutionPolicy Bypass`, nested PowerShell launchers, long inline PowerShell command strings, or complex `python -c` snippets. Use committed helper scripts from `process` tasks instead.
 
 ## RAG Capture
 

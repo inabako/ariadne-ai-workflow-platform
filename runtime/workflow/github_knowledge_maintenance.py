@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import secrets
+import string
 import sys
 from pathlib import Path
 from typing import Any, Sequence
@@ -30,6 +32,7 @@ from runtime.common import (  # noqa: E402
 
 SCAN_MODES = ["repository", "issue", "pull-request", "recent", "full"]
 REPAIR_MODES = ["proposal", "apply"]
+RAG_SOURCE_ID_ALPHABET = string.ascii_uppercase + string.digits
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -102,6 +105,12 @@ def default_work_id(repository: str, scan_mode: list[str], default_owner: str = 
     return f"github-knowledge-{repo_name}-{mode}"
 
 
+def rag_source_report_name(topic: str) -> str:
+    timestamp = local_timestamp().replace("_", "")
+    random_id = "".join(secrets.choice(RAG_SOURCE_ID_ALPHABET) for _ in range(6))
+    return f"{timestamp}_{random_id}_{slugify(topic)}.md"
+
+
 def init_work(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     settings = load_env(repo_root)
@@ -118,7 +127,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
     context_dir = work_dir / "context"
     now = utc_now_iso()
     intent_summary = args.intent_summary or (
-        f"Maintain GitHub knowledge assets for {repository} without changing Git history."
+        f"Maintain GitHub knowledge assets for {repository} without erasing Git history or changing source code."
     )
     scan_modes = sorted(set(args.scan_mode), key=args.scan_mode.index)
 
@@ -147,14 +156,16 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
         "intent": {
             "summary": intent_summary,
             "non_goals": [
-                "Do not rewrite Git history.",
-                "Do not alter source code.",
+                "Do not erase Git history or hide historical evidence.",
+                "Do not alter commit source, source code, README content, or configuration content in the target repository.",
+                "Do not rewrite existing commit messages unless the human explicitly approves that item-level high-risk path.",
                 "Do not clone the repository unless GitHub CLI/API evidence is insufficient and the human approves.",
             ],
             "success_criteria": [
                 "GitHub metadata collection plan is explicit.",
                 "Knowledge assets and narrative gaps are recorded as JSON.",
                 "Human-reviewed repair proposals are prepared.",
+                "Commit repair proposals include a semantic subject that is meaningful in GitHub commit-list view.",
                 "Approved GitHub documentation sync actions are separated from draft proposals.",
                 "Knowledge DB and RAG candidates are generated when requested.",
             ],
@@ -168,7 +179,10 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
             f"rag_output={bool(args.rag_output)}",
         ],
         "constraints": [
-            "Git history is historical evidence and must not be rewritten.",
+            "Git history is historical evidence and must not be erased.",
+            "Existing commit-message/body rewrite is allowed only with explicit item-level human approval, before/after SHA mapping, rollback plan, and reviewed force-push command when needed.",
+            "Commit message repair must evaluate the GitHub commit-list subject separately from the body.",
+            "Commit source and source files must not be changed by this workflow.",
             "GitHub mutations require explicit human approval.",
             "Repair mode 'proposal' may not execute gh edit/comment commands.",
             "Repair mode 'apply' still requires item-level human approval before each mutation.",
@@ -204,10 +218,12 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
             "required_next_actions": [
                 "Create the analysis scaffold.",
                 "Collect GitHub metadata with gh issue/pr/api commands.",
-                "Record knowledge assets, narrative gaps, and repair proposals in JSON.",
+                "Record knowledge assets, narrative gaps, semantic subject gaps, and repair proposals in JSON.",
             ],
             "stop_conditions": [
-                "Stop before GitHub mutation until human approval is recorded.",
+                "Stop before GitHub or Git mutation until human approval is recorded.",
+                "Stop before existing commit-message rewrite until before/after SHA mapping and rollback plan are reviewed.",
+                "Stop before commit-message rewrite if the proposed semantic subject is still vague in GitHub commit-list view.",
                 "Stop before clone until human approval and reason are recorded.",
             ],
         },
@@ -264,6 +280,13 @@ def default_analysis(work_dir: Path) -> dict[str, Any]:
         "summary": "TBD: summarize GitHub repository knowledge maintenance findings.",
         "collection_plan": [
             {
+                "id": "COLLECT-000",
+                "source_type": "api",
+                "command": "gh --version; if missing, request human approval then run: winget install --id GitHub.cli",
+                "purpose": "Ensure GitHub CLI is available before collecting Issue, PR, comment, label, branch, tag, and release metadata.",
+                "status": "planned",
+            },
+            {
                 "id": "COLLECT-001",
                 "source_type": "issue",
                 "command": "gh issue list --repo <owner/repo> --state all --limit 100",
@@ -287,7 +310,11 @@ def default_analysis(work_dir: Path) -> dict[str, Any]:
         "rag_candidates": [],
         "open_questions": [],
         "guardrails": [
-            "Do not rewrite Git history.",
+            "Do not erase Git history or hide historical evidence.",
+            "Do not change commit source or target repository source files.",
+            "Existing commit-message/body rewrite requires explicit item-level human approval, before/after SHA mapping, rollback plan, and reviewed force-push command when needed.",
+            "Do not accept body-only commit repairs when the GitHub commit-list subject remains vague.",
+            "Commit repair proposals must include a semantic subject using type(scope): responsibility/result.",
             "Do not change source code.",
             "Do not run gh edit/comment/api mutation commands without human approval.",
             "Prefer GitHub CLI/API collection; clone only with explicit approval.",
@@ -342,25 +369,57 @@ def create_analysis_template(args: argparse.Namespace) -> dict[str, Any]:
 
 def markdown_list(items: list[str]) -> str:
     if not items:
-        return "- None"
+        return "- なし"
     return "\n".join(f"- {item}" for item in items)
+
+
+FIELD_LABELS = {
+    "asset_ref": "知識資産",
+    "gap_type": "不足種別",
+    "severity": "重要度",
+    "evidence": "根拠",
+    "why_it_matters": "なぜ重要か",
+    "target": "対象",
+    "proposal_type": "提案種別",
+    "reason": "理由",
+    "before_summary": "現状",
+    "after_summary": "対応後",
+    "approval_required": "承認要否",
+    "draft_body": "提案本文",
+    "asset_type": "知識種別",
+    "source_ref": "参照元",
+    "intent": "意図",
+    "reuse_value": "再利用価値",
+    "candidate_type": "候補種別",
+    "knowledge_value": "知識価値",
+    "limits": "制約",
+    "question": "確認事項",
+    "blocks": "ブロック有無",
+}
+
+
+def markdown_value(value: Any) -> str:
+    if isinstance(value, bool):
+        return "はい" if value else "いいえ"
+    return str(value)
 
 
 def field_list(items: list[dict[str, Any]], fields: list[str]) -> str:
     if not items:
-        return "- None"
+        return "- なし"
     lines: list[str] = []
     for item in items:
         title = item.get("title") or item.get("id") or "Untitled"
         lines.append(f"### {title}")
         lines.append("")
         for field in fields:
+            label = FIELD_LABELS.get(field, field)
             value = item.get(field, "")
             if isinstance(value, list):
-                value_text = markdown_list([str(entry) for entry in value])
-                lines.extend([f"{field}:", "", value_text, ""])
+                value_text = markdown_list([markdown_value(entry) for entry in value])
+                lines.extend([f"{label}:", "", value_text, ""])
             else:
-                lines.append(f"- {field}: {value}")
+                lines.append(f"- {label}: {markdown_value(value)}")
         lines.append("")
     return "\n".join(lines).rstrip()
 
@@ -383,37 +442,60 @@ def build_repair_plan(analysis: dict[str, Any]) -> str:
     gaps = analysis.get("narrative_gaps", []) or []
     return "\n".join(
         [
-            "# GitHub Knowledge Repair Plan",
+            "# GitHub ナレッジ修復計画",
             "",
-            "## Intent",
+            "## 意図",
             "",
             analysis.get("summary", "Maintain GitHub repository knowledge assets."),
             "",
             "## Repository",
             "",
             f"- Repository: `{analysis.get('repository', '')}`",
-            f"- Target branch: `{analysis.get('target_branch', '')}`",
-            f"- Repair mode: `{analysis.get('repair_mode', 'proposal')}`",
+            f"- 対象 branch: `{analysis.get('target_branch', '')}`",
+            f"- 修復 mode: `{analysis.get('repair_mode', 'proposal')}`",
             "",
-            "## Guardrails",
+            "## ガードレール",
             "",
             markdown_list(analysis.get("guardrails", []) or []),
             "",
-            "## Narrative Gaps",
+            "## Narrative Gap",
             "",
             field_list(gaps, ["asset_ref", "gap_type", "severity", "evidence", "why_it_matters"]),
             "",
-            "## Repair Proposals",
+            "## 修復提案",
             "",
-            field_list(proposals, ["target", "proposal_type", "reason", "before_summary", "after_summary", "approval_required"]),
+            field_list(proposals, ["target", "proposal_type", "reason", "before_summary", "after_summary", "draft_body", "approval_required"]),
             "",
-            "## Human Review Checklist",
+            "## Semantic Commit Subject チェック",
             "",
-            "- Confirm each repair reason.",
-            "- Confirm each target Issue, PR, comment, CAR, README, docs, or ADR.",
-            "- Confirm before/after summary.",
-            "- Confirm Git history will not change.",
-            "- Confirm exact GitHub CLI/API command before execution.",
+            "commit message/body 補修では、GitHub の commit list に表示される subject を body と別に確認します。",
+            "",
+            "良い形式:",
+            "",
+            "```text",
+            "type(scope): 変更の責務または成果",
+            "```",
+            "",
+            "避ける subject:",
+            "",
+            "- repository 名だけを scope にした subject",
+            "- file 名だけの subject",
+            "- `対応`、`修正`、`更新` だけで終わる subject",
+            "- body を読まないと何が変わったか分からない subject",
+            "",
+            "Human Review では、subject が GitHub commit list だけで意味を持つか確認します。",
+            "",
+            "## Human Review チェックリスト",
+            "",
+            "- 各修復理由を確認する。",
+            "- 対象の Issue、PR、comment、CAR、README、docs、ADR を確認する。",
+            "- 修正前後の要約を確認する。",
+            "- commit message/body 補修では semantic subject が `type(scope): responsibility/result` になっていることを確認する。",
+            "- semantic subject が GitHub commit list だけで意味を持つことを確認する。",
+            "- commit source や対象 repository の source file を変更しないことを確認する。",
+            "- 既存 commit message/body を直接修正する場合は、明示承認、before/after SHA mapping、rollback plan を確認する。",
+            "- rewrite 後は `git log --format=\"%H %s\"` または GitHub API で subject 表示を確認する。",
+            "- 実行前に正確な Git / GitHub CLI/API command を確認する。",
         ]
     )
 
@@ -438,35 +520,35 @@ def create_repair_plan(args: argparse.Namespace) -> dict[str, Any]:
 def build_sync_plan(analysis: dict[str, Any]) -> str:
     actions = analysis.get("github_sync_actions", []) or []
     lines = [
-        "# GitHub Documentation Sync Plan",
+        "# GitHub Documentation Sync 計画",
         "",
-        "This plan is not approval by itself. Run only the commands approved by the human reviewer.",
+        "この計画自体は承認ではありません。人間レビューで承認された command だけを実行します。",
         "",
         "## Repository",
         "",
         f"- Repository: `{analysis.get('repository', '')}`",
-        f"- Target branch: `{analysis.get('target_branch', '')}`",
+        f"- 対象 branch: `{analysis.get('target_branch', '')}`",
         "",
-        "## Proposed GitHub Actions",
+        "## GitHub 同期アクション案",
         "",
     ]
     if not actions:
-        lines.append("- None")
+        lines.append("- なし")
     for action in actions:
         lines.extend(
             [
                 f"### {action.get('id', 'SYNC-XXX')}: {action.get('title', 'Untitled')}",
                 "",
-                f"- Target type: `{action.get('target_type', '')}`",
-                f"- Target id: `{action.get('target_id', '')}`",
-                f"- Operation: `{action.get('operation', '')}`",
-                f"- Approval status: `{action.get('approval_status', 'pending')}`",
+                f"- 対象種別: `{action.get('target_type', '')}`",
+                f"- 対象 ID: `{action.get('target_id', '')}`",
+                f"- 操作: `{action.get('operation', '')}`",
+                f"- 承認状態: `{action.get('approval_status', 'pending')}`",
                 "",
-                "Reason:",
+                "理由:",
                 "",
                 action.get("reason", ""),
                 "",
-                "Draft command:",
+                "Command 案:",
                 "",
                 "```powershell",
                 action.get("draft_command", "# Update github-knowledge-analysis.json with the exact gh command."),
@@ -478,10 +560,11 @@ def build_sync_plan(analysis: dict[str, Any]) -> str:
         [
             "## Stop Rules",
             "",
-            "- Do not execute commands marked `pending`.",
-            "- Do not run commands that alter Git history.",
-            "- Do not use `git rebase`, `git commit --amend`, or force push.",
-            "- If the target or command differs from this plan, update the analysis JSON and re-review.",
+            "- `pending` の command は実行しない。",
+            "- この GitHub documentation sync plan では commit message rewrite を実行しない。",
+            "- `git rebase`、`git commit --amend`、force push は、別の commit-message rewrite review plan で明示承認された場合だけ扱う。",
+            "- commit message rewrite を扱う場合は、semantic subject の GitHub commit-list 表示を別途検証する。",
+            "- 対象または command がこの計画と異なる場合は、analysis JSON を更新して再レビューする。",
         ]
     )
     return "\n".join(lines)
@@ -520,23 +603,23 @@ def build_rag_candidate(analysis: dict[str, Any], topic: str) -> str:
             "",
             f"# {title}",
             "",
-            "## Summary",
+            "## 要約",
             "",
             analysis.get("summary", ""),
             "",
-            "## Knowledge Assets",
+            "## 知識資産",
             "",
             field_list(analysis.get("knowledge_assets", []) or [], ["asset_type", "source_ref", "intent", "reuse_value"]),
             "",
-            "## Narrative Gaps",
+            "## Narrative Gap",
             "",
             field_list(analysis.get("narrative_gaps", []) or [], ["asset_ref", "gap_type", "severity", "why_it_matters"]),
             "",
-            "## Repair Proposals",
+            "## 修復提案",
             "",
             field_list(analysis.get("repair_proposals", []) or [], ["target", "proposal_type", "reason", "approval_required"]),
             "",
-            "## RAG Candidates",
+            "## RAG 候補",
             "",
             field_list(analysis.get("rag_candidates", []) or [], ["candidate_type", "source_ref", "knowledge_value", "limits"]),
             "",
@@ -556,7 +639,7 @@ def create_rag_candidate(args: argparse.Namespace) -> dict[str, Any]:
     if args.output:
         output_path = Path(args.output).resolve()
     elif args.publish_rag:
-        output_path = repo_root / "rag" / "github-knowledge" / f"{local_timestamp()}_{slugify(topic)}.md"
+        output_path = repo_root / "rag" / "github-knowledge" / rag_source_report_name(topic)
     else:
         output_path = work_dir / "process-report" / f"github-knowledge-rag-candidate-{local_timestamp()}.md"
     write_markdown_bom(output_path, build_rag_candidate(analysis, topic))
