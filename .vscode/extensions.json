@@ -1,0 +1,16 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.debugpy",
+    "ms-python.vscode-pylance",
+    "ms-vscode.powershell",
+    "ms-azuretools.vscode-docker",
+    "golang.go",
+    "redhat.vscode-yaml",
+    "yzhang.markdown-all-in-one",
+    "bierner.markdown-mermaid",
+    "github.vscode-github-actions",
+    "github.vscode-pull-request-github",
+    "ms-kubernetes-tools.vscode-kubernetes-tools"
+  ]
+}
