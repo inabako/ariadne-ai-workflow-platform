@@ -51,6 +51,7 @@ def build_parser() -> argparse.ArgumentParser:
             "robotics-maintenance-development",
             "robotics-new-system-iac",
             "realtime-iac",
+            "github-knowledge-maintenance",
         ],
     )
     parser.add_argument("--phase", default="intake")
@@ -124,6 +125,8 @@ def command_for_workflow(workflow: str) -> str:
         return "/robotics-new-system-iac"
     if workflow == "realtime-iac":
         return "/realtime-iac"
+    if workflow == "github-knowledge-maintenance":
+        return "/github-knowledge-maintenance"
     return "/new-robotics-system-development"
 
 
@@ -143,6 +146,12 @@ def open_questions_for_workflow(workflow: str) -> list[str]:
             "Software inventory for infrastructure ownership is not confirmed at intake.",
             "Communication specification, port definition, and network boundary definition must be validated before IaC starts.",
         ]
+    if workflow == "github-knowledge-maintenance":
+        return [
+            "GitHub mutation approval is not confirmed at intake.",
+            "Clone approval is not confirmed at intake.",
+            "RAG publication approval is not confirmed at intake.",
+        ]
     return [
         "STOP / emergency stop behavior is not confirmed at intake.",
         "Communication loss behavior is not confirmed at intake.",
@@ -157,6 +166,13 @@ def consumed_by_for_workflow(workflow: str) -> list[str]:
             "robotics-architect-agent",
             "shared-artifact-validator-agent",
             "iac-requirements-agent",
+        ]
+    if workflow == "github-knowledge-maintenance":
+        return [
+            "repository-discovery-agent",
+            "github-metadata-collector-agent",
+            "knowledge-asset-discovery-agent",
+            "narrative-analyzer-agent",
         ]
     return ["robotics-architect-agent"]
 

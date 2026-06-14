@@ -20,6 +20,15 @@
       "description": "Compare implementation and docs on a target branch, store docs drift analysis as JSON, create an Issue, update docs only on feature/issue-XXX, push after approval, and prepare RAG/archive."
     },
     {
+      "slash_command": "/github-knowledge-maintenance",
+      "skill": "github-knowledge-maintenance",
+      "skill_path": "skills/github-knowledge-maintenance/SKILL.md",
+      "delegated_prompt": "/github-knowledge-maintenance",
+      "prompt_path": ".github/prompts/github-knowledge-maintenance.prompt.md",
+      "workflow": "github-knowledge-maintenance",
+      "description": "Maintain GitHub repository Issues, PRs, comments, docs, CARs, Knowledge DB candidates, and RAG candidates as reusable knowledge without rewriting Git history or changing source code."
+    },
+    {
       "slash_command": "/vscode-environment",
       "skill": "vscode-environment",
       "skill_path": "skills/vscode-environment/SKILL.md",
@@ -120,6 +129,7 @@
   },
   "report_outputs": {
     "corrective_action_report": "rag/corrective-action-report",
+    "github_knowledge": "rag/github-knowledge",
     "workspace_environment": "rag/workspace-environment"
   }
 }

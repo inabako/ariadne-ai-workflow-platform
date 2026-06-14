@@ -30,6 +30,13 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `requirement-discovery-agent.prompt.md` | full-stack | 要件定義 | 草案精査、質問、要件レビュー草案 | 過去finding、risk、test gapを補助参照 | 知見不足領域の質問品質向上に使う | 完成版保存前のreview draft作成まで。Critical item確定は人間 | Python / Go / Network / GStreamerなどは専門source reviewerへ | `*-inspection.md`, `*-knowledge-gaps.md`, `*-questions.md`, `*-requirements-review.md` |
 | `docs-drift-analyzer-agent.prompt.md` | reviewer | docs-sync | 実装とdocsの差分分析 | 過去docs driftや運用知見を補助参照 | 公式docsとの一般論確認に限定 | docs drift itemの分析。実装変更は不可 | API / platform仕様は専門source reviewerへ | `docs-drift-analysis.json` |
+| `repository-discovery-agent.prompt.md` | knowledge | github-knowledge-maintenance | repository識別、scan scope、clone可否、collection plan作成 | 過去workflow運用知見を補助参照 | 原則不要 | collection plan作成まで。GitHub mutationやclone承認は不可 | repository ownership不明時は人間へ確認 | `github-knowledge-analysis.json` |
+| `github-metadata-collector-agent.prompt.md` | knowledge | github-knowledge-maintenance | GitHub CLI/APIでIssue、PR、comment、label、releaseなどを収集 | 過去収集ルールを補助参照 | 原則不要 | read-only collectionまで。mutation不可 | GitHub APIで取れない情報はclone承認へエスカレーション | `metadata_sources` |
+| `knowledge-asset-discovery-agent.prompt.md` | knowledge | github-knowledge-maintenance | Intent、Scope、Design Decision、Maintenance Knowledge、RAG候補を抽出 | 過去CAR/RAGを補助参照 | 原則不要 | knowledge asset candidate作成まで。repair決定は不可 | 根拠不足時はlow confidence / open question | `knowledge_assets`, `knowledge_db_candidates`, `rag_candidates` |
+| `narrative-analyzer-agent.prompt.md` | reviewer | github-knowledge-maintenance | Issue -> PR -> Review -> Comment -> Documentation の整合性検査 | 過去narrative gapやreview escapeを参照 | 原則不要 | narrative gap分類まで。歴史の書き換え不可 | 矛盾がある場合は人間へ確認 | `narrative_gaps` |
+| `documentation-repair-agent.prompt.md` | knowledge | github-knowledge-maintenance | Issue/PR/CAR/README/docs/ADR補足案を生成 | 類似repair proposalを補助参照 | 原則不要 | proposal作成まで。GitHub mutation不可 | target不明時はopen question | `github-knowledge-repair-plan-*.md` |
+| `github-documentation-sync-agent.prompt.md` | knowledge | github-knowledge-maintenance | 承認済みrepairをGitHub CLI/API sync planへ変換 | 過去GitHub sync運用を補助参照 | 原則不要 | approved actionだけ実行可。Git履歴変更不可 | command差異は再reviewへ戻す | `github-documentation-sync-plan-*.md` |
+| `knowledge-db-registrar-agent.prompt.md` | knowledge | github-knowledge-maintenance | Knowledge DB候補とRAG候補を生成し、承認後にRAG publication | 既存RAG taxonomyを参照 | 原則不要 | candidate作成まで。publicationは人間承認後 | raw dump化しそうな内容は要約へ戻す | `github-knowledge-rag-candidate-*.md` |
 | `robotics-architect-agent.prompt.md` | full-stack | 設計 | system structure、責務境界、architecture | 過去設計判断、incident、corrective reportを参照 | 技術選定の制約確認に使う | architecture draft作成。安全/実装確定はreview後 | Network / Go / Python / GStreamerの深掘りは専門Agentへ | `architecture.md` |
 | `robotics-runtime-agent.prompt.md` | full-stack | runtime設計 | process model、lifecycle、restart、watchdog | runtime incident、preflight、startup知見を参照 | OS/runtime公式docs確認に使う | runtime design案作成。platform挙動の確定はtest evidence後 | Python subprocess/threading、Go context/sync、systemd/MSYS2は専門Agentへ | `runtime-design.md` |
 | `network-migration-planner-agent.prompt.md` | full-stack | network計画 | LAN -> VPN -> relay -> remote ops移行計画 | 過去network issue、field noteを参照 | RFC / VPN / NAT traversal情報を参照 | migration plan作成。protocol採用はreview後 | UDP/TCP/QUIC/STUN/TURN/ICEは `network-protocol-source-reviewer` 候補 | `network-migration-plan.md` |
@@ -144,6 +151,7 @@ rag/specialist-review/<domain>/*.md
 | `/corrective-action-report` | finding品質が専門知識に依存する | external-webだけでfinding化せず、repo evidenceとspecialist reviewをsupporting referenceとして記録する |
 | `/corrective-action-fix` | 実装方針、Issue scope、test specificationが専門知識に依存する | Issue作成前または実装前にspecialist reviewを実行し、採用知識と検証方法をtest evidenceへつなぐ |
 | `/realtime-iac` | port / network boundary / runtime / firewall / systemd / Docker / observability / security / evidence strategyが成果物を左右する | 共有成果物gate後にIaC設計Agent群へ渡し、実装前と検証前にspecialist reviewを実行する |
+| `/github-knowledge-maintenance` | GitHub Issue / PR / comment / docs / CAR の説明不足が未来のAI workflowやRAG再利用性に影響する | GitHub CLI/API evidenceをJSONへ集約し、repair proposal、approved sync action、RAG candidateを分離する |
 | `/knowledge-capture` | 完了Issueに専門review、採用外部知識、review escapeが含まれる | RAG candidatesとして抽出し、人間承認後に内部RAGへ吸収する |
 
 ## Shared Artifact Validator

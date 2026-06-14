@@ -17,6 +17,23 @@ uv run python runtime/rag/normalize_documents.py `
   --document-type workspace-environment-pattern
 ```
 
+## GitHub Knowledge Source
+
+Approved GitHub Repository Knowledge Maintenance outputs are stored as internal project RAG:
+
+```text
+rag/github-knowledge/YYYYMMDD_HHMMSS_<topic>.md
+```
+
+Normalize approved notes with:
+
+```powershell
+uv run python runtime/rag/normalize_documents.py `
+  --source-dir rag/github-knowledge `
+  --output-dir rag/normalized `
+  --document-type github-repository-knowledge
+```
+
 このrepoのRAGは、現場やreviewから得た知識、または外部Webの一次情報から抽出した補助知識を、次のworkflowで再利用するためのfile-based pipelineです。
 
 ## Source Reports

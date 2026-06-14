@@ -38,6 +38,7 @@ templates/
 
 - front matterに project、receipt_id、repository、branch、commit、workflow、phase、status を残す。
 - Intent、Decision、Reason、Evidence、Open QA を明示する。
+- GitHub knowledge maintenanceでは、Issue / PR / comment / docs / CAR のsource reference、approval status、Git history non-modificationを明示する。
 - safety-critical な内容では STOP、communication loss、startup safe state、shutdown safe state を確認する。
 - PyQt / Qt GUIでは、結合疎通試験のうちQTest化できるものと人間確認に残すものを分ける。
 - テスト成果物の保存先は [Test Artifact Storage](test-artifact-storage.md) に従う。

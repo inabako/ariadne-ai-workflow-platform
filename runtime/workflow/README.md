@@ -31,6 +31,43 @@ work/<target-branch>/process-report/docs-sync-issue-body-*.md
 
 This command does not create GitHub Issues, change docs, push branches, run RAG registration, or move archives by itself.
 
+### `github_knowledge_maintenance.py`
+
+Initializes GitHub Repository Knowledge Maintenance work folders, creates an analysis JSON scaffold, and generates human review plans for repair, GitHub sync, and RAG candidates.
+
+Examples:
+
+```powershell
+python runtime/workflow/github_knowledge_maintenance.py init `
+  --repository localty-system-gui `
+  --scan-mode recent `
+  --repair-mode proposal `
+  --rag-output
+
+python runtime/workflow/github_knowledge_maintenance.py analysis-template `
+  --work-id github-knowledge-localty-system-gui-recent
+
+python runtime/workflow/github_knowledge_maintenance.py repair-plan `
+  --work-id github-knowledge-localty-system-gui-recent
+
+python runtime/workflow/github_knowledge_maintenance.py github-sync-plan `
+  --work-id github-knowledge-localty-system-gui-recent
+
+python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
+  --work-id github-knowledge-localty-system-gui-recent
+```
+
+Primary artifacts:
+
+```text
+work/<work-id>/context/github-knowledge-analysis.json
+work/<work-id>/process-report/github-knowledge-repair-plan-*.md
+work/<work-id>/process-report/github-documentation-sync-plan-*.md
+work/<work-id>/process-report/github-knowledge-rag-candidate-*.md
+```
+
+This command does not mutate GitHub, clone repositories, change source code, rewrite Git history, or publish RAG unless the approved subcommand options are provided.
+
 ### `init_corrective_action_fix.py`
 
 Initializes base and issue work folders for the corrective action fix workflow.

@@ -19,6 +19,13 @@
 | `external-web-source-reviewer-agent.prompt.md` | 不足知識に対して外部Web一次情報を精査し、外部Web RAG候補へ要約する | `rag/external-web/<category>/*.md` |
 | `external-web-rag-dispatcher-agent.prompt.md` | 蓄積済み外部Web RAGをカテゴリ別に検索・集約し、要件定義/設計/改善flowへ渡す | `rag/external-web/retrieval/*-aggregate.md` |
 | `docs-drift-analyzer-agent.prompt.md` | 実装とdocsの差分検出、JSON化、Issue材料作成 | `work/<branch>/context/docs-drift-analysis.json` |
+| `repository-discovery-agent.prompt.md` | GitHub repository識別、scan scope、collection plan作成 | `work/<work-id>/context/github-knowledge-analysis.json` |
+| `github-metadata-collector-agent.prompt.md` | GitHub CLI/APIによるIssue、PR、comment、label、release収集 | `metadata_sources` |
+| `knowledge-asset-discovery-agent.prompt.md` | Intent、Scope、Design Decision、Maintenance Knowledge、RAG候補抽出 | `knowledge_assets`, `rag_candidates` |
+| `narrative-analyzer-agent.prompt.md` | Issue -> PR -> Review -> Comment -> Documentation の整合性検査 | `narrative_gaps` |
+| `documentation-repair-agent.prompt.md` | Issue/PR/CAR/README/docs/ADR補足案作成 | `github-knowledge-repair-plan-*.md` |
+| `github-documentation-sync-agent.prompt.md` | 承認済みrepairのGitHub CLI/API sync plan作成 | `github-documentation-sync-plan-*.md` |
+| `knowledge-db-registrar-agent.prompt.md` | Knowledge DB候補とRAG候補生成 | `github-knowledge-rag-candidate-*.md` |
 | `workspace-requirements-analyst-agent.prompt.md` | VSCode workspace要件、tool、extension、terminal、task整理 | `workspace-requirements.md` |
 | `workspace-shared-artifact-validator-agent.prompt.md` | VSCode環境構築前の必須artifact検証 | `workspace-shared-artifact-validation.json`, `workspace-shared-artifact-validation.md` |
 | `vscode-architect-agent.prompt.md` | settings/tasks/launch/extensions/workspace設計 | `vscode-design.md` |
@@ -74,6 +81,7 @@ draft bullets
   -> reviewed requirements
   -> corrective action report / fix with external web as supporting reference when needed
   -> docs drift analysis when docs sync is requested
+  -> GitHub knowledge maintenance when Issue / PR / docs / CAR explanation assets need repair
   -> robotics architect
   -> robotics runtime agent
   -> network migration planner

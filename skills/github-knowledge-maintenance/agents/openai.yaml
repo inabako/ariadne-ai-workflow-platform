@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Knowledge Maintenance"
+  short_description: "Maintain GitHub Issues, PRs, docs, CARs, and RAG candidates as reusable repository knowledge."
+  default_prompt: "/github-knowledge-maintenance\n日本語で出力してください。"

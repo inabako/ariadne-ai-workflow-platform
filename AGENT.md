@@ -76,6 +76,7 @@ Current prompt set:
 - `/robotics-workflow`
 - `/requirement-discovery`
 - `/docs-sync`
+- `/github-knowledge-maintenance`
 - `/vscode-environment`
 - `/robotics-new-system`
 - `/robotics-feature-maintenance`
@@ -98,6 +99,7 @@ Current Skill entrypoints:
 
 - `/requirement-discovery` -> `skills/requirement-discovery/SKILL.md` -> `work/requirements/draft/`, then `work/requirements/` after human OK
 - `/docs-sync` -> `skills/docs-sync/SKILL.md` -> `work/<target-branch>/context/docs-drift-analysis.json`, then docs-only `feature/issue-<number>`
+- `/github-knowledge-maintenance` -> `skills/github-knowledge-maintenance/SKILL.md` -> `work/github-knowledge-<repository>-<mode>/context/github-knowledge-analysis.json`, then approval-gated GitHub documentation sync and RAG candidates
 - `/vscode-environment` -> `skills/vscode-environment/SKILL.md` -> `work/<work-id>/`, `.vscode/*`, optional `workspace.code-workspace`
 - `/robotics-new-system` -> `skills/robotics-new-system/SKILL.md` -> `/new-robotics-system-development`
 - `/robotics-feature-maintenance` -> `skills/robotics-feature-maintenance/SKILL.md` -> `/robotics-maintenance-development`
@@ -129,6 +131,7 @@ Current schema set:
 - `github-issue.schema.json`
 - `commit-record.schema.json`
 - `docs-drift-analysis.schema.json`
+- `github-knowledge-analysis.schema.json`
 - `rag-document.schema.json`
 - `rag-chunk.schema.json`
 - `rag-embedding.schema.json`

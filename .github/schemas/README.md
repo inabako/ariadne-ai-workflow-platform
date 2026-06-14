@@ -23,6 +23,7 @@
 | `commit-record.schema.json` | semantic commit の記録 |
 | `knowledge-capture.schema.json` | PR資料、docs証跡、RAG/docs候補、archive準備の記録 |
 | `docs-drift-analysis.schema.json` | 実装とdocsの差分、根拠、Issue化材料、受け入れ条件 |
+| `github-knowledge-analysis.schema.json` | GitHub Issue / PR / docs / CARの知識資産、narrative gap、repair proposal、sync action、RAG候補 |
 | `workspace-shared-artifact-validation.schema.json` | VSCode Environment workflowの必須artifact検証、条件、未解決QA |
 | `rag-document.schema.json` | RAG投入用に正規化した document |
 | `rag-chunk.schema.json` | retrieval / embeddings 用の chunk |
