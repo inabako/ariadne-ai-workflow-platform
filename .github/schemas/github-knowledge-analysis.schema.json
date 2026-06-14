@@ -142,7 +142,7 @@
         "asset_ref": { "type": "string" },
         "gap_type": {
           "type": "string",
-          "enum": ["intent-gap", "scope-gap", "decision-gap", "impact-gap", "maintenance-gap", "rag-value-gap", "evidence-gap", "semantic-subject-gap"]
+          "enum": ["intent-gap", "scope-gap", "decision-gap", "impact-gap", "maintenance-gap", "rag-value-gap", "evidence-gap", "semantic-subject-gap", "pull-request-title-gap"]
         },
         "severity": {
           "type": "string",
