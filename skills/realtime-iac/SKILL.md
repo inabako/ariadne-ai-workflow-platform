@@ -101,13 +101,40 @@ The AI must not infer software components, port numbers, communication routes, p
    - `docker-compose-design.md`
    - `observability-design.md`
    - `monitoring-policy.md`
-7. Generate IaC artifacts only from approved designs.
-8. For `precreated-new` repository mode, confirm the GitHub repository already exists, push the initial branch after human approval, create the GitHub Issue with `[IaC]` prefix, then create `feature/issue-<issue-number>` from the pushed initial branch.
-9. Run security review before local runtime tests.
-10. Validate in this order: Docker Desktop, Linux runtime, integration.
-11. Create documentation and handoff artifacts.
-12. Preserve artifacts under `work/<receipt-id>/` and target repository `docs/evidence/issue-<issue-number>/`.
-13. Record decisions, QA, findings, test evidence, RAG context references, specialist review references, and handoff context as JSON where schemas exist.
+7. Run the Boilerplate Template Selection Gate. If realtime gateway infrastructure matches `templates/boilerplate-templates/realtime-gateway-infra-template/`, copy it to the target IaC destination and edit only the copy. If it does not match, record `decision: traditional-coding`.
+8. Generate IaC artifacts only from approved designs and the approved boilerplate selection result.
+9. For `precreated-new` repository mode, confirm the GitHub repository already exists, push the initial branch after human approval, create the GitHub Issue with `[IaC]` prefix, then create `feature/issue-<issue-number>` from the pushed initial branch.
+10. Run security review before local runtime tests.
+11. Validate in this order: Docker Desktop, Linux runtime, integration.
+12. Create documentation and handoff artifacts.
+13. Preserve artifacts under `work/<receipt-id>/` and target repository `docs/evidence/issue-<issue-number>/`.
+14. Record decisions, QA, findings, test evidence, RAG context references, specialist review references, boilerplate selection result, and handoff context as JSON where schemas exist.
+
+## Boilerplate Template Selection Gate
+
+Run this gate after Network / Security Design, Runtime Design, Observability Design, and Test Strategy are approved, and before IaC Implementation starts.
+
+Template candidate:
+
+| Target | Template path | Instruction |
+| --- | --- | --- |
+| Realtime gateway IaC / infrastructure | `templates/boilerplate-templates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
+
+Rules:
+
+- Inspect the infrastructure target and decide whether realtime gateway infrastructure applies.
+- Check that the mapped template directory exists and contains root files, environment directories, modules, scripts, and docs before using it.
+- If the matching template exists, copy the template to the target IaC directory or `work/<receipt-id>/source/repository/` and edit only the copied destination.
+- Do not edit the boilerplate template itself during product implementation.
+- Preserve the template responsibility boundaries unless the approved design explicitly changes them.
+- Do not generate `.env`, real secrets, production passwords, or private keys.
+- Save the selection result under `work/<receipt-id>/process-report/boilerplate-template-selection.md`.
+
+Required report template:
+
+```text
+templates/process-report/boilerplate-template-selection-report-template.md
+```
 
 ## Repository Modes
 

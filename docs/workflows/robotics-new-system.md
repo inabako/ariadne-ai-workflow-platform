@@ -114,6 +114,7 @@ templates/boilerplate-templates/
 | --- | --- | --- |
 | Go gateway service | `templates/boilerplate-templates/gateway-template/` | `gateway-template_組み込み指示書.md` |
 | PyQt / Qt GUI app | `templates/boilerplate-templates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
+| Realtime gateway IaC / infrastructure | `templates/boilerplate-templates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
 
 ルール:
 
@@ -122,6 +123,7 @@ templates/boilerplate-templates/
 - 対応するtemplateが存在しない組み合わせでは、従来どおりcodingします。
 - template採用の有無、コピー元、コピー先、採用理由、使わないcomponent、必要testを `work/<receipt-id>/process-report/boilerplate-template-selection.md` に記録します。
 - template採用時も、STOP、communication loss、startup safe state、shutdown safe state、test case table、evidence planは省略しません。
+- IaC template採用時も、shared artifacts、software inventory、public exposure、secret source、firewall policy、rollback、Terraform validationを省略しません。
 
 template選定結果が未記録の場合、Implementationへ進みません。
 

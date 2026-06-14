@@ -91,6 +91,7 @@ Intake
   -> Network / Security Design
   -> Runtime Design
   -> Observability Design
+  -> Boilerplate Template Selection
   -> IaC Implementation
   -> Security Review
   -> Docker Desktop Validation
@@ -99,6 +100,32 @@ Intake
   -> Documentation
   -> Semantic Commit
 ```
+
+## Boilerplate Template Selection
+
+IaC実装前に、承認済みdesignとshared artifactsに対して利用可能なboilerplate templateを確認します。
+
+候補:
+
+| 対象 | Template | 組み込み指示書 |
+| --- | --- | --- |
+| Realtime gateway IaC / infrastructure | `templates/boilerplate-templates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
+
+出力:
+
+```text
+work/<receipt-id>/process-report/boilerplate-template-selection.md
+```
+
+ルール:
+
+- realtime gateway infrastructure が対象に含まれ、template directoryが存在する場合は、templateをコピーしてコピー先だけを編集します。
+- template本体は直接編集しません。
+- templateが対象に合わない場合は、`decision: traditional-coding` と理由を記録して従来どおりIaCを生成します。
+- template採用時も、shared artifacts、software inventory、public exposure、secret source、firewall policy、rollback、test case table、evidence planを省略しません。
+- `.env`、real secret、production password、private keyは生成しません。
+
+選定結果が未記録の場合、IaC Implementationへ進みません。
 
 ## Repository Modes
 

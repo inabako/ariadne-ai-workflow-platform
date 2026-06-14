@@ -13,6 +13,7 @@ Approved IaC design をもとに、target repository に Infrastructure as Code 
 - approved `requirements.md`
 - approved network / security / runtime / observability designs
 - test specification draft
+- `boilerplate-template-selection.md`
 - target repository source
 
 ## Responsibilities
@@ -22,6 +23,7 @@ Approved IaC design をもとに、target repository に Infrastructure as Code 
 - systemd、reverse proxy、TURN / STUN、logrotate、monitoring configuration を必要に応じて生成する
 - README / setup docs の実装に必要な最小情報を残す
 - implementation decisions and residual QA を process report に記録する
+- `realtime-gateway-infra-template` が採用されている場合は、templateをコピーした先だけを編集し、network / runtime / security / observability / dns の責務境界を保つ
 
 ## Outputs
 
@@ -36,6 +38,7 @@ work/<receipt-id>/process-report/iac-implementation.md
 - `.env` or real secret would be required
 - application protocol or application logic must be changed
 - port / route / public exposure is not traceable to shared artifacts
+- boilerplate template selection result is missing
 
 ## Output Rules
 
@@ -43,3 +46,4 @@ work/<receipt-id>/process-report/iac-implementation.md
 - Do not write secrets, tokens, private keys, or production passwords.
 - Keep generated config reviewable and small.
 - Do not silently change application behavior.
+- Do not edit files under `templates/boilerplate-templates/` during target implementation.

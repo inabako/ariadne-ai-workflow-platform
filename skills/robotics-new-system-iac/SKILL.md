@@ -83,7 +83,7 @@ work/<receipt-id>/design-document/open-questions.md
    - network boundary definition
    - architecture decision records
 4. Run Shared Artifact Validator.
-5. If validation is `pass`, run `/realtime-iac` using the Shared Artifacts as the source of truth.
+5. If validation is `pass`, run `/realtime-iac` using the Shared Artifacts as the source of truth. The `/realtime-iac` Boilerplate Template Selection Gate must consider `templates/boilerplate-templates/realtime-gateway-infra-template/` when realtime gateway infrastructure is in scope.
 6. If validation is `conditional-pass`, only proceed to IaC for non-blocked areas and record residual risks.
 7. If validation is `fail`, return to the new system design phases. Do not start IaC.
 8. Preserve artifacts under `work/<receipt-id>/`.
@@ -137,6 +137,7 @@ The handoff must include:
 - target branch or initial branch
 - required human approvals
 - recommended `/realtime-iac` next command
+- boilerplate template selection expectation for realtime gateway infrastructure
 
 ## Stop Rules
 
@@ -163,6 +164,12 @@ templates/shared-artifacts/network-boundary-definition-template.md
 templates/shared-artifacts/architecture-decision-record-template.md
 templates/iac/communication-specification-template.md
 templates/iac/software-inventory-template.md
+```
+
+Use this boilerplate template when realtime gateway IaC / infrastructure is in scope and the selection gate approves it:
+
+```text
+templates/boilerplate-templates/realtime-gateway-infra-template/
 ```
 
 ## Source Workflows

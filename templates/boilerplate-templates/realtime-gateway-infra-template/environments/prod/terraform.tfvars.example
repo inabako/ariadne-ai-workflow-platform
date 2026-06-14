@@ -1,0 +1,16 @@
+service_name         = "realtime-gateway"
+service_image        = "example/realtime-gateway:prod"
+service_host         = "prod-gateway-host"
+runtime_type         = "docker"
+health_port          = 8080
+metrics_port         = 9090
+inbound_tcp_ports    = [8080]
+inbound_udp_ports    = []
+allowed_client_cidrs = ["10.0.0.0/8"]
+allowed_device_cidrs = ["10.0.0.0/8"]
+allowed_admin_cidrs  = ["10.0.0.0/8"]
+enable_metrics       = true
+enable_dns           = false
+gateway_domain       = null
+enable_alert         = true
+alert_webhook_url    = null

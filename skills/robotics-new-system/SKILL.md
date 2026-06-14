@@ -81,6 +81,7 @@ Current supported mappings:
 | --- | --- | --- |
 | Go gateway service | `templates/boilerplate-templates/gateway-template/` | `gateway-template_組み込み指示書.md` |
 | PyQt / Qt GUI app | `templates/boilerplate-templates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
+| Realtime gateway IaC / infrastructure | `templates/boilerplate-templates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
 
 Rules:
 
@@ -89,6 +90,7 @@ Rules:
 - If the matching template exists, copy the template to the new service / app directory and edit only the copied destination.
 - Do not edit the boilerplate template itself during product implementation.
 - Preserve the template's responsibility boundaries unless the approved architecture explicitly changes them.
+- For IaC template use, preserve the shared artifact, software inventory, public exposure, secret source, firewall policy, rollback, and Terraform validation gates.
 - If no matching boilerplate template exists, record `decision: traditional-coding` and implement with the existing workflow.
 - Save the selection result under `work/<receipt-id>/process-report/boilerplate-template-selection.md`.
 

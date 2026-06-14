@@ -31,7 +31,7 @@ created_at:
 
 | Component | Type | Language / Framework | Template Candidate | Match |
 | --- | --- | --- | --- | --- |
-|  | Go gateway / PyQt GUI / other |  | gateway-template / pyqt-template / none | yes / no |
+|  | Go gateway / PyQt GUI / realtime gateway IaC / other |  | gateway-template / pyqt-template / realtime-gateway-infra-template / none | yes / no |
 
 ## Template Availability
 
@@ -39,6 +39,7 @@ created_at:
 | --- | --- | --- | --- |
 | gateway-template | `templates/boilerplate-templates/gateway-template/` | yes / no | `gateway-template_組み込み指示書.md` |
 | pyqt-template | `templates/boilerplate-templates/pyqt-template/` | yes / no | `pyqt-template_組み込み指示書.md` |
+| realtime-gateway-infra-template | `templates/boilerplate-templates/realtime-gateway-infra-template/` | yes / no | `realtime-gateway-infra-template_実装指示書.md` |
 
 ## Decision
 
@@ -64,6 +65,7 @@ Use only when `decision: use-template`.
 | transport / network |  |  | yes / no |  |
 | dispatcher / service / viewmodel |  |  | yes / no |  |
 | health / metrics |  |  | yes / no |  |
+| network / runtime / security / observability / dns |  |  | yes / no |  |
 
 ## Required Tests
 
@@ -75,13 +77,20 @@ Use only when `decision: use-template`.
 | protocol encode / decode | yes / no |  |  |
 | GUI smoke / QTest | yes / no |  |  |
 | graceful shutdown | yes / no |  |  |
+| terraform fmt / validate | yes / no |  |  |
+| environment tfvars example review | yes / no |  |  |
+| firewall / exposure consistency | yes / no |  |  |
+| secret placeholder check | yes / no |  |  |
+| rollback / operation docs | yes / no |  |  |
 
 ## Guardrails
 
 - Template本体を直接編集しない。
-- コピー先service / appのみ編集する。
+- コピー先service / app / IaC directoryのみ編集する。
 - Architecture、protocol、port、safety behaviorを黙って変更しない。
 - STOP、communication loss、startup safe state、shutdown safe stateのtestを省略しない。
+- IaC template採用時は、shared artifacts、software inventory、public exposure、secret source、firewall policy、rollbackを省略しない。
+- `.env`、real secret、production password、private keyを生成しない。
 - Templateが存在しない場合は、従来実装へ進む理由を記録する。
 
 ## Open QA

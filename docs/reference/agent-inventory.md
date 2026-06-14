@@ -146,12 +146,13 @@ rag/specialist-review/<domain>/*.md
 | --- | --- | --- |
 | `/requirement-discovery` | 要件の質問品質に専門知識が必要、または未知の安全/通信/runtime領域がある | requirement review draftへRAG path、未確認事項、専門QAを残す |
 | `/robotics-new-system` | architecture、runtime、network、deployment、safety、test strategyの専門前提が成果物を左右する | implementation前にspecialist reviewを実行し、high/critical findingはdesignへ戻す |
-| `/robotics-new-system` | Go gateway / PyQt GUIなど、`templates/boilerplate-templates/` に一致するboilerplateがある | implementation前にboilerplate selectionを記録し、templateがある場合はコピー先だけを編集する |
+| `/robotics-new-system` | Go gateway / PyQt GUI / realtime gateway IaCなど、`templates/boilerplate-templates/` に一致するboilerplateがある | implementation前にboilerplate selectionを記録し、templateがある場合はコピー先だけを編集する |
 | `/robotics-new-system-iac` | 新システム設計成果物をIaCへ渡す前に、要件、通信仕様、port、network boundary、ADR、software inventoryの整合性が成果物を左右する | Shared Artifact Validatorを実行し、`pass` または human-approved `conditional-pass` 以外ではIaCへ進めない |
 | `/robotics-feature-maintenance` | 既存挙動、STOP、network authority、runtime ownership、operator workflowへ影響する | impact analysis、change design、test planの前後でspecialist reviewを実行する |
 | `/corrective-action-report` | finding品質が専門知識に依存する | external-webだけでfinding化せず、repo evidenceとspecialist reviewをsupporting referenceとして記録する |
 | `/corrective-action-fix` | 実装方針、Issue scope、test specificationが専門知識に依存する | Issue作成前または実装前にspecialist reviewを実行し、採用知識と検証方法をtest evidenceへつなぐ |
 | `/realtime-iac` | port / network boundary / runtime / firewall / systemd / Docker / observability / security / evidence strategyが成果物を左右する | 共有成果物gate後にIaC設計Agent群へ渡し、実装前と検証前にspecialist reviewを実行する |
+| `/realtime-iac` | realtime gateway infrastructure が対象で `realtime-gateway-infra-template/` が利用可能 | IaC implementation前にboilerplate selectionを記録し、template採用時もshared artifacts、software inventory、public exposure、secret source、firewall policy、rollback、Terraform validationを省略しない |
 | `/github-knowledge-maintenance` | GitHub Issue / PR / comment / docs / CAR の説明不足が未来のAI workflowやRAG再利用性に影響する | GitHub CLI/API evidenceをJSONへ集約し、repair proposal、approved sync action、RAG candidateを分離する |
 | `/knowledge-capture` | 完了Issueに専門review、採用外部知識、review escapeが含まれる | RAG candidatesとして抽出し、人間承認後に内部RAGへ吸収する |
 
@@ -173,7 +174,7 @@ rag/specialist-review/<domain>/*.md
 | `iac-network-security-design-agent.prompt.md` | full-stack | network / security design | firewall、TLS、auth、secret、reverse proxy、TURN/STUN、public exposureを設計する | `network-design.md`, `security-design.md`, `firewall-policy.md` |
 | `iac-runtime-design-agent.prompt.md` | full-stack | runtime design | Docker Compose、systemd、startup、restart、health check、rollback unitを設計する | `runtime-design.md`, `docker-compose-design.md` |
 | `iac-observability-design-agent.prompt.md` | full-stack | observability design | logs、logrotate、metrics、health signal、incident evidenceを設計する | `observability-design.md`, `monitoring-policy.md` |
-| `iac-implementer-agent.prompt.md` | implementer | implementation | 承認済み設計からIaC artifactsを生成する。`.env`とsecretは生成しない | IaC artifacts, `iac-implementation.md` |
+| `iac-implementer-agent.prompt.md` | implementer | implementation | 承認済み設計とboilerplate selectionからIaC artifactsを生成する。`.env`とsecretは生成せず、template採用時はコピー先だけを編集する | IaC artifacts, `iac-implementation.md` |
 | `iac-security-review-agent.prompt.md` | reviewer | security review | public ports、secret leakage、privilege、TLS/auth/firewall整合性をreviewする | `security-review.md` |
 | `iac-docker-desktop-test-agent.prompt.md` | tester | Docker Desktop validation | `docker compose config`、startup、health、env、ports、logs、restart、networkを検証する | `docker-test-plan.md`, `docker-test-result.md` |
 | `iac-linux-runtime-test-agent.prompt.md` | tester | Linux runtime validation | systemd、firewall、logrotate、service restart、health checkを検証する | `runtime-validation.md` |

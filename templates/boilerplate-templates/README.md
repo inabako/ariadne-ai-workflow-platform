@@ -10,14 +10,16 @@
 | --- | --- | --- | --- |
 | `gateway-template/` | Go gateway service | `gateway-template_組み込み指示書.md` | available |
 | `pyqt-template/` | PyQt / Qt GUI app | `pyqt-template_組み込み指示書.md` | available |
+| `realtime-gateway-infra-template/` | Realtime gateway IaC / infrastructure | `realtime-gateway-infra-template_実装指示書.md` | available |
 
 ## Workflow Rule
 
 - 新システム開発では、Implementation前にこのディレクトリを確認します。
-- 対応するtemplate directoryが存在する場合、templateをコピーして新しいservice / app directoryを作ります。
+- 対応するtemplate directoryが存在する場合、templateをコピーして新しいservice / app / IaC directoryを作ります。
 - template本体は直接編集しません。
 - 対応するtemplate directoryが存在しない場合、`decision: traditional-coding` と理由をprocess reportに残し、従来どおりcodingします。
 - template採用時も、architecture、protocol、port、safety behavior、test case table、evidence planを省略しません。
+- IaC template採用時も、shared artifacts、software inventory、public exposure、secret source、firewall policy、rollbackを省略しません。
 
 ## Expected Selection Report
 

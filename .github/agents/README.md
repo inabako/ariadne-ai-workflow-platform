@@ -127,10 +127,13 @@ Implementer は以下を黙って変更しません。
 - authentication model
 - operator authority model
 - boilerplate template responsibility boundaries
+- IaC boilerplate gates for shared artifacts, software inventory, exposure, secrets, firewall policy, rollback, and Terraform validation
 
 実装中に曖昧さが見つかった場合は、QAとして返します。
 
 新システム実装で `templates/boilerplate-templates/` に対象templateが存在する場合、Implementer はtemplateをコピーしてコピー先だけを編集します。対象templateが存在しない組み合わせでは、選定reportに理由を残して従来どおりcodingします。
+
+IaC実装で realtime gateway infrastructure が対象に含まれる場合、Implementer は `realtime-gateway-infra-template/` を候補にし、採用時はコピー先だけを編集します。template採用時も、Shared Artifacts、software inventory、public exposure、secret source、firewall policy、rollback、Terraform validationを省略しません。
 
 ## RAG Capture Rule
 

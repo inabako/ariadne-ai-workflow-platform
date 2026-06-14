@@ -1,48 +1,48 @@
 # Workspace Environment RAG
 
-This directory stores reusable VSCode Workspace-as-Code knowledge for Localty and related robotics AI workflows.
+このdirectoryは、Localtyおよび関連robotics AI workflowで再利用できるVSCode Workspace-as-Code knowledgeを保存します。
 
-Use it for:
+利用対象:
 
-- VSCode settings, tasks, launch, and extension patterns
-- terminal role patterns
-- runtime and preflight expectations
-- trial-run evidence patterns
-- reusable Localty environment decisions
+- VSCode settings、tasks、launch、extension pattern
+- terminal role pattern
+- runtimeとpreflightの期待値
+- trial-run evidence pattern
+- 再利用可能なLocalty environment decision
 
-Do not store:
+保存しないもの:
 
-- secrets, tokens, or personal credentials
-- private machine-only paths unless explicitly marked as local-only evidence
-- raw external article or documentation bodies
-- unapproved guesses about target repository requirements
+- secret、token、個人credential
+- local-only evidenceとして明示していないprivate machine-only path
+- 外部記事や外部documentationの本文そのもの
+- target repository requirementsに関する未承認の推測
 
 ## Naming
 
-Use the same Markdown report naming style as the rest of the RAG source areas:
+RAG source area共通のMarkdown report naming styleを使います。
 
 ```text
 YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 ```
 
-Example:
+例:
 
 ```text
 20260612182244_K8M2Q7_localty-vscode-environment.md
 ```
 
-Keep this directory limited to:
+このdirectoryには次だけを置きます。
 
 - `README.md`
-- approved or draft source Markdown files named `YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md`
+- `YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md` 形式のapproved / draft source Markdown file
 
-Do not store sidecar JSON, normalized JSON, chunk JSON, indexes, embeddings, or retrieval results in this directory.
+sidecar JSON、normalized JSON、chunk JSON、indexes、embeddings、retrieval resultsはこのdirectoryに置きません。
 
 ## Build
 
-Markdown files in this directory are human-reviewable source notes. They are not the final machine-readable RAG knowledge artifact.
+このdirectoryのMarkdown fileは、人間がreviewするsource noteです。最終的なmachine-readable RAG knowledge artifactではありません。
 
-After human approval, normalize approved notes into UUID-named JSON:
+Human approval後、approved notesをUUID名JSONへnormalizeします。
 
 ```powershell
 uv run python runtime/rag/standardize_corrective_report_names.py `
@@ -55,17 +55,17 @@ uv run python runtime/rag/normalize_documents.py `
   --document-type workspace-environment-pattern
 ```
 
-Final landing:
+最終着地:
 
 ```text
 rag/normalized/<uuid>.json
 ```
 
-Use the normalized UUID JSON as the durable knowledge record. Chunk JSON, indexes, embeddings, retrieval results, and context packs are derived artifacts. Use `rag/jsonized/<uuid>.json` only when an existing non-UUID Markdown / JSON / JSONL / text artifact needs a UUID wrapper; it is not a substitute for the normalized RAG document.
+normalized UUID JSONを耐久的なknowledge recordとして扱います。Chunk JSON、indexes、embeddings、retrieval results、context packsは派生artifactです。既存の非UUID Markdown / JSON / JSONL / text artifactにUUID wrapperが必要な場合のみ `rag/jsonized/<uuid>.json` を使いますが、normalized RAG documentの代替にはしません。
 
 ## Current Normalized Outputs
 
-Current source Markdown files in this directory have been normalized to:
+現在、このdirectoryのsource Markdownは次へnormalize済みです。
 
 ```text
 rag/normalized/4b8bf5b6-cad2-5bbd-9721-1ac0eb8994b2.json

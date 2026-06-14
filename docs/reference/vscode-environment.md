@@ -1,8 +1,8 @@
 # VSCode Environment
 
-この repository は、VSCode Workspace as Code として `.vscode` と workspace file を持ちます。
+このrepositoryは、VSCode Workspace as Codeとして `.vscode` とworkspace fileを持ちます。
 
-目的は、AI Agent と人間が同じ terminal、task、debug、preflight、evidence flow を再現できるようにすることです。
+目的は、AI Agentと人間が同じterminal、task、debug、preflight、evidence flowを再現できるようにすることです。
 
 ## Files
 
@@ -12,20 +12,20 @@
 | `.vscode/tasks.json` | workflow entry task、preflight、JSON check、runtime smoke |
 | `.vscode/launch.json` | Python runtime helper debug launch |
 | `.vscode/extensions.json` | recommended VSCode extensions |
-| `.vscode/intent-driven-robotics-ai-workflow.code-workspace` | workspace entry file。`path: ".."` で repository root を開く |
+| `.vscode/intent-driven-robotics-ai-workflow.code-workspace` | workspace entry file。`path: ".."` でrepository rootを開く |
 
 ## Terminal Profiles
 
 | Profile | Role |
 | --- | --- |
-| `Dispatcher PowerShell` | workflow repository root で Codex / AI workflow を調整する |
-| `Software Workflow PowerShell` | `uv run python`、runtime helper、RAG script、test を実行する |
-| `MSYS2 Localty MINGW64` | Localty GUI / GStreamer / PyQt smoke check 用 |
-| `IaC Workflow PowerShell` | Docker / Go / gateway / IaC 作業用 |
-| `Docker Test PowerShell` | Docker Desktop 検証用 |
-| `Evidence PowerShell` | logs、reports、human-check notes 用 |
+| `Dispatcher PowerShell` | workflow repository rootでCodex / AI workflowを調整する |
+| `Software Workflow PowerShell` | `uv run python`、runtime helper、RAG script、testを実行する |
+| `MSYS2 Localty MINGW64` | Localty GUI / GStreamer / PyQt smoke check用 |
+| `IaC Workflow PowerShell` | Docker / Go / gateway / IaC作業用 |
+| `Docker Test PowerShell` | Docker Desktop検証用 |
+| `Evidence PowerShell` | logs、reports、human-check notes用 |
 
-Default terminal は `Dispatcher PowerShell` です。
+Default terminalは `Dispatcher PowerShell` です。
 
 ## Task Labels
 
@@ -59,17 +59,17 @@ test:docker-version
 test:go-version
 ```
 
-Slash command workflow tasks show the Codex command and Skill path. They do not mutate repository state by themselves.
+slash command workflow taskは、Codex commandとSkill pathを表示します。task単体ではrepository stateを変更しません。
 
-Workflow and smoke-check tasks run as VSCode `process` tasks through `runtime/workflow/vscode_task_runner.py`. This avoids long inline PowerShell command strings, nested PowerShell startup, and `ExecutionPolicy Bypass` patterns that can trigger AMSI / security-product heuristics.
+Workflow taskとsmoke-check taskは、`runtime/workflow/vscode_task_runner.py` を通じてVSCode `process` taskとして実行します。これにより、長いinline PowerShell command、nested PowerShell startup、`ExecutionPolicy Bypass` patternを避け、AMSI / security-product heuristicに引っかかりにくくします。
 
-`test:vscode-json` calls `runtime/workflow/validate_vscode_workspace.py` instead of inline `python -c` so PowerShell quoting does not break the task.
+`test:vscode-json` はinline `python -c` ではなく `runtime/workflow/validate_vscode_workspace.py` を呼び出します。PowerShell quotingの崩れを避けるためです。
 
-`workflow:vscode-preflight` and `test:go-version` refresh Machine/User PATH in the Python task runner before checking Go. This avoids stale PATH problems when Go was installed while VSCode was already open.
+`workflow:vscode-preflight` と `test:go-version` は、Go確認前にPython task runner内でMachine/User PATHを再読込します。VSCode起動後にGoをinstallした場合の古いPATH問題を避けます。
 
 ## Preflight
 
-Run:
+実行例:
 
 ```powershell
 uv run python runtime/environment/preflight.py `
@@ -78,7 +78,7 @@ uv run python runtime/environment/preflight.py `
   --source-dir C:\github\intent-driven-robotics-ai-workflow
 ```
 
-The report is written under:
+reportは次へ保存します。
 
 ```text
 work/vscode-environment/process-report/
@@ -86,23 +86,23 @@ work/vscode-environment/process-report/
 
 ## Evidence
 
-VSCode environment evidence is stored under:
+VSCode environment evidenceは次へ保存します。
 
 ```text
 work/vscode-environment/test-evidence/
 ```
 
-Use `workspace-test.md` for command results and human-check notes.
+command resultとhuman-check notesは `workspace-test.md` に記録します。
 
 ## Knowledge Finalization
 
-Reusable VSCode environment knowledge first lands as human-reviewable Markdown:
+再利用可能なVSCode environment knowledgeは、まずhuman-review可能なMarkdownへ保存します。
 
 ```text
 rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 ```
 
-After human approval, normalize it into the final UUID-named RAG knowledge JSON:
+Human approval後、最終的なUUID名RAG knowledge JSONへnormalizeします。
 
 ```powershell
 uv run python runtime/rag/normalize_documents.py `
@@ -111,30 +111,30 @@ uv run python runtime/rag/normalize_documents.py `
   --document-type workspace-environment-pattern
 ```
 
-Final landing:
+最終着地:
 
 ```text
 rag/normalized/<uuid>.json
 ```
 
-Chunk JSON, indexes, embeddings, and retrieval packs are derived artifacts.
+Chunk JSON、indexes、embeddings、retrieval packsは派生artifactです。
 
 ## Human Check
 
-After opening the workspace in VSCode:
+VSCodeでworkspaceを開いた後、次を確認します。
 
-1. Open each terminal profile.
-2. Confirm it starts in the repository root.
-3. Run `test:vscode-json`.
-4. Run `workflow:vscode-preflight`.
-5. Run one workflow label task and confirm it prints the expected Codex Skill command.
-6. Record UI observations in `work/vscode-environment/test-evidence/workspace-test.md`.
+1. 各terminal profileを開く。
+2. repository rootで起動することを確認する。
+3. `test:vscode-json` を実行する。
+4. `workflow:vscode-preflight` を実行する。
+5. workflow label taskを1つ実行し、期待するCodex Skill commandが表示されることを確認する。
+6. UI観察結果を `work/vscode-environment/test-evidence/workspace-test.md` に記録する。
 
 ## Guardrails
 
-- Do not store secrets in `.vscode` or `.code-workspace`.
-- Keep `.vscode` changes additive unless replacement is explicitly approved.
-- Keep machine-specific values documented and reviewable.
-- Prefer VSCode `process` tasks plus repo-local helper scripts over inline PowerShell or `python -c`.
-- Do not add `ExecutionPolicy Bypass` to workspace tasks or generated install plans.
-- Treat VSCode UI behavior as human-check evidence when CLI cannot prove it.
+- `.vscode` や `.code-workspace` にsecretを保存しない。
+- 既存 `.vscode` 変更は、置き換え承認が無い限りadditiveにする。
+- machine-specific valuesはdocument化し、review可能にする。
+- inline PowerShellや `python -c` より、VSCode `process` taskとrepo-local helper scriptを優先する。
+- workspace taskやgenerated install planに `ExecutionPolicy Bypass` を追加しない。
+- CLIで証明できないVSCode UI behaviorはhuman-check evidenceとして扱う。

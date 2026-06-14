@@ -214,6 +214,32 @@ runtime を設計します。
 - incident evidence location
 - operator-visible degradation state
 
+## Phase 5.5: Boilerplate Template Selection
+
+IaC実装前に、承認済みdesignとshared artifactsに対して利用可能なboilerplate templateを確認します。
+
+候補:
+
+| 対象 | Template | 組み込み指示書 |
+| --- | --- | --- |
+| Realtime gateway IaC / infrastructure | `templates/boilerplate-templates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
+
+出力:
+
+- `work/<receipt-id>/process-report/boilerplate-template-selection.md`
+
+判定:
+
+- realtime gateway infrastructure が対象に含まれ、`realtime-gateway-infra-template/` が存在する場合は、templateをコピーしてコピー先だけを編集する。
+- templateが対象に合わない場合は、`decision: traditional-coding` と理由を記録し、従来どおりIaCを生成する。
+- template本体は直接編集しない。
+- `.env`、real secret、production password、private keyは生成しない。
+- shared artifacts、software inventory、public exposure、secret source、firewall policy、rollback、test case table、evidence planを省略しない。
+
+Quality Gate:
+
+- boilerplate template selection resultが記録されていない場合、IaC Implementationへ進まない。
+
 ## Phase 6: IaC Implementation
 
 承認された設計をもとに IaC artifacts を生成します。

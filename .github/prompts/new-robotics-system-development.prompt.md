@@ -238,6 +238,7 @@ templates/boilerplate-templates/
 | --- | --- | --- |
 | Go gateway service | `templates/boilerplate-templates/gateway-template/` | `gateway-template_組み込み指示書.md` |
 | PyQt / Qt GUI app | `templates/boilerplate-templates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
+| Realtime gateway IaC / infrastructure | `templates/boilerplate-templates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
 
 出力:
 
@@ -247,10 +248,12 @@ templates/boilerplate-templates/
 
 - 対象systemがGo gatewayを含み、`gateway-template/` が存在する場合は、`gateway-template_組み込み指示書.md` に従ってtemplateをコピーしてから実装する。
 - 対象systemがPyQt / Qt GUIを含み、`pyqt-template/` が存在する場合は、`pyqt-template_組み込み指示書.md` に従ってtemplateをコピーしてから実装する。
+- 対象systemがrealtime gateway IaC / infrastructureを含み、`realtime-gateway-infra-template/` が存在する場合は、`realtime-gateway-infra-template_実装指示書.md` に従ってtemplateをコピーしてからIaC実装する。
 - 対応するtemplateが存在しない場合、`decision: traditional-coding` と理由を記録し、従来どおり小さく実装する。
 - template本体は直接編集しない。編集対象はコピー先service / appのみ。
 - template採用時も、STOP、communication loss、startup safe state、shutdown safe state、test case table、evidence planは省略しない。
 - template採用によりarchitecture、protocol、port、safety behaviorを黙って変更してはいけない。
+- IaC template採用時も、shared artifacts、software inventory、public exposure、secret source、firewall policy、rollback、Terraform validationを省略しない。
 
 Quality Gate:
 

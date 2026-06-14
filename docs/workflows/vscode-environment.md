@@ -1,6 +1,6 @@
 # VSCode Environment
 
-`/vscode-environment` builds a reproducible VSCode Workspace-as-Code setup for a target repository or workspace.
+`/vscode-environment` は、target repository / workspace に対して再現可能なVSCode Workspace-as-Code環境を構築するworkflowです。
 
 ## Command
 
@@ -8,15 +8,15 @@
 /vscode-environment <target-workspace-path>
 ```
 
-When the command has no argument, the workflow reads the draft directory:
+commandに引数が無い場合、workflowは次のdraft directoryを読みます。
 
 ```text
 work/requirements/devlop-edit-draft/
 ```
 
-In that directory, `README.md` is the scaffold. Filled drafts should be saved as `README_*.md`, for example `README_20260614.md`. Legacy `.txt` drafts may also be inspected.
+このdirectoryでは、`README.md` がscaffoldです。記入済みdraftは `README_20260614.md` のように `README_*.md` として保存します。legacy `.txt` draftも必要に応じて確認対象にします。
 
-Example:
+例:
 
 ```text
 /vscode-environment C:\github\localty-system-gui
@@ -51,42 +51,52 @@ Reference: [VSCode Environment](../reference/vscode-environment.md)
 
 ## Flow
 
-1. Place or create the draft README scaffold at `work/requirements/devlop-edit-draft/README.md`.
-2. Save a filled draft such as `work/requirements/devlop-edit-draft/README_20260614.md`.
-3. Create `open-questions.md` from blank, `TODO`, missing, or contradictory items when required details are missing.
-4. Wait for human review and approval.
-5. Initialize `work/<work-id>` with the confirmed target workspace.
-6. Analyze workspace requirements.
-7. Validate shared artifacts.
-8. Run environment preflight.
-9. Design VSCode settings, tasks, launch configs, extensions, and workspace file.
-10. Design terminal profiles and terminal roles.
-11. Implement `.vscode` files after validation.
-12. Prefer VSCode `process` tasks plus repo-local helper scripts instead of long inline PowerShell commands.
-13. Test tasks, terminal startup, Docker/runtime integration, and AI workflow entry tasks.
-14. Record evidence.
-15. Update setup and troubleshooting docs.
-16. Capture reusable workspace knowledge under `rag/workspace-environment/` as human-reviewable source Markdown.
-17. After human approval, normalize the source Markdown into UUID-named JSON under `rag/normalized/`.
-18. Treat `rag/normalized/<uuid>.json` as the final machine-readable knowledge artifact; chunk, index, embedding, and retrieval files are derived from it.
+1. `work/requirements/devlop-edit-draft/README.md` にdraft README scaffoldを置く、または作成する。
+2. `work/requirements/devlop-edit-draft/README_20260614.md` のような記入済みdraftを保存する。
+3. 必須情報が不足、空欄、`TODO`、矛盾を含む場合は `open-questions.md` を作成する。
+4. Human Reviewと承認を待つ。
+5. 確定したtarget workspaceで `work/<work-id>` を初期化する。
+6. workspace requirementsを分析する。
+7. shared artifactsを検証する。
+8. environment preflightを実行する。
+9. VSCode settings、tasks、launch configs、extensions、workspace fileを設計する。
+10. terminal profilesとterminal rolesを設計する。
+11. validation後に `.vscode` filesを実装する。
+12. 長いinline PowerShellではなく、VSCode `process` taskとrepo-local helper scriptを優先する。
+13. tasks、terminal startup、Docker/runtime integration、AI workflow entry tasksをtestする。
+14. evidenceを記録する。
+15. setup / troubleshooting docsを更新する。
+16. 再利用可能なworkspace knowledgeを `rag/workspace-environment/` にhuman-review可能なsource Markdownとして保存する。
+17. Human approval後、source Markdownを `rag/normalized/` のUUID名JSONへnormalizeする。
+18. `rag/normalized/<uuid>.json` を最終machine-readable knowledge artifactとして扱う。chunk、index、embedding、retrieval filesは派生物です。
 
 ## Stop Rules
 
-Stop and create `open-questions.md` when the command has no target argument, no filled `README_*.md` draft exists, unresolved `TODO` items remain, or required tools, extensions, terminal profiles, AI workflow entry tasks, or evidence requirements are missing or contradictory.
+次の場合は停止し、`open-questions.md` を作成します。
 
-Stop for human approval before installing tools/extensions, replacing existing `.vscode` files, changing default terminal behavior, or accepting `conditional-pass`.
+- commandにtarget argumentが無い。
+- 記入済み `README_*.md` draftが存在しない。
+- 未解決の `TODO` が残っている。
+- 必須tool、extensions、terminal profiles、AI workflow entry tasks、evidence requirementsが不足または矛盾している。
 
-Do not generate `.vscode/tasks.json` entries that rely on `ExecutionPolicy Bypass`, nested PowerShell launchers, long inline PowerShell command strings, or complex `python -c` snippets. Use committed helper scripts from `process` tasks instead.
+次の場合はhuman approval前で停止します。
+
+- tool / extensionをinstallする。
+- 既存 `.vscode` filesを置き換える。
+- default terminal behaviorを変更する。
+- `conditional-pass` を受け入れる。
+
+`.vscode/tasks.json` では、`ExecutionPolicy Bypass`、nested PowerShell launcher、長いinline PowerShell command、複雑な `python -c` snippetに依存するtaskを生成しません。代わりに、commit済みhelper scriptを `process` taskから呼び出します。
 
 ## RAG Capture
 
-Reusable Localty VSCode environment knowledge is stored as source Markdown under:
+再利用可能なLocalty VSCode environment knowledgeは、source Markdownとして次へ保存します。
 
 ```text
 rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 ```
 
-Create a correctly named note with:
+正しい名前のnoteを作る例:
 
 ```powershell
 uv run python runtime/workflow/vscode_environment.py rag-template `
@@ -95,9 +105,9 @@ uv run python runtime/workflow/vscode_environment.py rag-template `
   --repository "localty"
 ```
 
-The Markdown note is the review source. The final knowledge artifact must be UUID-named JSON.
+Markdown noteはreview sourceです。最終knowledge artifactはUUID名JSONです。
 
-After human approval, normalize it as `workspace-environment-pattern`:
+Human approval後、`workspace-environment-pattern` としてnormalizeします。
 
 ```powershell
 uv run python runtime/rag/normalize_documents.py `
@@ -106,13 +116,13 @@ uv run python runtime/rag/normalize_documents.py `
   --document-type workspace-environment-pattern
 ```
 
-Final landing:
+最終着地:
 
 ```text
 rag/normalized/<uuid>.json
 ```
 
-After normalization, build derived RAG artifacts as needed:
+normalize後、必要に応じて派生RAG artifactを生成します。
 
 ```powershell
 uv run python runtime/rag/chunk_documents.py `

@@ -53,7 +53,7 @@ templates/
 | `templates/process-report/` | プロセス毎のレポート |
 | `templates/test-evidence/` | テスト証跡 |
 | `templates/test-specifications/` | テスト仕様書、テストケース表 |
-| `templates/boilerplate-templates/` | 新規service / app生成用のboilerplate source |
+| `templates/boilerplate-templates/` | 新規service / app / IaC生成用のboilerplate source |
 
 ## Standard Template Files
 
@@ -64,6 +64,7 @@ templates/
 | `templates/test-evidence/robotics-test-evidence-template.md` | `work/<採番ID>/test-evidence/` | test execution の条件、結果、証跡、pass / fail 判断を残すとき |
 | `templates/test-specifications/robotics-test-specification-template.md` | `work/<採番ID>/test-specifications/` | test strategy、test case table、entry / exit criteria を定義するとき |
 | `templates/process-report/boilerplate-template-selection-report-template.md` | `work/<採番ID>/process-report/` | 新システム実装前にboilerplate template採用可否を判断するとき |
+| `templates/boilerplate-templates/realtime-gateway-infra-template/` | target repositoryのIaC directoryまたは `work/<採番ID>/source/repository/` | realtime gateway infrastructure をtemplateから生成するとき |
 
 ## Artifact Quality Rule
 
@@ -73,6 +74,7 @@ artifact は、最低限以下を満たす必要があります。
 - Intent、Decision、Reason、Evidence、Open QA を明示する
 - safety-critical な内容では STOP、communication loss、startup safe state、shutdown safe state を確認する
 - boilerplate templateを使う場合は、コピー元、コピー先、採用理由、変更した責務境界、必要testを記録する
+- IaC boilerplate templateを使う場合は、shared artifacts、software inventory、public exposure、secret source、firewall policy、rollback、Terraform validation結果も記録する
 - 次のAgentまたは人間が、再探索せずに判断を継続できる粒度で書く
 
 ## Work Artifact Directories
