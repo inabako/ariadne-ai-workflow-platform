@@ -1,4 +1,4 @@
-﻿# Artifact Management
+# Artifact Management
 
 ## Purpose
 
@@ -44,7 +44,7 @@ templates/
   process-report/
   test-evidence/
   test-specifications/
-  boilerplate-templates/
+  boilerplates/
 ```
 
 | Template Directory | Purpose |
@@ -53,7 +53,7 @@ templates/
 | `templates/process-report/` | プロセス毎のレポート |
 | `templates/test-evidence/` | テスト証跡 |
 | `templates/test-specifications/` | テスト仕様書、テストケース表 |
-| `templates/boilerplate-templates/` | 新規service / app / IaC生成用のboilerplate source |
+| `templates/boilerplates/` | 新規service / app / IaC生成用のboilerplate source |
 
 ## Standard Template Files
 
@@ -64,7 +64,7 @@ templates/
 | `templates/test-evidence/robotics-test-evidence-template.md` | `work/<採番ID>/test-evidence/` | test execution の条件、結果、証跡、pass / fail 判断を残すとき |
 | `templates/test-specifications/robotics-test-specification-template.md` | `work/<採番ID>/test-specifications/` | test strategy、test case table、entry / exit criteria を定義するとき |
 | `templates/process-report/boilerplate-template-selection-report-template.md` | `work/<採番ID>/process-report/` | 新システム実装前にboilerplate template採用可否を判断するとき |
-| `templates/boilerplate-templates/realtime-gateway-infra-template/` | target repositoryのIaC directoryまたは `work/<採番ID>/source/repository/` | realtime gateway infrastructure をtemplateから生成するとき |
+| `templates/boilerplates/realtime-gateway-infra-template/` | target repositoryのIaC directoryまたは `work/<採番ID>/source/repository/` | realtime gateway infrastructure をtemplateから生成するとき |
 
 ## Artifact Quality Rule
 

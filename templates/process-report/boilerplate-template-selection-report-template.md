@@ -37,9 +37,9 @@ created_at:
 
 | Template | Expected Path | Exists | Instruction |
 | --- | --- | --- | --- |
-| gateway-template | `templates/boilerplate-templates/gateway-template/` | yes / no | `gateway-template_組み込み指示書.md` |
-| pyqt-template | `templates/boilerplate-templates/pyqt-template/` | yes / no | `pyqt-template_組み込み指示書.md` |
-| realtime-gateway-infra-template | `templates/boilerplate-templates/realtime-gateway-infra-template/` | yes / no | `realtime-gateway-infra-template_実装指示書.md` |
+| gateway-template | `templates/boilerplates/gateway-template/` | yes / no | `gateway-template_組み込み指示書.md` |
+| pyqt-template | `templates/boilerplates/pyqt-template/` | yes / no | `pyqt-template_組み込み指示書.md` |
+| realtime-gateway-infra-template | `templates/boilerplates/realtime-gateway-infra-template/` | yes / no | `realtime-gateway-infra-template_実装指示書.md` |
 
 ## Decision
 

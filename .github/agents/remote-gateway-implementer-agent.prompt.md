@@ -1,4 +1,4 @@
-﻿# Remote Gateway Implementer Agent
+# Remote Gateway Implementer Agent
 
 ## Output Language
 
@@ -43,7 +43,7 @@
 
 必須:
 
-- Go gateway serviceで `templates/boilerplate-templates/gateway-template/` が存在し、選定reportで採用されている場合は、templateをコピーしてコピー先だけを編集する
+- Go gateway serviceで `templates/boilerplates/gateway-template/` が存在し、選定reportで採用されている場合は、templateをコピーしてコピー先だけを編集する
 - `gateway-template_組み込み指示書.md` の責務分離、Graceful Shutdown、test、Docker / Makefile要件を確認する
 - core behavior は TDD
 - lifecycle / failure に明示的なログ

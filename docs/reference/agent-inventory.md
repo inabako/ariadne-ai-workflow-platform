@@ -146,7 +146,7 @@ rag/specialist-review/<domain>/*.md
 | --- | --- | --- |
 | `/requirement-discovery` | 要件の質問品質に専門知識が必要、または未知の安全/通信/runtime領域がある | requirement review draftへRAG path、未確認事項、専門QAを残す |
 | `/robotics-new-system` | architecture、runtime、network、deployment、safety、test strategyの専門前提が成果物を左右する | implementation前にspecialist reviewを実行し、high/critical findingはdesignへ戻す |
-| `/robotics-new-system` | Go gateway / PyQt GUI / realtime gateway IaCなど、`templates/boilerplate-templates/` に一致するboilerplateがある | implementation前にboilerplate selectionを記録し、templateがある場合はコピー先だけを編集する |
+| `/robotics-new-system` | Go gateway / PyQt GUI / realtime gateway IaCなど、`templates/boilerplates/` に一致するboilerplateがある | implementation前にboilerplate selectionを記録し、templateがある場合はコピー先だけを編集する |
 | `/robotics-new-system-iac` | 新システム設計成果物をIaCへ渡す前に、要件、通信仕様、port、network boundary、ADR、software inventoryの整合性が成果物を左右する | Shared Artifact Validatorを実行し、`pass` または human-approved `conditional-pass` 以外ではIaCへ進めない |
 | `/robotics-feature-maintenance` | 既存挙動、STOP、network authority、runtime ownership、operator workflowへ影響する | impact analysis、change design、test planの前後でspecialist reviewを実行する |
 | `/corrective-action-report` | finding品質が専門知識に依存する | external-webだけでfinding化せず、repo evidenceとspecialist reviewをsupporting referenceとして記録する |

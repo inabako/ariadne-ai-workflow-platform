@@ -1,4 +1,4 @@
-﻿# New Robotics System Development Flow
+# New Robotics System Development Flow
 
 ## Output Language
 
@@ -229,16 +229,16 @@ PyQt / Qt GUIを含む場合:
 Template root:
 
 ```text
-templates/boilerplate-templates/
+templates/boilerplates/
 ```
 
 現在の対応:
 
 | 対象 | Template | 組み込み指示書 |
 | --- | --- | --- |
-| Go gateway service | `templates/boilerplate-templates/gateway-template/` | `gateway-template_組み込み指示書.md` |
-| PyQt / Qt GUI app | `templates/boilerplate-templates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
-| Realtime gateway IaC / infrastructure | `templates/boilerplate-templates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
+| Go gateway service | `templates/boilerplates/gateway-template/` | `gateway-template_組み込み指示書.md` |
+| PyQt / Qt GUI app | `templates/boilerplates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
+| Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
 
 出力:
 

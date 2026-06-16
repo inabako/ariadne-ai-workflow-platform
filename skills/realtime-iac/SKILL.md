@@ -101,7 +101,7 @@ The AI must not infer software components, port numbers, communication routes, p
    - `docker-compose-design.md`
    - `observability-design.md`
    - `monitoring-policy.md`
-7. Run the Boilerplate Template Selection Gate. If realtime gateway infrastructure matches `templates/boilerplate-templates/realtime-gateway-infra-template/`, copy it to the target IaC destination and edit only the copy. If it does not match, record `decision: traditional-coding`.
+7. Run the Boilerplate Template Selection Gate. If realtime gateway infrastructure matches `templates/boilerplates/realtime-gateway-infra-template/`, copy it to the target IaC destination and edit only the copy. If it does not match, record `decision: traditional-coding`.
 8. Generate IaC artifacts only from approved designs and the approved boilerplate selection result.
 9. For `precreated-new` repository mode, confirm the GitHub repository already exists, push the initial branch after human approval, create the GitHub Issue with `[IaC]` prefix, then create `feature/issue-<issue-number>` from the pushed initial branch.
 10. Run security review before local runtime tests.
@@ -118,7 +118,7 @@ Template candidate:
 
 | Target | Template path | Instruction |
 | --- | --- | --- |
-| Realtime gateway IaC / infrastructure | `templates/boilerplate-templates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
+| Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
 
 Rules:
 

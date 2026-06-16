@@ -21,7 +21,7 @@ DEFAULT_EXCLUDES = [
     "rag/jsonized",
     "work/*/source",
     "work/close/*/source",
-    "templates/boilerplate-templates",
+    "templates/boilerplates",
 ]
 ALLOWED_ENGLISH_TERMS = {
     "ai",

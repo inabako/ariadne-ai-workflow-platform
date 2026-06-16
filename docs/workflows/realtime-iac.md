@@ -109,7 +109,7 @@ IaC実装前に、承認済みdesignとshared artifactsに対して利用可能�
 
 | 対象 | Template | 組み込み指示書 |
 | --- | --- | --- |
-| Realtime gateway IaC / infrastructure | `templates/boilerplate-templates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
+| Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
 
 出力:
 

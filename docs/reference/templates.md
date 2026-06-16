@@ -16,7 +16,7 @@ templates/
   shared-artifacts/
   iac/
   editorconfig/
-  boilerplate-templates/
+  boilerplates/
 ```
 
 ## Current Templates
@@ -32,7 +32,7 @@ templates/
 | `templates/shared-artifacts/` | `shared-artifacts-index-template.md`, `port-definition-template.md`, `network-boundary-definition-template.md`, `architecture-decision-record-template.md` | 新システム設計からIaCへ渡す要件、port、network boundary、ADRの共有成果物 |
 | `templates/iac/` | `software-inventory-template.md`, `communication-specification-template.md`, `realtime-iac-design-template.md`, `realtime-iac-test-specification-template.md` | リアルタイムシステム向けIaCの受領gate、設計、Docker Desktop / Linux / integration検証 |
 | `templates/editorconfig/` | `target-repository.editorconfig` | target repositoryのencoding / line ending補助 |
-| `templates/boilerplate-templates/` | `gateway-template/`, `pyqt-template/`, `realtime-gateway-infra-template/` | 新規Go gateway / PyQt GUI / realtime gateway IaCをtemplateから生成するためのboilerplate置き場 |
+| `templates/boilerplates/` | `gateway-template/`, `pyqt-template/`, `realtime-gateway-infra-template/` | 新規Go gateway / PyQt GUI / realtime gateway IaCをtemplateから生成するためのboilerplate置き場 |
 
 ## Quality Rules
 
@@ -44,7 +44,7 @@ templates/
 - GitHub knowledge maintenanceでは、Issue / PR / comment / docs / CAR のsource reference、approval status、Git history non-modificationを明示する。
 - safety-critical な内容では STOP、communication loss、startup safe state、shutdown safe state を確認する。
 - PyQt / Qt GUIでは、結合疎通試験のうちQTest化できるものと人間確認に残すものを分ける。
-- 新システム実装では、`templates/boilerplate-templates/` に一致するboilerplateがあるか確認し、採用または不採用の理由をprocess reportに残す。
+- 新システム実装では、`templates/boilerplates/` に一致するboilerplateがあるか確認し、採用または不採用の理由をprocess reportに残す。
 - IaC工程では、realtime gateway infrastructure が対象に含まれる場合 `realtime-gateway-infra-template/` を候補にし、shared artifacts、software inventory、secret source、firewall policy、rollbackを確認してからコピーする。
 - テスト成果物の保存先は [Test Artifact Storage](test-artifact-storage.md) に従う。
 - 出力先は `work/<work-id>/` 配下の対応directoryにする。

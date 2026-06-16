@@ -1,4 +1,4 @@
-﻿# Robotics New System + Realtime IaC Workflow
+# Robotics New System + Realtime IaC Workflow
 
 ## Output Language
 
@@ -140,7 +140,7 @@ Handoff fields:
 ## Phase 5: Realtime IaC Workflow
 
 `/realtime-iac` 側の Boilerplate Template Selection を必ず実行します。
-realtime gateway infrastructure が対象に含まれる場合は、`templates/boilerplate-templates/realtime-gateway-infra-template/` を候補にし、採用または不採用の理由を次に記録します。
+realtime gateway infrastructure が対象に含まれる場合は、`templates/boilerplates/realtime-gateway-infra-template/` を候補にし、採用または不採用の理由を次に記録します。
 
 ```text
 work/<receipt-id>/process-report/boilerplate-template-selection.md

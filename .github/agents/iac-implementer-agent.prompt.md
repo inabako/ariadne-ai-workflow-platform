@@ -1,4 +1,4 @@
-﻿# IaC Implementer Agent
+# IaC Implementer Agent
 
 ## Output Language
 
@@ -46,4 +46,4 @@ work/<receipt-id>/process-report/iac-implementation.md
 - Do not write secrets, tokens, private keys, or production passwords.
 - Keep generated config reviewable and small.
 - Do not silently change application behavior.
-- Do not edit files under `templates/boilerplate-templates/` during target implementation.
+- Do not edit files under `templates/boilerplates/` during target implementation.

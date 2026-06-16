@@ -47,7 +47,7 @@ Do not treat chat history as a substitute for an accepted requirement document.
 4. If architecture, runtime, network, deployment, safety, or test strategy depends on specialist knowledge, run the relevant Specialist Agent review before implementation.
 5. Run `/new-robotics-system-development` only after relevant RAG context has been loaded and summarized.
 6. Before implementation, create the issue test case tables and evidence plan.
-7. Before implementation, run the Boilerplate Template Selection Gate. If a matching boilerplate template exists under `templates/boilerplate-templates/`, use it as the starting point. If no matching template exists, record the reason and continue with traditional coding.
+7. Before implementation, run the Boilerplate Template Selection Gate. If a matching boilerplate template exists under `templates/boilerplates/`, use it as the starting point. If no matching template exists, record the reason and continue with traditional coding.
 8. Preserve artifacts under `work/<receipt-id>/`.
 9. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, boilerplate selection result, and handoff context as JSON where schemas exist.
 
@@ -72,16 +72,16 @@ Run this gate after architecture, runtime / network / deployment design, and tes
 Template root:
 
 ```text
-templates/boilerplate-templates/
+templates/boilerplates/
 ```
 
 Current supported mappings:
 
 | Target | Template path | Instruction |
 | --- | --- | --- |
-| Go gateway service | `templates/boilerplate-templates/gateway-template/` | `gateway-template_組み込み指示書.md` |
-| PyQt / Qt GUI app | `templates/boilerplate-templates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
-| Realtime gateway IaC / infrastructure | `templates/boilerplate-templates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
+| Go gateway service | `templates/boilerplates/gateway-template/` | `gateway-template_組み込み指示書.md` |
+| PyQt / Qt GUI app | `templates/boilerplates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
+| Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
 
 Rules:
 
