@@ -31,6 +31,14 @@ robotics-new-system-iac
 realtime-iac
 ```
 
+採番prefixの既定値:
+
+- `new-robotics-system-development`, `robotics-new-system-iac`: `SYS-*`
+- `robotics-maintenance-development`: `FEAT-*`
+- その他: `WF-*`
+
+`--receipt-id`または`--id-prefix`で明示指定できます。GUI入力自体は`work/requirements/svg-input/`へ置き、ファイル名の`SYS_`、`FEAT_`、`FIX_`で親フローを指定します。
+
 `work/requirements/` に `.md` / `.markdown` / `.txt` の要件定義書が無い場合、受付IDは作らずに受領拒否します。
 
 `work/requirements/` に要件定義書が2件以上ある場合も、どの要件を受け付けるべきか曖昧になるため受領拒否します。標準運用は `1 requirement file = 1 receipt ID` です。

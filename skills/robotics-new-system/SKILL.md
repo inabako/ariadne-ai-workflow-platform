@@ -28,7 +28,9 @@ This skill delegates the detailed workflow to:
 Before starting the workflow, run or require the intake harness.
 
 ```powershell
-python runtime/intake/intake_requirements.py --workflow new-robotics-system-development
+python runtime/intake/intake_requirements.py `
+  --workflow new-robotics-system-development `
+  --id-prefix SYS
 ```
 
 The harness must reject the order when:
@@ -43,13 +45,44 @@ Do not treat chat history as a substitute for an accepted requirement document.
 
 1. Run `/pre-development-preparation`.
 2. Confirm repository sync, requirement comparison, GitHub Issue, and `feature/issue-<issue-number>` branch.
-3. Run `/rag-load` before entering the development body. Derive parallel retrieval queries from the requirement, repository, branch, comparison report, and issue summary.
-4. If architecture, runtime, network, deployment, safety, or test strategy depends on specialist knowledge, run the relevant Specialist Agent review before implementation.
-5. Run `/new-robotics-system-development` only after relevant RAG context has been loaded and summarized.
-6. Before implementation, create the issue test case tables and evidence plan.
-7. Before implementation, run the Boilerplate Template Selection Gate. If a matching boilerplate template exists under `templates/boilerplates/`, use it as the starting point. If no matching template exists, record the reason and continue with traditional coding.
-8. Preserve artifacts under `work/<receipt-id>/`.
-9. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, boilerplate selection result, and handoff context as JSON where schemas exist.
+3. Run the GaC / UaC GUI Mode Dispatcher. If `work/requirements/svg-input/SYS_*.svg` exists, claim it into the Issue work area and generate GUI design / PyQt6 / QTest candidates before normal implementation. If no SVG exists, record `skipped` and continue.
+4. Run `/rag-load` before entering the development body. Derive parallel retrieval queries from the requirement, repository, branch, comparison report, and issue summary.
+5. If architecture, runtime, network, deployment, safety, or test strategy depends on specialist knowledge, run the relevant Specialist Agent review before implementation.
+6. Run `/new-robotics-system-development` only after relevant RAG context has been loaded and summarized.
+7. Before implementation, create the issue test case tables and evidence plan.
+8. Before implementation, run the Boilerplate Template Selection Gate. If a matching boilerplate template exists under `templates/boilerplates/`, use it as the starting point. If no matching template exists, record the reason and continue with traditional coding.
+9. Preserve artifacts under `work/<receipt-id>/`.
+10. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, boilerplate selection result, and handoff context as JSON where schemas exist.
+
+## GaC / UaC GUI Mode Gate
+
+Before the workflow starts, the human places SVG files under:
+
+```text
+work/requirements/svg-input/SYS_<name>.svg
+```
+
+Initialize the shared input inbox when needed:
+
+```powershell
+python runtime/workflow/gui_mode.py init-input
+```
+
+After the Issue work area exists, dispatch:
+
+```powershell
+python runtime/workflow/gui_mode.py run --issue-id "<SYS-receipt-id>"
+```
+
+Use `.github/prompts/gac-uac-gui-mode.prompt.md` for the sub-workflow contract.
+
+Rules:
+
+- The runtime moves matching `SYS_*.svg` files into `work/<receipt-id>/input/gui/`.
+- No matching SVG: continue the parent workflow without GUI artifacts.
+- SVG exists: validate `gac-uac/` before implementation.
+- Treat generated PyQt6 / QTest as candidates, not source replacements.
+- Review MainWindow, Panel responsibility, expansion points, and initial QTest structure as SYS mode.
 
 ## Required Focus
 

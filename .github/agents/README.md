@@ -33,6 +33,12 @@
 | `workspace-implementer-agent.prompt.md` | 承認済み設計に基づく.vscode/workspace実装 | `.vscode/*`, `workspace-implementation.md` |
 | `workspace-test-agent.prompt.md` | task、terminal、launch、Docker/runtime、AI workflow起動検証 | `workspace-test.md`, `test-evidence/evidence/` |
 | `workspace-documentation-writer-agent.prompt.md` | VSCode setup/troubleshooting/evidence docs整理 | README/setup docs, `workspace-documentation.md` |
+| `gui-svg-analyzer-agent.prompt.md` | SVG構造、要素、領域、GUI責務の解析 | `gac-uac/svg-analysis.md` |
+| `gui-semantic-layout-agent.prompt.md` | SVG解析からPyQt非依存のSemantic Layout Graph生成 | `gac-uac/semantic-layout-graph.yaml` |
+| `gui-widget-mapping-agent.prompt.md` | Semantic LayoutをPyQt6 Widget、class、signal、test対象へ写像 | `gac-uac/widget-mapping.md` |
+| `gui-layout-spec-agent.prompt.md` | SYS / FEAT / FIX別の実装可能Layout仕様作成 | `gac-uac/layout-spec.md` |
+| `gui-pyqt6-generator-agent.prompt.md` | 外部I/OなしのPyQt6候補生成 | `gac-uac/generated/pyqt6/` |
+| `gui-qtest-generator-agent.prompt.md` | offscreen実行可能なQTest smoke候補生成 | `gac-uac/generated/tests/test_gui_smoke.py` |
 | `robotics-architect-agent.prompt.md` | システム構造と責務境界 | `architecture.md` |
 | `shared-artifact-validator-agent.prompt.md` | 新システム設計成果物をIaC投入可能なShared Artifactsとして検証 | `shared-artifact-validation.md`, `shared-artifact-validation.json` |
 | `robotics-runtime-agent.prompt.md` | process model、lifecycle、restart、watchdog | `runtime-design.md` |
@@ -88,6 +94,7 @@ draft bullets
   -> remote gateway architect
   -> deployment architect
   -> shared artifact validator when new-system output feeds IaC
+  -> claim prefixed SVG from work/requirements/svg-input and run GaC / UaC GUI agents
   -> safety / security / network / observability reviews
   -> robotics tester
   -> realtime IaC agents when IaC is in scope

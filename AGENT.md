@@ -80,6 +80,7 @@ Current prompt set:
 - `/vscode-environment`
 - `/robotics-new-system`
 - `/robotics-feature-maintenance`
+- `gac-uac-gui-mode` (parent workflow extension; not a standalone Skill)
 - `/corrective-action-report`
 - `/corrective-action-fix`
 - `/pre-development-preparation`
@@ -108,6 +109,8 @@ Current Skill entrypoints:
 - `/rag-build` -> `skills/rag-build/SKILL.md` -> `rag/normalized/`, `rag/chunks/`, `rag/indexes/`, `rag/embeddings/`
 - `/rag-load` -> `skills/rag-load/SKILL.md` -> `rag/retrieval/<uuid>.json`
 
+GaC / UaC GUI Mode is not a standalone Skill entrypoint. Before Issue creation, SVG files are placed under `work/requirements/svg-input/` with `SYS_`, `FEAT_`, or `FIX_` prefixes. After the Issue work area exists, the three implementation workflows claim matching files and dispatch `.github/prompts/gac-uac-gui-mode.prompt.md`.
+
 `/corrective-action-report` を使う場合は、対象repositoryと対象branchを user に確認してから read-only review を開始してください。未指定の場合は必ず入力を求めます。
 
 ## Shared Data Contract
@@ -132,6 +135,7 @@ Current schema set:
 - `commit-record.schema.json`
 - `docs-drift-analysis.schema.json`
 - `github-knowledge-analysis.schema.json`
+- `gui-mode-state.schema.json`
 - `rag-document.schema.json`
 - `rag-chunk.schema.json`
 - `rag-embedding.schema.json`

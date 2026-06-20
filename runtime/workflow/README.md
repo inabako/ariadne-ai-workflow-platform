@@ -4,6 +4,29 @@
 
 ## Commands
 
+### `gui_mode.py`
+
+Checks `work/requirements/svg-input/<PREFIX>_*.svg`, claims matching files into the Issue work area, and dispatches the shared GaC / UaC GUI Mode extension.
+
+Examples:
+
+```powershell
+python runtime/workflow/gui_mode.py init-input
+python runtime/workflow/gui_mode.py run --issue-id SYS-0001
+python runtime/workflow/gui_mode.py validate --issue-id SYS-0001
+```
+
+Corrective Action compatibility:
+
+```powershell
+python runtime/workflow/gui_mode.py run `
+  --issue-id FIX-123 `
+  --work-dir work/issue-123 `
+  --mode corrective-improvement
+```
+
+`SYS_`, `FEAT_`, and `FIX_` filename prefixes select the parent flow. Matching files are moved into `work/<issue-id>/input/gui/` after the Issue work area exists. No SVG returns `status: skipped`. Generated PyQt6 and QTest files remain candidates under `gac-uac/generated/` and are never copied into target source automatically.
+
 ### `docs_sync.py`
 
 Initializes documentation sync work folders, creates a docs drift analysis JSON scaffold, and creates a GitHub Issue body from that JSON.

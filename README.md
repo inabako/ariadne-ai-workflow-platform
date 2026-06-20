@@ -22,6 +22,9 @@ Workflow を選ぶ場合:
 | 新しいrobotics systemを始める | `/robotics-new-system` | [Robotics New System](docs/workflows/robotics-new-system.md) |
 | 新システム設計からShared Artifacts検証、IaC連携まで一気通貫で行う | `/robotics-new-system-iac` | [Robotics New System + IaC](docs/workflows/robotics-new-system-iac.md) |
 | 既存systemの新機能追加、bug fix、保守開発を行う | `/robotics-feature-maintenance` | [Robotics Feature Maintenance](docs/workflows/robotics-feature-maintenance.md) |
+| SVGからPyQt6画面・QTest候補を作る | 親workflow内で自動実行 | [GaC / UaC GUI Mode](docs/workflows/gui-mode.md) |
+
+GUI SVGはIssue作成前に`work/requirements/svg-input/`へ配置し、ファイル名を`SYS_<name>.svg`、`FEAT_<name>.svg`、`FIX_<name>.svg`のいずれかにします。
 | リアルタイムシステム向けIaCを設計、生成、検証、文書化する | `/realtime-iac` | [Realtime IaC](docs/workflows/realtime-iac.md) |
 | repository / branchをread-onlyで調査し、改善reportを作る | `/corrective-action-report` | [Corrective Action Report](docs/workflows/corrective-action-report.md) |
 | 改善reportからIssue、branch、修正、test、pushまで進める | `/corrective-action-fix` | [Corrective Action Fix](docs/workflows/corrective-action-fix.md) |

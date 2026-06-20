@@ -26,6 +26,7 @@ Intake
   -> Requirement Comparison
   -> GitHub Issue Draft / Create
   -> Working Branch Create
+  -> Claim SYS_*.svg and run GaC / UaC GUI Mode
   -> RAG Load / Prior Findings
   -> Specialist Review Dispatch
   -> Intent / Mission
@@ -97,6 +98,12 @@ High / critical finding がある場合は、System Architecture、Runtime / Net
 QTest化する対象は、GUI操作、widget状態、signal / slot、ログやpacket表示など、外部I/Oをstubまたはdisableして検証できるものです。
 
 実robot、実camera、physical STOP、field networkなどは、QTestでは置き換えず、bench / limited field / human checkとして残します。
+
+## GaC / UaC GUI Mode
+
+`work/requirements/svg-input/SYS_*.svg`が存在する場合、Issue作業領域へ取り込んでから、通常設計・実装の前に[GaC / UaC GUI Mode](gui-mode.md)を実行します。
+
+SVGからMainWindow、主要Panel、Widget責務、PyQt6候補、初期QTest候補を作ります。生成物は`gac-uac/`へ隔離し、初期architecture候補としてreviewした部分だけをsourceへ統合します。
 
 ## Boilerplate Template Selection
 

@@ -25,6 +25,7 @@
 | `docs-drift-analysis.schema.json` | 実装とdocsの差分、根拠、Issue化材料、受け入れ条件 |
 | `github-knowledge-analysis.schema.json` | GitHub Issue / PR / docs / CARの知識資産、narrative gap、repair proposal、sync action、RAG候補 |
 | `workspace-shared-artifact-validation.schema.json` | VSCode Environment workflowの必須artifact検証、条件、未解決QA |
+| `gui-mode-state.schema.json` | SVG検出、SYS/FEAT/FIX mode、生成成果物、親workflow返却状態 |
 | `rag-document.schema.json` | RAG投入用に正規化した document |
 | `rag-chunk.schema.json` | retrieval / embeddings 用の chunk |
 | `rag-embedding.schema.json` | local embedding index のchunk vector |

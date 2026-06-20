@@ -127,6 +127,21 @@
     "reject_when_multiple": true,
     "requires_repository_control": true
   },
+  "workflow_extensions": [
+    {
+      "name": "gac-uac-gui-mode",
+      "standalone_skill": false,
+      "prompt_path": ".github/prompts/gac-uac-gui-mode.prompt.md",
+      "runtime_path": "runtime/workflow/gui_mode.py",
+      "trigger": "work/requirements/svg-input/{SYS,FEAT,FIX}_*.svg",
+      "parent_workflows": [
+        "new-robotics-system-development",
+        "robotics-maintenance-development",
+        "corrective-action-fix"
+      ],
+      "output": "work/<issue-id>/gac-uac/"
+    }
+  ],
   "report_outputs": {
     "corrective_action_report": "rag/corrective-action-report",
     "github_knowledge": "rag/github-knowledge",

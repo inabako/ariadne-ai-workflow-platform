@@ -40,7 +40,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Directory used when requirement paths are omitted. Default: work/requirements/",
     )
     parser.add_argument("--receipt-id", help="Explicit receipt ID. Auto-generated when omitted.")
-    parser.add_argument("--id-prefix", default="WF", help="Prefix used for generated receipt IDs.")
+    parser.add_argument(
+        "--id-prefix",
+        default=None,
+        help="Prefix used for generated receipt IDs. Defaults to SYS for new systems and FEAT for maintenance.",
+    )
     parser.add_argument("--project-name", default="unknown-project")
     parser.add_argument("--project-repository", default="")
     parser.add_argument(
@@ -128,6 +132,14 @@ def command_for_workflow(workflow: str) -> str:
     if workflow == "github-knowledge-maintenance":
         return "/github-knowledge-maintenance"
     return "/new-robotics-system-development"
+
+
+def id_prefix_for_workflow(workflow: str) -> str:
+    if workflow in {"new-robotics-system-development", "robotics-new-system-iac"}:
+        return "SYS"
+    if workflow == "robotics-maintenance-development":
+        return "FEAT"
+    return "WF"
 
 
 def open_questions_for_workflow(workflow: str) -> list[str]:
@@ -267,7 +279,9 @@ def initialize_context(
 
 def run(args: argparse.Namespace) -> dict[str, object]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
-    receipt_id = args.receipt_id or make_receipt_id(args.id_prefix)
+    receipt_id = args.receipt_id or make_receipt_id(
+        args.id_prefix or id_prefix_for_workflow(args.workflow)
+    )
     if args.requirements:
         requirement_sources = [Path(raw_path).resolve() for raw_path in args.requirements]
         requirements_dir = None

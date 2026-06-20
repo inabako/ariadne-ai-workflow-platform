@@ -397,6 +397,33 @@ Procedure:
 8. When ASCII markers are inserted only to protect an edit boundary, remove them before finishing unless they are useful comments or test fixtures.
 9. Do not mass-convert existing files unless the Issue explicitly includes encoding normalization. For ordinary fixes, add `.editorconfig`, re-read the file, and keep code changes scoped.
 
+### 7.6 GaC / UaC GUI Mode Gate
+
+Before the workflow starts, the human places corrective GUI SVG files under:
+
+```text
+work/requirements/svg-input/FIX_<name>.svg
+```
+
+After `work/issue-<issue-number>` and its Issue branch exist, dispatch the shared GUI sub-workflow with the logical FIX prefix while preserving the existing corrective-action work directory:
+
+```powershell
+python runtime/workflow/gui_mode.py run `
+  --issue-id "FIX-<issue-number>" `
+  --work-dir "work/issue-<issue-number>" `
+  --mode corrective-improvement
+```
+
+The runtime moves matching `FIX_*.svg` files into `work/issue-<issue-number>/input/gui/`. If no matching SVG exists, continue with `status: skipped`.
+
+If SVG exists:
+
+- validate `work/issue-<issue-number>/gac-uac/` before implementation;
+- treat generated source and QTest as candidates only;
+- compare candidates with the current GUI and apply only reviewed minimal changes;
+- prioritize existing behavior, fixed-coordinate removal, responsibility separation, and regression prevention;
+- keep actual tests in the target repository's normal test tree after review.
+
 ### 8. Implement Corrective Fixes
 
 Implement in `work/issue-<issue-number>/source/repository` according to the corrective action report and loaded RAG.
@@ -682,6 +709,7 @@ Do not move the issue folder until the user approves archive.
 - Do not install missing tools, Python packages, or MSYS2 pacman packages without explicit human approval.
 - Do not run unit tests, startup checks, or integration / communication checks before writing the issue test specification and pass criteria, unless the user explicitly approves skipping it for a trivial change.
 - For PyQt / Qt GUI repositories, do not skip QTest source planning for automatable integration cases unless the test specification records a reason.
+- When `work/requirements/svg-input/FIX_*.svg` exists, do not skip the GaC / UaC GUI Mode Gate or copy generated candidates into source without review.
 - Do not push before PR material is generated and docs evidence exists under `docs/evidence/issue-<issue-number>/test_specifications`, `docs/evidence/issue-<issue-number>/ut`, and `docs/evidence/issue-<issue-number>/integration`; add `docs/evidence/issue-<issue-number>/human_check` when human confirmation is required. Scaffold `README.md` files alone are not evidence.
 - Do not run RAG registration / rebuild or move `work/issue-<issue-number>` to `work/close/issue-<issue-number>` without explicit human approval.
 - Do not delete `work/<target-branch>` until `work/<target-branch>/process-report` has been preserved under `work/close/issue-<issue-number>/process-report/base-work-<target-branch>` and the copy has been verified.

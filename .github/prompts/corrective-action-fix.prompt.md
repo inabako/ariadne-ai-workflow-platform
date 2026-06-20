@@ -50,12 +50,24 @@ Flow:
 7. Issue scope、実装方針、test specificationが専門知識に依存する場合はSpecialist Agent reviewを実行する。
 8. 修正内容、supporting reference、specialist review referenceを GitHub Issue に載せる。
 9. `work/issue-XXX/source/repository` を作り、Git branch `feature/issue-XXX` を作成する。
-10. 改善レポートと RAG context に従って修正する。
-11. テスト仕様書のテストケース表に従ってユニットテストを作成・実施する。
-12. PyQt / Qt GUIの場合、QTest化できる結合疎通試験をソース化して実行する。
-13. 起動確認 / 結合試験を実施する。
-14. 起動確認 / 結合試験について人間チェックを受ける。
-15. 人間チェック承認後、`feature/issue-XXX` を push する。
+10. `work/requirements/svg-input/FIX_*.svg`がある場合、Issue作業領域へ取り込み、GaC / UaC GUI ModeをFIX modeで実行する。
+11. 改善レポートと RAG context に従って修正する。
+12. テスト仕様書のテストケース表に従ってユニットテストを作成・実施する。
+13. PyQt / Qt GUIの場合、QTest化できる結合疎通試験をソース化して実行する。
+14. 起動確認 / 結合試験を実施する。
+15. 起動確認 / 結合試験について人間チェックを受ける。
+16. 人間チェック承認後、`feature/issue-XXX` を push する。
+
+GaC / UaC GUI Mode:
+
+```powershell
+python runtime/workflow/gui_mode.py run `
+  --issue-id "FIX-XXX" `
+  --work-dir "work/issue-XXX" `
+  --mode corrective-improvement
+```
+
+SVGが無ければ`skipped`で通常flowへ戻ります。SVGがある場合、生成候補を既存GUIとの差分としてreviewし、最小変更、既存挙動維持、固定座標排除、QTest回帰防止を優先します。
 
 Guardrail:
 

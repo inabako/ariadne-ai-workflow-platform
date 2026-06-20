@@ -21,6 +21,7 @@
 | `/rag-load` | 開発前に過去知識を検索し、圧縮contextを読む | task, repository, branch | `rag/retrieval/*.json` |
 | External Web RAG | 要件定義、設計、改善flowで知見不足の領域を外部Web一次情報で補う | `rag/external-web/knowledge-sources.md` | `rag/external-web/<category>/*.md` |
 | Specialist Review | 内部/外部RAGを読んだ後、成果物を専門Agentがreviewする | draft artifact, RAG context | `work/<id>/process-report/specialist-review-<domain>.md` |
+| GaC / UaC GUI Mode | 親workflow内でSVGをGUI設計・PyQt6・QTest候補へ変換する | `work/requirements/svg-input/<PREFIX>_*.svg` | `work/<issue-id>/gac-uac/` |
 | PyQt QTest Integration | PyQt / Qt GUIの結合疎通試験をテスト仕様書からQTestソースへ落とす | test case table | `src/tests/qt/test_<feature>_integration.py` |
 
 ## Decision Guide
@@ -42,6 +43,7 @@
 | 要件定義、設計、改善flowで知らない技術領域が出た | [External Web RAG](external-web-rag.md) |
 | 成果物の妥当性が専門知識に依存する | [Agent Inventory](../reference/agent-inventory.md) |
 | PyQt GUIの結合疎通試験を自動化したい | [Corrective Action Fix](corrective-action-fix.md) |
+| SVGを渡して画面実装候補とQTest候補を作りたい | [GaC / UaC GUI Mode](gui-mode.md) |
 
 ## Common Rules
 
@@ -58,6 +60,8 @@
 - Specialist Agent reviewは作業中は `work/<id>/process-report/` に保存し、人間承認後に内部RAG候補として扱います。
 - Specialist Agent reviewでは、採用した外部Web RAG、採用しなかったclaim、検証方法を残します。
 - 実装系workflow（`/robotics-new-system`、`/robotics-feature-maintenance`、`/corrective-action-fix`）では、テスト実行前に `unit-test-cases.md`、`integration-test-cases.md`、`human-check-list.md` を作成します。
+- 実装系workflowはIssue作成後に`work/requirements/svg-input/`から`SYS_`、`FEAT_`、`FIX_`のSVGを取り込み、SVGが無ければ`skipped`で通常flowを継続します。
+- GaC / UaCの`generated/`は候補であり、既存sourceへ無条件上書きしません。
 - `/realtime-iac` では、IaC検証前に `iac-test-cases.md` を作成し、Docker Desktop、Linux runtime、integration、human check の分類を明示します。
 - `/github-knowledge-maintenance` では、GitHub mutation前に `github-knowledge-analysis.json` と human-reviewed sync plan を必ず作成します。
 - PyQt / Qt GUIでは、テストケース表からQTest化できる結合疎通試験を選別し、外部I/Oは原則stub / disableします。

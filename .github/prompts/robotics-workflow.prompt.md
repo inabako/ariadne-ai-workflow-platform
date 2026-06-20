@@ -23,6 +23,7 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 | `robotics-new-system.prompt.md` | `/robotics-new-system` Skill entrypoint |
 | `robotics-new-system-iac.prompt.md` | `/robotics-new-system-iac` Skill entrypoint |
 | `robotics-feature-maintenance.prompt.md` | `/robotics-feature-maintenance` Skill entrypoint |
+| `gac-uac-gui-mode.prompt.md` | SVGがある場合に3つの実装workflowへ差し込む共通GUI拡張 |
 | `realtime-iac.prompt.md` | `/realtime-iac` Skill entrypoint |
 | `corrective-action-report.prompt.md` | `/corrective-action-report` Skill entrypoint |
 | `pre-development-preparation.prompt.md` | 開発前準備、repository sync、Issue、branch 作成 |

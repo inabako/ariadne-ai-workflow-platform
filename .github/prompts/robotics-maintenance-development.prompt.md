@@ -50,6 +50,19 @@ Specialist review rule:
 - 採用した外部Web RAG、採用しなかったclaim、repository evidence、required tests、unresolved human-check itemsを記録する
 - high / critical findingがある場合は、Phase 3、Phase 5、またはPhase 6へ戻す
 
+## Phase 0.5: GaC / UaC GUI Mode Dispatch
+
+Issue作業領域作成後、`work/requirements/svg-input/FEAT_*.svg`を確認し、対象SVGを`work/<採番ID>/input/gui/`へ取り込みます。
+
+```powershell
+python runtime/workflow/gui_mode.py run --issue-id "<FEAT-採番ID>"
+```
+
+- SVGが無い場合は`skipped`としてPhase 1へ進む。
+- SVGがある場合は`.github/prompts/gac-uac-gui-mode.prompt.md`に従い、既存GUIへの差分候補を生成する。
+- `runtime/workflow/gui_mode.py validate`が`pass`になるまで通常実装へ進まない。
+- generated配下は既存Widgetとの接続点、追加Panel、signal/slot、影響範囲をreviewし、必要部分だけを取り込む。
+
 ## Phase 1: Change Intent
 
 なぜ変更するのかを定義します。

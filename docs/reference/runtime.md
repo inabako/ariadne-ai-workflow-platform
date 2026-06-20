@@ -13,7 +13,7 @@
 | `runtime/rag/` | report normalization、chunking、index、retrieval |
 | `runtime/retrieval/` | sequential / parallel task runner |
 | `runtime/scm/` | repository sync、branch、commit、push |
-| `runtime/workflow/` | docs-sync、corrective-action-fix、knowledge-captureの補助CLI |
+| `runtime/workflow/` | docs-sync、corrective-action-fix、GaC/UaC GUI mode、knowledge-captureの補助CLI |
 
 ## Common CLI
 
@@ -32,6 +32,7 @@
 | `runtime/workflow/github_knowledge_maintenance.py` | GitHub knowledge maintenanceのcontext、analysis scaffold、repair plan、GitHub sync plan、RAG candidateを作る |
 | `runtime/workflow/init_corrective_action_fix.py` | corrective-action-fixのbase / issue work folderを初期化する |
 | `runtime/workflow/vscode_environment.py` | VSCode Environment workflowのwork folder、requirements scaffold、validation scaffoldを作る |
+| `runtime/workflow/gui_mode.py` | `work/requirements/svg-input/<PREFIX>_*.svg`をIssueへ取り込み、GUI設計、PyQt6候補、QTest候補を`gac-uac/`へ生成・検証する |
 | `runtime/workflow/knowledge_capture.py` | PR材料、knowledge capture report、archive readinessを作り、target repository側の `docs/evidence/<issue-id>/` scaffoldを自動生成する |
 | `runtime/workflow/validate_output_language.py` | 生成済みMarkdownが英語主体になっていないか検出する |
 | `runtime/rag/rag_dispatcher.py` | 複数queryのRAG loadを計画・実行・集約する |

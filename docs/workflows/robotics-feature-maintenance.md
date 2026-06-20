@@ -26,6 +26,7 @@ Intake
   -> Requirement Comparison
   -> GitHub Issue Draft / Create
   -> Working Branch Create
+  -> Claim FEAT_*.svg and run GaC / UaC GUI Mode
   -> Change Intent
   -> Current State Capture
   -> Impact Analysis
@@ -97,6 +98,12 @@ High / critical finding がある場合は、Change DesignまたはTest Planへ�
 - external I/O disabled or stubbed startup
 
 実robot、実camera、physical STOP、router / VPN / field networkは、QTestだけで完了扱いにせず、人間確認またはbench evidenceを残します。
+
+## GaC / UaC GUI Mode
+
+`work/requirements/svg-input/FEAT_*.svg`が存在する場合、Issue作業領域へ取り込んでから、通常実装の前に[GaC / UaC GUI Mode](gui-mode.md)を実行します。
+
+生成物は既存GUIへの追加候補です。既存Widgetとの接続点、追加Panel、signal/slot、影響範囲、既存test維持をreviewし、必要な差分だけをsourceへ統合します。
 
 ## Test Case And Evidence Flow
 
