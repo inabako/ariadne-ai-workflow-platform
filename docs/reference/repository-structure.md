@@ -1,4 +1,4 @@
-# Repository Structure
+﻿# Repository Structure
 
 この repository は、robotics workflow を実行するための prompt、Skill、runtime、template、work artifact、RAG artifact を分けて管理します。
 
@@ -43,6 +43,7 @@ templates/
   requirements/
   design-document/
   noise-reduction/
+  web-svg-layout/
   process-report/
   test-evidence/
   test-specifications/

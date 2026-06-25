@@ -1,4 +1,4 @@
-# Boilerplate Templates
+﻿# Boilerplate Templates
 
 新システム開発で、既存の共通土台からservice / appを生成するためのboilerplate置き場です。
 
@@ -38,4 +38,11 @@ Next.js webappを採用または参照する場合は、実装前に次の準備
 
 ```text
 templates/process-report/nextjs-webapp-implementation-prep-template.md
+```
+
+Web画面向けSVGレイアウト案がある場合は、`WEB_SYS_*.svg`、`WEB_FEAT_*.svg`、`WEB_FIX_*.svg` として `work/requirements/svg-input/` に配置し、次のサブフローで `web-ui/` 候補を作成します。
+
+```text
+docs/workflows/web-svg-layout-mode.md
+templates/web-svg-layout/
 ```

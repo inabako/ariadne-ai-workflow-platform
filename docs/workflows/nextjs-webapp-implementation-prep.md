@@ -1,4 +1,4 @@
-# Next.js Webapp Implementation Preparation
+﻿# Next.js Webapp Implementation Preparation
 
 Next.js 画面機能を実装する前に、対象が新規webappか既存webapp拡張かを分類し、`nextjs-webapp-template` の採用可否、画面契約、API契約、認証、環境変数、テスト方針を揃える準備サブフローです。
 
@@ -39,6 +39,7 @@ Parent workflow reaches implementation planning
   -> prepare nextjs-webapp-implementation-prep report
   -> check development environment and tool install needs
   -> run npm install after approval when dependencies are not installed
+  -> run Web SVG Layout Mode when WEB_* SVG exists
   -> define route and screen contract
   -> define UI state and component plan
   -> define API contract and auth boundary
@@ -60,6 +61,18 @@ Template:
 
 ```text
 templates/process-report/nextjs-webapp-implementation-prep-template.md
+```
+
+Web画面向けSVGがある場合は、次のサブフロー成果物も参照します。
+
+```text
+work/<issue-id>/web-ui/
+```
+
+詳細:
+
+```text
+docs/workflows/web-svg-layout-mode.md
 ```
 
 生成後は可能な限り次にも登録します。
@@ -84,6 +97,7 @@ work/<receipt-id>/context/artifact-index.json
 | Runtime | Node.js version、npm、Next.js version、App Router有無 |
 | Dependency install | `node_modules/` 有無、`npm install` 実行可否、人間承認、lockfile方針 |
 | Screen | route、user role、user action、loading、empty、error state |
+| SVG Layout | `WEB_SYS_` / `WEB_FEAT_` / `WEB_FIX_` SVG、responsive layout、component mapping、Playwright候補 |
 | API | method、request、success response、error response、auth |
 | Auth | login requirement、role、session、browser-visible data |
 | Environment | `.env.example`、server-only env、`NEXT_PUBLIC_*` env |
@@ -103,6 +117,7 @@ work/<receipt-id>/context/artifact-index.json
 - `npm install` など tool install が必要だが承認されていない。
 - `npm install` が必要なのに未実行、または失敗している。
 - template copy が既存sourceを上書きする恐れがある。
+- Web画面向けSVG候補があるのに `web-ui/` のreviewが未完了。
 - test evidence target が決まっていない。
 
 ## Handoff To Implementation
@@ -112,6 +127,7 @@ Implementationへ進める条件:
 - `Implementation may start: yes`
 - mode、target app path、template decision が明記されている。
 - screen contract と API contract が最低1件以上ある、または対象外理由がある。
+- `WEB_*` SVGを使う場合、`web-ui/responsive-layout-spec.md` と `component-mapping.md` がreview済みである。
 - auth / env / secret boundary が明記されている。
 - `npm run typecheck`、`npm run lint`、unit、e2e、health、UI smoke、API connectivity の採否が明記されている。
 - 依存関係が必要な場合、承認済みの `npm install` が完了し、少なくとも `npm run typecheck` を実行できる状態である。

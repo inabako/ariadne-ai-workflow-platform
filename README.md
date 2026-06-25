@@ -1,4 +1,4 @@
-# Intent-Driven Robotics AI Workflow
+﻿# Intent-Driven Robotics AI Workflow
 
 Localty の robotics system development を、Intent、Safety、Operational Learning を中心に進めるための AI workflow repository です。
 
@@ -25,6 +25,7 @@ Workflow を選ぶ場合:
 | 既存systemの新機能追加、bug fix、保守開発を行う | `/robotics-feature-maintenance` | [Robotics Feature Maintenance](docs/workflows/robotics-feature-maintenance.md) |
 | SVGからPyQt6画面・QTest候補を作る | 親workflow内で自動実行 | [GaC / UaC GUI Mode](docs/workflows/gui-mode.md) |
 | Next.js画面機能の実装前に画面/API/auth/env/testを揃える | 親workflow内で実行 | [Next.js Webapp Implementation Prep](docs/workflows/nextjs-webapp-implementation-prep.md) |
+| SVGからWeb画面layout・React候補・Playwright候補を作る | 親workflow内で自動実行 | [Web SVG Layout Mode](docs/workflows/web-svg-layout-mode.md) |
 | リアルタイムシステム向けIaCを設計、生成、検証、文書化する | `/realtime-iac` | [Realtime IaC](docs/workflows/realtime-iac.md) |
 | repository / branchをread-onlyで調査し、改善reportを作る | `/corrective-action-report` | [Corrective Action Report](docs/workflows/corrective-action-report.md) |
 | 改善reportからIssue、branch、修正、test、pushまで進める | `/corrective-action-fix` | [Corrective Action Fix](docs/workflows/corrective-action-fix.md) |
@@ -34,7 +35,7 @@ Workflow を選ぶ場合:
 | 完了IssueからPR材料、RAG候補、docs候補、archive準備を作る | `/knowledge-capture` | [Knowledge Capture](docs/workflows/knowledge-capture.md) |
 | reportをRAG化する、または開発前にRAGを読む | `/rag-build`, `/rag-load` | [RAG Build / Load](docs/workflows/rag-build-load.md) |
 
-GUI SVGはIssue作成前に`work/requirements/svg-input/`へ配置し、ファイル名を`SYS_<name>.svg`、`FEAT_<name>.svg`、`FIX_<name>.svg`のいずれかにします。
+GUI SVGはIssue作成前に`work/requirements/svg-input/`へ配置します。PyQt / Qt向けは`SYS_<name>.svg`、`FEAT_<name>.svg`、`FIX_<name>.svg`を使い、Web画面向けは`WEB_SYS_<name>.svg`、`WEB_FEAT_<name>.svg`、`WEB_FIX_<name>.svg`を使います。
 
 ## Core Principles
 
@@ -115,6 +116,7 @@ GITHUB_TOKEN=
 - 新規system + realtime IaC integrated workflow
 - 新機能 / 保守開発 workflow
 - Next.js webapp implementation preparation sub-workflow
+- Web SVG layout intake sub-workflow
 - リアルタイムシステム向けIaC workflow
 - corrective action report / fix workflow
 - docs-sync workflow

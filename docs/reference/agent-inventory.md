@@ -1,4 +1,4 @@
-# Agent Inventory
+﻿# Agent Inventory
 
 このページは、既存Agentの責務、RAG利用、外部Web RAG利用、専門性の不足を棚卸しするための一覧です。
 
@@ -43,6 +43,7 @@
 | `gui-layout-spec-agent.prompt.md` | full-stack | GaC / UaC GUI Mode | SYS/FEAT/FIX別のLayout仕様を作成 | 過去GUI設計と回帰findingを参照 | 原則不要 | generated候補の仕様化まで | source統合判断は親workflowへ | `layout-spec.md` |
 | `gui-pyqt6-generator-agent.prompt.md` | implementer | GaC / UaC GUI Mode | LayoutとobjectNameを持つI/O-free PyQt6候補生成 | 既存code patternを参照 | PyQt公式情報の補助確認のみ | `generated/`候補作成まで | sourceへの適用はreview必須 | `generated/pyqt6/` |
 | `gui-qtest-generator-agent.prompt.md` | implementer | GaC / UaC GUI Mode | offscreen GUI smoke、findChild、signal確認候補生成 | 既存test fixtureを参照 | PyQt QTest公式情報の補助確認のみ | `generated/`候補作成まで | 実I/O試験は親workflowへ | `generated/tests/test_gui_smoke.py` |
+| `web-svg-layout-mode.prompt.md` | full-stack | Web SVG Layout Mode | SVGをWeb route、section、component、responsive layout、React候補、Playwright候補へ変換 | 既存Webapp準備reportと実装規約を補助参照 | 対象framework公式情報の補助確認のみ | generated候補作成まで | API/auth/env/state確定は親workflowへ | `web-ui/` |
 | `robotics-architect-agent.prompt.md` | full-stack | 設計 | system structure、責務境界、architecture | 過去設計判断、incident、corrective reportを参照 | 技術選定の制約確認に使う | architecture draft作成。安全/実装確定はreview後 | Network / Go / Python / GStreamerの深掘りは専門Agentへ | `architecture.md` |
 | `robotics-runtime-agent.prompt.md` | full-stack | runtime設計 | process model、lifecycle、restart、watchdog | runtime incident、preflight、startup知見を参照 | OS/runtime公式docs確認に使う | runtime design案作成。platform挙動の確定はtest evidence後 | Python subprocess/threading、Go context/sync、systemd/MSYS2は専門Agentへ | `runtime-design.md` |
 | `network-migration-planner-agent.prompt.md` | full-stack | network計画 | LAN -> VPN -> relay -> remote ops移行計画 | 過去network issue、field noteを参照 | RFC / VPN / NAT traversal情報を参照 | migration plan作成。protocol採用はreview後 | UDP/TCP/QUIC/STUN/TURN/ICEは `network-protocol-source-reviewer` 候補 | `network-migration-plan.md` |
@@ -155,6 +156,7 @@ rag/specialist-review/<domain>/*.md
 | `/robotics-new-system` | architecture、runtime、network、deployment、safety、test strategyの専門前提が成果物を左右する | implementation前にspecialist reviewを実行し、high/critical findingはdesignへ戻す |
 | `/robotics-new-system` | Go gateway / Next.js webapp / PyQt GUI / realtime gateway IaCなど、`templates/boilerplates/` に一致するboilerplateがある | implementation前にboilerplate selectionを記録し、templateがある場合はコピー先だけを編集する |
 | `/robotics-new-system`, `/robotics-feature-maintenance`, `/corrective-action-fix` | Next.js dashboard / admin / monitoring / business webapp画面を実装する | implementation前にNext.js Webapp Implementation Prepを作成し、画面契約、API契約、auth、env、test evidenceを明示する |
+| `/robotics-new-system`, `/robotics-feature-maintenance`, `/corrective-action-fix` | Web画面向けSVG layout案がある | Web SVG Layout Modeを実行し、`web-ui/`のReact / Playwright候補をreview後に採用する |
 | `/robotics-new-system-iac` | 新システム設計成果物をIaCへ渡す前に、要件、通信仕様、port、network boundary、ADR、software inventoryの整合性が成果物を左右する | Shared Artifact Validatorを実行し、`pass` または human-approved `conditional-pass` 以外ではIaCへ進めない |
 | `/robotics-feature-maintenance` | 既存挙動、STOP、network authority、runtime ownership、operator workflowへ影響する | impact analysis、change design、test planの前後でspecialist reviewを実行する |
 | `/corrective-action-report` | finding品質が専門知識に依存する | external-webだけでfinding化せず、repo evidenceとspecialist reviewをsupporting referenceとして記録する |

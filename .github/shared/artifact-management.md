@@ -1,4 +1,4 @@
-# Artifact Management
+﻿# Artifact Management
 
 ## Purpose
 
@@ -46,6 +46,7 @@ templates/
   test-specifications/
   noise-reduction/
   boilerplates/
+  web-svg-layout/
 ```
 
 | Template Directory | Purpose |
@@ -56,6 +57,7 @@ templates/
 | `templates/test-specifications/` | テスト仕様書、テストケース表 |
 | `templates/noise-reduction/` | 要件定義前の未知用語、用語衝突、表記揺れ、資料矛盾、Human Interview、Glossary、Readiness |
 | `templates/boilerplates/` | 新規service / app / IaC生成用のboilerplate source |
+| `templates/web-svg-layout/` | Web画面向けSVG入力、responsive layout、React候補、Playwright候補 |
 
 ## Standard Template Files
 
@@ -67,6 +69,7 @@ templates/
 | `templates/test-specifications/robotics-test-specification-template.md` | `work/<採番ID>/test-specifications/` | test strategy、test case table、entry / exit criteria を定義するとき |
 | `templates/noise-reduction/` | `work/requirements/draft/<draft-stem>-noise-reduction/` | 要件review draft前にノイズ除去、Human Interview、Project Glossary、Readinessを作るとき |
 | `templates/process-report/boilerplate-template-selection-report-template.md` | `work/<採番ID>/process-report/` | 新システム実装前にboilerplate template採用可否を判断するとき |
+| `templates/web-svg-layout/` | `work/<採番ID>/web-ui/` | Web画面向けSVGからlayout / component / React / Playwright候補を作るとき |
 | `templates/boilerplates/realtime-gateway-infra-template/` | target repositoryのIaC directoryまたは `work/<採番ID>/source/repository/` | realtime gateway infrastructure をtemplateから生成するとき |
 
 ## Artifact Quality Rule
@@ -79,6 +82,7 @@ artifact は、最低限以下を満たす必要があります。
 - 要件定義前のNoise Reductionでは、Readinessが`BLOCK`のまま完成版要件定義書へ進めない
 - boilerplate templateを使う場合は、コピー元、コピー先、採用理由、変更した責務境界、必要testを記録する
 - IaC boilerplate templateを使う場合は、shared artifacts、software inventory、public exposure、secret source、firewall policy、rollback、Terraform validation結果も記録する
+- Web SVG Layout Modeのgenerated候補はreview前にtarget sourceへ直接コピーしない
 - 次のAgentまたは人間が、再探索せずに判断を継続できる粒度で書く
 
 ## Work Artifact Directories

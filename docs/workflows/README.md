@@ -1,4 +1,4 @@
-# Workflow Index
+﻿# Workflow Index
 
 このページは、Intent-Driven Robotics AI Workflow の入口を選ぶための一覧です。
 
@@ -24,6 +24,7 @@
 | Noise Reduction Phase | 要件定義前に未知用語、用語衝突、表記揺れ、資料矛盾、曖昧表現を除去する | requirement draft, related docs, RAG, glossary | `work/requirements/draft/<draft-stem>-noise-reduction/` |
 | GaC / UaC GUI Mode | 親workflow内でSVGをGUI設計・PyQt6・QTest候補へ変換する | `work/requirements/svg-input/<PREFIX>_*.svg` | `work/<issue-id>/gac-uac/` |
 | Next.js Webapp Implementation Prep | 親workflow内でNext.js画面機能の実装前準備を行う | requirements, UI/API contract, target app path | `work/<id>/process-report/nextjs-webapp-implementation-prep.md` |
+| Web SVG Layout Mode | 親workflow内でSVGをWeb layout・React候補・Playwright候補へ変換する | `work/requirements/svg-input/WEB_<PREFIX>_*.svg` | `work/<issue-id>/web-ui/` |
 | PyQt QTest Integration | PyQt / Qt GUIの結合疎通試験をテスト仕様書からQTestソースへ落とす | test case table | `src/tests/qt/test_<feature>_integration.py` |
 
 ## Decision Guide
@@ -48,6 +49,7 @@
 | PyQt GUIの結合疎通試験を自動化したい | [Corrective Action Fix](corrective-action-fix.md) |
 | SVGを渡して画面実装候補とQTest候補を作りたい | [GaC / UaC GUI Mode](gui-mode.md) |
 | Next.js画面機能を実装する前に、画面/API/auth/env/testを揃えたい | [Next.js Webapp Implementation Prep](nextjs-webapp-implementation-prep.md) |
+| SVGを渡してWeb画面のlayout、React候補、Playwright候補を作りたい | [Web SVG Layout Mode](web-svg-layout-mode.md) |
 
 ## Common Rules
 
@@ -68,6 +70,7 @@
 - 実装系workflowはIssue作成後に`work/requirements/svg-input/`から`SYS_`、`FEAT_`、`FIX_`のSVGを取り込み、SVGが無ければ`skipped`で通常flowを継続します。
 - GaC / UaCの`generated/`は候補であり、既存sourceへ無条件上書きしません。
 - Next.js画面機能を実装する場合、Implementation前に `nextjs-webapp-implementation-prep.md` を作成し、新規appか既存app拡張か、template採用可否、画面契約、API契約、auth、env、test evidenceを明示します。
+- Web画面向けSVGがある場合は`WEB_SYS_`、`WEB_FEAT_`、`WEB_FIX_`を使い、`web-ui/generated/`は候補としてreview後に採用部分だけ統合します。
 - `/realtime-iac` では、IaC検証前に `iac-test-cases.md` を作成し、Docker Desktop、Linux runtime、integration、human check の分類を明示します。
 - `/github-knowledge-maintenance` では、GitHub mutation前に `github-knowledge-analysis.json` と human-reviewed sync plan を必ず作成します。
 - PyQt / Qt GUIでは、テストケース表からQTest化できる結合疎通試験を選別し、外部I/Oは原則stub / disableします。

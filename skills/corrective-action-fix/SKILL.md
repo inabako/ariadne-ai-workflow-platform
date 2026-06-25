@@ -1,4 +1,4 @@
----
+﻿---
 name: corrective-action-fix
 description: Create a corrective action report for a specified GitHub repository and branch, store the base branch under work/<branch>, build/load RAG, create a GitHub Issue, create a separate work/issue-XXX folder with feature/issue-XXX branch, implement fixes, test, request human startup/integration approval, then push. Use when the user selects /corrective-action-fix or asks to move from improvement report creation into corrective implementation.
 ---
@@ -443,6 +443,34 @@ Rules:
 
 - Classify the work as `existing-app-feature` or `corrective-fix` unless a new app is explicitly required by the Issue.
 - Treat `templates/boilerplates/nextjs-webapp-template/` as reference-only for existing apps.
+
+### 7.8 Web SVG Layout Mode Gate
+
+If the corrective issue includes a Next.js screen and matching SVG input exists, run the Web SVG Layout Mode after Next.js Webapp Implementation Preparation and before source changes:
+
+```text
+work/requirements/svg-input/WEB_FIX_<name>.svg
+```
+
+Use:
+
+```text
+.github/prompts/web-svg-layout-mode.prompt.md
+runtime/workflow/web_svg_layout_mode.py
+templates/web-svg-layout/
+```
+
+Output:
+
+```text
+work/issue-<issue-number>/web-ui/
+```
+
+Rules:
+
+- Treat generated React and Playwright files as candidates only.
+- Preserve existing screen behavior and keep the corrective scope minimal.
+- Do not infer API contract, auth, role, env, loading, empty, or error state from SVG alone.
 - Preserve existing routing, design system, test runner, env conventions, and app-specific architecture.
 - Define route, screen purpose, user action, UI state, API contract, auth/session policy, env/secret boundary, and test evidence before implementation.
 - Do not start implementation unless `Implementation may start: yes`.
@@ -734,6 +762,7 @@ Do not move the issue folder until the user approves archive.
 - For PyQt / Qt GUI repositories, do not skip QTest source planning for automatable integration cases unless the test specification records a reason.
 - When `work/requirements/svg-input/FIX_*.svg` exists, do not skip the GaC / UaC GUI Mode Gate or copy generated candidates into source without review.
 - For Next.js screen changes, do not skip `nextjs-webapp-implementation-prep.md` or start source changes before `Implementation may start: yes`.
+- When `work/requirements/svg-input/WEB_FIX_*.svg` exists, do not skip the Web SVG Layout Mode Gate or copy generated candidates into source without review.
 - Do not push before PR material is generated and docs evidence exists under `docs/evidence/issue-<issue-number>/test_specifications`, `docs/evidence/issue-<issue-number>/ut`, and `docs/evidence/issue-<issue-number>/integration`; add `docs/evidence/issue-<issue-number>/human_check` when human confirmation is required. Scaffold `README.md` files alone are not evidence.
 - Do not run RAG registration / rebuild or move `work/issue-<issue-number>` to `work/close/issue-<issue-number>` without explicit human approval.
 - Do not delete `work/<target-branch>` until `work/<target-branch>/process-report` has been preserved under `work/close/issue-<issue-number>/process-report/base-work-<target-branch>` and the copy has been verified.

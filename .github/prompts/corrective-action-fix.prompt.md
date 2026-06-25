@@ -52,12 +52,13 @@ Flow:
 9. `work/issue-XXX/source/repository` を作り、Git branch `feature/issue-XXX` を作成する。
 10. `work/requirements/svg-input/FIX_*.svg`がある場合、Issue作業領域へ取り込み、GaC / UaC GUI ModeをFIX modeで実行する。
 11. Next.js画面機能を含む場合、Next.js Webapp Implementation Prepを実行し、画面/API/auth/env/testを確定する。
-12. 改善レポートと RAG context に従って修正する。
-13. テスト仕様書のテストケース表に従ってユニットテストを作成・実施する。
-14. PyQt / Qt GUIの場合、QTest化できる結合疎通試験をソース化して実行する。
-15. 起動確認 / 結合試験を実施する。
-16. 起動確認 / 結合試験について人間チェックを受ける。
-17. 人間チェック承認後、`feature/issue-XXX` を push する。
+12. `work/requirements/svg-input/WEB_FIX_*.svg`がある場合、Web SVG Layout Modeを実行し、layout / React / Playwright候補をreviewする。
+13. 改善レポートと RAG context に従って修正する。
+14. テスト仕様書のテストケース表に従ってユニットテストを作成・実施する。
+15. PyQt / Qt GUIの場合、QTest化できる結合疎通試験をソース化して実行する。
+16. 起動確認 / 結合試験を実施する。
+17. 起動確認 / 結合試験について人間チェックを受ける。
+18. 人間チェック承認後、`feature/issue-XXX` を push する。
 
 GaC / UaC GUI Mode:
 
@@ -79,6 +80,15 @@ templates/process-report/nextjs-webapp-implementation-prep-template.md
 
 既存Next.js appでは `nextjs-webapp-template` はreference-onlyです。画面route、user action、API contract、auth/session、env/secret境界、typecheck、lint、unit、e2e、health、UI smoke、API connectivityが未整理なら実装へ進みません。
 
+Web SVG Layout Mode:
+
+```text
+.github/prompts/web-svg-layout-mode.prompt.md
+runtime/workflow/web_svg_layout_mode.py
+```
+
+`work/requirements/svg-input/WEB_FIX_*.svg` がある場合、`work/issue-<number>/web-ui/` を生成します。React / Playwright候補は既存画面への最小修正としてreviewし、無条件コピーしません。
+
 Guardrail:
 
 - `work/issue-XXX` はフォルダ名、`feature/issue-XXX` は Git branch 名として扱う。
@@ -94,3 +104,4 @@ Guardrail:
 - PyQt / Qt GUIの場合は、承認済みテストケース表からQTest化できる結合疎通試験を選別し、`src/tests/qt/test_<feature>_integration.py` などにソース化する。
 - QTestで実UDP、GStreamer、RobotController、hardware serviceを起動する場合は、テストケース表に明示し、通常はstub / disable方針を優先する。
 - Next.js画面機能の場合は、`nextjs-webapp-implementation-prep.md` の `Implementation may start: yes` を確認してからsourceを変更する。
+- `WEB_FIX_*.svg` がある場合は、`web-ui/` のreviewとvalidateを確認してからsourceへ統合する。

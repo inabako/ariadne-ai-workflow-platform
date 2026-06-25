@@ -62,6 +62,7 @@ python runtime/workflow/gui_mode.py run --issue-id "<FEAT-採番ID>"
 - SVGがある場合は`.github/prompts/gac-uac-gui-mode.prompt.md`に従い、既存GUIへの差分候補を生成する。
 - `runtime/workflow/gui_mode.py validate`が`pass`になるまで通常実装へ進まない。
 - generated配下は既存Widgetとの接続点、追加Panel、signal/slot、影響範囲をreviewし、必要部分だけを取り込む。
+- Web画面向けSVGは`WEB_FEAT_*.svg`として配置し、Next.js Webapp Implementation Prep後に`.github/prompts/web-svg-layout-mode.prompt.md`に従って`web-ui/`のlayout、React候補、Playwright候補を生成する。
 
 ## Phase 1: Change Intent
 
@@ -225,6 +226,7 @@ work/<採番ID>/process-report/nextjs-webapp-implementation-prep.md
 
 - 既存Next.js app path、App Router有無、TypeScript有無
 - route、screen、user action、loading / empty / error state
+- `WEB_FEAT_*.svg` がある場合の `web-ui/` responsive layout、component mapping、Playwright候補
 - API request / response / error response / auth
 - `.env.example`、`NEXT_PUBLIC_*`、server-only env、secret ownership
 - typecheck、lint、unit、e2e、health、UI smoke、API connectivity
@@ -234,6 +236,7 @@ Quality Gate:
 - `Implementation may start: yes` になるまでPhase 7へ進まない。
 - templateを既存sourceへ丸ごとコピーしない。
 - API契約やauth policyが未定のまま画面実装を始めない。
+- `WEB_FEAT_*.svg` がある場合は、`.github/prompts/web-svg-layout-mode.prompt.md`を実行し、`work/<採番ID>/web-ui/`のreviewとvalidateを確認してからsourceへ統合する。
 
 ## Phase 7: Implementation
 

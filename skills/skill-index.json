@@ -1,4 +1,4 @@
-{
+﻿{
   "schema_version": "1.0",
   "skills": [
     {
@@ -154,6 +154,21 @@
         "corrective-action-fix"
       ],
       "output": "work/<id>/process-report/nextjs-webapp-implementation-prep.md"
+    },
+    {
+      "name": "web-svg-layout-mode",
+      "standalone_skill": false,
+      "prompt_path": ".github/prompts/web-svg-layout-mode.prompt.md",
+      "doc_path": "docs/workflows/web-svg-layout-mode.md",
+      "template_path": "templates/web-svg-layout/",
+      "runtime_path": "runtime/workflow/web_svg_layout_mode.py",
+      "trigger": "work/requirements/svg-input/{WEB_SYS,WEB_FEAT,WEB_FIX}_*.svg",
+      "parent_workflows": [
+        "new-robotics-system-development",
+        "robotics-maintenance-development",
+        "corrective-action-fix"
+      ],
+      "output": "work/<issue-id>/web-ui/"
     },
     {
       "name": "noise-reduction-phase",

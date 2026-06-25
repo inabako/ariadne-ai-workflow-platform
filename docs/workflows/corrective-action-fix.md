@@ -1,4 +1,4 @@
-# Corrective Action Fix
+﻿# Corrective Action Fix
 
 Corrective Action Report を作成し、RAG build/load、GitHub Issue、remote-first branch作成、修正、test、人間確認、pushまで進めるworkflowです。
 
@@ -44,13 +44,14 @@ feature/issue-<issue-number>
 13. encoding / mojibake gateを確認する。
 14. `work/requirements/svg-input/FIX_*.svg`がある場合、Issue作業領域へ取り込み、GaC / UaC GUI ModeをFIX modeで実行する。
 15. Next.js画面機能を含む場合、Next.js Webapp Implementation Prepを実行する。
-16. corrective fixを実装する。
-17. test specificationとtest evidenceを残す。
-18. PyQt / Qt GUIの場合、テストケース表を元にQTest結合テストをソース化する。
-19. startup / integration checkとhuman check gateを通す。
-20. PR材料とknowledge capture packageを作る。
-21. 人間承認後にIssue branchへpushする。
-22. Issue titleをPR titleとして `develop` へPull Requestを作成する。
+16. `work/requirements/svg-input/WEB_FIX_*.svg`がある場合、Web SVG Layout Modeを実行する。
+17. corrective fixを実装する。
+18. test specificationとtest evidenceを残す。
+19. PyQt / Qt GUIの場合、テストケース表を元にQTest結合テストをソース化する。
+20. startup / integration checkとhuman check gateを通す。
+21. PR材料とknowledge capture packageを作る。
+22. 人間承認後にIssue branchへpushする。
+23. Issue titleをPR titleとして `develop` へPull Requestを作成する。
 
 ## GaC / UaC GUI Mode
 
@@ -69,6 +70,18 @@ work/issue-<issue-number>/process-report/nextjs-webapp-implementation-prep.md
 ```
 
 既存Next.js appでは `nextjs-webapp-template` はreference-onlyです。route、user action、API contract、auth/session、env/secret境界、typecheck、lint、unit、e2e、health、UI smoke、API connectivityが未整理なら実装へ進みません。
+
+## Web SVG Layout Mode
+
+改善対象にNext.js画面が含まれ、`work/requirements/svg-input/WEB_FIX_*.svg` が存在する場合、`work/issue-<number>/input/web-ui/` へ取り込み、[Web SVG Layout Mode](web-svg-layout-mode.md)を実行します。
+
+出力:
+
+```text
+work/issue-<issue-number>/web-ui/
+```
+
+生成されたReact / Playwright候補は、既存画面の最小修正、既存挙動維持、回帰防止の観点でreviewし、採用部分だけsourceへ統合します。
 
 ## External Web RAG Support
 

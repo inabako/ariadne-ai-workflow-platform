@@ -1,4 +1,4 @@
-# Next.js Webapp Template
+﻿# Next.js Webapp Template
 
 This is a reusable boilerplate for Next.js dashboard, admin, monitoring, and business web applications. Copy this directory to a new app repository or service directory, then edit only the copy.
 
@@ -147,6 +147,15 @@ Template:
 
 ```text
 templates/process-report/nextjs-webapp-implementation-prep-template.md
+```
+
+When a screen layout is provided as SVG, use the repository workflow to convert it into reviewed layout candidates before implementation:
+
+```text
+docs/workflows/web-svg-layout-mode.md
+work/requirements/svg-input/WEB_SYS_<name>.svg
+work/requirements/svg-input/WEB_FEAT_<name>.svg
+work/requirements/svg-input/WEB_FIX_<name>.svg
 ```
 
 ## Guardrails

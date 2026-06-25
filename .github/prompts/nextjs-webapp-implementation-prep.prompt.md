@@ -1,4 +1,4 @@
----
+﻿---
 name: nextjs-webapp-implementation-prep
 description: 親workflow内でNext.js画面機能の実装前に、新規/既存分類、boilerplate採用可否、画面契約、API契約、auth、env、testを整理します。
 argument-hint: "<work-id> [target-app-path]"
@@ -18,6 +18,7 @@ agent: agent
 - backend API contract
 - UI requirements or screen list
 - target repository / branch / app path
+- Web SVG Layout Mode output, when `WEB_*` SVG exists
 - test strategy
 - boilerplate-template-selection report, when available
 
@@ -42,12 +43,13 @@ templates/process-report/nextjs-webapp-implementation-prep-template.md
 3. `existing-app-feature` または `corrective-fix` の場合、templateはreference-onlyとして扱い、既存appのrouting、layout、test runner、env規約を先に確認する。
 4. Node.js、npm、scripts、env files、port、Docker要否、tool install承認状態を確認する。
 5. `node_modules/` が無い、または依存関係が古い場合は、承認後に対象app directoryで `npm install` を実行する。
-6. route、screen purpose、user role、entry action、loading state、empty state、error stateを定義する。
-7. API method、request、success response、error response、auth requirement、ownerを定義する。
-8. auth/session policy、browser-visible env、server-only env、secret ownershipを定義する。
-9. typecheck、lint、unit、e2e、health、UI smoke、API connectivity、Docker smokeの採否を決める。
-10. blocking QAが残る場合は停止する。
-11. `Implementation may start: yes` の場合だけ実装へ渡す。
+6. `WEB_SYS_`、`WEB_FEAT_`、`WEB_FIX_` SVGがある場合、`.github/prompts/web-svg-layout-mode.prompt.md` に従って `web-ui/` を生成し、review結果を参照する。
+7. route、screen purpose、user role、entry action、loading state、empty state、error stateを定義する。
+8. API method、request、success response、error response、auth requirement、ownerを定義する。
+9. auth/session policy、browser-visible env、server-only env、secret ownershipを定義する。
+10. typecheck、lint、unit、e2e、health、UI smoke、API connectivity、Docker smokeの採否を決める。
+11. blocking QAが残る場合は停止する。
+12. `Implementation may start: yes` の場合だけ実装へ渡す。
 
 ## 停止条件
 
@@ -60,6 +62,7 @@ templates/process-report/nextjs-webapp-implementation-prep-template.md
 - required tool installが必要だが人間承認されていない。
 - `npm install` が必要なのに未実行、または失敗している。
 - template copy destinationが既存sourceを上書きする恐れがある。
+- `WEB_*` SVGがあるのにWeb SVG Layout Modeのreviewが未完了。
 - test evidence targetが未定。
 
 ## 守ること

@@ -1,4 +1,4 @@
-# Workflow Flowcharts
+﻿# Workflow Flowcharts
 
 各AI workflowの動作イメージを掴むためのMermaid式flowchartです。
 
@@ -42,11 +42,14 @@ flowchart TD
   I --> J[Test strategy]
   J --> K{PyQt / Qt GUI?}
   K -- yes --> L[QTest source plan]
-  K -- no --> M[Implementation]
+  K -- no --> M{Web SVG?}
   L --> M
-  M --> N[Integration / bench test]
-  N --> O[Limited field test]
-  O --> P[Release / handover]
+  M -- yes --> N[Web SVG Layout Mode]
+  M -- no --> O[Implementation]
+  N --> O
+  O --> P[Integration / bench test]
+  P --> Q[Limited field test]
+  Q --> R[Release / handover]
 ```
 
 ## Robotics New System + Realtime IaC
@@ -95,11 +98,14 @@ flowchart TD
   I --> J[Test plan]
   J --> K{PyQt / Qt GUI?}
   K -- yes --> L[QTest source plan]
-  K -- no --> M[Implementation]
+  K -- no --> M{Web SVG?}
   L --> M
-  M --> N[Verification]
-  N --> O[Deployment plan]
-  O --> P[Post-change observation]
+  M -- yes --> N[Web SVG Layout Mode]
+  M -- no --> O[Implementation]
+  N --> O
+  O --> P[Verification]
+  P --> Q[Deployment plan]
+  Q --> R[Post-change observation]
 ```
 
 ## Corrective Action Report
@@ -169,10 +175,13 @@ flowchart TD
   M -- yes --> N[Create QTest integration sources]
   M -- no --> O[Unit / integration tests]
   N --> O
-  O --> P[Human startup / integration gate]
-  P --> Q[Knowledge capture / PR materials]
-  Q --> R[Push issue branch]
-  R --> S[Open PR to develop]
+  O --> P{Web SVG?}
+  P -- yes --> Q[Web SVG Layout Mode]
+  P -- no --> R[Human startup / integration gate]
+  Q --> R
+  R --> S[Knowledge capture / PR materials]
+  S --> T[Push issue branch]
+  T --> U[Open PR to develop]
 ```
 
 ## Docs Sync

@@ -1,4 +1,4 @@
-# Robotics Feature Maintenance
+﻿# Robotics Feature Maintenance
 
 既存 robotics system の新機能追加、bug fix、hardware replacement、network change、deployment change、field issue response、運用改善を扱うworkflowです。
 
@@ -36,6 +36,7 @@ Intake
   -> Test Plan
   -> PyQt QTest Source Plan when GUI uses PyQt / Qt
   -> Next.js Webapp Implementation Prep when change includes Next.js
+  -> Web SVG Layout Mode when WEB_FEAT SVG exists
   -> Implementation
   -> Verification
   -> Deployment Plan
@@ -127,6 +128,18 @@ work/<receipt-id>/process-report/nextjs-webapp-implementation-prep.md
 - typecheck、lint、unit、e2e、health、UI smoke、API connectivity
 
 `Implementation may start: yes` になるまでImplementationへ進みません。
+
+## Web SVG Layout Mode
+
+変更対象にNext.js画面が含まれ、`work/requirements/svg-input/WEB_FEAT_*.svg` が存在する場合、Issue作業領域へ取り込んでから、Implementation前に[Web SVG Layout Mode](web-svg-layout-mode.md)を実行します。
+
+出力:
+
+```text
+work/<receipt-id>/web-ui/
+```
+
+既存appでは生成されたReact / Playwright候補をそのまま上書きせず、既存routing、design system、test fixtureとの差分としてreviewします。
 
 ## Test Case And Evidence Flow
 

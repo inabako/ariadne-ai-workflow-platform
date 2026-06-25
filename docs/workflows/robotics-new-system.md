@@ -1,4 +1,4 @@
-# Robotics New System
+﻿# Robotics New System
 
 新しい robotics system、robot runtime、remote operation system、device integration、architecture-level launch を始めるworkflowです。
 
@@ -38,6 +38,7 @@ Intake
   -> PyQt QTest Source Plan when GUI uses PyQt / Qt
   -> Boilerplate Template Selection
   -> Next.js Webapp Implementation Prep when system includes Next.js
+  -> Web SVG Layout Mode when WEB_SYS SVG exists
   -> Implementation
   -> Integration / Bench Test
   -> Limited Field Test
@@ -156,6 +157,18 @@ work/<receipt-id>/process-report/nextjs-webapp-implementation-prep.md
 - typecheck、lint、unit、e2e、health、UI smoke、API connectivity、Docker smoke
 
 `Implementation may start: yes` になるまでImplementationへ進みません。
+
+## Web SVG Layout Mode
+
+新システムにNext.js画面が含まれ、`work/requirements/svg-input/WEB_SYS_*.svg` が存在する場合、Issue作業領域へ取り込んでから、Implementation前に[Web SVG Layout Mode](web-svg-layout-mode.md)を実行します。
+
+出力:
+
+```text
+work/<receipt-id>/web-ui/
+```
+
+SVGからroute、section、component責務、responsive layout、React候補、Playwright候補を作ります。生成物は候補であり、Next.js Webapp Implementation Prepの画面契約、API契約、auth、env、test方針と照合してから採用します。
 
 ## Test Case And Evidence Flow
 

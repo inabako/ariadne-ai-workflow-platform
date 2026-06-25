@@ -26,6 +26,7 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 | `robotics-feature-maintenance.prompt.md` | `/robotics-feature-maintenance` Skill entrypoint |
 | `gac-uac-gui-mode.prompt.md` | SVGがある場合に3つの実装workflowへ差し込む共通GUI拡張 |
 | `nextjs-webapp-implementation-prep.prompt.md` | Next.js画面機能がある場合に3つの実装workflowへ差し込む実装前準備 |
+| `web-svg-layout-mode.prompt.md` | Web画面向けSVGがある場合に3つの実装workflowへ差し込む画面layout拡張 |
 | `realtime-iac.prompt.md` | `/realtime-iac` Skill entrypoint |
 | `corrective-action-report.prompt.md` | `/corrective-action-report` Skill entrypoint |
 | `pre-development-preparation.prompt.md` | 開発前準備、repository sync、Issue、branch 作成 |
@@ -130,6 +131,7 @@ intent / requirements
   -> deployment architect
   -> shared artifact validator when IaC is in scope
   -> safety / security / network / observability reviews
+  -> run Web SVG Layout Mode when WEB_* SVG exists
   -> robotics tester
   -> implementer
   -> documentation writer

@@ -1,4 +1,4 @@
-# Localty Agent Prompts
+﻿# Localty Agent Prompts
 
 このディレクトリには、Intent-Driven Robotics Workflow で利用する Agent prompt を格納します。
 
@@ -39,6 +39,7 @@
 | `gui-layout-spec-agent.prompt.md` | SYS / FEAT / FIX別の実装可能Layout仕様作成 | `gac-uac/layout-spec.md` |
 | `gui-pyqt6-generator-agent.prompt.md` | 外部I/OなしのPyQt6候補生成 | `gac-uac/generated/pyqt6/` |
 | `gui-qtest-generator-agent.prompt.md` | offscreen実行可能なQTest smoke候補生成 | `gac-uac/generated/tests/test_gui_smoke.py` |
+| `web-svg-layout-mode.prompt.md` | SVGからWeb route、component、responsive layout、React候補、Playwright候補を生成 | `web-ui/` |
 | `robotics-architect-agent.prompt.md` | システム構造と責務境界 | `architecture.md` |
 | `shared-artifact-validator-agent.prompt.md` | 新システム設計成果物をIaC投入可能なShared Artifactsとして検証 | `shared-artifact-validation.md`, `shared-artifact-validation.json` |
 | `robotics-runtime-agent.prompt.md` | process model、lifecycle、restart、watchdog | `runtime-design.md` |
@@ -96,6 +97,7 @@ draft bullets
   -> deployment architect
   -> shared artifact validator when new-system output feeds IaC
   -> claim prefixed SVG from work/requirements/svg-input and run GaC / UaC GUI agents
+  -> run Web SVG Layout Mode when WEB_* SVG exists
   -> safety / security / network / observability reviews
   -> robotics tester
   -> realtime IaC agents when IaC is in scope

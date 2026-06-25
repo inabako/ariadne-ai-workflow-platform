@@ -35,6 +35,7 @@ runtime/intake/intake_requirements.py
 runtime/environment/preflight.py
 runtime/workflow/init_corrective_action_fix.py
 runtime/workflow/vscode_environment.py
+runtime/workflow/web_svg_layout_mode.py
 runtime/retrieval/task_runner.py
 runtime/scm/prepare_repository.py
 runtime/scm/compare_requirements.py
@@ -62,6 +63,8 @@ runtime/rag/standardize_corrective_report_names.py
 `vscode_environment.py` は、VSCode Environment workflow 用に `work/<id>/` を初期化し、`workspace-requirements.md` と `workspace-shared-artifact-validation` のscaffoldを作成します。
 
 `gui_mode.py` は、`work/requirements/svg-input/`の`SYS_*.svg`、`FEAT_*.svg`、`FIX_*.svg`をIssue作業領域へ取り込み、Semantic Layout Graph、Widget Mapping、Layout Spec、PyQt6候補、QTest候補を`gac-uac/`へ生成します。SVGが無い場合は`skipped`で親workflowへ戻り、生成候補をtarget sourceへ自動コピーしません。
+
+`web_svg_layout_mode.py` は、`work/requirements/svg-input/`の`WEB_SYS_*.svg`、`WEB_FEAT_*.svg`、`WEB_FIX_*.svg`をIssue作業領域へ取り込み、route layout map、component mapping、responsive layout spec、React候補、Playwright候補を`web-ui/`へ生成します。SVGが無い場合は`skipped`で親workflowへ戻り、生成候補をtarget sourceへ自動コピーしません。
 
 `task_runner.py` は、`task-plan.schema.json` に沿ったtask planを読み込み、sequential / parallel に処理して `process-report/` へ実行レポートを出力します。
 

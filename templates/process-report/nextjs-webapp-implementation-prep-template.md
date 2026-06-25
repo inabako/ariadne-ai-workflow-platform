@@ -1,4 +1,4 @@
----
+﻿---
 project:
 receipt_id:
 repository:
@@ -36,6 +36,7 @@ Next.js 画面機能の実装前に、新規webapp作成か既存webapp拡張か
 | Requirements |  | present / missing / partial |  |
 | Product / UI requirements |  | present / missing / partial |  |
 | Backend API contract |  | present / missing / partial |  |
+| Web SVG Layout output |  | present / missing / not-applicable |  |
 | Existing app source |  | present / missing / not-applicable |  |
 | Boilerplate selection report |  | present / missing / not-applicable |  |
 | Test strategy |  | present / missing / partial |  |
@@ -92,6 +93,22 @@ UI方針は既存design systemを優先します。新規appの場合だけtempl
 | Form validation | client / server / both / not-applicable |  |
 | Responsive requirement | desktop-only / desktop+tablet / desktop+mobile |  |
 | Accessibility requirement | baseline / enhanced / product-specific |  |
+
+## Web SVG Layout Reference
+
+SVGレイアウト案がある場合、`WEB_SYS_`、`WEB_FEAT_`、`WEB_FIX_` のいずれかとして取り込み、`web-ui/` の成果物を参照します。生成物は候補であり、既存sourceへ自動コピーしません。
+
+| Field | Value |
+| --- | --- |
+| SVG input used | yes / no / not-applicable |
+| SVG prefix | WEB_SYS / WEB_FEAT / WEB_FIX / none |
+| Output directory | `work/<issue-id>/web-ui/` |
+| Responsive layout spec |  |
+| Component mapping |  |
+| Generated React candidate |  |
+| Generated Playwright candidate |  |
+| Review status | pending / approved / rejected / not-applicable |
+| Integration decision | adopt / partial / reference-only / blocked / not-applicable |
 
 ## API Contract
 
@@ -156,6 +173,7 @@ blocking itemがある場合は、表を空欄のまま進めず、ownerとresol
 | Required tool install is needed but not human-approved |  |  |  |
 | `npm install` is required but has not completed successfully |  |  |  |
 | Template copy destination may overwrite existing source |  |  |  |
+| Web SVG layout review is incomplete when SVG input exists |  |  |  |
 
 ## Decisions
 

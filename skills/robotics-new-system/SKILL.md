@@ -1,4 +1,4 @@
----
+﻿---
 name: robotics-new-system
 description: Start the Intent-Driven Robotics AI Workflow for creating a new robotics system, robot runtime, remote operation system, device integration, or architecture-level system launch. Use when the user selects /robotics-new-system or asks to begin a new robotics system development flow from a completed requirement document in work/requirements/.
 ---
@@ -52,6 +52,7 @@ Do not treat chat history as a substitute for an accepted requirement document.
 7. Before implementation, create the issue test case tables and evidence plan.
 8. Before implementation, run the Boilerplate Template Selection Gate. If a matching boilerplate template exists under `templates/boilerplates/`, use it as the starting point. If no matching template exists, record the reason and continue with traditional coding.
 9. If the system includes a Next.js dashboard, admin, monitoring, or business webapp, run the Next.js Webapp Implementation Preparation Gate before source changes.
+10. If matching `work/requirements/svg-input/WEB_SYS_*.svg` exists, run the Web SVG Layout Mode and validate `web-ui/` before source changes.
 10. Preserve artifacts under `work/<receipt-id>/`.
 11. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, boilerplate selection result, Next.js webapp preparation result, and handoff context as JSON where schemas exist.
 
@@ -61,6 +62,7 @@ Before the workflow starts, the human places SVG files under:
 
 ```text
 work/requirements/svg-input/SYS_<name>.svg
+work/requirements/svg-input/WEB_SYS_<name>.svg
 ```
 
 Initialize the shared input inbox when needed:
@@ -158,6 +160,36 @@ Rules:
 - Classify the work as `new-app`, `existing-app-feature`, or `corrective-fix`.
 - For `new-app`, evaluate `templates/boilerplates/nextjs-webapp-template/` as the copy source.
 - For existing apps, treat `nextjs-webapp-template` as reference-only and preserve existing routing, design system, test runner, and env conventions.
+
+## Web SVG Layout Mode Gate
+
+Run this gate after Next.js Webapp Implementation Preparation and before source changes when the new system includes a Next.js screen and a matching SVG exists.
+
+Use:
+
+```text
+.github/prompts/web-svg-layout-mode.prompt.md
+runtime/workflow/web_svg_layout_mode.py
+templates/web-svg-layout/
+```
+
+Input:
+
+```text
+work/requirements/svg-input/WEB_SYS_<name>.svg
+```
+
+Output:
+
+```text
+work/<receipt-id>/web-ui/
+```
+
+Rules:
+
+- Do not copy generated React or Playwright candidates into target source without review.
+- Do not infer API contract, auth, role, env, loading, empty, or error state from SVG alone.
+- Validate `web-ui/` before implementation and reflect accepted items into the Next.js preparation report.
 - Define route, screen purpose, user action, UI state, API contract, auth/session policy, env/secret boundary, and test evidence before implementation.
 - Do not start implementation unless `Implementation may start: yes`.
 

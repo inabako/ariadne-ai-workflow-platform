@@ -1,4 +1,4 @@
-# Templates
+﻿# Templates
 
 `templates/` は、workflow成果物のひな形を置く場所です。
 
@@ -19,6 +19,7 @@ templates/
   noise-reduction/
   boilerplates/
   gui-mode/
+  web-svg-layout/
 ```
 
 ## Current Templates
@@ -37,6 +38,7 @@ templates/
 | `templates/noise-reduction/` | `*-report-template.md`, `human-interview-sheet-template.md`, `project-glossary-template.md`, `readiness-report-template.md` | 要件定義前の未知用語、用語衝突、表記揺れ、資料矛盾、曖昧表現、Human Interview、Glossary、Readiness成果物 |
 | `templates/boilerplates/` | `gateway-template/`, `nextjs-webapp-template/`, `pyqt-template/`, `realtime-gateway-infra-template/` | 新規Go gateway / Next.js webapp / PyQt GUI / realtime gateway IaCをtemplateから生成するためのboilerplate置き場 |
 | `templates/gui-mode/` | `README.md` | SVG入力、GaC / UaC生成、親workflowへの安全な返却方法 |
+| `templates/web-svg-layout/` | `README.md` | Web画面向けSVG入力、layout / React / Playwright候補、親workflowへの安全な返却方法 |
 
 ## Quality Rules
 
@@ -49,6 +51,7 @@ templates/
 - safety-critical な内容では STOP、communication loss、startup safe state、shutdown safe state を確認する。
 - PyQt / Qt GUIでは、結合疎通試験のうちQTest化できるものと人間確認に残すものを分ける。
 - SVG入力がある場合はGaC / UaC GUI Modeで論理Layoutへ変換し、generated候補を既存sourceへ直接上書きしない。
+- Web画面向けSVG入力がある場合はWeb SVG Layout Modeでresponsive layoutへ変換し、React / Playwright候補を既存sourceへ直接上書きしない。
 - 要件定義前のNoise Reduction Phaseでは、`templates/noise-reduction/` を使い、Readinessが`BLOCK`の場合は完成版要件定義書へ進めない。
 - 新システム実装では、`templates/boilerplates/` に一致するboilerplateがあるか確認し、採用または不採用の理由をprocess reportに残す。
 - Next.js画面機能を実装する場合、Implementation前に `templates/process-report/nextjs-webapp-implementation-prep-template.md` を使い、新規/既存分類、画面契約、API契約、auth、env、test evidenceを確認する。

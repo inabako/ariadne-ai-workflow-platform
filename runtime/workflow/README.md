@@ -1,14 +1,14 @@
 # Runtime Workflow
 
-`runtime/workflow/` contains workflow-level helper commands.
+`runtime/workflow/` は、workflow 単位の補助コマンドを置くディレクトリです。
 
-## Commands
+## コマンド
 
 ### `gui_mode.py`
 
-Checks `work/requirements/svg-input/<PREFIX>_*.svg`, claims matching files into the Issue work area, and dispatches the shared GaC / UaC GUI Mode extension.
+`work/requirements/svg-input/<PREFIX>_*.svg` を確認し、対象SVGをIssue作業領域へ取り込んだうえで、共通拡張である GaC / UaC GUI Mode を実行します。
 
-Examples:
+実行例:
 
 ```powershell
 python runtime/workflow/gui_mode.py init-input
@@ -16,7 +16,7 @@ python runtime/workflow/gui_mode.py run --issue-id SYS-0001
 python runtime/workflow/gui_mode.py validate --issue-id SYS-0001
 ```
 
-Corrective Action compatibility:
+Corrective Action 互換の実行例:
 
 ```powershell
 python runtime/workflow/gui_mode.py run `
@@ -25,13 +25,36 @@ python runtime/workflow/gui_mode.py run `
   --mode corrective-improvement
 ```
 
-`SYS_`, `FEAT_`, and `FIX_` filename prefixes select the parent flow. Matching files are moved into `work/<issue-id>/input/gui/` after the Issue work area exists. No SVG returns `status: skipped`. Generated PyQt6 and QTest files remain candidates under `gac-uac/generated/` and are never copied into target source automatically.
+`SYS_`、`FEAT_`、`FIX_` のファイル名prefixで親workflowを選別します。Issue作業領域が作成された後、対象ファイルは `work/<issue-id>/input/gui/` へ移動されます。SVGが無い場合は `status: skipped` を返します。生成された PyQt6 / QTest ファイルは `gac-uac/generated/` 配下の候補として扱い、target source へ自動コピーしません。
+
+### `web_svg_layout_mode.py`
+
+`work/requirements/svg-input/WEB_<PREFIX>_*.svg` を確認し、対象SVGをIssue作業領域へ取り込んだうえで、共通拡張である Web SVG Layout Mode を実行します。
+
+実行例:
+
+```powershell
+python runtime/workflow/web_svg_layout_mode.py init-input
+python runtime/workflow/web_svg_layout_mode.py run --issue-id SYS-0001
+python runtime/workflow/web_svg_layout_mode.py validate --issue-id SYS-0001
+```
+
+Corrective Action 互換の実行例:
+
+```powershell
+python runtime/workflow/web_svg_layout_mode.py run `
+  --issue-id FIX-123 `
+  --work-dir work/issue-123 `
+  --mode corrective-fix
+```
+
+`WEB_SYS_`、`WEB_FEAT_`、`WEB_FIX_` のファイル名prefixで Web UI mode を選別します。これにより、PyQt / Qt GUI mode の `SYS_`、`FEAT_`、`FIX_` と衝突しません。既存互換として `NEXT_SYS_`、`NEXT_FEAT_`、`NEXT_FIX_` の入力も受け付けます。対象ファイルはIssue作業領域作成後に `work/<issue-id>/input/web-ui/` へ移動されます。SVGが無い場合は `status: skipped` を返します。生成された React / Playwright ファイルは `web-ui/generated/` 配下の候補として扱い、target source へ自動コピーしません。
 
 ### `docs_sync.py`
 
-Initializes documentation sync work folders, creates a docs drift analysis JSON scaffold, and creates a GitHub Issue body from that JSON.
+docs sync 用の作業フォルダを初期化し、ドキュメント差分分析JSONのひな形と、GitHub Issue body を生成します。
 
-Examples:
+実行例:
 
 ```powershell
 python runtime/workflow/docs_sync.py init `
@@ -45,20 +68,20 @@ python runtime/workflow/docs_sync.py issue-body `
   --work-id develop
 ```
 
-Primary artifacts:
+主な成果物:
 
 ```text
 work/<target-branch>/context/docs-drift-analysis.json
 work/<target-branch>/process-report/docs-sync-issue-body-*.md
 ```
 
-This command does not create GitHub Issues, change docs, push branches, run RAG registration, or move archives by itself.
+このコマンド単体では、GitHub Issue作成、docs変更、branch push、RAG登録、archive移動は行いません。
 
 ### `github_knowledge_maintenance.py`
 
-Initializes GitHub Repository Knowledge Maintenance work folders, creates an analysis JSON scaffold, and generates human review plans for repair, GitHub sync, and RAG candidates.
+GitHub Repository Knowledge Maintenance 用の作業フォルダを初期化し、分析JSONのひな形、修復案、GitHub同期案、RAG候補を生成します。
 
-Examples:
+実行例:
 
 ```powershell
 python runtime/workflow/github_knowledge_maintenance.py init `
@@ -80,7 +103,7 @@ python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
   --work-id github-knowledge-localty-system-gui-recent
 ```
 
-Primary artifacts:
+主な成果物:
 
 ```text
 work/<work-id>/context/github-knowledge-analysis.json
@@ -89,17 +112,17 @@ work/<work-id>/process-report/github-documentation-sync-plan-*.md
 work/<work-id>/process-report/github-knowledge-rag-candidate-*.md
 ```
 
-This command does not mutate GitHub, clone repositories, change source code, rewrite Git history, or publish RAG unless the approved subcommand options are provided.
+このコマンド単体では、GitHubの変更、repository clone、source code変更、Git履歴の書き換え、RAG公開は行いません。承認済みのsubcommand optionが指定された場合だけ、該当処理を実行します。
 
 ### `init_corrective_action_fix.py`
 
-Initializes base and issue work folders for the corrective action fix workflow.
+Corrective Action Fix workflow 用に、base作業フォルダとIssue作業フォルダを初期化します。
 
 ### `vscode_environment.py`
 
-Initializes VSCode Environment workflow work folders and creates requirements / validation scaffolds.
+VSCode Environment workflow 用の作業フォルダを初期化し、要件定義・検証用のscaffoldを作成します。
 
-Examples:
+実行例:
 
 ```powershell
 python runtime/workflow/vscode_environment.py init `
@@ -123,7 +146,7 @@ python runtime/workflow/vscode_environment.py rag-template `
   --repository localty
 ```
 
-Primary artifacts:
+主な成果物:
 
 ```text
 work/<work-id>/design-document/workspace-requirements.md
@@ -134,15 +157,15 @@ rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 rag/normalized/<uuid>.json
 ```
 
-The workspace-environment Markdown is the human-reviewable source note. After human approval, the final reusable knowledge must be normalized into UUID-named JSON under `rag/normalized/`.
+`workspace-environment` Markdown は、人間がreviewするためのsource noteです。人間承認後、再利用可能な最終知識は `rag/normalized/` 配下のUUID名JSONへ正規化します。
 
-This command does not edit the target workspace, install tools, change VSCode files, or run the RAG normalization pipeline by itself.
+このコマンド単体では、target workspace の編集、tool install、VSCode file変更、RAG正規化pipelineの実行は行いません。
 
 ### `knowledge_capture.py`
 
-Generates the final knowledge-capture package for a completed issue workflow.
+完了済みIssue workflow向けに、最終knowledge capture packageを生成します。
 
-Example:
+実行例:
 
 ```powershell
 python runtime/workflow/knowledge_capture.py `
@@ -152,7 +175,7 @@ python runtime/workflow/knowledge_capture.py `
   --base-work-id develop
 ```
 
-Outputs:
+出力:
 
 ```text
 work/<issue-id>/process-report/pull-request-title.md
@@ -162,13 +185,13 @@ work/<issue-id>/process-report/knowledge-capture-report.md
 work/<issue-id>/process-report/knowledge-capture-*.json
 ```
 
-This command does not push, run RAG registration, or move archives. It prepares reports and readiness checks for human approval.
+このコマンド単体では、push、RAG登録、archive移動は行いません。人間承認に向けたreportとreadiness checkを準備します。
 
-When `--base-work-id` is provided, the report also records the required base work reset:
+`--base-work-id` を指定した場合、reportには必要なbase work resetも記録されます。
 
 ```text
 work/<base-work-id>/process-report
   -> work/close/<issue-id>/process-report/base-work-<base-work-id>
 ```
 
-Delete `work/<base-work-id>` only after that copy is verified and the user approves deletion.
+`work/<base-work-id>` は、上記copyが検証され、ユーザーが削除を承認した後にのみ削除します。

@@ -1,4 +1,4 @@
----
+﻿---
 name: robotics-feature-maintenance
 description: Start the Intent-Driven Robotics AI Workflow for adding a new feature to an existing robotics system or performing maintenance development such as bug fix, hardware replacement, network change, deployment change, field issue response, or operational improvement. Use when the user selects /robotics-feature-maintenance or asks to begin feature or maintenance work from a completed requirement document in work/requirements/.
 ---
@@ -51,6 +51,7 @@ Do not treat chat history as a substitute for an accepted requirement document.
 6. Run `/robotics-maintenance-development` only after relevant RAG context has been loaded and summarized.
 7. Before implementation, create the issue test case tables and evidence plan.
 8. If the change includes a Next.js dashboard, admin, monitoring, or business webapp screen, run the Next.js Webapp Implementation Preparation Gate before source changes.
+9. If matching `work/requirements/svg-input/WEB_FEAT_*.svg` exists, run the Web SVG Layout Mode and validate `web-ui/` before source changes.
 9. Preserve artifacts under `work/<receipt-id>/`.
 10. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, Next.js webapp preparation result, and handoff context as JSON where schemas exist.
 
@@ -60,6 +61,7 @@ Before the workflow starts, the human places SVG files under:
 
 ```text
 work/requirements/svg-input/FEAT_<name>.svg
+work/requirements/svg-input/WEB_FEAT_<name>.svg
 ```
 
 After the Issue work area exists, dispatch:
@@ -114,6 +116,36 @@ Rules:
 
 - Classify the work as `existing-app-feature` or `corrective-fix` unless a new app is explicitly required.
 - Treat `templates/boilerplates/nextjs-webapp-template/` as reference-only for existing apps.
+
+## Web SVG Layout Mode Gate
+
+Run this gate after Next.js Webapp Implementation Preparation and before source changes when the maintenance change includes a Next.js screen and a matching SVG exists.
+
+Use:
+
+```text
+.github/prompts/web-svg-layout-mode.prompt.md
+runtime/workflow/web_svg_layout_mode.py
+templates/web-svg-layout/
+```
+
+Input:
+
+```text
+work/requirements/svg-input/WEB_FEAT_<name>.svg
+```
+
+Output:
+
+```text
+work/<receipt-id>/web-ui/
+```
+
+Rules:
+
+- Treat generated React and Playwright files as candidates only.
+- Preserve existing routing, design system, test runner, and env conventions.
+- Do not infer API contract, auth, role, env, loading, empty, or error state from SVG alone.
 - Preserve existing routing, design system, test runner, env conventions, and app-specific architecture.
 - Define route, screen purpose, user action, UI state, API contract, auth/session policy, env/secret boundary, and test evidence before implementation.
 - Do not start implementation unless `Implementation may start: yes`.
