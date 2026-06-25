@@ -19,6 +19,7 @@ Workflow を選ぶ場合:
 | やりたいこと | Entry point | Guide |
 | --- | --- | --- |
 | 箇条書き草案から要件定義書を作る | `/requirement-discovery` | [Requirement Discovery](docs/workflows/requirement-discovery.md) |
+| 要件定義前に未知用語、表記揺れ、資料矛盾、曖昧表現を除去する | `/requirement-discovery` 内で実行 | [Noise Reduction Phase](docs/workflows/noise-reduction-phase.md) |
 | 新しいrobotics systemを始める | `/robotics-new-system` | [Robotics New System](docs/workflows/robotics-new-system.md) |
 | 新システム設計からShared Artifacts検証、IaC連携まで一気通貫で行う | `/robotics-new-system-iac` | [Robotics New System + IaC](docs/workflows/robotics-new-system-iac.md) |
 | 既存systemの新機能追加、bug fix、保守開発を行う | `/robotics-feature-maintenance` | [Robotics Feature Maintenance](docs/workflows/robotics-feature-maintenance.md) |
@@ -109,6 +110,7 @@ GITHUB_TOKEN=
 現在は以下を整備済みです。
 
 - 要件定義書 discovery / intake
+- Noise Reduction Phase for requirement discovery
 - 新規system workflow
 - 新規system + realtime IaC integrated workflow
 - 新機能 / 保守開発 workflow

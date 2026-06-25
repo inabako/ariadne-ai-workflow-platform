@@ -34,12 +34,41 @@ work/requirements/<completed-requirements>.md
 
 1. `work/requirements/draft/` の草案を読む。
 2. blocking clarification があれば質問する。
-3. 知見不足の領域があれば `knowledge gap` として記録する。
-4. 必要なら内部RAG contextを補助的に読む。
-5. 外部知識が必要なら [External Web RAG](external-web-rag.md) を使う。
-6. 専門知識が質問品質や制約整理に影響する場合はSpecialist AgentへQA観点のreviewを渡す。
-7. review draftを作る。
-8. 人間OK後に `work/requirements/` へ完成版を保存する。
+3. [Noise Reduction Phase](noise-reduction-phase.md) を実行し、未知用語、表記揺れ、資料矛盾、曖昧表現、Human Interview、Project Glossary、Readinessを作成する。
+4. Readinessが`BLOCK`ならHuman Interviewへ戻り、review draftへ進まない。
+5. 知見不足の領域があれば `knowledge gap` として記録する。
+6. 必要なら内部RAG contextを補助的に読む。
+7. 外部知識が必要なら [External Web RAG](external-web-rag.md) を使う。
+8. 専門知識が質問品質や制約整理に影響する場合はSpecialist AgentへQA観点のreviewを渡す。
+9. review draftを作る。
+10. 人間OK後に `work/requirements/` へ完成版を保存する。
+
+## Noise Reduction Phase
+
+要件review draftを作る前に、Noise Reduction Phaseを実行します。
+
+出力先:
+
+```text
+work/requirements/draft/<draft-stem>-noise-reduction/
+```
+
+主な成果物:
+
+```text
+unknown-words-report.md
+terminology-conflict-report.md
+terminology-alias-report.md
+document-conflict-report.md
+ambiguous-language-report.md
+ai-confusion-report.md
+missing-definition-report.md
+human-interview-sheet.md
+project-glossary.md
+readiness-report.md
+```
+
+`readiness-report.md` が `BLOCK` の場合、完成版要件定義書を `work/requirements/` へ保存しません。`WARNING` の場合は未解決項目をOpen Questionsへ残します。
 
 ## Knowledge Gap Flow
 

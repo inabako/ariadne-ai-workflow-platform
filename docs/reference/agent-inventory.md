@@ -151,6 +151,7 @@ rag/specialist-review/<domain>/*.md
 | Workflow | Specialist Review Trigger | Required Handling |
 | --- | --- | --- |
 | `/requirement-discovery` | 要件の質問品質に専門知識が必要、または未知の安全/通信/runtime領域がある | requirement review draftへRAG path、未確認事項、専門QAを残す |
+| `/requirement-discovery` | 要件草案に未知用語、表記揺れ、資料矛盾、曖昧表現、AIが推測しそうな箇所がある | Noise Reduction Phaseを実行し、Readinessが`BLOCK`ならreview draftや完成版要件へ進まない |
 | `/robotics-new-system` | architecture、runtime、network、deployment、safety、test strategyの専門前提が成果物を左右する | implementation前にspecialist reviewを実行し、high/critical findingはdesignへ戻す |
 | `/robotics-new-system` | Go gateway / Next.js webapp / PyQt GUI / realtime gateway IaCなど、`templates/boilerplates/` に一致するboilerplateがある | implementation前にboilerplate selectionを記録し、templateがある場合はコピー先だけを編集する |
 | `/robotics-new-system`, `/robotics-feature-maintenance`, `/corrective-action-fix` | Next.js dashboard / admin / monitoring / business webapp画面を実装する | implementation前にNext.js Webapp Implementation Prepを作成し、画面契約、API契約、auth、env、test evidenceを明示する |

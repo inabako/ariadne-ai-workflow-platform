@@ -42,6 +42,7 @@ skills/
 templates/
   requirements/
   design-document/
+  noise-reduction/
   process-report/
   test-evidence/
   test-specifications/
@@ -130,6 +131,8 @@ work/requirements/
 ```
 
 `work/requirements/draft/` は未完成草案置き場です。
+
+`/requirement-discovery` は草案から完成版要件定義書を作成する前に Noise Reduction Phase を実行し、結果を `work/requirements/draft/<draft-stem>-noise-reduction/` に保存します。
 
 開発workflowに渡す完成版要件定義書は、`work/requirements/` に1件だけ置きます。
 

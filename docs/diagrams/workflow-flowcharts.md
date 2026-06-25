@@ -9,18 +9,22 @@
 ```mermaid
 flowchart TD
   A[Draft requirement bullets] --> B[Inspect draft]
-  B --> C{Blocking clarification?}
-  C -- yes --> D[Ask human questions]
-  D --> E[Review answers]
-  C -- no --> E
-  E --> F{Knowledge gap?}
-  F -- yes --> G[Internal RAG / External Web RAG]
-  G --> H[Specialist QA support if needed]
-  F -- no --> H
-  H --> I[Requirement review draft]
-  I --> J{Human OK?}
-  J -- no --> D
-  J -- yes --> K[Save completed requirement]
+  B --> C[Noise Reduction Phase]
+  C --> D{Readiness BLOCK?}
+  D -- yes --> E[Human Interview sheet]
+  E --> F[Ask human questions]
+  F --> G[Review answers]
+  D -- no --> H{Blocking clarification?}
+  H -- yes --> F
+  H -- no --> G
+  G --> I{Knowledge gap?}
+  I -- yes --> J[Internal RAG / External Web RAG]
+  J --> K[Specialist QA support if needed]
+  I -- no --> K
+  K --> L[Requirement review draft]
+  L --> M{Human OK?}
+  M -- no --> F
+  M -- yes --> N[Save completed requirement]
 ```
 
 ## Robotics New System

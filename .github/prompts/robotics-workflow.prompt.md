@@ -19,6 +19,7 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 | File | Purpose |
 | --- | --- |
 | `requirement-discovery.prompt.md` | `/requirement-discovery` Skill entrypoint |
+| `noise-reduction-phase.prompt.md` | `/requirement-discovery` 内で要件review draft前に実行するノイズ除去フェーズ |
 | `docs-sync.prompt.md` | `/docs-sync` Skill entrypoint |
 | `robotics-new-system.prompt.md` | `/robotics-new-system` Skill entrypoint |
 | `robotics-new-system-iac.prompt.md` | `/robotics-new-system-iac` Skill entrypoint |

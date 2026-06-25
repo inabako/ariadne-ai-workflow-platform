@@ -97,6 +97,52 @@ Write an inspection summary when file edits are allowed:
 work/requirements/draft/<draft-stem>-inspection.md
 ```
 
+### 2.2 Noise Reduction Phase
+
+Before creating a requirement review draft, run Noise Reduction Phase.
+
+Use:
+
+```text
+.github/prompts/noise-reduction-phase.prompt.md
+templates/noise-reduction/
+```
+
+Save outputs under:
+
+```text
+work/requirements/draft/<draft-stem>-noise-reduction/
+```
+
+Create these artifacts:
+
+```text
+unknown-words-report.md
+terminology-conflict-report.md
+terminology-alias-report.md
+document-conflict-report.md
+ambiguous-language-report.md
+ai-confusion-report.md
+missing-definition-report.md
+human-interview-sheet.md
+project-glossary.md
+readiness-report.md
+```
+
+The phase must detect:
+
+- unknown project terms
+- terminology conflicts with general knowledge
+- aliases and notation drift
+- document conflicts
+- ambiguous Japanese expressions
+- AI confusion or forbidden-guess points
+- missing business rules
+
+If `readiness-report.md` is `BLOCK`, stop and ask the human using `human-interview-sheet.md`. Do not create a review draft or completed requirement document.
+
+If readiness is `WARNING`, keep unresolved items visible in `Open Questions`.
+
 ### 2.5 Knowledge Gap Gate
 
 Identify whether the draft contains technical domains that are not understood well enough to ask good requirement questions.
@@ -236,6 +282,7 @@ The completed document must include:
 - communication loss behavior
 - cited internal/external RAG context when it affected the requirement
 - open questions table
+- Noise Reduction readiness and glossary reference
 
 Keep any unresolved non-blocking items visible in `Open Questions`.
 

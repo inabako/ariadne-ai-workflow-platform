@@ -27,6 +27,18 @@ repository が空の場合、この要件定義書は受領されません。
 | Target Branch | main |
 | Git Remote | origin |
 
+## Noise Reduction Reference
+
+要件review draft作成前に実行したNoise Reduction Phaseの結果を記録します。
+
+| Item | Value |
+| --- | --- |
+| Noise Reduction Directory | work/requirements/draft/<draft-stem>-noise-reduction/ |
+| Readiness | PASS / WARNING / BLOCK |
+| Human Interview Sheet |  |
+| Project Glossary |  |
+| Remaining WARNING Items |  |
+
 ## Change Identity
 
 | Item | Value |

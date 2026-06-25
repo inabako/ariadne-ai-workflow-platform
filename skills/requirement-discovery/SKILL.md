@@ -43,15 +43,57 @@ If no draft exists, ask the human to place a draft there. If multiple drafts exi
 
 1. Read the human bullet-list draft.
 2. Inspect for missing, unclear, or contradictory information.
-3. Identify knowledge gaps where the team lacks enough technical context to ask good requirement questions.
-4. If prior internal RAG is relevant, run `/rag-load` for prior findings, risks, or test gaps.
-5. If external technical knowledge is needed, use `rag/external-web/knowledge-sources.md` as the source index.
-6. If specialist knowledge is needed to ask good questions or frame constraints, run the relevant Specialist Agent as QA support.
-7. Ask the human focused questions when clarification is required.
-8. Review the human answers together with the original draft and any cited RAG context.
-9. Create a requirement review draft under `work/requirements/draft/`.
-10. Request human review.
-11. After explicit human OK, save the completed requirement document under `work/requirements/`.
+3. Run the Noise Reduction Phase before creating a requirement review draft.
+4. If Noise Reduction readiness is `BLOCK`, return the Human Interview sheet to the human and do not continue.
+5. Identify knowledge gaps where the team lacks enough technical context to ask good requirement questions.
+6. If prior internal RAG is relevant, run `/rag-load` for prior findings, risks, or test gaps.
+7. If external technical knowledge is needed, use `rag/external-web/knowledge-sources.md` as the source index.
+8. If specialist knowledge is needed to ask good questions or frame constraints, run the relevant Specialist Agent as QA support.
+9. Ask the human focused questions when clarification is required.
+10. Review the human answers together with the original draft, Noise Reduction outputs, and any cited RAG context.
+11. Create a requirement review draft under `work/requirements/draft/`.
+12. Request human review.
+13. After explicit human OK, save the completed requirement document under `work/requirements/`.
+
+## Noise Reduction Phase Gate
+
+Run this gate after first inspection and before requirement review draft creation.
+
+Use:
+
+```text
+.github/prompts/noise-reduction-phase.prompt.md
+templates/noise-reduction/
+```
+
+Save outputs under:
+
+```text
+work/requirements/draft/<draft-stem>-noise-reduction/
+```
+
+Required outputs:
+
+```text
+unknown-words-report.md
+terminology-conflict-report.md
+terminology-alias-report.md
+document-conflict-report.md
+ambiguous-language-report.md
+ai-confusion-report.md
+missing-definition-report.md
+human-interview-sheet.md
+project-glossary.md
+readiness-report.md
+```
+
+Rules:
+
+- Do not start design or implementation in this phase.
+- Do not fill unknown terms, business rules, or document conflicts with guesses.
+- Always create a Human Interview sheet and Project Glossary.
+- If `readiness-report.md` is `BLOCK`, stop and ask the human. Do not create a completed requirement document.
+- If readiness is `WARNING`, carry unresolved items into the requirement review draft `Open Questions`.
 
 ## External Knowledge Gap Flow
 

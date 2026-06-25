@@ -154,6 +154,18 @@
         "corrective-action-fix"
       ],
       "output": "work/<id>/process-report/nextjs-webapp-implementation-prep.md"
+    },
+    {
+      "name": "noise-reduction-phase",
+      "standalone_skill": false,
+      "prompt_path": ".github/prompts/noise-reduction-phase.prompt.md",
+      "doc_path": "docs/workflows/noise-reduction-phase.md",
+      "template_path": "templates/noise-reduction/",
+      "trigger": "requirement discovery before requirement review draft creation",
+      "parent_workflows": [
+        "requirement-discovery"
+      ],
+      "output": "work/requirements/draft/<draft-stem>-noise-reduction/"
     }
   ],
   "report_outputs": {

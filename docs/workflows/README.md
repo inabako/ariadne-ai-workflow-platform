@@ -21,6 +21,7 @@
 | `/rag-load` | 開発前に過去知識を検索し、圧縮contextを読む | task, repository, branch | `rag/retrieval/*.json` |
 | External Web RAG | 要件定義、設計、改善flowで知見不足の領域を外部Web一次情報で補う | `rag/external-web/knowledge-sources.md` | `rag/external-web/<category>/*.md` |
 | Specialist Review | 内部/外部RAGを読んだ後、成果物を専門Agentがreviewする | draft artifact, RAG context | `work/<id>/process-report/specialist-review-<domain>.md` |
+| Noise Reduction Phase | 要件定義前に未知用語、用語衝突、表記揺れ、資料矛盾、曖昧表現を除去する | requirement draft, related docs, RAG, glossary | `work/requirements/draft/<draft-stem>-noise-reduction/` |
 | GaC / UaC GUI Mode | 親workflow内でSVGをGUI設計・PyQt6・QTest候補へ変換する | `work/requirements/svg-input/<PREFIX>_*.svg` | `work/<issue-id>/gac-uac/` |
 | Next.js Webapp Implementation Prep | 親workflow内でNext.js画面機能の実装前準備を行う | requirements, UI/API contract, target app path | `work/<id>/process-report/nextjs-webapp-implementation-prep.md` |
 | PyQt QTest Integration | PyQt / Qt GUIの結合疎通試験をテスト仕様書からQTestソースへ落とす | test case table | `src/tests/qt/test_<feature>_integration.py` |
@@ -30,6 +31,7 @@
 | 状況 | 選ぶworkflow |
 | --- | --- |
 | まだ要件が箇条書きだけ | [Requirement Discovery](requirement-discovery.md) |
+| 要件化前に未知用語、表記揺れ、資料矛盾、曖昧表現を整理したい | [Noise Reduction Phase](noise-reduction-phase.md) |
 | 新しいrobotics systemを作る | [Robotics New System](robotics-new-system.md) |
 | 新しいrobotics systemを作り、そのままDocker Compose、systemd、firewall、監視などのIaCまで連携したい | [Robotics New System + IaC](robotics-new-system-iac.md) |
 | 既存systemへ機能追加、bug fix、保守対応をする | [Robotics Feature Maintenance](robotics-feature-maintenance.md) |
@@ -51,6 +53,7 @@
 
 - Repository / branch は user input または要件定義書の `Repository Control` を source of truth にします。
 - 会話ログだけで intake 済みとは扱いません。
+- `/requirement-discovery` では、要件review draft作成前にNoise Reduction Phaseを実行し、Readinessが`BLOCK`の場合は完成版要件定義書を保存しません。
 - GitHub Issue 作成、branch作成、push、install、archive移動などの副作用は、人間承認gateを通します。
 - GitHub Issue title は workflow label をprefixにします: `[新規機能フロー]`、`[改善フロー]`、`[初期開発]`、`[IaC]`。
 - `work/<branch>/` はbase調査用、`work/issue-<number>/` は実装修正用に分けます。

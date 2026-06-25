@@ -47,16 +47,57 @@ Use:
 
 1. Human writes a bullet-list draft in `work/requirements/draft/`.
 2. AI inspects the draft.
-3. AI identifies both clarification gaps and technical knowledge gaps.
-4. If saved internal RAG is relevant, AI reads prior findings through `/rag-load`.
-5. If external knowledge is needed, AI uses `rag/external-web/knowledge-sources.md` and the external-web agents to create or dispatch external-web RAG.
-6. If specialist knowledge is needed to ask good questions or frame constraints, AI uses Specialist Agent QA support.
-7. If the draft is unclear, AI sends questions back to the human.
-8. Human answers.
-9. AI inspects the draft, answers, and cited RAG context again.
-10. AI creates a requirement review draft under `work/requirements/draft/`.
-11. Human reviews the requirement review draft.
-12. After explicit human OK, AI saves the completed requirement document under `work/requirements/`.
+3. AI runs Noise Reduction Phase and creates terminology, conflict, ambiguity, Human Interview, glossary, and readiness artifacts.
+4. If Noise Reduction readiness is `BLOCK`, AI stops and sends Human Interview questions back to the human.
+5. AI identifies both clarification gaps and technical knowledge gaps.
+6. If saved internal RAG is relevant, AI reads prior findings through `/rag-load`.
+7. If external knowledge is needed, AI uses `rag/external-web/knowledge-sources.md` and the external-web agents to create or dispatch external-web RAG.
+8. If specialist knowledge is needed to ask good questions or frame constraints, AI uses Specialist Agent QA support.
+9. If the draft is unclear, AI sends questions back to the human.
+10. Human answers.
+11. AI inspects the draft, answers, Noise Reduction outputs, and cited RAG context again.
+12. AI creates a requirement review draft under `work/requirements/draft/`.
+13. Human reviews the requirement review draft.
+14. After explicit human OK, AI saves the completed requirement document under `work/requirements/`.
+
+## Noise Reduction Phase
+
+Use this sub-flow before creating the requirement review draft:
+
+```text
+.github/prompts/noise-reduction-phase.prompt.md
+```
+
+Output directory:
+
+```text
+work/requirements/draft/<draft-stem>-noise-reduction/
+```
+
+Required artifacts:
+
+```text
+unknown-words-report.md
+terminology-conflict-report.md
+terminology-alias-report.md
+document-conflict-report.md
+ambiguous-language-report.md
+ai-confusion-report.md
+missing-definition-report.md
+human-interview-sheet.md
+project-glossary.md
+readiness-report.md
+```
+
+Rules:
+
+- This phase reduces misunderstanding; it does not start design or implementation.
+- Do not use general knowledge to override project-specific meanings.
+- Do not guess missing business rules, state names, API meanings, or document conflicts.
+- Always create a Human Interview sheet.
+- Always create a Project Glossary.
+- If Readiness is `BLOCK`, do not create the requirement review draft or completed requirement document.
+- If Readiness is `WARNING`, carry unresolved items into `Open Questions`.
 
 ## Hard Stop Rules
 
