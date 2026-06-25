@@ -27,13 +27,13 @@ templates/
 | `templates/requirements/new-system/` | `robotics-new-system-requirements-template.md` | 新規system用の要件定義書 |
 | `templates/requirements/feature-maintenance/` | `robotics-feature-maintenance-requirements-template.md` | 新機能 / 保守開発用の要件定義書 |
 | `templates/design-document/` | `robotics-design-document-template.md` | 設計方針、責務境界、安全設計、test strategy |
-| `templates/process-report/` | `robotics-process-report-template.md` | 工程入力、実行内容、判断、finding、handoff |
+| `templates/process-report/` | `robotics-process-report-template.md`, `boilerplate-template-selection-report-template.md`, `nextjs-webapp-implementation-prep-template.md` | 工程入力、実行内容、判断、finding、handoff、boilerplate採用可否、Next.js画面実装前準備 |
 | `templates/test-evidence/` | `robotics-test-evidence-template.md` | テスト条件、結果、証跡、pass / fail判断 |
 | `templates/test-specifications/` | `robotics-test-specification-template.md` | test strategy、test case table、PyQt QTest source plan、entry / exit criteria |
 | `templates/shared-artifacts/` | `shared-artifacts-index-template.md`, `port-definition-template.md`, `network-boundary-definition-template.md`, `architecture-decision-record-template.md` | 新システム設計からIaCへ渡す要件、port、network boundary、ADRの共有成果物 |
 | `templates/iac/` | `software-inventory-template.md`, `communication-specification-template.md`, `realtime-iac-design-template.md`, `realtime-iac-test-specification-template.md` | リアルタイムシステム向けIaCの受領gate、設計、Docker Desktop / Linux / integration検証 |
 | `templates/editorconfig/` | `target-repository.editorconfig` | target repositoryのencoding / line ending補助 |
-| `templates/boilerplates/` | `gateway-template/`, `pyqt-template/`, `realtime-gateway-infra-template/` | 新規Go gateway / PyQt GUI / realtime gateway IaCをtemplateから生成するためのboilerplate置き場 |
+| `templates/boilerplates/` | `gateway-template/`, `nextjs-webapp-template/`, `pyqt-template/`, `realtime-gateway-infra-template/` | 新規Go gateway / Next.js webapp / PyQt GUI / realtime gateway IaCをtemplateから生成するためのboilerplate置き場 |
 | `templates/gui-mode/` | `README.md` | SVG入力、GaC / UaC生成、親workflowへの安全な返却方法 |
 
 ## Quality Rules
@@ -48,6 +48,7 @@ templates/
 - PyQt / Qt GUIでは、結合疎通試験のうちQTest化できるものと人間確認に残すものを分ける。
 - SVG入力がある場合はGaC / UaC GUI Modeで論理Layoutへ変換し、generated候補を既存sourceへ直接上書きしない。
 - 新システム実装では、`templates/boilerplates/` に一致するboilerplateがあるか確認し、採用または不採用の理由をprocess reportに残す。
+- Next.js画面機能を実装する場合、Implementation前に `templates/process-report/nextjs-webapp-implementation-prep-template.md` を使い、新規/既存分類、画面契約、API契約、auth、env、test evidenceを確認する。
 - IaC工程では、realtime gateway infrastructure が対象に含まれる場合 `realtime-gateway-infra-template/` を候補にし、shared artifacts、software inventory、secret source、firewall policy、rollbackを確認してからコピーする。
 - テスト成果物の保存先は [Test Artifact Storage](test-artifact-storage.md) に従う。
 - 出力先は `work/<work-id>/` 配下の対応directoryにする。

@@ -37,6 +37,7 @@ Intake
   -> Test Strategy
   -> PyQt QTest Source Plan when GUI uses PyQt / Qt
   -> Boilerplate Template Selection
+  -> Next.js Webapp Implementation Prep when system includes Next.js
   -> Implementation
   -> Integration / Bench Test
   -> Limited Field Test
@@ -120,6 +121,7 @@ templates/boilerplates/
 | 対象 | Template | 組み込み指示書 |
 | --- | --- | --- |
 | Go gateway service | `templates/boilerplates/gateway-template/` | `gateway-template_組み込み指示書.md` |
+| Next.js dashboard / admin webapp | `templates/boilerplates/nextjs-webapp-template/` | `Next.jsボイラーテンプレート作成_作業指示書.md` |
 | PyQt / Qt GUI app | `templates/boilerplates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
 | Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
 
@@ -133,6 +135,27 @@ templates/boilerplates/
 - IaC template採用時も、shared artifacts、software inventory、public exposure、secret source、firewall policy、rollback、Terraform validationを省略しません。
 
 template選定結果が未記録の場合、Implementationへ進みません。
+
+## Next.js Webapp Implementation Prep
+
+新システムにNext.js dashboard / admin / monitoring / business webappが含まれる場合、Implementation前に[Next.js Webapp Implementation Prep](nextjs-webapp-implementation-prep.md)を実行します。
+
+出力:
+
+```text
+work/<receipt-id>/process-report/nextjs-webapp-implementation-prep.md
+```
+
+確認すること:
+
+- 新規webappか既存webapp拡張か
+- `nextjs-webapp-template` の採用可否
+- route、screen、user action、loading / empty / error state
+- API request / response / error response / auth
+- `.env.example`、`NEXT_PUBLIC_*`、server-only env、secret ownership
+- typecheck、lint、unit、e2e、health、UI smoke、API connectivity、Docker smoke
+
+`Implementation may start: yes` になるまでImplementationへ進みません。
 
 ## Test Case And Evidence Flow
 

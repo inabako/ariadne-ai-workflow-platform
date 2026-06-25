@@ -31,13 +31,14 @@ created_at:
 
 | Component | Type | Language / Framework | Template Candidate | Match |
 | --- | --- | --- | --- | --- |
-|  | Go gateway / PyQt GUI / realtime gateway IaC / other |  | gateway-template / pyqt-template / realtime-gateway-infra-template / none | yes / no |
+|  | Go gateway / Next.js webapp / PyQt GUI / realtime gateway IaC / other |  | gateway-template / nextjs-webapp-template / pyqt-template / realtime-gateway-infra-template / none | yes / no |
 
 ## Template Availability
 
 | Template | Expected Path | Exists | Instruction |
 | --- | --- | --- | --- |
 | gateway-template | `templates/boilerplates/gateway-template/` | yes / no | `gateway-template_組み込み指示書.md` |
+| nextjs-webapp-template | `templates/boilerplates/nextjs-webapp-template/` | yes / no | `Next.jsボイラーテンプレート作成_作業指示書.md` |
 | pyqt-template | `templates/boilerplates/pyqt-template/` | yes / no | `pyqt-template_組み込み指示書.md` |
 | realtime-gateway-infra-template | `templates/boilerplates/realtime-gateway-infra-template/` | yes / no | `realtime-gateway-infra-template_実装指示書.md` |
 
@@ -65,6 +66,8 @@ Use only when `decision: use-template`.
 | transport / network |  |  | yes / no |  |
 | dispatcher / service / viewmodel |  |  | yes / no |  |
 | health / metrics |  |  | yes / no |  |
+| route / screen / UI state |  |  | yes / no |  |
+| API client / auth / environment boundary |  |  | yes / no |  |
 | network / runtime / security / observability / dns |  |  | yes / no |  |
 
 ## Required Tests
@@ -74,6 +77,11 @@ Use only when `decision: use-template`.
 | config loading | yes / no |  |  |
 | lifecycle start / stop | yes / no |  |  |
 | health endpoint | yes / no |  |  |
+| TypeScript typecheck | yes / no |  |  |
+| lint | yes / no |  |  |
+| webapp unit test | yes / no |  |  |
+| webapp e2e / UI smoke | yes / no |  |  |
+| API connectivity | yes / no |  |  |
 | protocol encode / decode | yes / no |  |  |
 | GUI smoke / QTest | yes / no |  |  |
 | graceful shutdown | yes / no |  |  |
@@ -87,6 +95,8 @@ Use only when `decision: use-template`.
 
 - Template本体を直接編集しない。
 - コピー先service / app / IaC directoryのみ編集する。
+- 既存Next.js appへ画面機能を追加する場合、`nextjs-webapp-template` はreference-onlyとし、既存sourceへ丸ごと上書きしない。
+- Next.js webapp実装前は `templates/process-report/nextjs-webapp-implementation-prep-template.md` で画面契約、API契約、auth、env、testを確認する。
 - Architecture、protocol、port、safety behaviorを黙って変更しない。
 - STOP、communication loss、startup safe state、shutdown safe stateのtestを省略しない。
 - IaC template採用時は、shared artifacts、software inventory、public exposure、secret source、firewall policy、rollbackを省略しない。

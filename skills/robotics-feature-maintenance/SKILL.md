@@ -50,8 +50,9 @@ Do not treat chat history as a substitute for an accepted requirement document.
 5. If impact analysis, change design, or test planning depends on specialist knowledge, run the relevant Specialist Agent review before implementation.
 6. Run `/robotics-maintenance-development` only after relevant RAG context has been loaded and summarized.
 7. Before implementation, create the issue test case tables and evidence plan.
-8. Preserve artifacts under `work/<receipt-id>/`.
-9. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, and handoff context as JSON where schemas exist.
+8. If the change includes a Next.js dashboard, admin, monitoring, or business webapp screen, run the Next.js Webapp Implementation Preparation Gate before source changes.
+9. Preserve artifacts under `work/<receipt-id>/`.
+10. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, Next.js webapp preparation result, and handoff context as JSON where schemas exist.
 
 ## GaC / UaC GUI Mode Gate
 
@@ -86,10 +87,36 @@ Rules:
 - risk classification
 - change design and rollback plan
 - test plan based on risk
+- Next.js webapp implementation preparation when the change includes a Next.js screen app
 - PyQt QTest source plan when the changed system includes a PyQt / Qt GUI
 - verification, deployment plan, post-change observation
 
 Safety behavior, network authority, runtime process ownership, and operator workflow changes must be reviewed before implementation.
+
+## Next.js Webapp Implementation Preparation Gate
+
+Run this gate before source changes when the maintenance change includes a Next.js dashboard, admin, monitoring, or business webapp screen.
+
+Use:
+
+```text
+.github/prompts/nextjs-webapp-implementation-prep.prompt.md
+templates/process-report/nextjs-webapp-implementation-prep-template.md
+```
+
+Save the preparation result under:
+
+```text
+work/<receipt-id>/process-report/nextjs-webapp-implementation-prep.md
+```
+
+Rules:
+
+- Classify the work as `existing-app-feature` or `corrective-fix` unless a new app is explicitly required.
+- Treat `templates/boilerplates/nextjs-webapp-template/` as reference-only for existing apps.
+- Preserve existing routing, design system, test runner, env conventions, and app-specific architecture.
+- Define route, screen purpose, user action, UI state, API contract, auth/session policy, env/secret boundary, and test evidence before implementation.
+- Do not start implementation unless `Implementation may start: yes`.
 
 ## Test Case And Evidence Flow
 

@@ -211,6 +211,30 @@ PyQt / Qt GUIを含む場合:
 - external I/Oは原則stub / disableし、実I/Oが必要な場合はtest caseに明示する
 - 実robot、実camera、physical STOP、router / VPN / field networkはbench / human-check evidenceとして残す
 
+## Phase 6.5: Next.js Webapp Implementation Preparation
+
+Next.js画面機能を含む場合、Implementation前に `.github/prompts/nextjs-webapp-implementation-prep.prompt.md` に従い、次を作成します。
+
+```text
+work/<採番ID>/process-report/nextjs-webapp-implementation-prep.md
+```
+
+既存appへの機能追加では `nextjs-webapp-template` はreference-onlyとし、既存routing、design system、test runner、env conventionを優先します。
+
+確認:
+
+- 既存Next.js app path、App Router有無、TypeScript有無
+- route、screen、user action、loading / empty / error state
+- API request / response / error response / auth
+- `.env.example`、`NEXT_PUBLIC_*`、server-only env、secret ownership
+- typecheck、lint、unit、e2e、health、UI smoke、API connectivity
+
+Quality Gate:
+
+- `Implementation may start: yes` になるまでPhase 7へ進まない。
+- templateを既存sourceへ丸ごとコピーしない。
+- API契約やauth policyが未定のまま画面実装を始めない。
+
 ## Phase 7: Implementation
 
 承認されたtest planとPyQt QTest source planに沿って、小さい差分で実装します。

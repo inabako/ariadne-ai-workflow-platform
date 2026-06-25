@@ -1,0 +1,9 @@
+{
+  "appName": "Sample Next.js App",
+  "pollingIntervalMs": 3000,
+  "features": {
+    "dashboard": true,
+    "events": true,
+    "metrics": true
+  }
+}

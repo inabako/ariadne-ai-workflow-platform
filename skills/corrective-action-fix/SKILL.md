@@ -424,6 +424,29 @@ If SVG exists:
 - prioritize existing behavior, fixed-coordinate removal, responsibility separation, and regression prevention;
 - keep actual tests in the target repository's normal test tree after review.
 
+### 7.7 Next.js Webapp Implementation Preparation Gate
+
+If the corrective issue includes a Next.js dashboard, admin, monitoring, or business webapp screen, create the preparation report before source changes:
+
+```text
+work/issue-<issue-number>/process-report/nextjs-webapp-implementation-prep.md
+```
+
+Use:
+
+```text
+.github/prompts/nextjs-webapp-implementation-prep.prompt.md
+templates/process-report/nextjs-webapp-implementation-prep-template.md
+```
+
+Rules:
+
+- Classify the work as `existing-app-feature` or `corrective-fix` unless a new app is explicitly required by the Issue.
+- Treat `templates/boilerplates/nextjs-webapp-template/` as reference-only for existing apps.
+- Preserve existing routing, design system, test runner, env conventions, and app-specific architecture.
+- Define route, screen purpose, user action, UI state, API contract, auth/session policy, env/secret boundary, and test evidence before implementation.
+- Do not start implementation unless `Implementation may start: yes`.
+
 ### 8. Implement Corrective Fixes
 
 Implement in `work/issue-<issue-number>/source/repository` according to the corrective action report and loaded RAG.
@@ -710,6 +733,7 @@ Do not move the issue folder until the user approves archive.
 - Do not run unit tests, startup checks, or integration / communication checks before writing the issue test specification and pass criteria, unless the user explicitly approves skipping it for a trivial change.
 - For PyQt / Qt GUI repositories, do not skip QTest source planning for automatable integration cases unless the test specification records a reason.
 - When `work/requirements/svg-input/FIX_*.svg` exists, do not skip the GaC / UaC GUI Mode Gate or copy generated candidates into source without review.
+- For Next.js screen changes, do not skip `nextjs-webapp-implementation-prep.md` or start source changes before `Implementation may start: yes`.
 - Do not push before PR material is generated and docs evidence exists under `docs/evidence/issue-<issue-number>/test_specifications`, `docs/evidence/issue-<issue-number>/ut`, and `docs/evidence/issue-<issue-number>/integration`; add `docs/evidence/issue-<issue-number>/human_check` when human confirmation is required. Scaffold `README.md` files alone are not evidence.
 - Do not run RAG registration / rebuild or move `work/issue-<issue-number>` to `work/close/issue-<issue-number>` without explicit human approval.
 - Do not delete `work/<target-branch>` until `work/<target-branch>/process-report` has been preserved under `work/close/issue-<issue-number>/process-report/base-work-<target-branch>` and the copy has been verified.

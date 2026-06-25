@@ -140,6 +140,20 @@
         "corrective-action-fix"
       ],
       "output": "work/<issue-id>/gac-uac/"
+    },
+    {
+      "name": "nextjs-webapp-implementation-prep",
+      "standalone_skill": false,
+      "prompt_path": ".github/prompts/nextjs-webapp-implementation-prep.prompt.md",
+      "doc_path": "docs/workflows/nextjs-webapp-implementation-prep.md",
+      "template_path": "templates/process-report/nextjs-webapp-implementation-prep-template.md",
+      "trigger": "Next.js dashboard/admin/monitoring/business webapp implementation before source changes",
+      "parent_workflows": [
+        "new-robotics-system-development",
+        "robotics-maintenance-development",
+        "corrective-action-fix"
+      ],
+      "output": "work/<id>/process-report/nextjs-webapp-implementation-prep.md"
     }
   ],
   "report_outputs": {

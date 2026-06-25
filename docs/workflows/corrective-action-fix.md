@@ -43,19 +43,32 @@ feature/issue-<issue-number>
 12. GitHub上に `feature/issue-<issue-number>` を作り、`work/issue-<issue-number>` にcloneする。
 13. encoding / mojibake gateを確認する。
 14. `work/requirements/svg-input/FIX_*.svg`がある場合、Issue作業領域へ取り込み、GaC / UaC GUI ModeをFIX modeで実行する。
-15. corrective fixを実装する。
-16. test specificationとtest evidenceを残す。
-17. PyQt / Qt GUIの場合、テストケース表を元にQTest結合テストをソース化する。
-18. startup / integration checkとhuman check gateを通す。
-19. PR材料とknowledge capture packageを作る。
-20. 人間承認後にIssue branchへpushする。
-21. Issue titleをPR titleとして `develop` へPull Requestを作成する。
+15. Next.js画面機能を含む場合、Next.js Webapp Implementation Prepを実行する。
+16. corrective fixを実装する。
+17. test specificationとtest evidenceを残す。
+18. PyQt / Qt GUIの場合、テストケース表を元にQTest結合テストをソース化する。
+19. startup / integration checkとhuman check gateを通す。
+20. PR材料とknowledge capture packageを作る。
+21. 人間承認後にIssue branchへpushする。
+22. Issue titleをPR titleとして `develop` へPull Requestを作成する。
 
 ## GaC / UaC GUI Mode
 
 `work/requirements/svg-input/FIX_*.svg`が存在する場合、`work/issue-<number>/input/gui/`へ取り込み、論理Issue ID `FIX-<number>`と`--mode corrective-improvement`を使って[GaC / UaC GUI Mode](gui-mode.md)を実行します。
 
 生成物は改善候補です。最小変更、既存挙動維持、固定座標排除、Widget責務分離、QTest回帰防止を確認し、必要な差分だけを既存sourceへ取り込みます。
+
+## Next.js Webapp Implementation Prep
+
+改善対象にNext.js dashboard / admin / monitoring / business webapp画面が含まれる場合、source変更前に[Next.js Webapp Implementation Prep](nextjs-webapp-implementation-prep.md)を実行します。
+
+出力:
+
+```text
+work/issue-<issue-number>/process-report/nextjs-webapp-implementation-prep.md
+```
+
+既存Next.js appでは `nextjs-webapp-template` はreference-onlyです。route、user action、API contract、auth/session、env/secret境界、typecheck、lint、unit、e2e、health、UI smoke、API connectivityが未整理なら実装へ進みません。
 
 ## External Web RAG Support
 

@@ -250,6 +250,7 @@ templates/boilerplates/
 | 対象 | Template | 組み込み指示書 |
 | --- | --- | --- |
 | Go gateway service | `templates/boilerplates/gateway-template/` | `gateway-template_組み込み指示書.md` |
+| Next.js dashboard / admin webapp | `templates/boilerplates/nextjs-webapp-template/` | `Next.jsボイラーテンプレート作成_作業指示書.md` |
 | PyQt / Qt GUI app | `templates/boilerplates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
 | Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
 
@@ -260,6 +261,7 @@ templates/boilerplates/
 判定:
 
 - 対象systemがGo gatewayを含み、`gateway-template/` が存在する場合は、`gateway-template_組み込み指示書.md` に従ってtemplateをコピーしてから実装する。
+- 対象systemがNext.js dashboard / admin webappを含み、`nextjs-webapp-template/` が存在する場合は、`Next.jsボイラーテンプレート作成_作業指示書.md` と `nextjs-webapp-implementation-prep` に従ってtemplate採用可否を判断する。
 - 対象systemがPyQt / Qt GUIを含み、`pyqt-template/` が存在する場合は、`pyqt-template_組み込み指示書.md` に従ってtemplateをコピーしてから実装する。
 - 対象systemがrealtime gateway IaC / infrastructureを含み、`realtime-gateway-infra-template/` が存在する場合は、`realtime-gateway-infra-template_実装指示書.md` に従ってtemplateをコピーしてからIaC実装する。
 - 対応するtemplateが存在しない場合、`decision: traditional-coding` と理由を記録し、従来どおり小さく実装する。
@@ -273,6 +275,29 @@ Quality Gate:
 - boilerplate template selection resultが記録されていない場合、Phase 7へ進まない。
 - templateを採用する場合、コピー元、コピー先、採用理由、削除/無効化したcomponent、残した責務境界、必要testを記録する。
 - templateがない場合、従来実装へ進む理由を記録する。
+
+## Phase 6.7: Next.js Webapp Implementation Preparation
+
+Next.js画面機能を含む場合、Implementation前に `.github/prompts/nextjs-webapp-implementation-prep.prompt.md` に従い、次を作成します。
+
+```text
+work/<採番ID>/process-report/nextjs-webapp-implementation-prep.md
+```
+
+確認:
+
+- 新規webappか既存webapp拡張か
+- `nextjs-webapp-template` の採用可否
+- route、screen、user action、loading / empty / error state
+- API request / response / error response / auth
+- `.env.example`、`NEXT_PUBLIC_*`、server-only env、secret ownership
+- typecheck、lint、unit、e2e、health、UI smoke、API connectivity、Docker smoke
+
+Quality Gate:
+
+- `Implementation may start: yes` になるまでPhase 7へ進まない。
+- 新規app以外ではtemplateを既存sourceへ丸ごとコピーしない。
+- API契約やauth policyが未定のまま画面実装を始めない。
 
 ## Phase 7: Implementation
 

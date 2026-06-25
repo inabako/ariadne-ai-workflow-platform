@@ -9,6 +9,7 @@
 | Template | Target | Instruction | Status |
 | --- | --- | --- | --- |
 | `gateway-template/` | Go gateway service | `gateway-template_組み込み指示書.md` | available |
+| `nextjs-webapp-template/` | Next.js dashboard / admin webapp | `Next.jsボイラーテンプレート作成_作業指示書.md` | available |
 | `pyqt-template/` | PyQt / Qt GUI app | `pyqt-template_組み込み指示書.md` | available |
 | `realtime-gateway-infra-template/` | Realtime gateway IaC / infrastructure | `realtime-gateway-infra-template_実装指示書.md` | available |
 
@@ -31,4 +32,10 @@ Report template:
 
 ```text
 templates/process-report/boilerplate-template-selection-report-template.md
+```
+
+Next.js webappを採用または参照する場合は、実装前に次の準備reportも作成します。
+
+```text
+templates/process-report/nextjs-webapp-implementation-prep-template.md
 ```

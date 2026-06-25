@@ -23,8 +23,7 @@ Workflow を選ぶ場合:
 | 新システム設計からShared Artifacts検証、IaC連携まで一気通貫で行う | `/robotics-new-system-iac` | [Robotics New System + IaC](docs/workflows/robotics-new-system-iac.md) |
 | 既存systemの新機能追加、bug fix、保守開発を行う | `/robotics-feature-maintenance` | [Robotics Feature Maintenance](docs/workflows/robotics-feature-maintenance.md) |
 | SVGからPyQt6画面・QTest候補を作る | 親workflow内で自動実行 | [GaC / UaC GUI Mode](docs/workflows/gui-mode.md) |
-
-GUI SVGはIssue作成前に`work/requirements/svg-input/`へ配置し、ファイル名を`SYS_<name>.svg`、`FEAT_<name>.svg`、`FIX_<name>.svg`のいずれかにします。
+| Next.js画面機能の実装前に画面/API/auth/env/testを揃える | 親workflow内で実行 | [Next.js Webapp Implementation Prep](docs/workflows/nextjs-webapp-implementation-prep.md) |
 | リアルタイムシステム向けIaCを設計、生成、検証、文書化する | `/realtime-iac` | [Realtime IaC](docs/workflows/realtime-iac.md) |
 | repository / branchをread-onlyで調査し、改善reportを作る | `/corrective-action-report` | [Corrective Action Report](docs/workflows/corrective-action-report.md) |
 | 改善reportからIssue、branch、修正、test、pushまで進める | `/corrective-action-fix` | [Corrective Action Fix](docs/workflows/corrective-action-fix.md) |
@@ -33,6 +32,8 @@ GUI SVGはIssue作成前に`work/requirements/svg-input/`へ配置し、ファ�
 | VSCode workspace as codeを整備する | `/vscode-environment` | [VSCode Environment](docs/workflows/vscode-environment.md) |
 | 完了IssueからPR材料、RAG候補、docs候補、archive準備を作る | `/knowledge-capture` | [Knowledge Capture](docs/workflows/knowledge-capture.md) |
 | reportをRAG化する、または開発前にRAGを読む | `/rag-build`, `/rag-load` | [RAG Build / Load](docs/workflows/rag-build-load.md) |
+
+GUI SVGはIssue作成前に`work/requirements/svg-input/`へ配置し、ファイル名を`SYS_<name>.svg`、`FEAT_<name>.svg`、`FIX_<name>.svg`のいずれかにします。
 
 ## Core Principles
 
@@ -111,6 +112,7 @@ GITHUB_TOKEN=
 - 新規system workflow
 - 新規system + realtime IaC integrated workflow
 - 新機能 / 保守開発 workflow
+- Next.js webapp implementation preparation sub-workflow
 - リアルタイムシステム向けIaC workflow
 - corrective action report / fix workflow
 - docs-sync workflow

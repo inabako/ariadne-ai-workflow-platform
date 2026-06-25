@@ -35,6 +35,7 @@ Intake
   -> Change Design
   -> Test Plan
   -> PyQt QTest Source Plan when GUI uses PyQt / Qt
+  -> Next.js Webapp Implementation Prep when change includes Next.js
   -> Implementation
   -> Verification
   -> Deployment Plan
@@ -104,6 +105,28 @@ High / critical finding がある場合は、Change DesignまたはTest Planへ�
 `work/requirements/svg-input/FEAT_*.svg`が存在する場合、Issue作業領域へ取り込んでから、通常実装の前に[GaC / UaC GUI Mode](gui-mode.md)を実行します。
 
 生成物は既存GUIへの追加候補です。既存Widgetとの接続点、追加Panel、signal/slot、影響範囲、既存test維持をreviewし、必要な差分だけをsourceへ統合します。
+
+## Next.js Webapp Implementation Prep
+
+変更対象にNext.js dashboard / admin / monitoring / business webapp画面が含まれる場合、Implementation前に[Next.js Webapp Implementation Prep](nextjs-webapp-implementation-prep.md)を実行します。
+
+出力:
+
+```text
+work/<receipt-id>/process-report/nextjs-webapp-implementation-prep.md
+```
+
+既存appへの機能追加では `nextjs-webapp-template` はreference-onlyとし、既存routing、design system、test runner、env conventionを優先します。
+
+確認すること:
+
+- 既存Next.js app path、App Router有無、TypeScript有無
+- route、screen、user action、loading / empty / error state
+- API request / response / error response / auth
+- `.env.example`、`NEXT_PUBLIC_*`、server-only env、secret ownership
+- typecheck、lint、unit、e2e、health、UI smoke、API connectivity
+
+`Implementation may start: yes` になるまでImplementationへ進みません。
 
 ## Test Case And Evidence Flow
 

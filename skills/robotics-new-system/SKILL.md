@@ -51,8 +51,9 @@ Do not treat chat history as a substitute for an accepted requirement document.
 6. Run `/new-robotics-system-development` only after relevant RAG context has been loaded and summarized.
 7. Before implementation, create the issue test case tables and evidence plan.
 8. Before implementation, run the Boilerplate Template Selection Gate. If a matching boilerplate template exists under `templates/boilerplates/`, use it as the starting point. If no matching template exists, record the reason and continue with traditional coding.
-9. Preserve artifacts under `work/<receipt-id>/`.
-10. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, boilerplate selection result, and handoff context as JSON where schemas exist.
+9. If the system includes a Next.js dashboard, admin, monitoring, or business webapp, run the Next.js Webapp Implementation Preparation Gate before source changes.
+10. Preserve artifacts under `work/<receipt-id>/`.
+11. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, boilerplate selection result, Next.js webapp preparation result, and handoff context as JSON where schemas exist.
 
 ## GaC / UaC GUI Mode Gate
 
@@ -93,6 +94,7 @@ Rules:
 - runtime / network / deployment design
 - test strategy before implementation
 - boilerplate template applicability before implementation
+- Next.js webapp implementation preparation when the system includes a Next.js screen app
 - PyQt QTest source plan when the system includes a PyQt / Qt GUI
 - integration, bench test, limited field test, release handover
 
@@ -113,6 +115,7 @@ Current supported mappings:
 | Target | Template path | Instruction |
 | --- | --- | --- |
 | Go gateway service | `templates/boilerplates/gateway-template/` | `gateway-template_組み込み指示書.md` |
+| Next.js dashboard / admin webapp | `templates/boilerplates/nextjs-webapp-template/` | `Next.jsボイラーテンプレート作成_作業指示書.md` |
 | PyQt / Qt GUI app | `templates/boilerplates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
 | Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
 
@@ -132,6 +135,31 @@ Required report template:
 ```text
 templates/process-report/boilerplate-template-selection-report-template.md
 ```
+
+## Next.js Webapp Implementation Preparation Gate
+
+Run this gate after boilerplate selection and before source changes when the new system includes a Next.js dashboard, admin, monitoring, or business webapp.
+
+Use:
+
+```text
+.github/prompts/nextjs-webapp-implementation-prep.prompt.md
+templates/process-report/nextjs-webapp-implementation-prep-template.md
+```
+
+Save the preparation result under:
+
+```text
+work/<receipt-id>/process-report/nextjs-webapp-implementation-prep.md
+```
+
+Rules:
+
+- Classify the work as `new-app`, `existing-app-feature`, or `corrective-fix`.
+- For `new-app`, evaluate `templates/boilerplates/nextjs-webapp-template/` as the copy source.
+- For existing apps, treat `nextjs-webapp-template` as reference-only and preserve existing routing, design system, test runner, and env conventions.
+- Define route, screen purpose, user action, UI state, API contract, auth/session policy, env/secret boundary, and test evidence before implementation.
+- Do not start implementation unless `Implementation may start: yes`.
 
 ## Test Case And Evidence Flow
 
