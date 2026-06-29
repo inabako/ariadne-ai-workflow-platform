@@ -6,6 +6,7 @@ import json
 import re
 import shutil
 import sys
+import tempfile
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -1296,6 +1297,107 @@ def run_validate(args: argparse.Namespace) -> dict[str, Any]:
     return validate_outputs(work_dir)
 
 
+SELF_TEST_SVG = """\
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="480" viewBox="0 0 800 480">
+  <title>Robot Console</title>
+  <g id="header">
+    <text id="status_label" x="20" y="30">READY</text>
+    <rect id="connect_button" x="650" y="10" width="120" height="40" fill="#336699"/>
+    <text id="connect_button_text" x="680" y="35">Connect</text>
+  </g>
+  <g id="video_panel">
+    <rect id="video_display" x="20" y="70" width="500" height="360" fill="#111111"/>
+  </g>
+  <g id="control_panel">
+    <text id="speed_label" x="560" y="100">Speed</text>
+  </g>
+</svg>
+"""
+
+
+def make_self_test_args(repo_root: Path, issue_id: str, mode: str = "auto") -> argparse.Namespace:
+    return argparse.Namespace(
+        repo_root=str(repo_root),
+        work_dir=None,
+        issue_id=issue_id,
+        mode=mode,
+        force=False,
+        svg_input_dir=None,
+        input_prefix=None,
+    )
+
+
+def assert_self_test(condition: bool, message: str) -> None:
+    if not condition:
+        raise AssertionError(message)
+
+
+def run_self_test(args: argparse.Namespace) -> dict[str, Any]:
+    checks: list[str] = []
+    with tempfile.TemporaryDirectory(prefix="gui-mode-self-test-") as raw_root:
+        repo_root = Path(raw_root)
+
+        (repo_root / "work" / "SYS-0001").mkdir(parents=True)
+        skipped = run_generate(make_self_test_args(repo_root, "SYS-0001"))
+        assert_self_test(skipped["status"] == "skipped", "missing SVG should skip")
+        assert_self_test(
+            (repo_root / "work" / "SYS-0001" / "context" / "gui-mode-state.json").exists(),
+            "skipped state should be written",
+        )
+        checks.append("skip-without-svg")
+
+        svg_input = repo_root / "work" / "requirements" / "svg-input"
+        svg_input.mkdir(parents=True)
+        other_flow_svg = svg_input / "FEAT_other-flow.svg"
+        other_flow_svg.write_text(SELF_TEST_SVG, encoding="utf-8")
+        skipped_sys = run_generate(make_self_test_args(repo_root, "SYS-0002"))
+        assert_self_test(skipped_sys["status"] == "skipped", "SYS should ignore FEAT SVG")
+        assert_self_test(other_flow_svg.exists(), "unmatched SVG must stay in inbox")
+        checks.append("prefix-isolation")
+
+        source_svg = svg_input / "FEAT_robot-console.svg"
+        source_svg.write_text(SELF_TEST_SVG, encoding="utf-8")
+        generated = run_generate(make_self_test_args(repo_root, "FEAT-0001"))
+        assert_self_test(generated["status"] == "complete", "FEAT SVG should generate")
+        assert_self_test(generated["mode"] == "feature-development", "FEAT mode mismatch")
+        assert_self_test(generated["input_prefix"] == "FEAT", "FEAT input prefix mismatch")
+        assert_self_test(not source_svg.exists(), "claimed SVG should be moved from inbox")
+        issue_svg = repo_root / "work" / "FEAT-0001" / "input" / "gui" / "FEAT_robot-console.svg"
+        assert_self_test(issue_svg.exists(), "claimed SVG should exist under issue input/gui")
+        output_dir = repo_root / "work" / "FEAT-0001" / "gac-uac"
+        assert_self_test((output_dir / "layout-spec.md").exists(), "layout spec missing")
+        assert_self_test(
+            (output_dir / "generated" / "pyqt6" / "widgets" / "__init__.py").exists(),
+            "generated widgets package missing",
+        )
+        pyqt_source = (output_dir / "generated" / "pyqt6" / "main_window.py").read_text(
+            encoding="utf-8"
+        )
+        assert_self_test("setGeometry(" not in pyqt_source, "generated source must not use setGeometry")
+        assert_self_test("connect_button_text =" not in pyqt_source, "button text should merge into button")
+        assert_self_test(
+            validate_outputs(repo_root / "work" / "FEAT-0001")["status"] == "pass",
+            "generated outputs should validate",
+        )
+        checks.append("generate-and-validate")
+
+        later_svg = svg_input / "FEAT_later-screen.svg"
+        later_svg.write_text(SELF_TEST_SVG, encoding="utf-8")
+        try:
+            run_generate(make_self_test_args(repo_root, "FEAT-0001"))
+        except FileExistsError:
+            pass
+        else:
+            raise AssertionError("existing outputs should require --force")
+        assert_self_test(later_svg.exists(), "existing-output guard should not claim new SVG")
+        checks.append("existing-output-guard")
+
+    return {
+        "status": "pass",
+        "checks": checks,
+    }
+
+
 def add_work_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--issue-id", required=True, help="Issue/work ID such as SYS-0001, FEAT-0001, or FIX-0001.")
     parser.add_argument("--work-dir", help="Explicit work directory. Default: work/<issue-id>.")
@@ -1348,6 +1450,12 @@ def build_parser() -> argparse.ArgumentParser:
     validate_parser = subparsers.add_parser("validate", help="Validate GUI mode completion and generated source policies.")
     add_work_arguments(validate_parser)
     validate_parser.set_defaults(handler=run_validate)
+
+    self_test_parser = subparsers.add_parser(
+        "self-test",
+        help="Run deterministic GUI mode runtime checks without requiring PyQt6.",
+    )
+    self_test_parser.set_defaults(handler=run_self_test)
     return parser
 
 

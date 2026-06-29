@@ -77,6 +77,12 @@ python runtime/workflow/gui_mode.py validate `
   --issue-id SYS-0001
 ```
 
+ランタイム自己検証:
+
+```powershell
+python runtime/workflow/gui_mode.py self-test
+```
+
 既存成果物は既定で上書きしません。人間が意図的に再生成する場合だけ`--force`を使います。
 
 ## Artifacts

@@ -27,3 +27,9 @@ python runtime/workflow/gui_mode.py run --issue-id SYS-0001
 `SYS-*`、`FEAT-*`、`FIX-*`から生成方針も自動選択します。既存の`work/issue-<number>`などを使う親フローは、`--work-dir`と`--mode`を明示してください。
 
 生成物は`work/<issue-id>/gac-uac/`へ保存され、既存sourceへ自動コピーされません。
+
+ランタイム自己検証:
+
+```powershell
+python runtime/workflow/gui_mode.py self-test
+```

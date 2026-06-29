@@ -14,6 +14,7 @@
 python runtime/workflow/gui_mode.py init-input
 python runtime/workflow/gui_mode.py run --issue-id SYS-0001
 python runtime/workflow/gui_mode.py validate --issue-id SYS-0001
+python runtime/workflow/gui_mode.py self-test
 ```
 
 Corrective Action 互換の実行例:
@@ -26,6 +27,8 @@ python runtime/workflow/gui_mode.py run `
 ```
 
 `SYS_`、`FEAT_`、`FIX_` のファイル名prefixで親workflowを選別します。Issue作業領域が作成された後、対象ファイルは `work/<issue-id>/input/gui/` へ移動されます。SVGが無い場合は `status: skipped` を返します。生成された PyQt6 / QTest ファイルは `gac-uac/generated/` 配下の候補として扱い、target source へ自動コピーしません。
+
+`self-test` は一時work treeで、SVGなしskip、prefix分離、SVG取り込み、生成成果物検証、既存成果物の上書き防止を確認します。PyQt6は不要です。
 
 ### `web_svg_layout_mode.py`
 

@@ -82,6 +82,12 @@ python runtime/workflow/gui_mode.py validate `
   --work-dir "<work-dir>"
 ```
 
+ランタイム自体のスモーク確認:
+
+```powershell
+python runtime/workflow/gui_mode.py self-test
+```
+
 ## Parent Workflow Return Gate
 
 次が存在し、validateが`pass`の場合だけGUI成果物を親workflowへ返します。

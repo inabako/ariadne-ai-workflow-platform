@@ -1,12 +1,12 @@
 # External Web Knowledge Sources
 
-External Web RAG 用の一次情報・公式情報候補です。
+External Web RAG用の一次情報・公式情報候補です。
 
-Use policy:
+## 利用方針
 
-- Prefer official documentation, standards, RFCs, and authoritative registries.
-- Store external-web content as URL, retrieved_at, summary, claims, and verification notes.
-- Do not treat external-web RAG as stronger than current source code, test evidence, or human-approved operational findings.
+- 公式documentation、standards、RFC、authoritative registryを優先します。
+- external-web contentは、URL、retrieved_at、summary、claims、verification notesとして保存します。
+- external-web RAGを、現在のsource code、test evidence、人間承認済みoperational findingsより強い根拠として扱いません。
 
 ## Network Core
 
