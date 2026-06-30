@@ -6,7 +6,7 @@
 
 ## Purpose
 
-改善作業完了後、PR資料、テストエビデンス、RAG投入候補、docs投入候補、Archive対象を整理します。
+改善作業完了後、PR資料、テストエビデンス、RAG投入候補、docs投入候補、report-only close archive準備を整理します。
 
 Knowledge Capture Agent を呼び出し、今回得られた知識を未来のAIと人間が再利用できる形に変換します。
 
@@ -160,27 +160,49 @@ Examples:
 - camera input design
 - test evidence policy
 
-## 6. Archive
+## 6. Report-only Close Archive
 
 Check:
 
 ```text
-work/<issue-id>
-  -> work/close/<issue-id>
+work/close/improvement/<issue-id>/
+  00-summary.md
+  01-work-report.md
+  02-test-report.md
+  03-review-report.md
+  04-human-check.md
+  05-retrospective.md
+  links.md
+  metadata.json
 ```
 
-Do not move the folder until the user approves archive.
+After human approval, prepare and audit the archive:
+
+```powershell
+python runtime/workflow/close_archive.py prepare --issue "<issue-id>"
+python runtime/workflow/close_archive.py audit --issue "<issue-id>"
+```
+
+Do not retain source checkouts, `.git`, `.venv`, `node_modules`, build output, or cache files in `work/close`.
+Pruning requires explicit approval:
+
+```powershell
+python runtime/workflow/close_archive.py prune `
+  --issue "<issue-id>" `
+  --execute `
+  --human-check approved
+```
 
 ## 7. Base Work Reset
 
-Before deleting the base work folder, preserve the base-phase process reports:
+Before deleting the base work folder, summarize and link the base-phase process reports:
 
 ```text
 work/<base-work-id>/process-report
-  -> work/close/<issue-id>/process-report/base-work-<base-work-id>
+  -> work/close/improvement/<issue-id>/links.md and summary reports
 ```
 
-Verify copied file names and sizes before deletion.
+Verify the generated archive reports before deletion.
 
 Delete the base work folder only after human approval:
 
@@ -211,9 +233,9 @@ READY
 Human Action
 Push feature/issue-11
 Run approved RAG build
-Preserve work/develop/process-report under work/close/issue-11
+Prepare report-only close archive for work/close/improvement/issue-11
 Delete work/develop
-Move work/issue-11 to work/close/issue-11
+Prune work/close/improvement/issue-11 after explicit approval
 ```
 
 ## Constraints
@@ -225,7 +247,7 @@ Do not:
 - install libraries
 - push without human approval
 - run RAG registration without human approval
-- move archive without human approval
-- delete base work without preserving process-report and receiving human approval
+- prepare/prune close archive without human approval
+- delete base work without summarizing / linking process-report and receiving human approval
 - delete evidence
 - treat scaffold `README.md` files as actual evidence

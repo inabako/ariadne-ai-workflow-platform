@@ -56,7 +56,7 @@
 - Repository / branch は user input または要件定義書の `Repository Control` を source of truth にします。
 - 会話ログだけで intake 済みとは扱いません。
 - `/requirement-discovery` では、要件review draft作成前にNoise Reduction Phaseを実行し、Readinessが`BLOCK`の場合は完成版要件定義書を保存しません。
-- GitHub Issue 作成、branch作成、push、install、archive移動などの副作用は、人間承認gateを通します。
+- GitHub Issue 作成、branch作成、push、install、report-only close archive準備 / pruneなどの副作用は、人間承認gateを通します。
 - GitHub Issue title は workflow label をprefixにします: `[新規機能フロー]`、`[改善フロー]`、`[初期開発]`、`[IaC]`。
 - `work/<branch>/` はbase調査用、`work/issue-<number>/` は実装修正用に分けます。
 - 成果物は `work/<id>/context/artifact-index.json` に登録できる形で残します。

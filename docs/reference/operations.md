@@ -13,7 +13,7 @@
 - 実機または外部I/Oを伴うstartup / integration check
 - push
 - RAG登録 / rebuild
-- archive移動
+- close archive準備 / prune
 - base work削除
 
 ## Commit Rule
@@ -50,9 +50,7 @@ chore: update workflow skill index
 
 ## Environment Preflight
 
-必要tool、Python module、MSYS2 package、support repositoryが不足している場合は、install listを作って止まります。
-
-installは人間承認後にだけ行います。
+必要tool、Python module、MSYS2 package、support repositoryが不足している場合は、install listを作って止まります。installは人間承認後にだけ行います。
 
 ```powershell
 python runtime/environment/preflight.py `
@@ -62,39 +60,117 @@ python runtime/environment/preflight.py `
 
 ## Encoding / Mojibake Gate
 
-source fileにmojibakeが見える場合、workflow concernとして扱います。
+source fileにmojibakeが見える場合は、workflow concernとして扱います。
 
 例:
 
-- `縺`
-- `繧`
-- `譁`
-- `謗`
-- `�`
+- `邵ｺ`
+- `郢ｧ`
+- `隴`
+- `隰`
+- `・ｽ`
 
-base checkoutで見つけた場合は、base branchを編集せずreportまたはIssue bodyに記録します。
-
-issue branch作成後に、target repositoryへ `.editorconfig` を追加し、editor / session reload後に再読込します。
+base checkoutで見つけた場合は、base branchを直接編集せず、reportまたはIssue bodyへ記録します。issue branch作成後にtarget repositoryへ `.editorconfig` を追加し、editor / session reload後に再読み込みします。
 
 `.bat` / `.cmd` がShift_JIS / CP932を意図している場合は、UTF-8へ一括変換しません。
 
-## Archive
+## Report-only Close Archive
 
-完了したissue work folderは、承認後に次へ移動します。
+`work/close` は、完了作業のsource checkoutや一時ファイルを保持する場所ではありません。作業報告、判断履歴、検証結果、参照リンクだけを残すreport-only archiveです。
+close archive作成時は、RAGに吸収した具体内容を自動で読み取り、標準レポートへ要約・参照リンクとして反映します。
+
+今後は肥大化を避けるため、workflow種別ごとに棚を分けます。
+
+| 種別 | 保存先 |
+| --- | --- |
+| 改善フロー / docs-sync / corrective action | `work/close/improvement/issue-<issue-number>/` |
+| 新システム開発フロー | `work/close/new-system-dev/issue-<issue-number>/` |
+| GitHub knowledge maintenance | `work/close/github/YYMMDDHHmmss_<random>/` |
+| VSCode Environment | `work/close/vscode/YYMMDDHHmmss_<random>/` |
+
+各archiveの目標構成は共通です。
 
 ```text
-work/issue-<issue-number>
-  -> work/close/issue-<issue-number>
+work/close/<category>/<archive-id>/
+  00-summary.md
+  01-work-report.md
+  02-test-report.md
+  03-review-report.md
+  04-human-check.md
+  05-retrospective.md
+  links.md
+  metadata.json
 ```
 
-base work folderを削除する前に、base phaseのprocess reportを保存します。
+改善フローの作成・監査:
 
-```text
-work/<base-work-id>/process-report
-  -> work/close/<issue-id>/process-report/base-work-<base-work-id>
+```powershell
+python runtime/workflow/close_archive.py prepare --issue issue-<issue-number>
+python runtime/workflow/close_archive.py audit --issue issue-<issue-number>
 ```
 
-copy確認と人間承認後にだけ、base work folderを削除します。
+RAG sourceを必ず反映したい場合:
+
+```powershell
+python runtime/workflow/close_archive.py prepare `
+  --issue issue-<issue-number> `
+  --source-rag rag/normalized/<rag-source>.md `
+  --require-rag
+```
+
+`prepare` は既定でRAG sourceを自動検出します。重要なRAG sourceは `--source-rag` で明示し、抜け漏れを失敗として扱う場合は `--require-rag` を付けます。明示指定したRAGだけを使う場合は `--no-auto-rag` を付けます。
+
+新システム開発フロー:
+
+```powershell
+python runtime/workflow/close_archive.py prepare `
+  --issue issue-<issue-number> `
+  --category new-system-dev
+```
+
+GitHub knowledge maintenance:
+
+```powershell
+python runtime/workflow/close_archive.py prepare `
+  --work-id github-knowledge-localty-system-robot-recent `
+  --category github
+```
+
+VSCode Environment:
+
+```powershell
+python runtime/workflow/close_archive.py prepare `
+  --work-id vscode-environment `
+  --category vscode
+```
+
+`github` と `vscode` は `prepare` 時に `YYMMDDHHmmss_<random>` のarchive-idを生成します。以後のaudit / pruneでは、出力された `archive_id` または `archive_dir` を指定します。
+
+削除対象になる重い成果物:
+
+- `source/`
+- `repository/`
+- `.git/`
+- `.venv/`
+- `node_modules/`
+- `dist/`
+- `build/`
+- `.pytest_cache/`
+- `__pycache__/`
+- 8つのreport-onlyファイル以外の旧作業ディレクトリ
+
+削除は必ずdry-run確認後、人間承認付きで実行します。
+
+```powershell
+python runtime/workflow/close_archive.py prune --issue issue-<issue-number>
+python runtime/workflow/close_archive.py prune `
+  --issue issue-<issue-number> `
+  --execute `
+  --human-check approved
+```
+
+base work folderを削除する前に、base phaseのprocess reportは `links.md` とsummary reportへ要約・リンク化します。確認と人間承認後にだけ、base work folderを削除します。
+
 ## GitHub Title Rules
 
 Issue title は、workflowに応じて次のprefixを付けます。
@@ -106,7 +182,5 @@ Issue title は、workflowに応じて次のprefixを付けます。
 | 新システム / 初期開発 | `[初期開発]` |
 
 Pull Request title は、対応するGitHub Issue titleを使います。
-
 Issue branchをpushした後、`develop` へPull Requestを送信します。
-
 Pull Request bodyには、変更点のMermaid式sequence diagramを含めます。

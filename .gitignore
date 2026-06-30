@@ -5,6 +5,15 @@
 
 # Runtime source checkout area
 work/*/source/
+work/close/**/.git/
+work/close/**/.venv/
+work/close/**/__pycache__/
+work/close/**/.pytest_cache/
+work/close/**/node_modules/
+work/close/**/dist/
+work/close/**/build/
+work/close/**/source/
+work/close/**/repository/
 
 # Python cache
 __pycache__/

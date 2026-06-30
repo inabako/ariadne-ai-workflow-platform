@@ -39,7 +39,7 @@ feature/issue-<issue-number>
 8. docsだけを修正する。
 9. docs-only差分を確認してcommit / pushする。
 10. Issue titleをPR titleとして `develop` へPull Requestを作成する。
-11. RAG候補とarchive準備を確認する。
+11. RAG候補とreport-only close archive準備を確認する。
 
 ## Issue Title
 
@@ -47,6 +47,25 @@ docs同期は改善扱いとして、Issue titleに次のprefixを付けます�
 
 ```text
 [改善フロー] <issue-title>
+```
+
+## Report-only Close Archive
+
+完了後は `work/close/improvement/issue-<issue-number>` をreport-only archiveとして準備します。source checkout、`.git`、`.venv`、cache、build outputは保持しません。
+
+```powershell
+python runtime/workflow/close_archive.py prepare --issue issue-<issue-number>
+python runtime/workflow/close_archive.py audit --issue issue-<issue-number>
+```
+
+削除が必要な場合は、dry-run確認後に承認付きで実行します。
+
+```powershell
+python runtime/workflow/close_archive.py prune --issue issue-<issue-number>
+python runtime/workflow/close_archive.py prune `
+  --issue issue-<issue-number> `
+  --execute `
+  --human-check approved
 ```
 
 ## Guardrails
@@ -57,6 +76,7 @@ docs同期は改善扱いとして、Issue titleに次のprefixを付けます�
 - RAGは補助contextであり、current codeを上書きする根拠にはしません。
 - Issue bodyはfree-form summaryではなく、`docs-drift-analysis.json` から作ります。
 - Pull Request titleは対応するIssue titleを使用します。
+- RAG登録、close archive準備 / prune、work folder削除は人間承認後に行います。
 
 ## Source Skill
 

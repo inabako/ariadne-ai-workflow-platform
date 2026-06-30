@@ -166,7 +166,7 @@ target repository templateを使う場合、`Report`、`Target branch`、`Target
 - push
 - Pull Request 作成
 - RAG登録
-- archive移動
+- report-only close archive準備 / prune
 
 ## Pull Request Flow
 

@@ -17,7 +17,7 @@
 - docs配置確認
 - RAG投入対象抽出
 - docs化すべき知識の抽出
-- work/close移行準備
+- report-only close archive準備
 - base work reset準備
 
 新規実装や設計変更は行いません。
@@ -150,27 +150,35 @@ Include:
 - human confirmation items
 - archive readiness
 
-### 7. Archive Preparation
+### 7. Report-only Close Archive Preparation
 
 Check only:
 
 ```text
-work/issue-XXX
-  -> work/close/issue-XXX
+work/close/improvement/issue-XXX/
+  00-summary.md
+  01-work-report.md
+  02-test-report.md
+  03-review-report.md
+  04-human-check.md
+  05-retrospective.md
+  links.md
+  metadata.json
 ```
 
-Report whether the move is ready. Do not move it without human approval.
+Report whether the lightweight archive can be prepared. Do not prepare or prune it without human approval.
+`work/close` must not retain source checkouts, `.git`, `.venv`, `node_modules`, build output, or cache files.
 
 ### 8. Base Work Reset Preparation
 
-Before deleting `work/<base-work-id>`, preserve the base-phase process reports:
+Before deleting `work/<base-work-id>`, summarize and link the base-phase process reports:
 
 ```text
 work/<base-work-id>/process-report
-  -> work/close/issue-XXX/process-report/base-work-<base-work-id>
+  -> work/close/improvement/issue-XXX/links.md and summary reports
 ```
 
-Verify that copied file names and sizes match before reporting the base work folder as deletable.
+Verify the generated archive reports before reporting the base work folder as deletable.
 
 Do not delete `work/<base-work-id>` without human approval.
 
@@ -199,9 +207,9 @@ Archive
 Human Action
   Push feature/issue-XXX
   Run approved RAG build
-  Preserve work/<base-work-id>/process-report under work/close/issue-XXX
+  Prepare report-only close archive under work/close/improvement/issue-XXX
   Delete work/<base-work-id>
-  Move work/issue-XXX to work/close/issue-XXX
+  Prune work/close/improvement/issue-XXX after explicit approval
 ```
 
 ## Constraints
@@ -213,7 +221,7 @@ The following are prohibited unless the user explicitly approves the specific ac
 - library installation
 - push
 - RAG registration / rebuild
-- archive move
+- close archive prepare / prune
 - base work deletion
 - deleting or overwriting evidence
 

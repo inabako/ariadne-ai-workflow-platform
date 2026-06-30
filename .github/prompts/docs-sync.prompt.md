@@ -1,6 +1,6 @@
 ﻿---
 name: docs-sync
-description: Compare implementation and docs on a target branch, store docs drift analysis as JSON, create an Issue, create feature/issue-XXX, update docs only, push after approval, then prepare RAG capture and archive.
+description: Compare implementation and docs on a target branch, store docs drift analysis as JSON, create an Issue, create feature/issue-XXX, update docs only, push after approval, then prepare RAG capture and a report-only close archive.
 argument-hint: "<target-repository> <target-branch>"
 agent: agent
 ---
@@ -49,7 +49,7 @@ Use:
 9. Commit and push the issue branch after human approval.
 10. Create a Pull Request to `develop` after human approval.
 11. Prepare knowledge capture and RAG candidates.
-11. Move the work folder to `work/close/issue-<issue-number>` after human approval.
+12. Prepare the report-only close archive under `work/close/improvement/issue-<issue-number>` after human approval.
 
 ## Runtime Helpers
 
@@ -157,7 +157,7 @@ Schema:
 - Do not create an Issue from a free-form summary; use `docs-drift-analysis.json`.
 - Do not push without human approval.
 - Do not create Pull Requests without human approval.
-- Do not run RAG registration or move archives without human approval.
+- Do not run RAG registration, prepare/prune close archives, or delete work folders without human approval.
 - If docs and implementation conflict, current implementation evidence wins unless the human says otherwise.
 - If implementation behavior is unclear, ask or record an unresolved question.
 
@@ -170,4 +170,4 @@ The workflow is complete when:
 - issue branch exists as `feature/issue-<issue-number>`
 - docs-only changes are committed and pushed
 - RAG/docs candidates are prepared
-- work folder is ready to move to `work/close/issue-<issue-number>`
+- report-only close archive is ready under `work/close/improvement/issue-<issue-number>`

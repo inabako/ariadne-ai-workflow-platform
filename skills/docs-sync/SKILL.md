@@ -274,17 +274,17 @@ After approval:
 
 ```text
 work/issue-<issue-number>
-  -> work/close/issue-<issue-number>
+  -> work/close/improvement/issue-<issue-number> report-only archive
 ```
 
 Before deleting `work/<target-branch>`, preserve base-phase process reports:
 
 ```text
 work/<target-branch>/process-report
-  -> work/close/issue-<issue-number>/process-report/base-work-<target-branch>
+  -> work/close/improvement/issue-<issue-number>/links.md and summary reports
 ```
 
-Do not move or delete folders without explicit human approval.
+Do not prepare close archive, prune source/cache, or delete folders without explicit human approval.
 
 ## Guardrails
 
@@ -294,5 +294,5 @@ Do not move or delete folders without explicit human approval.
 - Do not push without approval.
 - Do not create Pull Requests without approval.
 - Do not run RAG registration / rebuild without approval.
-- Do not move archive or delete base work without approval.
+- Do not prepare/prune close archive or delete base work without approval.
 - Do not let old RAG override current repository evidence.

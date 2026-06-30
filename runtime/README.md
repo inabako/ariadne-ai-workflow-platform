@@ -36,6 +36,7 @@ runtime/environment/preflight.py
 runtime/workflow/init_corrective_action_fix.py
 runtime/workflow/vscode_environment.py
 runtime/workflow/web_svg_layout_mode.py
+runtime/workflow/close_archive.py
 runtime/retrieval/task_runner.py
 runtime/scm/prepare_repository.py
 runtime/scm/compare_requirements.py

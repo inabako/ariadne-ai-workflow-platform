@@ -1,6 +1,6 @@
 # Knowledge Capture
 
-完了したIssue作業から、PR材料、docs evidence確認、RAG候補、docs候補、archive準備を作るworkflowです。
+完了したIssue作業から、PR材料、docs evidence確認、RAG候補、docs候補、report-only close archive準備を作るworkflowです。
 
 ## Command
 
@@ -40,8 +40,7 @@ work/<issue-id>/source/repository/docs/evidence/<issue-id>/integration/
 work/<issue-id>/source/repository/docs/evidence/<issue-id>/human_check/
 ```
 
-`runtime/workflow/knowledge_capture.py` は、存在しない証跡フォルダとscaffold用 `README.md` を自動生成します。
-ただし、`README.md` だけでは実エビデンスとはみなしません。
+`runtime/workflow/knowledge_capture.py` は、存在しない証跡フォルダとscaffold用 `README.md` を自動生成します。ただし、`README.md` だけでは実エビデンスとはみなしません。
 
 ## Flow
 
@@ -51,7 +50,7 @@ work/<issue-id>/source/repository/docs/evidence/<issue-id>/human_check/
 4. Issue branch push後、`develop` へのPull Request gateを確認する。
 5. RAG candidateを抽出する。
 6. docs candidateを抽出する。
-7. archive readinessを確認する。
+7. report-only close archive readinessを確認する。
 8. base work resetの準備をする。
 
 ## Output
@@ -65,7 +64,6 @@ work/<issue-id>/process-report/knowledge-capture-*.json
 ```
 
 `pull-request-title.md` は、利用可能なGitHub Issue recordのtitleを使います。
-
 `pull-request-description.md` には、Issueからbranch、test evidence、push、Pull Request、`develop` までのMermaid式sequence diagramを含めます。
 
 ## Pull Request
@@ -80,11 +78,54 @@ python runtime/github/pull_request_manager.py `
   --human-check approved
 ```
 
+## Report-only Close Archive
+
+承認後、次を実行します。
+
+```powershell
+python runtime/workflow/close_archive.py prepare --issue "<issue-id>" --require-rag
+python runtime/workflow/close_archive.py audit --issue "<issue-id>"
+```
+
+`prepare` はRAG sourceを自動検出し、吸収済みの具体内容をclose reportへ反映します。RAG sourceが自動検出できない、または重要なRAG sourceを必ず含めたい場合は、次のように明示します。
+
+```powershell
+python runtime/workflow/close_archive.py prepare `
+  --issue "<issue-id>" `
+  --source-rag "rag/normalized/<rag-source>.md" `
+  --require-rag
+```
+
+不要なsource checkoutやcacheを削除する場合は、dry-runを確認してから承認付きで実行します。
+
+```powershell
+python runtime/workflow/close_archive.py prune --issue "<issue-id>"
+python runtime/workflow/close_archive.py prune `
+  --issue "<issue-id>" `
+  --execute `
+  --human-check approved
+```
+
+`work/close` はsource checkoutではなく、次のreport-only構成を目標にします。
+
+```text
+work/close/improvement/<issue-id>/
+  00-summary.md
+  01-work-report.md
+  02-test-report.md
+  03-review-report.md
+  04-human-check.md
+  05-retrospective.md
+  links.md
+  metadata.json
+```
+
 ## Guardrails
 
 - 実装codeを変更しません。
 - designを変更しません。
-- push、Pull Request作成、RAG登録、archive移動、base work削除は人間承認後に行います。
+- push、Pull Request作成、RAG登録、close archive作成、archive pruning、base work削除は人間承認後に行います。
+- `work/close` はsource checkoutではなく、report-only archiveとして扱います。
 - evidenceを削除しません。
 - テスト成果物の保存先は [Test Artifact Storage](../reference/test-artifact-storage.md) に従います。
 

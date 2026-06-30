@@ -13,7 +13,7 @@ Respond to the user in Japanese by default. Human-facing reports, docs, reviews,
 
 改善作業完了後に、今回得られた知識と証跡を未来のAIと人間が再利用できる形へ整理します。
 
-This skill does not implement code changes, alter design, push branches, run RAG registration, or move archives unless the user explicitly approves the specific action.
+This skill does not implement code changes, alter design, push branches, run RAG registration, create close archives, or prune archived source/cache unless the user explicitly approves the specific action.
 
 ## Slash Command
 
@@ -177,22 +177,64 @@ Examples:
 - camera input design
 - test evidence policy
 
-### 7. Archive Readiness
+### 7. Report-only Close Archive Readiness
 
-Check whether the work folder can move:
+Check whether the completed issue can be summarized into a lightweight close archive:
 
 ```text
-work/<issue-id>
-  -> work/close/<issue-id>
+work/close/improvement/<issue-id>/
+  00-summary.md
+  01-work-report.md
+  02-test-report.md
+  03-review-report.md
+  04-human-check.md
+  05-retrospective.md
+  links.md
+  metadata.json
+```
+
+Prepare after human approval:
+
+```powershell
+python runtime/workflow/close_archive.py prepare --issue "<issue-id>" --require-rag
+python runtime/workflow/close_archive.py audit --issue "<issue-id>"
+```
+
+`close_archive.py prepare` はRAG source Markdownを自動検出し、吸収済みの具体的な知識をclose reportへ書き込みます。重要なRAG sourceが分かっている場合は、明示指定してください。
+
+```powershell
+python runtime/workflow/close_archive.py prepare `
+  --issue "<issue-id>" `
+  --source-rag "rag/normalized/<rag-source>.md" `
+  --require-rag
+```
+
+薄いreportのままcloseしてはいけない作業では `--require-rag` を使います。自動検出を止め、明示指定した `--source-rag` だけを使いたい場合に限り `--no-auto-rag` を使います。
+
+Do not keep source checkouts, `.git`, `.venv`, `node_modules`, build output, or cache files in `work/close`.
+
+Prune is dry-run by default:
+
+```powershell
+python runtime/workflow/close_archive.py prune --issue "<issue-id>"
+```
+
+Actual pruning requires approval:
+
+```powershell
+python runtime/workflow/close_archive.py prune `
+  --issue "<issue-id>" `
+  --execute `
+  --human-check approved
 ```
 
 ### 8. Base Work Reset
 
-Before deleting the base work folder, preserve the base-phase process reports:
+Before deleting the base work folder, summarize and link the base-phase process reports into the close archive:
 
 ```text
 work/<base-work-id>/process-report
-  -> work/close/<issue-id>/process-report/base-work-<base-work-id>
+  -> work/close/improvement/<issue-id>/links.md and summary reports
 ```
 
 After the copy is verified, delete:
@@ -231,7 +273,8 @@ Human Action
   Push feature/issue-XXX
   Open PR to develop
   Run approved RAG build
-  Move work/issue-XXX to work/close/issue-XXX
+  Prepare report-only close archive
+  Optionally prune source/cache with approval
 ```
 
 ## Guardrails
@@ -242,8 +285,8 @@ Human Action
 - Do not push without human approval.
 - Do not create Pull Requests without human approval.
 - Do not run RAG registration / rebuild without human approval.
-- Do not move archive without human approval.
-- Do not delete `work/<base-work-id>` until its `process-report` has been preserved under `work/close/<issue-id>/process-report/base-work-<base-work-id>` and the copy has been verified.
+- Do not create or prune close archive without human approval.
+- Do not delete `work/<base-work-id>` until its `process-report` has been summarized / linked under `work/close/improvement/<issue-id>/` and the result has been verified.
 - Do not delete evidence.
 - Report missing docs evidence before push.
 - Do not treat scaffold `README.md` files as actual evidence.

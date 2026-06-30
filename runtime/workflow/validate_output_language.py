@@ -20,7 +20,7 @@ DEFAULT_EXCLUDES = [
     "rag/retrieval",
     "rag/jsonized",
     "work/*/source",
-    "work/close/*/source",
+    "work/close/**/source",
     "templates/boilerplates",
 ]
 ALLOWED_ENGLISH_TERMS = {

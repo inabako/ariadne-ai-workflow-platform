@@ -727,25 +727,32 @@ rag/specialist-review/<domain>
 
 RAG registration requires explicit human approval. After approval, run `/rag-build` or the equivalent runtime RAG pipeline.
 
-Archive target:
+Report-only close archive target:
 
 ```text
-work/issue-<issue-number>
-  -> work/close/issue-<issue-number>
+work/close/improvement/issue-<issue-number>/
+  00-summary.md
+  01-work-report.md
+  02-test-report.md
+  03-review-report.md
+  04-human-check.md
+  05-retrospective.md
+  links.md
+  metadata.json
 ```
 
 Base work reset:
 
-Before deleting `work/<target-branch>`, preserve base-phase process reports under the closed issue folder:
+Before deleting `work/<target-branch>`, summarize and link base-phase process reports under the closed issue folder:
 
 ```text
 work/<target-branch>/process-report
-  -> work/close/issue-<issue-number>/process-report/base-work-<target-branch>
+  -> work/close/improvement/issue-<issue-number>/links.md and summary reports
 ```
 
-After the copy is verified, delete `work/<target-branch>` so the next corrective flow starts from a clean base work folder.
+After the report-only archive is verified, delete `work/<target-branch>` so the next corrective flow starts from a clean base work folder.
 
-Do not move the issue folder until the user approves archive.
+Do not prepare or prune the close archive until the user approves archive.
 
 ## Guardrails
 
@@ -764,8 +771,8 @@ Do not move the issue folder until the user approves archive.
 - For Next.js screen changes, do not skip `nextjs-webapp-implementation-prep.md` or start source changes before `Implementation may start: yes`.
 - When `work/requirements/svg-input/WEB_FIX_*.svg` exists, do not skip the Web SVG Layout Mode Gate or copy generated candidates into source without review.
 - Do not push before PR material is generated and docs evidence exists under `docs/evidence/issue-<issue-number>/test_specifications`, `docs/evidence/issue-<issue-number>/ut`, and `docs/evidence/issue-<issue-number>/integration`; add `docs/evidence/issue-<issue-number>/human_check` when human confirmation is required. Scaffold `README.md` files alone are not evidence.
-- Do not run RAG registration / rebuild or move `work/issue-<issue-number>` to `work/close/issue-<issue-number>` without explicit human approval.
-- Do not delete `work/<target-branch>` until `work/<target-branch>/process-report` has been preserved under `work/close/issue-<issue-number>/process-report/base-work-<target-branch>` and the copy has been verified.
+- Do not run RAG registration / rebuild or prepare/prune `work/close/improvement/issue-<issue-number>` without explicit human approval.
+- Do not delete `work/<target-branch>` until `work/<target-branch>/process-report` has been summarized / linked under `work/close/improvement/issue-<issue-number>/` and the report-only archive has been verified.
 - Do not skip RAG build/load.
 - Do not implement on the target branch directly.
 - Keep `/corrective-action-report` read-only; use this skill for implementation.

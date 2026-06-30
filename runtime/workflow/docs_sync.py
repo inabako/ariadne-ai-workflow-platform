@@ -142,7 +142,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
             "Do not edit files in the base checkout.",
             "Do not change implementation code in the issue branch.",
             "Do not push until human approval is recorded.",
-            "Do not run RAG registration or archive movement without human approval.",
+            "Do not run RAG registration or close archive prepare/prune without human approval.",
         ],
     }
     write_json(context_dir / "agent-context.json", agent_context)
@@ -174,7 +174,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
                 "Write docs-drift-analysis.json before Issue creation.",
             ],
             "stop_conditions": [
-                "Stop before GitHub mutation, push, RAG registration, or archive movement until human approval.",
+                "Stop before GitHub mutation, push, RAG registration, or close archive prepare/prune until human approval.",
             ],
         },
     )

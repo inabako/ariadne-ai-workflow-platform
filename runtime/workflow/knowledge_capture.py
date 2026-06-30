@@ -61,6 +61,10 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def close_archive_target(repo_root: Path, issue: str) -> Path:
+    return repo_root / "work" / "close" / "improvement" / issue
+
+
 def list_files(path: Path) -> list[Path]:
     if not path.exists():
         return []
@@ -73,7 +77,7 @@ def is_scaffold_file(path: Path) -> bool:
 
 def path_status(path: Path) -> dict[str, Any]:
     files = list_files(path)
-    evidence_files = [path for path in files if not is_scaffold_file(path)]
+    evidence_files = [item for item in files if not is_scaffold_file(item)]
     return {
         "path": path,
         "exists": path.exists(),
@@ -101,7 +105,7 @@ def read_text_sample(path: Path, max_chars: int = 1200) -> str:
 
 def markdown_path_list(repo_root: Path, files: list[Path], limit: int = 30) -> str:
     if not files:
-        return "- None"
+        return "- なし"
     lines = [f"- `{relative_to_repo(repo_root, path)}`" for path in files[:limit]]
     remaining = len(files) - limit
     if remaining > 0:
@@ -119,7 +123,7 @@ def find_docs_candidates(files: list[Path]) -> list[dict[str, str]]:
                     keyword,
                     {
                         "topic": keyword,
-                        "reason": "Repeated or operationally useful knowledge appeared in workflow evidence.",
+                        "reason": "Workflow evidenceに、再利用しやすい運用知識が含まれているため。",
                         "source_path": str(path),
                     },
                 )
@@ -244,10 +248,20 @@ def build_merge_comment(issue: str) -> str:
 """
 
 
+def relative_status(repo_root: Path, status: dict[str, Any]) -> dict[str, Any]:
+    status["relative_path"] = relative_to_repo(repo_root, status["path"])
+    status["path"] = status["relative_path"]
+    if "files" in status:
+        status["files"] = [relative_to_repo(repo_root, path) for path in status["files"]]
+    if "evidence_files" in status:
+        status["evidence_files"] = [relative_to_repo(repo_root, path) for path in status["evidence_files"]]
+    return status
+
+
 def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     work_dir = repo_root / "work" / args.issue
-    close_target = repo_root / "work" / "close" / args.issue
+    close_target = close_archive_target(repo_root, args.issue)
     if not work_dir.exists() and close_target.exists():
         work_dir = close_target
     if not work_dir.exists():
@@ -272,14 +286,10 @@ def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
         name: file_status(docs_root / "test_specifications" / name)
         for name in EXPECTED_TEST_SPEC_FILES
     }
-    for status in docs_status.values():
-        status["relative_path"] = relative_to_repo(repo_root, status["path"])
-        status["path"] = status["relative_path"]
-        status["files"] = [relative_to_repo(repo_root, path) for path in status["files"]]
-        status["evidence_files"] = [relative_to_repo(repo_root, path) for path in status["evidence_files"]]
-    for status in test_spec_file_status.values():
-        status["relative_path"] = relative_to_repo(repo_root, status["path"])
-        status["path"] = status["relative_path"]
+    for key, status in docs_status.items():
+        docs_status[key] = relative_status(repo_root, status)
+    for key, status in test_spec_file_status.items():
+        test_spec_file_status[key] = relative_status(repo_root, status)
 
     scaffold_status = [
         {
@@ -306,17 +316,18 @@ def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
     docs_candidates = find_docs_candidates(rag_files)
     for candidate in docs_candidates:
         candidate["source_path"] = relative_to_repo(repo_root, Path(candidate["source_path"]))
-    archive_status = "already-archived" if work_dir.resolve() == close_target.resolve() else ("ready" if not close_target.exists() else "blocked-target-exists")
+
+    archive_status = "already-archived" if work_dir.resolve() == close_target.resolve() else "report-only-ready"
     base_work_dir = repo_root / "work" / base_work_id if base_work_id else None
     base_process_report_dir = base_work_dir / "process-report" if base_work_dir else None
-    base_preserve_dir = close_target / "process-report" / f"base-work-{base_work_id}" if base_work_id else None
+    base_archive_target = close_target if base_work_id else None
     base_work_status = {
         "base_work_id": base_work_id,
         "source": relative_to_repo(repo_root, base_process_report_dir) if base_process_report_dir else "",
-        "preserve_target": relative_to_repo(repo_root, base_preserve_dir) if base_preserve_dir else "",
+        "archive_target": relative_to_repo(repo_root, base_archive_target) if base_archive_target else "",
         "source_exists": bool(base_process_report_dir and base_process_report_dir.exists()),
-        "preserve_target_exists": bool(base_preserve_dir and base_preserve_dir.exists()),
-        "action": "copy-process-report-then-delete-base-work" if base_work_id else "not_configured",
+        "archive_target_exists": bool(base_archive_target and base_archive_target.exists()),
+        "action": "summarize-base-process-report-links-then-delete-base-work" if base_work_id else "not_configured",
     }
 
     timestamp = utc_now_iso()
@@ -373,15 +384,26 @@ def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
 
 ## Docs候補
 
-{markdown_path_list(repo_root, [Path(item["source_path"]) for item in docs_candidates]) if docs_candidates else "- None"}
+{markdown_path_list(repo_root, [Path(item["source_path"]) for item in docs_candidates]) if docs_candidates else "- なし"}
 
-## Archive
+## Report-only Close Archive
 
 | Item | Value |
 | --- | --- |
 | Source | `work/{args.issue}` |
-| Target | `work/close/{args.issue}` |
+| Target | `work/close/improvement/{args.issue}` |
 | Status | {archive_status} |
+| Policy | source checkout、`.git`、`.venv`、cache、build artifactsは保持しない |
+
+Recommended command:
+
+```powershell
+python runtime/workflow/close_archive.py prepare `
+  --issue {args.issue}
+
+python runtime/workflow/close_archive.py audit `
+  --issue {args.issue}
+```
 
 ## Base Work Reset
 
@@ -389,18 +411,19 @@ def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
 | --- | --- |
 | Base Work ID | `{base_work_status["base_work_id"] or "not configured"}` |
 | Preserve Source | `{base_work_status["source"] or "not configured"}` |
-| Preserve Target | `{base_work_status["preserve_target"] or "not configured"}` |
+| Archive Target | `{base_work_status["archive_target"] or "not configured"}` |
 | Source Exists | {base_work_status["source_exists"]} |
-| Preserve Target Exists | {base_work_status["preserve_target_exists"]} |
+| Archive Target Exists | {base_work_status["archive_target_exists"]} |
 | Action | {base_work_status["action"]} |
 
 ## Human Action
 
 - docs evidenceが `docs/evidence/{args.issue}/test_specifications`, `docs/evidence/{args.issue}/ut`, `docs/evidence/{args.issue}/integration`, 必要に応じて `docs/evidence/{args.issue}/human_check` に保存されていることを確認する。
-- feature branchにdocs evidenceをcommitした後にのみ `feature/{args.issue}` をpushする。
+- feature branchにdocs evidenceをcommitした後にのみ `{branch or 'feature/issue-XXX'}` をpushする。
 - 承認後、選択した候補に対してRAG buildを実行する。
-- base work folderを削除する前に、`work/<base-work-id>/process-report` を `work/close/{args.issue}/process-report/base-work-<base-work-id>` に保存する。
-- 承認後、`work/{args.issue}` を `work/close/{args.issue}` へ移動する。
+- base work folderを削除する前に、base phaseのprocess reportを `work/close/improvement/{args.issue}/links.md` と各summary reportへ要約・リンク化する。
+- 承認後、`runtime/workflow/close_archive.py prepare --issue {args.issue}` でreport-only close packageを作成する。
+- source checkout、`.git`、`.venv`、cache削除は `close_archive.py prune --execute --human-check approved` でのみ実行する。
 """
     write_markdown(output_paths["knowledge_capture_report"], report, args.dry_run)
 
@@ -422,15 +445,17 @@ def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
         "docs_candidates": docs_candidates,
         "archive": {
             "source": f"work/{args.issue}",
-            "target": f"work/close/{args.issue}",
+            "target": f"work/close/improvement/{args.issue}",
             "status": archive_status,
+            "policy": "report-only",
         },
         "base_work_reset": base_work_status,
         "human_actions": [
             f"docs evidenceをcommitした後に {branch or 'feature/issue-XXX'} をpushする。",
             f"承認済み候補について work/{args.issue} からRAG buildを実行する。",
-            "base work folderを削除する前にbase work process-reportを保存する。",
-            f"承認後、work/{args.issue} を work/close/{args.issue} へ移動する。",
+            "base work folderを削除する前にbase work process-reportをsummary/link化する。",
+            f"承認後、runtime/workflow/close_archive.py prepare --issue {args.issue} を実行する。",
+            f"承認後、必要なら runtime/workflow/close_archive.py prune --issue {args.issue} --execute --human-check approved を実行する。",
         ],
     }
     if not args.dry_run:
