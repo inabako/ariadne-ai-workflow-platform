@@ -3,17 +3,19 @@
 .env.*
 !.env.example
 
-# Runtime source checkout area
-work/*/source/
-work/close/**/.git/
-work/close/**/.venv/
-work/close/**/__pycache__/
-work/close/**/.pytest_cache/
-work/close/**/node_modules/
-work/close/**/dist/
-work/close/**/build/
-work/close/**/source/
-work/close/**/repository/
+# Local work workspace
+# GitHubにはworkflow本体とwork構成説明READMEのみを上げる。
+# 要件draft、SVG入力、issue作業、close archive実体は追跡しない。
+work/**
+!work/**/
+!work/**/README.md
+
+# Local RAG knowledge workspace
+# GitHubにはworkflow本体とRAG構成説明READMEのみを上げる。
+# RAG蓄積物・生成物は追跡しない。
+rag/**
+!rag/**/
+!rag/**/README.md
 
 # Python cache
 __pycache__/
