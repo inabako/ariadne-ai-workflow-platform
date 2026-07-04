@@ -31,6 +31,7 @@
 | `rag-document.schema.json` | RAG投入用に正規化した document |
 | `rag-chunk.schema.json` | retrieval / embeddings 用の chunk |
 | `rag-embedding.schema.json` | local embedding index のchunk vector |
+| `rag-dispatch-plan.schema.json` | RAG検索前のintent、metadata、semantic hint、query計画 |
 | `rag-retrieval-result.schema.json` | query、selected chunks、dropped chunks、filter条件 |
 | `rag-context-pack.schema.json` | 圧縮済みcontext、source、token見積もり |
 

@@ -80,7 +80,9 @@ source markdown
   -> chunk JSON
   -> JSONL indexes
   -> local embeddings
+  -> dispatch plan
   -> retrieval result / context pack
+  -> load dispatch aggregate
 ```
 
 ## Output Files
@@ -92,7 +94,7 @@ source markdown
 | `rag/indexes/documents.jsonl` | document-level index |
 | `rag/indexes/chunks.jsonl` | chunk-level index |
 | `rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |
-| `rag/retrieval/*.json` | retrieval result、dispatch aggregate、context pack |
+| `rag/retrieval/*.json` | dispatch plan、retrieval result、dispatch aggregate、context pack |
 | `rag/jsonized/*.json` | 既存Markdown / JSONLなどをUUID名JSON wrapperにしたもの |
 | `rag/external-web/<category>/*.md` | 外部Web一次情報から抽出したclaims / metadata / verification notes |
 | `rag/external-web/retrieval/*.md` | 外部Web RAG dispatcher の集約結果 |
@@ -234,6 +236,11 @@ python runtime/rag/rag_dispatcher.py `
   --max-chars 4000 `
   --jobs 4
 ```
+
+dispatcherは検索前に `artifact_type: rag-dispatch-plan` を生成します。
+このplanは、Intent、metadata filter、semantic hint、query purpose、stop conditionをAgent間で共有するための成果物です。
+
+dispatcher設計と運用ノウハウは [RAG Dispatcher Design Notes](rag-dispatcher.md) を参照してください。
 
 ## Boundary
 

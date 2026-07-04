@@ -27,6 +27,7 @@ docs-drift-analysis.schema.json
 rag-document.schema.json
 rag-chunk.schema.json
 rag-embedding.schema.json
+rag-dispatch-plan.schema.json
 rag-retrieval-result.schema.json
 rag-context-pack.schema.json
 support-repositories.schema.json

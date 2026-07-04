@@ -97,6 +97,10 @@ python runtime/rag/rag_dispatcher.py `
   --jobs 4
 ```
 
+dispatcherは検索前に `artifact_type: rag-dispatch-plan` を保存します。
+このplanには、intent、metadata filter、semantic hint、query、query purpose、stop conditionを残します。
+後続Agentは、検索結果だけでなく「なぜこのRAGを読んだか」も確認できます。
+
 外部Web RAGだけを読む場合:
 
 ```powershell
@@ -119,7 +123,7 @@ python runtime/rag/rag_dispatcher.py `
 | `rag/indexes/documents.jsonl` | document-level index |
 | `rag/indexes/chunks.jsonl` | chunk-level index |
 | `rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |
-| `rag/retrieval/*.json` | retrieval result、dispatch aggregate、context pack |
+| `rag/retrieval/*.json` | dispatch plan、retrieval result、dispatch aggregate、context pack |
 
 ## Boundary
 

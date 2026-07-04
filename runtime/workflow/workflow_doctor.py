@@ -41,10 +41,12 @@ def missing_required_files(repo_root: Path) -> list[str]:
         "runtime/registries/README.md",
         "runtime/registries/human_gates.json",
         ".github/schemas/human-gates.schema.json",
+        ".github/schemas/rag-dispatch-plan.schema.json",
         "runtime/workflow/gui_mode.py",
         "templates/noise-reduction/README.md",
         "docs/reference/human-gates.md",
         "runtime/tests/test_close_archive.py",
+        "runtime/tests/test_rag_dispatcher.py",
     ]
     return [path for path in required if not (repo_root / path).exists()]
 

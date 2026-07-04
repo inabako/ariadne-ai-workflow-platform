@@ -34,15 +34,17 @@ SAFETY_TERMS = [
     "operator",
 ]
 
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Dispatch parallel RAG retrieval queries and aggregate compressed context packs."
     )
     parser.add_argument("--query", action="append", default=[], help="Explicit retrieval query. Can be repeated.")
     parser.add_argument("--task", default="", help="Task summary used to derive queries when --query is omitted.")
+    parser.add_argument("--workflow", default="", help="Optional workflow name for dispatch planning evidence.")
+    parser.add_argument("--work-id", default="", help="Optional work/issue identifier for dispatch planning evidence.")
     parser.add_argument("--context-file", action="append", default=[], help="Markdown/JSON context file for query planning.")
     parser.add_argument("--work-dir", default="", help="Workflow work/<receipt-id> directory to scan for planning context.")
+    parser.add_argument("--dispatch-plan", default="", help="Existing rag-dispatch-plan JSON to execute.")
     parser.add_argument("--repository", default="", help="Optional retrieval filter.")
     parser.add_argument("--branch", default="", help="Optional retrieval filter.")
     parser.add_argument("--project", default="", help="Optional retrieval filter.")
@@ -116,44 +118,199 @@ def extract_component_terms(text: str) -> list[str]:
     return unique_keep_order(candidates)[:8]
 
 
-def derive_queries(args: argparse.Namespace, repo_root: Path) -> list[str]:
-    explicit = unique_keep_order([str(query) for query in args.query if str(query).strip()])
-    if explicit:
-        return explicit[: args.max_queries]
-
+def collect_planning_context(args: argparse.Namespace, repo_root: Path) -> str:
     context_parts = [args.task]
     for value in args.context_file:
         context_parts.append(read_text_file(resolve_path(repo_root, value)))
     if args.work_dir:
         context_parts.append(collect_work_context(resolve_path(repo_root, args.work_dir)))
+    return "\n\n".join(part for part in context_parts if part)
 
-    context = "\n\n".join(part for part in context_parts if part)
+
+def base_filters_from_args(args: argparse.Namespace) -> dict[str, Any]:
+    filters: dict[str, Any] = {
+        "project": args.project,
+        "repository": args.repository,
+        "branch": args.branch,
+        "tags": args.tag,
+        "source_type": args.source_type,
+        "category": args.category,
+        "trust_level": args.trust_level,
+    }
+    return filters
+
+
+def append_query(query_items: list[dict[str, Any]], query: str, purpose: str, args: argparse.Namespace) -> None:
+    normalized = " ".join(query.split()).strip()
+    if not normalized:
+        return
+    query_items.append(
+        {
+            "query": normalized,
+            "purpose": purpose,
+            "search_mode": args.search_mode,
+            "filters": base_filters_from_args(args),
+        }
+    )
+
+
+def derive_query_items(args: argparse.Namespace, repo_root: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    explicit = unique_keep_order([str(query) for query in args.query if str(query).strip()])
+    if explicit:
+        query_items: list[dict[str, Any]] = []
+        for query in explicit[: args.max_queries]:
+            append_query(query_items, query, "explicit user-provided retrieval query", args)
+        return query_items, explicit[: args.max_queries]
+
+    context = collect_planning_context(args, repo_root)
     components = extract_component_terms(context)
-    queries: list[str] = []
+    query_items = []
+    semantic_hints: list[str] = []
+    semantic_hints.extend(components)
 
     repo_branch = " ".join(part for part in [args.repository, args.branch] if part)
     if repo_branch:
-        queries.append(f"{repo_branch} corrective action report")
+        append_query(query_items, f"{repo_branch} corrective action report", "target repository and branch history", args)
 
     if components:
-        queries.append(" ".join(components[:4]) + " architecture responsibility boundary")
-        queries.append(" ".join(components[:4]) + " test gap refactor")
+        append_query(
+            query_items,
+            " ".join(components[:4]) + " architecture responsibility boundary",
+            "component responsibility and architecture boundary",
+            args,
+        )
+        append_query(query_items, " ".join(components[:4]) + " test gap refactor", "component test and regression risk", args)
 
     lower_context = context.lower()
     safety_hits = [term for term in SAFETY_TERMS if term.lower() in lower_context]
+    semantic_hints.extend(safety_hits)
     if safety_hits:
-        queries.append(" ".join(safety_hits[:5]) + " safety risk corrective action")
+        append_query(
+            query_items,
+            " ".join(safety_hits[:5]) + " safety risk corrective action",
+            "safety, STOP, rollback, or operational risk",
+            args,
+        )
     else:
-        queries.append(DEFAULT_QUERIES[1])
+        append_query(query_items, DEFAULT_QUERIES[1], "default safety and communication-loss baseline", args)
 
     if "test" in lower_context or "pytest" in lower_context or "ci" in lower_context:
-        queries.append("test gap CI regression smoke integration")
+        append_query(query_items, "test gap CI regression smoke integration", "test gap and CI regression history", args)
 
     if "documentation" in lower_context or "docs" in lower_context or "README" in context:
-        queries.append("documentation gap operations README corrective action")
+        append_query(
+            query_items,
+            "documentation gap operations README corrective action",
+            "documentation and operations gap history",
+            args,
+        )
 
-    queries.extend(DEFAULT_QUERIES)
-    return unique_keep_order(queries)[: args.max_queries]
+    for query in DEFAULT_QUERIES:
+        append_query(query_items, query, "default corrective-action retrieval baseline", args)
+    return dedupe_query_items(query_items)[: args.max_queries], unique_keep_order(semantic_hints)
+
+
+def dedupe_query_items(query_items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    seen: set[str] = set()
+    result: list[dict[str, Any]] = []
+    for item in query_items:
+        query = " ".join(str(item.get("query", "")).split()).strip()
+        key = query.lower()
+        if not query or key in seen:
+            continue
+        seen.add(key)
+        item["query"] = query
+        result.append(item)
+    return result
+
+
+def normalize_plan_query_items(plan: dict[str, Any], args: argparse.Namespace) -> list[dict[str, Any]]:
+    metadata = plan.get("metadata", {}) if isinstance(plan.get("metadata"), dict) else {}
+    base_filters = {
+        "project": metadata.get("project", ""),
+        "repository": metadata.get("repository", ""),
+        "branch": metadata.get("branch", ""),
+        "tags": metadata.get("tags", []),
+        "source_type": metadata.get("source_type", ""),
+        "category": metadata.get("category", ""),
+        "trust_level": metadata.get("trust_level", ""),
+    }
+    query_items: list[dict[str, Any]] = []
+    for item in plan.get("queries", []):
+        if isinstance(item, str):
+            query_items.append(
+                {
+                    "query": item,
+                    "purpose": "legacy string query from dispatch plan",
+                    "search_mode": args.search_mode,
+                    "filters": base_filters,
+                }
+            )
+            continue
+        if not isinstance(item, dict):
+            continue
+        filters = {**base_filters}
+        item_filters = item.get("filters", {}) if isinstance(item.get("filters"), dict) else {}
+        for key, value in item_filters.items():
+            if value not in ("", None) and value != []:
+                filters[key] = value
+        query_items.append(
+            {
+                "query": item.get("query", ""),
+                "purpose": item.get("purpose", ""),
+                "search_mode": item.get("search_mode") or plan.get("search_mode") or args.search_mode,
+                "filters": filters,
+            }
+        )
+    return dedupe_query_items(query_items)[: args.max_queries]
+
+
+def build_dispatch_plan(args: argparse.Namespace, repo_root: Path) -> dict[str, Any]:
+    if args.dispatch_plan:
+        data = read_json(resolve_path(repo_root, args.dispatch_plan), default={})
+        if not isinstance(data, dict):
+            raise ValueError(f"Invalid dispatch plan: {args.dispatch_plan}")
+        if data.get("artifact_type") != "rag-dispatch-plan":
+            raise ValueError(f"Dispatch plan artifact_type must be rag-dispatch-plan: {args.dispatch_plan}")
+        data.setdefault("schema_version", "1.0")
+        data.setdefault("plan_id", str(uuid.uuid4()))
+        data.setdefault("queries", [])
+        return data
+
+    query_items, semantic_hints = derive_query_items(args, repo_root)
+    return {
+        "schema_version": "1.0",
+        "artifact_type": "rag-dispatch-plan",
+        "plan_id": str(uuid.uuid4()),
+        "created_at": utc_now_iso(),
+        "workflow": args.workflow,
+        "work_id": args.work_id,
+        "intent": args.task,
+        "task": args.task,
+        "planning_method": "explicit-query" if args.query else "task-context-heuristic",
+        "metadata": base_filters_from_args(args),
+        "semantic_hints": semantic_hints,
+        "queries": query_items,
+        "stop_conditions": [
+            "RAG indexes are missing",
+            "safety-critical prior finding is relevant to the current task",
+            "retrieval returns no useful context for a critical unknown",
+        ],
+        "inputs": {
+            "context_files": args.context_file,
+            "work_dir": args.work_dir,
+        },
+    }
+
+
+def write_dispatch_plan(repo_root: Path, output_dir: Path, plan: dict[str, Any], source_path: str) -> str:
+    if source_path:
+        return relative_to_repo(repo_root, resolve_path(repo_root, source_path))
+    plan_id = str(plan.get("plan_id") or uuid.uuid4())
+    plan["plan_id"] = plan_id
+    plan_path = output_dir / f"{plan_id}.json"
+    write_json(plan_path, plan)
+    return relative_to_repo(repo_root, plan_path)
 
 
 def run_command(command: list[str], cwd: Path) -> dict[str, Any]:
@@ -237,7 +394,10 @@ def ensure_indexes(args: argparse.Namespace, repo_root: Path) -> None:
             raise RuntimeError(f"RAG build stage failed: {' '.join(command)}\n{result['stderr']}")
 
 
-def retrieval_command(args: argparse.Namespace, query: str) -> list[str]:
+def retrieval_command(args: argparse.Namespace, query_item: dict[str, Any]) -> list[str]:
+    query = str(query_item.get("query", ""))
+    filters = query_item.get("filters", {}) if isinstance(query_item.get("filters"), dict) else {}
+    search_mode = str(query_item.get("search_mode") or args.search_mode)
     command = [
         args.python,
         "runtime/rag/retrieve_context.py",
@@ -249,41 +409,46 @@ def retrieval_command(args: argparse.Namespace, query: str) -> list[str]:
         "--output-dir",
         args.output_dir,
         "--search-mode",
-        args.search_mode,
+        search_mode,
         "--top-k",
         str(args.top_k),
         "--max-chars",
         str(args.max_chars),
     ]
     for option in ["project", "repository", "branch"]:
-        value = getattr(args, option)
+        value = filters.get(option, getattr(args, option))
         if value:
             command.extend([f"--{option}", value])
     for option in ["source_type", "category", "trust_level"]:
-        value = getattr(args, option)
+        value = filters.get(option, getattr(args, option))
         if value:
             command.extend([f"--{option.replace('_', '-')}", value])
-    for tag in args.tag:
+    tags = filters.get("tags", args.tag)
+    for tag in tags if isinstance(tags, list) else [tags]:
         command.extend(["--tag", tag])
     if args.write_markdown:
         command.append("--write-markdown")
     return command
 
 
-def run_retrievals(args: argparse.Namespace, repo_root: Path, queries: list[str]) -> list[dict[str, Any]]:
-    max_workers = max(1, min(args.jobs, len(queries)))
+def run_retrievals(args: argparse.Namespace, repo_root: Path, query_items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    max_workers = max(1, min(args.jobs, len(query_items)))
     results: list[dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {
-            executor.submit(run_command, retrieval_command(args, query), repo_root): query
-            for query in queries
+            executor.submit(run_command, retrieval_command(args, query_item), repo_root): query_item
+            for query_item in query_items
         }
         for future in as_completed(futures):
-            query = futures[future]
+            query_item = futures[future]
             result = future.result()
-            result["query"] = query
+            result["query"] = query_item.get("query", "")
+            result["purpose"] = query_item.get("purpose", "")
+            result["search_mode"] = query_item.get("search_mode", args.search_mode)
+            result["filters"] = query_item.get("filters", {})
             results.append(result)
-    results.sort(key=lambda item: queries.index(str(item.get("query", ""))))
+    order = {str(item.get("query", "")): index for index, item in enumerate(query_items)}
+    results.sort(key=lambda item: order.get(str(item.get("query", "")), 0))
     return results
 
 
@@ -327,7 +492,11 @@ def aggregate_context_packs(repo_root: Path, retrievals: list[dict[str, Any]], m
 
 
 def write_dispatch_markdown(path: Path, data: dict[str, Any]) -> None:
-    query_lines = "\n".join(f"- {query}" for query in data.get("queries", []))
+    query_lines = "\n".join(
+        f"- {item.get('query', '')}: {item.get('purpose', '')}"
+        for item in data.get("queries", [])
+        if isinstance(item, dict)
+    )
     pack_lines = "\n".join(
         f"- `{item.get('context_markdown', '')}` ({item.get('selected_chunk_count', 0)} chunks)"
         for item in data.get("context_packs", [])
@@ -335,6 +504,8 @@ def write_dispatch_markdown(path: Path, data: dict[str, Any]) -> None:
     text = f"""# RAG Load Dispatch Summary
 
 Created At: `{data.get('created_at', '')}`
+
+Dispatch Plan: `{data.get('dispatch_plan', '')}`
 
 Search Mode: `{data.get('search_mode', '')}`
 
@@ -361,12 +532,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError("--jobs must be positive.")
 
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
-    ensure_indexes(args, repo_root)
-    queries = derive_queries(args, repo_root)
-    if not queries:
+    output_dir = resolve_path(repo_root, args.output_dir)
+    plan = build_dispatch_plan(args, repo_root)
+    query_items = normalize_plan_query_items(plan, args)
+    if not query_items:
         raise ValueError("No RAG queries were provided or derived.")
+    dispatch_plan_path = write_dispatch_plan(repo_root, output_dir, plan, args.dispatch_plan)
+    ensure_indexes(args, repo_root)
 
-    retrievals = run_retrievals(args, repo_root, queries)
+    retrievals = run_retrievals(args, repo_root, query_items)
     failures = [item for item in retrievals if int(item.get("returncode", 1)) != 0]
     if failures:
         first = failures[0]
@@ -378,6 +552,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         context_packs.append(
             {
                 "query": item.get("query", ""),
+                "purpose": item.get("purpose", ""),
+                "search_mode": item.get("search_mode", args.search_mode),
+                "filters": item.get("filters", {}),
                 "retrieval_result": payload.get("retrieval_result", ""),
                 "context_pack": payload.get("context_pack", ""),
                 "context_markdown": payload.get("context_markdown", ""),
@@ -388,7 +565,6 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
 
     aggregate_context, sources = aggregate_context_packs(repo_root, retrievals, args.aggregate_max_chars)
-    output_dir = resolve_path(repo_root, args.output_dir)
     dispatch_id = str(uuid.uuid4())
     json_path = output_dir / f"{dispatch_id}.json"
     markdown_path = output_dir / f"{dispatch_id}.md"
@@ -396,18 +572,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "schema_version": "1.0",
         "artifact_type": "rag-load-dispatch",
         "dispatch_id": dispatch_id,
+        "dispatch_plan_id": plan.get("plan_id", ""),
+        "dispatch_plan": dispatch_plan_path,
         "created_at": utc_now_iso(),
-        "queries": queries,
+        "queries": query_items,
         "search_mode": args.search_mode,
-        "filters": {
-            "project": args.project,
-            "repository": args.repository,
-            "branch": args.branch,
-            "tags": args.tag,
-            "source_type": args.source_type,
-            "category": args.category,
-            "trust_level": args.trust_level,
-        },
+        "filters": plan.get("metadata", base_filters_from_args(args)),
         "context_packs": context_packs,
         "aggregate_context": aggregate_context,
         "sources": sources,
@@ -416,9 +586,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if args.write_markdown:
         write_dispatch_markdown(markdown_path, result)
     return {
+        "dispatch_plan": dispatch_plan_path,
         "dispatch_result": relative_to_repo(repo_root, json_path),
         "dispatch_markdown": relative_to_repo(repo_root, markdown_path) if args.write_markdown else "",
-        "query_count": len(queries),
+        "query_count": len(query_items),
         "context_pack_count": len(context_packs),
         "source_count": len(sources),
     }

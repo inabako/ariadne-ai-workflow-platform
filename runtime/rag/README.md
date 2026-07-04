@@ -117,7 +117,7 @@ Corrective action report Markdown は、RAG build前に `runtime/rag/standardize
 
 ### 5. Dispatch Parallel RAG Load
 
-開発前の RAG 読み込みでは、dispatcher を使って複数queryを計画・並列検索し、`retrieve_context.py` の圧縮済みcontext packを集約します。
+開発前の RAG 読み込みでは、dispatcher を使って `rag-dispatch-plan` を作成し、複数queryを計画・並列検索し、`retrieve_context.py` の圧縮済みcontext packを集約します。
 
 ```powershell
 python runtime/rag/rag_dispatcher.py `
@@ -128,6 +128,16 @@ python runtime/rag/rag_dispatcher.py `
   --top-k 5 `
   --max-chars 4000 `
   --jobs 4
+```
+
+既存の計画をAgent間で引き継ぐ場合は、`--dispatch-plan` で `artifact_type: rag-dispatch-plan` のJSONを渡します。
+
+```powershell
+python runtime/rag/rag_dispatcher.py `
+  --dispatch-plan rag/retrieval/<plan-uuid>.json `
+  --search-mode hybrid `
+  --top-k 5 `
+  --max-chars 4000
 ```
 
 ### 6. JSONize Existing Markdown Artifacts
@@ -151,6 +161,7 @@ python runtime/rag/jsonize_rag_tree.py `
 | `rag/indexes/chunks.jsonl` | chunk-level index |
 | `rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |
 | `rag/jsonized/*.json` | 非UUID JSON、JSONL、Markdown、text artifact を UUID名 JSON wrapper 化したもの |
+| `rag/retrieval/<uuid>.json` (`artifact_type: rag-dispatch-plan`) | 検索前のintent、metadata、semantic hint、query計画 |
 | `rag/retrieval/<uuid>.json` (`artifact_type: rag-load-dispatch`) | 複数query retrieval の集約結果 |
 | `rag/retrieval/<uuid>.json` (`artifact_type: rag-retrieval-result`) | query、selected chunks、dropped chunks、filters |
 | `rag/retrieval/<uuid>.json` (`artifact_type: rag-context-pack`) | Agent投入用の圧縮済みcontext pack |

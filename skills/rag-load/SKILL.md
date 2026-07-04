@@ -96,7 +96,16 @@ The dispatcher writes:
 rag/retrieval/<uuid>.json
 ```
 
-Use each artifact's `artifact_type` to distinguish `rag-load-dispatch`, `rag-retrieval-result`, and `rag-context-pack`.
+Use each artifact's `artifact_type` to distinguish `rag-dispatch-plan`, `rag-load-dispatch`, `rag-retrieval-result`, and `rag-context-pack`.
+
+The `rag-dispatch-plan` is the shared query planning artifact. It records intent, metadata filters, semantic hints, planned queries, query purposes, and stop conditions before retrieval starts.
+
+When a prior plan should be reused across agents, pass it explicitly:
+
+```powershell
+python runtime/rag/rag_dispatcher.py `
+  --dispatch-plan rag/retrieval/<plan-uuid>.json
+```
 
 Do not reimplement compression. Use the existing compression output from `retrieve_context.py`.
 
@@ -163,9 +172,10 @@ The loaded RAG context should inform:
 1. Identify task context and target repository / branch if available.
 2. Verify RAG indexes and embeddings exist.
 3. Run `runtime/rag/rag_dispatcher.py`.
-4. Read the generated UUID-named dispatch JSON and referenced UUID-named context-pack JSON files.
-5. Summarize the loaded prior knowledge in Japanese.
-6. Carry the RAG findings into the subsequent development plan or review.
+4. Read the generated UUID-named `rag-dispatch-plan` to confirm why retrieval was performed.
+5. Read the generated UUID-named dispatch JSON and referenced UUID-named context-pack JSON files.
+6. Summarize the loaded prior knowledge in Japanese.
+7. Carry the RAG findings into the subsequent development plan or review.
 
 ## Guardrails
 
