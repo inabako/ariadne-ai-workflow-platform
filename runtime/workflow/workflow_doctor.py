@@ -34,19 +34,26 @@ def tracked_policy_violations(repo_root: Path) -> list[str]:
 def missing_required_files(repo_root: Path) -> list[str]:
     required = [
         ".gitignore",
+        "runtime/pytest.ini",
+        "runtime/tools/aiwfctl.cmd",
+        "runtime/tools/register-aiwfctl-path.cmd",
+        "runtime/ctl.py",
         "runtime/workflow/close_archive.py",
         "runtime/workflow/noise_reduction.py",
         "runtime/workflow/workflow_state.py",
         "runtime/workflow/human_gate_policy.py",
         "runtime/registries/README.md",
         "runtime/registries/human_gates.json",
+        "runtime/registries/workflow_help.json",
         ".github/schemas/human-gates.schema.json",
+        ".github/schemas/workflow-help.schema.json",
         ".github/schemas/rag-dispatch-plan.schema.json",
         "runtime/workflow/gui_mode.py",
         "templates/noise-reduction/README.md",
         "docs/reference/human-gates.md",
         "runtime/tests/test_close_archive.py",
         "runtime/tests/test_rag_dispatcher.py",
+        "runtime/tests/test_ctl_help.py",
     ]
     return [path for path in required if not (repo_root / path).exists()]
 

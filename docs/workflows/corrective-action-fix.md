@@ -5,13 +5,19 @@ Corrective Action Report を作成し、RAG build/load、GitHub Issue、remote-f
 ## Command
 
 ```text
-/corrective-action-fix <target-repository> <target-branch>
+/corrective-action-fix <target-repository> <target-branch> [report]
 ```
 
 例:
 
 ```text
 /corrective-action-fix localty-system-gui develop
+```
+
+`/corrective-action-report` で作成済みのレポートを使う場合:
+
+```text
+/corrective-action-fix localty-system-gui develop rag/corrective-action-report/260704120000_ABC12345_localty-system-gui.md
 ```
 
 ## Directory Model
@@ -31,7 +37,7 @@ feature/issue-<issue-number>
 
 1. `work/<target-branch>` を初期化する。
 2. target branchをbase checkoutへ取得する。
-3. Corrective Action Reportを作る。
+3. `report` が指定されていれば `/corrective-action-report` の出力として読み込む。未指定ならCorrective Action Reportを作る。
 4. environment preflightを実行し、不足toolがあればinstall listを出して止まる。
 5. `/rag-build` 相当のpipelineでreportをRAG化する。
 6. `/rag-load` で開発前contextを読む。

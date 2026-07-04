@@ -1,26 +1,62 @@
 # VSCode Environment
 
-`/vscode-environment` は、target repository / workspace に対して再現可能なVSCode Workspace-as-Code環境を構築するworkflowです。
+`/vscode-environment` は、VSCode Workspace-as-Code 環境を整備し、AIさんと人間が同じ手順で workflow、terminal、task、debug、検証、evidence を再現できるようにする workflow です。
 
 ## Command
 
 ```text
+/vscode-environment
 /vscode-environment <target-workspace-path>
+/vscode-environment --custom-design
 ```
 
-commandに引数が無い場合、workflowは次のdraft directoryを読みます。
+## 3つのMode
+
+### 1. self-provision mode
+
+引数なしで実行します。
+
+```text
+/vscode-environment
+```
+
+- target: current repository / workspace root
+- 目的: このAI workflow repository自身を、AIさんが実行しやすいVSCode環境にする
+- 記入済み草案: 不要
+- 判断材料: `.vscode/`, `runtime/tools/`, `runtime/workflow/`, `runtime/registries/`, docs, prompts, tests
+
+### 2. target-workspace mode
+
+対象workspaceを明示して実行します。
+
+```text
+/vscode-environment C:\github\localty-system-gui
+```
+
+- target: 指定された repository / workspace
+- 目的: 対象repoを読み、VSCode Workspace-as-Code環境を整える
+- 記入済み草案: 任意
+- 判断材料: 対象repoの既存 `.vscode`、README、tooling、test、workflow定義
+
+### 3. custom-design mode
+
+特殊なterminal構成、Docker利用、extension policy、launch設定、multi-root、個人path、local-only設定などがある場合に使います。
+
+```text
+/vscode-environment --custom-design
+```
+
+- target: current repository または指定workspace
+- 記入済み草案: 任意。ただし複雑な設計意図を伝える補助入力として有効
+- stop条件: repo evidenceだけでは安全に判断できない選択がある場合
+
+custom-design用の任意draftは次に置きます。
 
 ```text
 work/requirements/devlop-edit-draft/
 ```
 
-このdirectoryでは、`README.md` がscaffoldです。記入済みdraftは `README_20260614.md` のように `README_*.md` として保存します。legacy `.txt` draftも必要に応じて確認対象にします。
-
-例:
-
-```text
-/vscode-environment C:\github\localty-system-gui
-```
+`README.md` はscaffoldです。記入済みdraftを使う場合は `README_20260614.md` のように `README_*.md` として保存します。legacy `.txt` draftも必要に応じて確認対象にします。
 
 ## Outputs
 
@@ -43,7 +79,6 @@ Target workspace artifacts:
 .vscode/tasks.json
 .vscode/launch.json
 .vscode/extensions.json
-.vscode/<repository-name>.code-workspace
 runtime/workflow/vscode_task_runner.py
 ```
 
@@ -51,15 +86,18 @@ Reference: [VSCode Environment](../reference/vscode-environment.md)
 
 ## Flow
 
-1. `work/requirements/devlop-edit-draft/README.md` にdraft README scaffoldを置く、または作成する。
-2. `work/requirements/devlop-edit-draft/README_20260614.md` のような記入済みdraftを保存する。
-3. 必須情報が不足、空欄、`TODO`、矛盾を含む場合は `open-questions.md` を作成する。
-4. Human Reviewと承認を待つ。
-5. 確定したtarget workspaceで `work/<work-id>` を初期化する。
-6. workspace requirementsを分析する。
+1. modeを判定する。
+2. target workspaceを決める。
+   - 引数なし: self-provision modeとしてcurrent repositoryを対象にする。
+   - path指定あり: target-workspace modeとして指定先を対象にする。
+   - 特殊要件あり: custom-design modeとして追加確認を行う。
+3. 既存 `.vscode` files、repo-local tools、workflow registry、docs、testsを読む。
+4. custom-design modeで不足・空欄・`TODO`・矛盾がある場合のみ `open-questions.md` を作成して停止する。
+5. `work/<work-id>` を初期化する。
+6. `workspace-requirements.md` を作成または更新する。
 7. shared artifactsを検証する。
 8. environment preflightを実行する。
-9. VSCode settings、tasks、launch configs、extensions、workspace fileを設計する。
+9. VSCode settings、tasks、launch configs、extensionsを設計する。multi-rootが必要な場合のみworkspace fileをoptionalで設計する。
 10. terminal profilesとterminal rolesを設計する。
 11. validation後に `.vscode` filesを実装する。
 12. 長いinline PowerShellではなく、VSCode `process` taskとrepo-local helper scriptを優先する。
@@ -74,9 +112,9 @@ Reference: [VSCode Environment](../reference/vscode-environment.md)
 
 次の場合は停止し、`open-questions.md` を作成します。
 
-- commandにtarget argumentが無い。
-- 記入済み `README_*.md` draftが存在しない。
-- 未解決の `TODO` が残っている。
+- custom-design modeで、terminal / Docker / extension / launch / local path / multi-root / evidence方針をrepo evidenceから安全に判断できない。
+- optional draftに未解決の `TODO`、空欄、矛盾が残っている。
+- target workspace pathが指定されているが存在しない、または読めない。
 - 必須tool、extensions、terminal profiles、AI workflow entry tasks、evidence requirementsが不足または矛盾している。
 
 次の場合はhuman approval前で停止します。
@@ -84,9 +122,44 @@ Reference: [VSCode Environment](../reference/vscode-environment.md)
 - tool / extensionをinstallする。
 - 既存 `.vscode` filesを置き換える。
 - default terminal behaviorを変更する。
+- personal absolute pathやlocal-only設定を書き込む。
 - `conditional-pass` を受け入れる。
 
 `.vscode/tasks.json` では、`ExecutionPolicy Bypass`、nested PowerShell launcher、長いinline PowerShell command、複雑な `python -c` snippetに依存するtaskを生成しません。代わりに、commit済みhelper scriptを `process` taskから呼び出します。
+
+## Repo-local Tools PATH
+
+target workspace に `runtime/tools/*.cmd` などのrepo-local command toolがある場合、`.vscode/settings.json` の `terminal.integrated.env.windows.Path` にtools directoryを追加します。
+
+このworkflow repositoryでは次を設定します。
+
+```json
+{
+  "terminal.integrated.env.windows": {
+    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}"
+  }
+}
+```
+
+これにより、VSCode統合ターミナルでは `aiwfctl help list` のように呼び出せます。
+
+通常のPowerShellやWindows Terminalからも `aiwfctl` を使う必要がある場合、VSCode provisioning taskとして次を実行します。
+
+```text
+workflow:aiwfctl-path-shell
+```
+
+このtaskは次を実行します。
+
+```powershell
+.\runtime\tools\register-aiwfctl-path.cmd --shell
+```
+
+既に開いているterminalにはPATH変更が反映されません。terminalを閉じて開き直すか、現在のPowerShellで次を実行します。
+
+```powershell
+$env:Path = "$PWD\runtime\tools;$env:Path"
+```
 
 ## RAG Capture
 

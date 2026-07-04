@@ -24,6 +24,7 @@ scm-state.schema.json
 github-issue.schema.json
 commit-record.schema.json
 docs-drift-analysis.schema.json
+workflow-help.schema.json
 rag-document.schema.json
 rag-chunk.schema.json
 rag-embedding.schema.json

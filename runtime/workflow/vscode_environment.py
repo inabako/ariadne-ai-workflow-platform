@@ -28,15 +28,18 @@ def build_parser() -> argparse.ArgumentParser:
     init = subparsers.add_parser("init", help="Create the VSCode environment workflow work area.")
     init.add_argument("--work-id", default="vscode-environment")
     init.add_argument("--target-dir", default="")
+    init.add_argument("--mode", choices=["self-provision", "target-workspace", "custom-design"], default="self-provision")
     init.add_argument("--repo-root", default="")
     init.add_argument("--reuse-existing", action="store_true")
 
     req = subparsers.add_parser("requirements-template", help="Create workspace-requirements.md scaffold.")
     req.add_argument("--work-id", default="vscode-environment")
+    req.add_argument("--mode", choices=["self-provision", "target-workspace", "custom-design"], default="self-provision")
     req.add_argument("--repo-root", default="")
 
     validation = subparsers.add_parser("validation-template", help="Create shared artifact validation scaffold.")
     validation.add_argument("--work-id", default="vscode-environment")
+    validation.add_argument("--mode", choices=["self-provision", "target-workspace", "custom-design"], default="self-provision")
     validation.add_argument("--repo-root", default="")
     validation.add_argument("--status", choices=["pass", "conditional-pass", "fail"], default="fail")
 
@@ -44,7 +47,7 @@ def build_parser() -> argparse.ArgumentParser:
     draft.add_argument("--draft-dir", default=DEFAULT_DRAFT_DIR)
     draft.add_argument("--repo-root", default="")
 
-    questions = subparsers.add_parser("open-questions", help="Create open-questions.md from filled draft intake.")
+    questions = subparsers.add_parser("open-questions", help="Create open-questions.md for unresolved custom-design intake.")
     questions.add_argument("--work-id", default="vscode-environment")
     questions.add_argument("--draft-dir", default=DEFAULT_DRAFT_DIR)
     questions.add_argument("--repo-root", default="")
@@ -55,6 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
     rag.add_argument("--topic", default="localty-vscode-environment")
     rag.add_argument("--repository", default="localty")
     rag.add_argument("--target-workspace", default="")
+    rag.add_argument("--mode", choices=["self-provision", "target-workspace", "custom-design"], default="self-provision")
     rag.add_argument("--status", default="draft")
     rag.add_argument("--repo-root", default="")
 
@@ -86,6 +90,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
         "artifact_type": "vscode-environment-state",
         "workflow": "vscode-environment",
         "work_id": args.work_id,
+        "mode": args.mode,
         "target_dir": str(target_dir) if target_dir else "",
         "draft_dir": DEFAULT_DRAFT_DIR,
         "created_at": utc_now_iso(),
@@ -104,15 +109,22 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def draft_template_text() -> str:
-    return """# VSCode Environment Draft
+    return """# VSCode Environment Custom Design Draft
+
+このdraftは `/vscode-environment` のcustom-design mode向けの任意入力です。
+引数なしのself-provision modeでは、current repositoryのrepo evidenceを読むため、記入済みdraftは必須ではありません。
 
 ## 目的
 
 - TODO: このworkspaceで何を再現可能にしたいか
 
+## Mode
+
+- TODO: self-provision / target-workspace / custom-design
+
 ## 対象 Workspace
 
-- TODO: 例 `C:\\github\\localty-system-gui`
+- TODO: self-provisionならcurrent repository。target-workspace / custom-designなら例 `C:\\github\\localty-system-gui`
 
 ## 起動したい AI Workflow
 
@@ -126,6 +138,8 @@ def draft_template_text() -> str:
 - Node.js:
 - Java:
 - MSYS2:
+- Repo-local command tools:
+  - TODO: 例 `${workspaceFolder}\\runtime\\tools` を `terminal.integrated.env.windows.Path` に追加するか
 - その他:
 
 ## 必要 VSCode 拡張
@@ -202,22 +216,30 @@ def open_questions_text(work_id: str, draft_dir: str, draft_paths: list[str]) ->
 
 ## 停止理由
 
-VSCode Environment workflowは、人間が編集するscaffoldと記入済みdraft fileから開始します。`{scaffold_path}` はscaffoldです。記入済みdraftは `README_*.md` を使います。legacy `.txt` draftがある場合も確認対象に含めます。`.vscode` filesを作成・変更する前に、必要情報を人間が確認する必要があります。
+VSCode Environment workflowは、通常はrepo evidenceから開始できます。引数なしの `/vscode-environment` はself-provision modeとしてcurrent repositoryを対象にするため、記入済みdraftは必須ではありません。
+
+ただし、custom-design modeでterminal、Docker、extension、launch、multi-root、personal/local-only pathなどの設計選択がrepo evidenceから安全に判断できない場合は、人間確認が必要です。`{scaffold_path}` は任意のcustom-design scaffoldです。記入済みdraftは `README_*.md` を使います。legacy `.txt` draftがある場合も確認対象に含めます。
 
 ## Scaffold File
 
 - `{scaffold_path}`
 
-## 記入済みDraft File
+## 任意のCustom Design Draft File
 
 {draft_list}
 
-## 必須確認Flow
+## 確認Flow
 
 ```text
-README.md scaffold
-  -> README_*.md filled draft
-  -> open-questions.md
+self-provision / target-workspace
+  -> repo evidence inspection
+  -> implement safe workspace-as-code updates
+  -> validation / evidence
+
+custom-design
+  -> optional README.md scaffold
+  -> optional README_*.md filled draft
+  -> open-questions.md when unresolved choices remain
   -> human review / answers
   -> approval
   -> .vscode environment implementation
@@ -228,7 +250,7 @@ README.md scaffold
 
 | ID | 不足項目 | 必要な理由 | 必須回答 |
 | --- | --- | --- | --- |
-| VSCODE-Q001 | target workspace path | `.vscode` filesには具体的なtarget directoryが必要です。 | target repository / workspace のabsolute path |
+| VSCODE-Q001 | target workspace path | target-workspace / custom-design modeでは具体的なtarget directoryが必要です。self-provision modeならcurrent repositoryでよいです。 | target repository / workspace のabsolute path、またはself-provision承認 |
 | VSCODE-Q002 | workflow entrypoints | `tasks.json` には明示的なAI workflow commandが必要です。 | 公開するslash commandまたはtask name |
 | VSCODE-Q003 | required tools / runtimes | preflightとtask commandがこれらのtoolに依存します。 | Git、Docker、Python、uv、Node.js、Java、MSYS2など |
 | VSCODE-Q004 | required VSCode extensions | `extensions.json` にはextension ID一覧が必要です。 | Extension ID list |
@@ -379,23 +401,26 @@ areas:
 
 ## 要約
 
-Localty repositoryでは、VSCode設定をWorkspace as Codeとして扱います。人間が読める草案READMEから開始し、不明点を `open-questions.md` に整理し、人間承認後に `.vscode` artifacts と試行証跡を作成します。
+Localty repositoryでは、VSCode設定をWorkspace as Codeとして扱います。通常はrepo evidenceから開始し、特殊な設計選択が必要な場合のみ任意draftや `open-questions.md` で人間確認を行います。
 
 ## 範囲
 
 - target_workspace: `{target_workspace}`
+- mode: `{args.mode}`
 - work_id: `{args.work_id}`
 - source_rag_path: `{source_path}`
 - source_type: internal project RAG
 
 ## 受領パターン
 
-1. 人間が編集するscaffoldを `work/requirements/devlop-edit-draft/README.md` に置く。
-2. 記入済み草案は `work/requirements/devlop-edit-draft/README_YYYYMMDD.md` または `README_*.md` として保存する。
-3. `/vscode-environment` にtarget argumentが無い場合は、`work/requirements/devlop-edit-draft/` を読み、記入済み草案を確認し、不足や矛盾を `work/<work-id>/design-document/open-questions.md` に整理する。
-4. 人間の回答と承認を待つ。
-5. 確定したtarget workspaceで `work/<work-id>` を初期化する。
-6. requirementsとvalidationが通った後にのみ、target `.vscode` filesを実装する。
+1. `/vscode-environment` にtarget argumentが無い場合は、self-provision modeとしてcurrent repositoryを対象にする。
+2. `/vscode-environment <target-workspace>` の場合は、target-workspace modeとして対象repo evidenceを読む。
+3. 特殊なterminal、Docker、extension、launch、multi-root、local-only pathなどが必要な場合はcustom-design modeとして扱う。
+4. custom-design modeでは、任意で `work/requirements/devlop-edit-draft/README.md` scaffoldと `README_*.md` draftを使う。
+5. repo evidenceまたはdraftから安全に判断できない事項は `work/<work-id>/design-document/open-questions.md` に整理する。
+6. 人間の回答と承認を待つ。
+7. 確定したtarget workspaceで `work/<work-id>` を初期化する。
+8. requirementsとvalidationが通った後にのみ、target `.vscode` filesを実装する。
 
 ## 必須Workspace成果物
 
@@ -435,6 +460,7 @@ VSCode taskは、個人のshell履歴ではなく、安定したworkflow command
 
 - `workflow:vscode-open-questions`
 - `workflow:vscode-preflight`
+- `workflow:aiwfctl-path-shell`
 - `workflow:vscode-test`
 - `workflow:corrective-action-fix`
 - `workflow:rag-load`
@@ -494,11 +520,12 @@ def write_rag_template(args: argparse.Namespace) -> dict[str, Any]:
     return {"path": source_path, "document_type": "workspace-environment-pattern"}
 
 
-def requirements_text(work_id: str) -> str:
+def requirements_text(work_id: str, mode: str) -> str:
     return f"""# Workspace要件
 
 - workflow: `vscode-environment`
 - work_id: `{work_id}`
+- mode: `{mode}`
 - status: `draft`
 - language: `ja-JP`
 
@@ -511,6 +538,12 @@ TODO: このVSCode workspaceが必要な理由と、支援するAI / human workf
 - path: TODO
 - repository: TODO
 - branch: TODO
+
+## Mode別方針
+
+- self-provision: 引数なし。current repositoryを対象にし、記入済み草案は不要。
+- target-workspace: 指定pathのrepositoryを対象にし、repo evidenceから安全な既定値を推定する。
+- custom-design: 特殊なterminal、Docker、extension、launch、multi-root、local-only pathなどを任意draftまたはHuman質問で補う。
 
 ## 必須Tool
 
@@ -538,10 +571,23 @@ TODO: このVSCode workspaceが必要な理由と、支援するAI / human workf
 | Docker Test | TODO | TODO | TODO | TODO |
 | Evidence | TODO | TODO | TODO | TODO |
 
+## Terminal Environment
+
+Repo-local command toolsがある場合、VSCode統合ターミナルのPATHへ追加する。
+
+```json
+{{
+  "terminal.integrated.env.windows": {{
+    "Path": "${{workspaceFolder}}\\runtime\\tools;${{env:Path}}"
+  }}
+}}
+```
+
 ## Tasks
 
 | Label | Command | Depends On | Evidence |
 | --- | --- | --- | --- |
+| workflow:aiwfctl-path-shell | `runtime/tools/register-aiwfctl-path.cmd --shell` | repo-local tools | `Get-Command aiwfctl`, `aiwfctl help list` |
 | TODO | TODO | TODO | TODO |
 
 ## Debug / Launch Target
@@ -580,7 +626,7 @@ def write_requirements_template(args: argparse.Namespace) -> dict[str, Any]:
     ensure_work_dirs(base)
     path = base / "design-document" / "workspace-requirements.md"
     if not path.exists():
-        path.write_text(requirements_text(args.work_id), encoding="utf-8")
+        path.write_text(requirements_text(args.work_id, args.mode), encoding="utf-8")
     return {"path": relative_to_repo(repo_root, path), "created": True}
 
 
@@ -612,6 +658,7 @@ def write_validation_template(args: argparse.Namespace) -> dict[str, Any]:
         "artifact_type": "workspace-shared-artifact-validation",
         "workflow": "vscode-environment",
         "work_id": args.work_id,
+        "mode": args.mode,
         "created_at": utc_now_iso(),
         "status": args.status,
         "missing_required_items": [

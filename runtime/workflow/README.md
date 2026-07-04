@@ -221,7 +221,7 @@ python runtime/workflow/workflow_doctor.py --fail-on-warning
 runtimeの重要CLIを変更した場合は、軽量pytestを実行します。
 
 ```powershell
-uv run --with pytest python -m pytest runtime/tests -q
+uv run --with pytest python -m pytest -c runtime/pytest.ini -q
 ```
 
 現時点では `close_archive.py` のgolden testを含みます。

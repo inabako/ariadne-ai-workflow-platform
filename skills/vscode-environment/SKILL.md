@@ -13,28 +13,75 @@ Respond to the user in Japanese by default. Human-facing reports, docs, reviews,
 
 Manage a VSCode development environment as Workspace as Code so AI agents and humans can reproduce the same terminal, task, debug, tool, Docker, Git, language runtime, and evidence workflow setup.
 
-## Required Inputs
+## 日本語運用要約
 
-- filled draft README such as `README_20260614.md` under `work/requirements/devlop-edit-draft/`
-- target workspace or repository path, either in the draft or human answers
-- intended workflow entry points, such as software workflow, IaC workflow, test workflow, evidence workflow
-- required tools and runtimes
-- required VSCode extensions
-- terminal profiles and default shell policy
+このworkflowの中心目的は、AIさんが迷わずAI workflow repositoryを実行できるVSCode環境を整えることです。したがって、記入済み草案は入口の必須条件ではありません。引数なしで `/vscode-environment` が選ばれた場合は、self-provision modeとしてcurrent repositoryを対象にし、既存の `.vscode`、`runtime/tools`、`runtime/workflow`、`runtime/registries`、docs、prompts、testsを読みます。そのうえで、repo-local command toolをVSCode統合ターミナルのPATHへ通し、`aiwfctl`、workspace validator、workflow doctor、pytestなどの実行経路を整えます。
 
-`work/requirements/devlop-edit-draft/README.md` is the human-editable scaffold. Treat it as a template, not as a filled requirement draft.
+target workspace pathが指定された場合は、target-workspace modeとして対象repoを読みます。この場合も、草案は任意です。AIは対象repoの既存設定、README、tooling、test、workflow entrypointを確認し、安全に推定できる既定値だけを使います。既存 `.vscode` filesは必ず読んでから変更し、無条件に置き換えてはいけません。
 
-Filled drafts should be saved in the same directory as `README_*.md`, for example `README_20260614.md`. Legacy `.txt` drafts in that directory may also be inspected.
+custom-design modeは、repo evidenceだけでは決められない特殊な設計要件がある場合に使います。たとえば、独自terminal role、Docker運用、extension policy、debug / launch構成、multi-root、personal path、local-only設定、特別なAI workflow taskなどです。この場合は `work/requirements/devlop-edit-draft/README.md` と `README_*.md` を任意の補助入力として扱います。未解決の選択、空欄、矛盾、TODOが残る場合は `open-questions.md` を作成して停止し、人間回答と承認を待ちます。
 
-If `/vscode-environment` has no argument, do not infer a target workspace from the current directory. Read `work/requirements/devlop-edit-draft/`, inspect filled draft files such as `README_*.md`, create `open-questions.md` for blank, `TODO`, missing, or contradictory items, and stop before implementation.
+このworkflowでは、草案の有無よりも「repo evidenceで安全に判断できるか」を優先します。判断できるものは進め、判断できないものは質問する、という切り分けでAIと人間の認識負担を減らします。
 
-If any required item is missing from the draft, do not infer silently. Create `open-questions.md` and stop before implementation.
+実装時は、まず現在の設定を読むことを必須にします。`settings.json`、`tasks.json`、`launch.json`、`extensions.json` が存在する場合は、既存の役割を壊さないように差分追加を優先します。長いinline PowerShellや一時的な個人設定に寄せるのではなく、repositoryにcommitできるhelper script、process task、validator、docsを使って再現性を残します。
+
+完了判断は「ファイルを置いたか」ではなく「AI workflowを呼び出せるか」で行います。少なくともVSCode JSONの妥当性、`aiwfctl help` の導線、repo-local tools PATH、必要なtask label、workflow doctor、pytestまたは該当validatorの結果を確認し、実行できない項目はhuman-check evidenceとして記録します。tool installや既存設定の置換など、環境へ影響する操作はHuman Gateを通します。
+
+この方針により、要件草案がなくても標準整備は進められ、特殊な好みや機械依存の判断だけを人間に戻せます。AIは推測で止まりすぎず、危険な推測だけを止めます。
+
+## Operating Modes
+
+`/vscode-environment` supports three modes. A filled draft is optional and is used only when the requested environment cannot be derived safely from repository evidence.
+
+### 1. self-provision mode
+
+Use this mode when `/vscode-environment` has no argument.
+
+- Target: the current repository / workspace root.
+- Purpose: make this AI workflow repository executable by AI agents and humans.
+- Filled draft: not required.
+- Evidence source: existing repository assets such as `.vscode/`, `runtime/tools/`, `runtime/workflow/`, `runtime/registries/`, docs, prompts, and tests.
+- Required behavior: inspect current files, preserve existing settings, add missing repo-local tooling and validation support, then run workspace validators.
+
+### 2. target-workspace mode
+
+Use this mode when `/vscode-environment <target-workspace-path>` is provided.
+
+- Target: the specified repository / workspace path.
+- Purpose: standardize that workspace as VSCode Workspace as Code.
+- Filled draft: optional.
+- Evidence source: target repository files and any supplied human notes.
+- Required behavior: read the target `.vscode` files before editing, infer safe defaults from repository evidence, and ask only for information that cannot be determined safely.
 
 Example:
 
 ```text
 /vscode-environment C:\github\localty-system-gui
 ```
+
+### 3. custom-design mode
+
+Use this mode when the user wants special terminal roles, Docker behavior, extension policy, launch profiles, personal/local-only paths, multi-root layout, or non-standard workflow entry tasks.
+
+- Target: current repository or specified target workspace.
+- Filled draft: optional but useful.
+- Human questions: allowed when design choices would materially change committed files or local machine behavior.
+- Draft location: `work/requirements/devlop-edit-draft/`.
+
+`work/requirements/devlop-edit-draft/README.md` is the human-editable scaffold. Treat it as a template, not as a filled requirement draft.
+
+Filled drafts may be saved in the same directory as `README_*.md`, for example `README_20260614.md`. Legacy `.txt` drafts in that directory may also be inspected.
+
+If custom-design information is missing, contradictory, blank, or still marked as `TODO`, create `open-questions.md` and stop before implementation.
+
+## Required Inputs
+
+All modes require:
+
+- target workspace, resolved from current repository in self-provision mode or from the command argument in target-workspace mode
+- intended AI workflow entry points that can be inferred from registry/docs or supplied by the user
+- required tools and runtimes that can be inferred from repository evidence or supplied by the user
+- required VSCode extensions, terminal profiles, and task labels when they are being created or changed
 
 ## Directory Model
 
@@ -72,7 +119,7 @@ Create or refresh the draft README scaffold:
 uv run python runtime/workflow/vscode_environment.py draft-template
 ```
 
-Create open questions from the draft README:
+Create open questions for unresolved custom-design choices:
 
 ```powershell
 uv run python runtime/workflow/vscode_environment.py open-questions `
@@ -121,18 +168,46 @@ uv run python runtime/environment/preflight.py `
 
 For VSCode tasks, prefer `type: "process"` plus a repo-local helper script over long inline PowerShell command strings. Do not put `ExecutionPolicy Bypass`, nested PowerShell launchers, or complex `python -c` snippets in `.vscode/tasks.json`.
 
+If the target workspace has repository-local command tools under `runtime/tools/` or another approved tools directory, add that directory to the VSCode integrated terminal PATH in `.vscode/settings.json`.
+
+Example for this workflow repository:
+
+```json
+{
+  "terminal.integrated.env.windows": {
+    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}"
+  }
+}
+```
+
+This allows commands such as `aiwfctl help list` to work in VSCode terminals without relying on personal user settings.
+
+For this workflow repository, include an explicit provisioning task or step that runs:
+
+```powershell
+.\runtime\tools\register-aiwfctl-path.cmd --shell
+```
+
+This registers `runtime\tools` in User Path and opens a refreshed PowerShell session where `aiwfctl help list` is immediately available.
+
 ## Workflow
 
-### 1. Draft Intake
+### 1. Mode Selection And Intake
 
-Start from a human-editable draft README scaffold and a filled draft:
+Select one of the supported modes:
+
+- self-provision mode: no argument; use the current repository as target and do not require a filled draft.
+- target-workspace mode: target path argument is provided; read the target repository and use any draft only as supplemental information.
+- custom-design mode: special terminal, Docker, extension, launch, local path, multi-root, or workflow task requirements are requested; use draft and/or human questions as supplemental input.
+
+For custom-design mode, the optional draft model is:
 
 ```text
 work/requirements/devlop-edit-draft/README.md           # scaffold
-work/requirements/devlop-edit-draft/README_YYYYMMDD.md  # filled draft
+work/requirements/devlop-edit-draft/README_YYYYMMDD.md  # optional filled draft
 ```
 
-If the command has no argument, inspect `work/requirements/devlop-edit-draft/` for filled drafts. If no filled draft exists, the filled draft is incomplete, or required items are missing, create:
+If custom design requirements are missing, blank, contradictory, or still marked `TODO`, create:
 
 ```text
 work/<work-id>/design-document/open-questions.md
@@ -150,7 +225,9 @@ Create:
 work/<work-id>/design-document/workspace-requirements.md
 ```
 
-The requirements must list required tools, extensions, terminal profiles, default shell, tasks, debug targets, AI workflow entry tasks, Docker usage, Git expectations, language runtimes, evidence outputs, and placeholders for personal paths or secrets.
+The requirements must list the selected mode, target workspace, required tools, extensions, terminal profiles, default shell, tasks, debug targets, AI workflow entry tasks, Docker usage, Git expectations, language runtimes, evidence outputs, and placeholders for personal paths or secrets.
+
+In self-provision mode, derive these from the current repository. For this workflow repository, include `runtime/tools`, `aiwfctl`, `workflow:aiwfctl-path-shell`, `validate_vscode_workspace.py`, and `workflow_doctor.py` when applicable.
 
 ### 3. Shared Artifact Validation
 
@@ -275,6 +352,8 @@ Stop for human approval before:
 - Do not infer missing terminal profile names, extension IDs, ports, runtime versions, or workflow task labels.
 - Do not overwrite existing workspace files without reading and preserving useful content.
 - Keep machine-specific values as placeholders when the workflow output is meant for a repository.
+- If repo-local `.cmd`, `.bat`, or executable helper tools are part of the workflow entrypoint, expose their directory through `terminal.integrated.env.windows.Path` instead of requiring each user to edit their personal Windows Path.
+- If the workflow needs a command available outside VSCode integrated terminals, include a provisioning task that runs the repo-local PATH registration helper, such as `runtime/tools/register-aiwfctl-path.cmd --shell`.
 - Keep generated evidence under `work/<work-id>/test-evidence/`; put durable target-repository docs in the target workspace only when approved.
 - Avoid long inline PowerShell / `python -c` in VSCode tasks. Use process tasks that call committed helper scripts such as `runtime/workflow/vscode_task_runner.py`.
 - Do not recommend or generate `ExecutionPolicy Bypass` in workspace tasks or install-plan evidence.

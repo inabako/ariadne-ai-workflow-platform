@@ -19,6 +19,7 @@
 
 | Script | Responsibility |
 | --- | --- |
+| `runtime/ctl.py` | `runtime/tools/aiwfctl.cmd` から呼び出される `aiwfctl help` の実体。AI workflow prompt commandの一覧、詳細、検索、Markdown出力を行う |
 | `runtime/intake/intake_requirements.py` | `work/requirements/` の要件定義書を受付ID単位で移動し、初期contextを作る |
 | `runtime/environment/preflight.py` | 必要tool / packageを確認し、install listを作る |
 | `runtime/scm/prepare_repository.py` | target repository / branchを取得し、`scm-state.json` を作る |

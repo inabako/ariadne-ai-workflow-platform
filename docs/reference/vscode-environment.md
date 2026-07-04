@@ -1,8 +1,22 @@
 # VSCode Environment
 
-このrepositoryは、VSCode Workspace as Codeとして `.vscode` とworkspace fileを持ちます。
+このrepositoryは、VSCode Workspace as Codeとして `.vscode` を持ちます。
 
 目的は、AI Agentと人間が同じterminal、task、debug、preflight、evidence flowを再現できるようにすることです。
+
+## Modes
+
+`/vscode-environment` は3つのmodeで動きます。
+
+| Mode | Trigger | Target | Draft |
+| --- | --- | --- | --- |
+| self-provision | `/vscode-environment` | current repository | 不要 |
+| target-workspace | `/vscode-environment <target-workspace-path>` | 指定workspace | 任意 |
+| custom-design | `--custom-design` または特殊要件あり | current repositoryまたは指定workspace | 任意。複雑な設計意図の補助 |
+
+self-provision modeでは、このrepositoryの `.vscode`、`runtime/tools`、`aiwfctl`、workflow registry、docs、testsを読んで、AI workflowを実行しやすい環境へ整えます。
+
+custom-design modeでは、terminal構成、Docker、extension policy、launch設定、multi-root、personal/local-only pathなど、repo evidenceだけでは判断できない内容をHuman質問または任意draftで補います。
 
 ## Files
 
@@ -12,7 +26,6 @@
 | `.vscode/tasks.json` | workflow entry task、preflight、JSON check、runtime smoke |
 | `.vscode/launch.json` | Python runtime helper debug launch |
 | `.vscode/extensions.json` | recommended VSCode extensions |
-| `.vscode/intent-driven-robotics-ai-workflow.code-workspace` | workspace entry file。`path: ".."` でrepository rootを開く |
 
 ## Terminal Profiles
 
@@ -26,6 +39,50 @@
 | `Evidence PowerShell` | logs、reports、human-check notes用 |
 
 Default terminalは `Dispatcher PowerShell` です。
+
+## Repo-local Tools PATH
+
+`.vscode/settings.json` は、repo-local command toolをVSCode統合ターミナルから直接呼べるように、Windows terminal PATHへtools directoryを追加します。
+
+このrepositoryでは `runtime/tools/aiwfctl.cmd` を使うため、次を設定します。
+
+```json
+{
+  "terminal.integrated.env.windows": {
+    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}"
+  }
+}
+```
+
+この設定により、VSCode統合ターミナルでは次のように呼び出せます。
+
+```powershell
+aiwfctl help list
+```
+
+既に開いているterminalにはPATH変更が反映されません。terminalを閉じて開き直すか、現在のPowerShellで次を実行します。
+
+```powershell
+$env:Path = "$PWD\runtime\tools;$env:Path"
+```
+
+通常のPowerShellやWindows Terminalにも恒久的に反映する場合は、User Path登録用helperを実行します。
+
+```powershell
+.\runtime\tools\register-aiwfctl-path.cmd
+```
+
+登録後、すぐに `aiwfctl` が使えるPowerShell sessionを開く場合:
+
+```powershell
+.\runtime\tools\register-aiwfctl-path.cmd --shell
+```
+
+登録後も同じPowerShellで `aiwfctl` が見つからない場合は、現在のPATHを壊さないように `runtime\tools` だけを先頭追加します。
+
+```powershell
+$env:Path = "$PWD\runtime\tools;$env:Path"
+```
 
 ## Task Labels
 
@@ -52,6 +109,7 @@ Support / test tasks:
 ```text
 workflow:vscode-open-questions
 workflow:vscode-preflight
+workflow:aiwfctl-path-shell
 test:vscode-json
 test:vscode-helper-help
 test:msys2-localty-smoke
@@ -66,6 +124,8 @@ Workflow taskとsmoke-check taskは、`runtime/workflow/vscode_task_runner.py` �
 `test:vscode-json` はinline `python -c` ではなく `runtime/workflow/validate_vscode_workspace.py` を呼び出します。PowerShell quotingの崩れを避けるためです。
 
 `workflow:vscode-preflight` と `test:go-version` は、Go確認前にPython task runner内でMachine/User PATHを再読込します。VSCode起動後にGoをinstallした場合の古いPATH問題を避けます。
+
+`workflow:aiwfctl-path-shell` は、`runtime/tools/register-aiwfctl-path.cmd --shell` を実行し、User Path登録後に `aiwfctl` が使えるPowerShell sessionを開くprovisioning taskです。
 
 ## Preflight
 
@@ -127,12 +187,13 @@ VSCodeでworkspaceを開いた後、次を確認します。
 2. repository rootで起動することを確認する。
 3. `test:vscode-json` を実行する。
 4. `workflow:vscode-preflight` を実行する。
-5. workflow label taskを1つ実行し、期待するCodex Skill commandが表示されることを確認する。
-6. UI観察結果を `work/vscode-environment/test-evidence/workspace-test.md` に記録する。
+5. 必要に応じて `workflow:aiwfctl-path-shell` を実行し、新しいPowerShellで `aiwfctl help list` を確認する。
+6. workflow label taskを1つ実行し、期待するCodex Skill commandが表示されることを確認する。
+7. UI観察結果を `work/vscode-environment/test-evidence/workspace-test.md` に記録する。
 
 ## Guardrails
 
-- `.vscode` や `.code-workspace` にsecretを保存しない。
+- `.vscode` にsecretを保存しない。
 - 既存 `.vscode` 変更は、置き換え承認が無い限りadditiveにする。
 - machine-specific valuesはdocument化し、review可能にする。
 - inline PowerShellや `python -c` より、VSCode `process` taskとrepo-local helper scriptを優先する。

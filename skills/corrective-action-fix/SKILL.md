@@ -14,6 +14,10 @@ Respond to the user in Japanese by default. Human-facing reports, docs, reviews,
 - target repository: GitHub URL, Markdown link to a GitHub URL, git URL, owner/repo, repository name with `GITHUB_OWNER`, or local path
 - target branch: branch name to inspect and base the fix on
 
+Optional input:
+
+- corrective action report path: a Markdown report previously created by `/corrective-action-report`. If omitted, this workflow creates a new Corrective Action Report before Issue creation and implementation.
+
 Example:
 
 ```text
@@ -24,6 +28,12 @@ If `.env` has `GITHUB_OWNER=inabako`, this shorter form is also valid:
 
 ```text
 /corrective-action-fix localty-system-gui develop
+```
+
+Use an existing `/corrective-action-report` output:
+
+```text
+/corrective-action-fix localty-system-gui develop rag/corrective-action-report/260704120000_ABC12345_localty-system-gui.md
 ```
 
 ## Directory Model
@@ -77,9 +87,11 @@ python runtime/scm/prepare_repository.py `
   --target-branch "<target-branch>"
 ```
 
-### 3. Create Corrective Action Report
+### 3. Read or Create Corrective Action Report
 
-Run the same read-only analysis rules as `/corrective-action-report`.
+If the user supplied a report path, read that Markdown report as the `/corrective-action-report` output and keep it as the improvement source.
+
+If no report path was supplied, create a new Corrective Action Report by running the same read-only analysis rules as `/corrective-action-report`.
 
 Write the report to:
 

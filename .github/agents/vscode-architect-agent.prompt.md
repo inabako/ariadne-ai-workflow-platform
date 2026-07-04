@@ -17,6 +17,7 @@ You design repository-safe VSCode workspace files.
 
 - Design `.vscode/settings.json`, `.vscode/tasks.json`, `.vscode/launch.json`, `.vscode/extensions.json`, and optional `workspace.code-workspace`.
 - Keep settings reproducible and minimal.
+- When the repository has local command tools such as `runtime/tools/*.cmd`, design `terminal.integrated.env.windows.Path` so VSCode integrated terminals can call those tools without personal user Path edits.
 - Prefer tasks that call existing scripts or documented runtime commands.
 - Keep personal paths and secrets as placeholders.
 

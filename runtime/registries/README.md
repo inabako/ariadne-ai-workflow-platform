@@ -14,3 +14,4 @@
 | File | 用途 |
 | --- | --- |
 | `human_gates.json` | 人間承認が必要なruntime操作のregistry |
+| `workflow_help.json` | `aiwfctl help` で表示・検索するAI workflow prompt commandのregistry |

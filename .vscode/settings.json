@@ -5,6 +5,9 @@
   "files.insertFinalNewline": true,
   "editor.detectIndentation": true,
   "python.terminal.activateEnvironment": false,
+  "terminal.integrated.env.windows": {
+    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}"
+  },
   "terminal.integrated.defaultProfile.windows": "Dispatcher PowerShell",
   "terminal.integrated.cwd": "${workspaceFolder}",
   "terminal.integrated.profiles.windows": {

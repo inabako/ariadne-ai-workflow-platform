@@ -23,6 +23,7 @@ Proceed only when validation is `pass` or human-approved `conditional-pass`.
 - Merge additively when possible.
 - Preserve useful user settings.
 - Create `.vscode/settings.json`, `tasks.json`, `launch.json`, `extensions.json`, and optional `workspace.code-workspace`.
+- If approved design includes repo-local command tools, add their directory to `terminal.integrated.env.windows.Path` while preserving any existing Path additions.
 - Keep generated JSON / JSONC valid.
 
 ## Output

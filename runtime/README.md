@@ -45,6 +45,7 @@ runtime/scm/commit_changes.py
 runtime/scm/push_branch.py
 runtime/github/issue_manager.py
 runtime/github/pull_request_manager.py
+runtime/ctl.py
 runtime/rag/normalize_documents.py
 runtime/rag/chunk_documents.py
 runtime/rag/build_index.py
@@ -82,6 +83,8 @@ runtime/rag/standardize_corrective_report_names.py
 `push_branch.py` は、人間チェック承認後に `feature/issue-<issue-number>` branch をpushし、push recordを保存します。
 
 `pull_request_manager.py` は、Issue branch push後に `develop` へのPull Request draft / createを行います。PR titleはIssue titleを使い、PR bodyにはMermaid sequence diagramを含めます。
+
+`ctl.py` は、AI workflow prompt command のターミナルヘルプを提供します。repo root の `runtime/tools/aiwfctl.cmd` から呼び出し、command一覧、詳細、検索、Markdown出力を行います。VSCode統合ターミナルでは `.vscode/settings.json` により `runtime/tools` が `PATH` に追加されるため、`aiwfctl help` で呼び出せます。
 
 `normalize_documents.py` は、Markdown report を metadata 付きの RAG document JSON に変換します。
 

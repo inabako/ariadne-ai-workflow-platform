@@ -285,6 +285,22 @@
       "problemMatcher": []
     },
     {
+      "label": "workflow:aiwfctl-path-shell",
+      "type": "process",
+      "command": "${workspaceFolder}\\runtime\\tools\\register-aiwfctl-path.cmd",
+      "args": [
+        "--shell"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
       "label": "test:vscode-json",
       "type": "process",
       "command": "uv",

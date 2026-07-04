@@ -1,7 +1,7 @@
 ﻿---
 name: corrective-action-fix
-description: GitHub repository / branch を受け取り、work/<branch> に原本を取得し、corrective action report、RAG build/load、GitHub Issue、work/issue-XXX + feature/issue-XXX、修正、単体テスト、起動/結合確認、人間チェック、push まで進めます。
-argument-hint: "<target-repository> <target-branch>"
+description: GitHub repository / branch と任意の corrective action report を受け取り、work/<branch> に原本を取得し、report作成または読込、RAG build/load、GitHub Issue、work/issue-XXX + feature/issue-XXX、修正、単体テスト、起動/結合確認、人間チェック、push まで進めます。
+argument-hint: "<target-repository> <target-branch> [report]"
 agent: agent
 ---
 
@@ -39,11 +39,17 @@ skills/corrective-action-fix/SKILL.md
 /corrective-action-fix localty-system-gui develop
 ```
 
+`/corrective-action-report` で作成済みのレポートを使う場合:
+
+```text
+/corrective-action-fix localty-system-gui develop rag/corrective-action-report/260704120000_ABC12345_localty-system-gui.md
+```
+
 Flow:
 
 1. 改善対象の repository / branch を取得する。
 2. `work/<branch>/source/repository` に原本branchを格納する。
-3. corrective action report を作成する。
+3. corrective action report が指定されていれば読み込み、未指定なら `/corrective-action-report` 相当のread-only調査で作成する。
 4. `/rag-build` を実行する。
 5. `/rag-load` を実行する。
 6. 不明な実装領域や標準仕様確認が必要な場合は、外部Web RAGをsupporting referenceとしてdispatchする。
