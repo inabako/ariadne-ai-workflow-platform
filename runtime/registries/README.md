@@ -1,0 +1,16 @@
+# Runtime Registries
+
+このディレクトリは、runtime全体から参照される機械可読なregistry実体を置きます。
+
+## 責任範囲
+
+- workflow、intake、doctor、将来のruntime補助CLIから共通参照される承認ゲート、分類表、許可リストなどを置きます。
+- JSON Schemaは置きません。schema定義は `.github/schemas/` に置きます。
+- RAG蓄積物は置きません。RAGは `rag/` 配下で扱います。
+- 作業中/close済み成果物は置きません。作業成果物は `work/` 配下で扱います。
+
+## 現在のregistry
+
+| File | 用途 |
+| --- | --- |
+| `human_gates.json` | 人間承認が必要なruntime操作のregistry |

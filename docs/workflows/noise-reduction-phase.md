@@ -91,3 +91,31 @@ templates/noise-reduction/
 - Project Glossaryを作る。
 - 資料矛盾を放置しない。
 - Readinessが`BLOCK`の場合、設計・実装工程へ進まない。
+
+## Runtime CLI
+
+Noise Reduction Phaseはruntime CLIでも生成できます。
+
+```powershell
+python runtime/workflow/noise_reduction.py run `
+  --draft work/requirements/draft/<draft-name>.txt
+```
+
+CLIは次を生成します。
+
+```text
+work/requirements/draft/<draft-stem>-noise-reduction/
+  unknown-words-report.md
+  terminology-conflict-report.md
+  terminology-alias-report.md
+  document-conflict-report.md
+  ambiguous-language-report.md
+  ai-confusion-report.md
+  missing-definition-report.md
+  human-interview-sheet.md
+  project-glossary.md
+  readiness-report.md
+  context/workflow-state.json
+```
+
+`readiness-report.md` が `BLOCK` の場合、Human Interviewへの回答を待ち、要件review draftへ進みません。

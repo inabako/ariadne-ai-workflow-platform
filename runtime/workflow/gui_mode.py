@@ -31,6 +31,14 @@ MODE_BY_PREFIX = {
     "FEAT": "feature-development",
     "FIX": "corrective-improvement",
 }
+SVG_INBOX_PREFIXES = {
+    "SYS": "robotics-new-system / GaC-UaC GUI",
+    "FEAT": "robotics-feature-maintenance / GaC-UaC GUI",
+    "FIX": "corrective-action-fix / GaC-UaC GUI",
+    "WEB_SYS": "robotics-new-system / Web SVG Layout",
+    "WEB_FEAT": "robotics-feature-maintenance / Web SVG Layout",
+    "WEB_FIX": "corrective-action-fix / Web SVG Layout",
+}
 INPUT_PREFIX_BY_MODE = {
     "system-development": "SYS",
     "feature-development": "FEAT",
@@ -978,6 +986,62 @@ def discover_svg_files(work_dir: Path) -> list[Path]:
     return sorted(path for path in gui_input.glob("*.svg") if path.is_file())
 
 
+def svg_prefix(path: Path) -> str:
+    upper = path.name.upper()
+    for prefix in sorted(SVG_INBOX_PREFIXES, key=len, reverse=True):
+        if upper.startswith(f"{prefix}_"):
+            return prefix
+    return ""
+
+
+def validate_svg_xml(path: Path) -> tuple[bool, str]:
+    try:
+        root = ET.parse(path).getroot()
+    except ET.ParseError as exc:
+        return False, str(exc)
+    if local_name(root.tag).lower() != "svg":
+        return False, f"root element is not svg: {local_name(root.tag)}"
+    return True, ""
+
+
+def inspect_svg_input_dir(repo_root: Path, svg_input_dir: Path) -> dict[str, Any]:
+    files = sorted(path for path in svg_input_dir.glob("*.svg") if path.is_file()) if svg_input_dir.exists() else []
+    items: list[dict[str, Any]] = []
+    errors: list[str] = []
+    warnings: list[str] = []
+    stems: dict[str, list[str]] = {}
+    for path in files:
+        prefix = svg_prefix(path)
+        ok, parse_error = validate_svg_xml(path)
+        route = SVG_INBOX_PREFIXES.get(prefix, "")
+        item = {
+            "path": relative_to_repo(repo_root, path),
+            "prefix": prefix or "unknown",
+            "route": route or "unrouted",
+            "valid_svg": ok,
+            "error": parse_error,
+        }
+        items.append(item)
+        if not prefix:
+            errors.append(f"unknown-prefix:{relative_to_repo(repo_root, path)}")
+        if not ok:
+            errors.append(f"invalid-svg:{relative_to_repo(repo_root, path)}:{parse_error}")
+        stem_key = path.stem.split("_", 1)[-1].lower() if "_" in path.stem else path.stem.lower()
+        stems.setdefault(stem_key, []).append(path.name)
+    for stem, names in sorted(stems.items()):
+        if len(names) > 1:
+            warnings.append(f"same-screen-name:{stem}:{','.join(sorted(names))}")
+    return {
+        "status": "pass" if not errors else "fail",
+        "input_dir": relative_to_repo(repo_root, svg_input_dir),
+        "file_count": len(files),
+        "items": items,
+        "errors": errors,
+        "warnings": warnings,
+        "allowed_prefixes": SVG_INBOX_PREFIXES,
+    }
+
+
 def claim_svg_inputs(
     repo_root: Path,
     work_dir: Path,
@@ -1217,6 +1281,12 @@ def run_init_input(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def run_inspect_input(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    svg_input_dir = resolve_svg_input_dir(repo_root, args.svg_input_dir)
+    return inspect_svg_input_dir(repo_root, svg_input_dir)
+
+
 def run_generate(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     work_dir = resolve_work_dir(repo_root, args.issue_id, args.work_dir)
@@ -1425,6 +1495,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     init_parser.add_argument("--force", action="store_true", help="Replace the input README.")
     init_parser.set_defaults(handler=run_init_input)
+
+    inspect_parser = subparsers.add_parser(
+        "inspect-input",
+        help="Validate shared SVG inbox prefixes and XML without claiming files.",
+    )
+    inspect_parser.add_argument("--repo-root", help="Workflow repository root.")
+    inspect_parser.add_argument(
+        "--svg-input-dir",
+        help="Shared SVG inbox. Default: work/requirements/svg-input.",
+    )
+    inspect_parser.set_defaults(handler=run_inspect_input)
 
     run_parser = subparsers.add_parser("run", help="Generate GUI design, PyQt6, and QTest candidates when SVG exists.")
     add_work_arguments(run_parser)

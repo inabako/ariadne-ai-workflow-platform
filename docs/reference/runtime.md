@@ -36,6 +36,10 @@
 | `runtime/workflow/web_svg_layout_mode.py` | `work/requirements/svg-input/WEB_<PREFIX>_*.svg`をIssueへ取り込み、Web layout、React候補、Playwright候補を`web-ui/`へ生成・検証する |
 | `runtime/workflow/knowledge_capture.py` | PR材料、knowledge capture report、archive readinessを作り、target repository側の `docs/evidence/<issue-id>/` scaffoldを自動生成する |
 | `runtime/workflow/close_archive.py` | `work/close/<category>/<archive-id>`を軽量なreport-only archiveとして作成、監査、承認付きpruneする |
+| `runtime/workflow/noise_reduction.py` | 要件定義前の不明ワード、Critical項目不足、曖昧表現を抽出し、Human InterviewとReadinessを生成する |
+| `runtime/workflow/workflow_state.py` | workflowの現在地を `context/workflow-state.json` として標準化する |
+| `runtime/workflow/human_gate_policy.py` | 人間承認が必要な操作をregistryで確認する |
+| `runtime/workflow/workflow_doctor.py` | workflow repositoryの軽量診断を行う |
 | `runtime/workflow/validate_output_language.py` | 生成済みMarkdownが英語主体になっていないか検出する |
 | `runtime/rag/rag_dispatcher.py` | 複数queryのRAG loadを計画・実行・集約する |
 

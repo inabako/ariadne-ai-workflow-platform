@@ -158,3 +158,70 @@ work/close/<category>/<archive-id>/
 ```
 
 `work/close` には source checkout、`.git`、`.venv`、`node_modules`、build output、cacheを残しません。
+
+## `noise_reduction.py`
+
+要件定義review draftの前に、不明ワード、Critical項目不足、曖昧表現を抽出し、Human InterviewとReadinessを生成します。
+
+```powershell
+python runtime/workflow/noise_reduction.py run `
+  --draft work/requirements/draft/example.txt
+```
+
+主な出力:
+
+```text
+work/requirements/draft/<draft-stem>-noise-reduction/
+  unknown-words-report.md
+  missing-definition-report.md
+  ambiguous-language-report.md
+  human-interview-sheet.md
+  project-glossary.md
+  readiness-report.md
+  context/workflow-state.json
+```
+
+`readiness-report.md` が `BLOCK` の場合、要件review draftや完成版要件定義へ進まず、人間回答を待ちます。
+
+## `workflow_state.py`
+
+workflowの現在地を `context/workflow-state.json` として標準化します。
+
+```powershell
+python runtime/workflow/workflow_state.py --work-dir work/issue-11 show
+python runtime/workflow/workflow_state.py --work-dir work/issue-11 set `
+  --workflow corrective-action-fix `
+  --work-id issue-11 `
+  --phase implementation `
+  --status in-progress
+```
+
+## `human_gate_policy.py`
+
+人間承認が必要な操作を `runtime/registries/human_gates.json` で管理します。
+
+```powershell
+python runtime/workflow/human_gate_policy.py list
+python runtime/workflow/human_gate_policy.py check --gate close-prune --human-check approved
+```
+
+## `workflow_doctor.py`
+
+workflow repositoryの軽量診断を行います。
+
+```powershell
+python runtime/workflow/workflow_doctor.py
+python runtime/workflow/workflow_doctor.py --fail-on-warning
+```
+
+主に、`work/` / `rag/` のREADME-only policy、必須runtime file、close archive標準8ファイルを確認します。
+
+## Runtime pytest
+
+runtimeの重要CLIを変更した場合は、軽量pytestを実行します。
+
+```powershell
+uv run --with pytest python -m pytest runtime/tests -q
+```
+
+現時点では `close_archive.py` のgolden testを含みます。

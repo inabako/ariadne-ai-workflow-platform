@@ -66,6 +66,12 @@ Use:
 templates/noise-reduction/
 ```
 
+Runtime helper:
+
+```powershell
+python runtime/workflow/noise_reduction.py run --draft "work/requirements/draft/<draft-name>.txt"
+```
+
 Save outputs under:
 
 ```text

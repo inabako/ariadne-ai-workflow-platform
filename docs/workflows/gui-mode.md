@@ -133,3 +133,22 @@ gac-uac/generated/tests/
 ```
 
 実robot、実camera、physical STOP、field networkなどは、このサブワークフローのQTestだけで完了扱いにせず、親workflowのbench / integration / human checkへ残します。
+
+## SVG Inbox Inspection
+
+prefixで親workflowを判定するため、投入前にinboxを検査できます。
+
+```powershell
+python runtime/workflow/gui_mode.py inspect-input
+```
+
+検査対象prefix:
+
+- `SYS_`
+- `FEAT_`
+- `FIX_`
+- `WEB_SYS_`
+- `WEB_FEAT_`
+- `WEB_FIX_`
+
+未知prefix、SVG XML破損、同一画面名の衝突候補を検出します。検査はread-onlyで、SVGをIssue作業領域へ移動しません。

@@ -184,3 +184,32 @@ Issue title は、workflowに応じて次のprefixを付けます。
 Pull Request title は、対応するGitHub Issue titleを使います。
 Issue branchをpushした後、`develop` へPull Requestを送信します。
 Pull Request bodyには、変更点のMermaid式sequence diagramを含めます。
+
+## Runtime Human Gate Registry
+
+人間承認が必要な操作は `runtime/registries/human_gates.json` にも機械可読形式で定義します。
+構造定義は `.github/schemas/human-gates.schema.json` に置きます。
+責任分離を明確にするため、`runtime/registries/` はruntime横断のregistry実体、`.github/schemas/` はschema定義専用とします。
+`human_gates.json` には `$schema` と `schema_version` を置かず、registry自体の版は `registry_version` で表します。
+
+```powershell
+python runtime/workflow/human_gate_policy.py list
+python runtime/workflow/human_gate_policy.py check --gate close-prune --human-check approved
+```
+
+詳細は [Human Gate Registry](human-gates.md) を参照します。
+
+## README-only Local Workspace Policy
+
+GitHubにはworkflow本体と構成説明READMEのみを上げます。
+
+- `work/**/README.md` は追跡対象
+- `work/**` の作業実体は追跡しない
+- `rag/**/README.md` は追跡対象
+- `rag/**` のRAG蓄積物・生成物は追跡しない
+
+確認は次で行います。
+
+```powershell
+python runtime/workflow/workflow_doctor.py
+```
