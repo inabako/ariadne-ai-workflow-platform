@@ -132,6 +132,17 @@ aiwfctl help show /corrective-action-fix
 aiwfctl help search rag dispatch
 ```
 
+実行環境を選択する場合は `aiwfctl env` を使います。
+
+```powershell
+aiwfctl env list
+aiwfctl env select gui-mode
+aiwfctl env select web-svg
+aiwfctl env select docker
+```
+
+Context First Architecture では、Dispatcher が `work/<work-id>/context/` に標準Contextを作成し、Workflow はそれを第一入力として実行します。詳細は [Context First Architecture](docs/reference/context-first-architecture.md) と [Environment Selection](docs/reference/environment-selection.md) を参照してください。
+
 詳細は [Workflow Help CLI](docs/reference/workflow-help.md) を参照してください。
 
 Skill entrypoint は `skills/` にあります。対応関係は `skills/skill-index.json` にまとめます。

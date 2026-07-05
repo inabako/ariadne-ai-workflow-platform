@@ -19,7 +19,8 @@
 
 | Script | Responsibility |
 | --- | --- |
-| `runtime/ctl.py` | `runtime/tools/aiwfctl.cmd` から呼び出される `aiwfctl help` の実体。AI workflow prompt commandの一覧、詳細、検索、Markdown出力を行う |
+| `runtime/ctl.py` | `runtime/tools/aiwfctl.cmd` から呼び出される `aiwfctl help` / `aiwfctl env` の実体。help検索、Environment Dispatcher、`work/<work-id>/context/environment-selection.json` 作成を行う |
+| `runtime/registries/workflow_environment_profiles.json` | `aiwfctl env` が参照する利用者向けEnvironmentと内部Backend profile registry |
 | `runtime/intake/intake_requirements.py` | `work/requirements/` の要件定義書を受付ID単位で移動し、初期contextを作る |
 | `runtime/environment/preflight.py` | 必要tool / packageを確認し、install listを作る |
 | `runtime/scm/prepare_repository.py` | target repository / branchを取得し、`scm-state.json` を作る |
@@ -39,6 +40,7 @@
 | `runtime/workflow/close_archive.py` | `work/close/<category>/<archive-id>`を軽量なreport-only archiveとして作成、監査、承認付きpruneする |
 | `runtime/workflow/noise_reduction.py` | 要件定義前の不明ワード、Critical項目不足、曖昧表現を抽出し、Human InterviewとReadinessを生成する |
 | `runtime/workflow/workflow_state.py` | workflowの現在地を `context/workflow-state.json` として標準化する |
+| `runtime/workflow/context_first.py` | Context First manifestを作成・確認し、必須Dispatcher Context不足時にHuman Checkへ戻す |
 | `runtime/workflow/human_gate_policy.py` | 人間承認が必要な操作をregistryで確認する |
 | `runtime/workflow/workflow_doctor.py` | workflow repositoryの軽量診断を行う |
 | `runtime/workflow/validate_output_language.py` | 生成済みMarkdownが英語主体になっていないか検出する |

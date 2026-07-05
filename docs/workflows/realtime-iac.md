@@ -38,6 +38,20 @@ GitHub Repository URL: https://github.com/<owner>/<repo>.git
 Target Branch: develop
 ```
 
+## Context First Environment Gate
+
+`/realtime-iac` は Docker、Linux runtime、network、systemd、firewall、observability など環境差が大きいworkflowです。
+そのため、IaC設計・生成・検証へ進む前に Docker 用の environment-selection context を必須にします。
+
+```powershell
+aiwfctl env select docker --work-id <receipt-id>
+uv run python runtime/workflow/context_first.py `
+  --work-dir work/<receipt-id> `
+  require-environment --environment docker
+```
+
+`environment-selection.environment` が `docker` ではない場合、IaC設計へ進まずHuman Checkへ戻します。
+
 ## Shared Artifact Gate
 
 IaC設計や生成へ進む前に、次の共有成果物が必要です。

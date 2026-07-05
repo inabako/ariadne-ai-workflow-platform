@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Context First Manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "architecture",
+    "adoption_phase",
+    "work_id",
+    "updated_at",
+    "contexts",
+    "rules"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "artifact_type": { "type": "string", "const": "context-manifest" },
+    "architecture": { "type": "string", "const": "context-first" },
+    "adoption_phase": { "type": "string", "enum": ["phase-1", "phase-2", "phase-3"] },
+    "work_id": { "type": "string", "minLength": 1 },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "contexts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "path", "required", "generated_by", "owner", "schema", "status", "updated_at"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "environment-selection",
+              "workflow-selection",
+              "tool-selection",
+              "runtime-context",
+              "execution-plan",
+              "agent-context",
+              "workflow-state",
+              "artifact-index",
+              "handoff-package",
+              "qa-records",
+              "finding-records",
+              "decision-records",
+              "scm-state",
+              "corrective-action-report",
+              "docs-drift-analysis",
+              "github-knowledge-analysis",
+              "github-operation-gate",
+              "knowledge-capture",
+              "rag-build-run",
+              "rag-dispatch-plan",
+              "rag-load-dispatch",
+              "test-evidence",
+              "vscode-environment-state",
+              "gui-mode-state",
+              "web-svg-layout-state",
+              "realtime-iac-handoff",
+              "workflow-specific-state"
+            ]
+          },
+          "path": { "type": "string" },
+          "required": { "type": "boolean" },
+          "generated_by": { "type": "string" },
+          "owner": { "type": "string", "enum": ["dispatcher", "workflow", "agent", "human"] },
+          "schema": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["available", "missing", "human-check-required", "stale", "skipped"]
+          },
+          "updated_at": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "rules": {
+      "type": "object",
+      "required": [
+        "dispatcher_contexts_are_authoritative",
+        "workflows_may_update_execution_contexts",
+        "missing_required_dispatcher_context_requires_human_check"
+      ],
+      "properties": {
+        "dispatcher_contexts_are_authoritative": { "type": "boolean" },
+        "workflows_may_update_execution_contexts": { "type": "boolean" },
+        "missing_required_dispatcher_context_requires_human_check": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

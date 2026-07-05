@@ -21,20 +21,34 @@
 | `support-repositories.schema.json` | RAGやpreflightで判明したsupport repositoryの準備状態 |
 | `github-issue.schema.json` | GitHub Issue draft / created record |
 | `commit-record.schema.json` | semantic commit の記録 |
+| `corrective-action-report.schema.json` | read-only改善レポートの保存先、対象repository/branch、RAG候補、後続fix入力Context |
 | `knowledge-capture.schema.json` | PR資料、docs証跡、RAG/docs候補、archive準備の記録 |
 | `docs-drift-analysis.schema.json` | 実装とdocsの差分、根拠、Issue化材料、受け入れ条件 |
 | `github-knowledge-analysis.schema.json` | GitHub Issue / PR / docs / CARの知識資産、narrative gap、repair proposal、sync action、RAG候補 |
+| `github-operation-gate.schema.json` | GitHub read-only収集、mutation、clone、RAG publicationのHuman Check条件 |
 | `human-gates.schema.json` | 人間承認が必要なworkflow操作registryの構造定義 |
 | `workflow-help.schema.json` | `aiwfctl help` 用workflow prompt command registryの構造定義 |
+| `tool-candidates.schema.json` | Context First Tool Dispatcher が参照するtool候補registryの構造定義 |
+| `context-manifest.schema.json` | Context First Architectureで `work/<work-id>/context/context-manifest.json` を標準化する構造定義 |
+| `environment-selection.schema.json` | `work/<work-id>/context/environment-selection.json` の標準Context構造定義 |
+| `workflow-selection.schema.json` | Dispatcherが選択したworkflow command、intent、confidence、Human Check要否 |
+| `tool-selection.schema.json` | Dispatcherが選択したtool、read-only / mutation / local mode、Human Check要否 |
+| `runtime-context.schema.json` | Context Firstでworkflow実行時のterminal、tool path、検証コマンド、Human Check条件を共有する構造定義 |
+| `execution-plan.schema.json` | workflow間handoff前に、必要Context、停止条件、次commandを共有する実行計画 |
+| `realtime-iac-handoff.schema.json` | Robotics New System + IaCからRealtime IaCへ渡すShared Artifacts、validator結果、残リスク、次command |
+| `workflow-environment-profiles.schema.json` | `aiwfctl env` 用Environment Dispatcher registryの構造定義 |
 | `workspace-shared-artifact-validation.schema.json` | VSCode Environment workflowの必須artifact検証、条件、未解決QA |
+| `vscode-environment-state.schema.json` | VSCode Environment workflowのmode、対象workspace、必須artifact、初期化状態 |
 | `gui-mode-state.schema.json` | SVG検出、SYS/FEAT/FIX mode、生成成果物、親workflow返却状態 |
 | `web-svg-layout-state.schema.json` | Web画面向けSVG検出、WEB_* mode、生成成果物、親workflow返却状態 |
 | `rag-document.schema.json` | RAG投入用に正規化した document |
 | `rag-chunk.schema.json` | retrieval / embeddings 用の chunk |
 | `rag-embedding.schema.json` | local embedding index のchunk vector |
+| `rag-build-run.schema.json` | RAG build pipelineの入力、stage結果、index、embedding出力、Context登録記録 |
 | `rag-dispatch-plan.schema.json` | RAG検索前のintent、metadata、semantic hint、query計画 |
 | `rag-retrieval-result.schema.json` | query、selected chunks、dropped chunks、filter条件 |
 | `rag-context-pack.schema.json` | 圧縮済みcontext、source、token見積もり |
+| `rag-load-dispatch.schema.json` | 複数queryのRAG取得結果、context pack、execution-plan参照、集約context |
 
 ## Usage Rule
 

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GitHub Operation Gate",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "workflow",
+    "work_id",
+    "created_at",
+    "repository",
+    "read_only_allowed",
+    "mutation_allowed",
+    "clone_allowed",
+    "human_check_required",
+    "human_check_reasons"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "artifact_type": {
+      "const": "github-operation-gate"
+    },
+    "workflow": {
+      "type": "string"
+    },
+    "work_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "repository": {
+      "type": "string"
+    },
+    "read_only_allowed": {
+      "type": "boolean"
+    },
+    "mutation_allowed": {
+      "type": "boolean"
+    },
+    "clone_allowed": {
+      "type": "boolean"
+    },
+    "human_check_required": {
+      "type": "boolean"
+    },
+    "human_check_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

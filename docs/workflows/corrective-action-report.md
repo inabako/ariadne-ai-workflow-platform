@@ -20,6 +20,28 @@
 rag/corrective-action-report/YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md
 ```
 
+## Context First
+
+report作成後は、成果物をContext Firstへ登録します。
+
+```powershell
+python runtime/workflow/corrective_action_report.py register `
+  --repository "<target-repository>" `
+  --target-branch "<target-branch>" `
+  --report-path "rag/corrective-action-report/<report>.md"
+```
+
+生成されるContext:
+
+```text
+work/<target-branch>/context/corrective-action-report.json
+work/<target-branch>/context/context-manifest.json
+```
+
+`corrective-action-report.json` には、report保存先、対象repository / branch、commit、RAG候補、finding件数の概要を記録します。
+
+後続の `/corrective-action-fix` は、明示的なreport引数が無い場合、このmanifest上のreportを優先して読みます。
+
 ## Scope
 
 このworkflowは調査とreport作成だけを行います。

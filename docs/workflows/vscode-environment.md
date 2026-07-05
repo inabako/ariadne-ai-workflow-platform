@@ -68,6 +68,9 @@ work/<work-id>/design-document/open-questions.md
 work/<work-id>/design-document/vscode-design.md
 work/<work-id>/design-document/terminal-design.md
 work/<work-id>/context/workspace-shared-artifact-validation.json
+work/<work-id>/context/vscode-environment-state.json
+work/<work-id>/context/runtime-context.json
+work/<work-id>/context/context-manifest.json
 work/<work-id>/process-report/
 work/<work-id>/test-evidence/
 ```

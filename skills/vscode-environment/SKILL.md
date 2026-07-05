@@ -134,6 +134,16 @@ uv run python runtime/workflow/vscode_environment.py init `
   --target-dir "<target-workspace>"
 ```
 
+The init command creates both workflow state and Context First runtime context:
+
+```text
+work/vscode-environment/context/vscode-environment-state.json
+work/vscode-environment/context/runtime-context.json
+work/vscode-environment/context/context-manifest.json
+```
+
+`runtime-context.json` records the intended terminal scope, repo-local tool paths, verification commands, and Human Check conditions. Read it before changing `.vscode` files or terminal/PATH behavior.
+
 Create a requirements scaffold:
 
 ```powershell

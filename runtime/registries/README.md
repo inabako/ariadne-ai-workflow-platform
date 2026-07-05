@@ -1,5 +1,7 @@
 # Runtime Registries
 
+`tool_candidates.json` は、Context First Tool Dispatcher が参照するtool候補、mode、Human Check条件のregistryです。
+
 このディレクトリは、runtime全体から参照される機械可読なregistry実体を置きます。
 
 ## 責任範囲
@@ -15,3 +17,4 @@
 | --- | --- |
 | `human_gates.json` | 人間承認が必要なruntime操作のregistry |
 | `workflow_help.json` | `aiwfctl help` で表示・検索するAI workflow prompt commandのregistry |
+| `workflow_environment_profiles.json` | `aiwfctl env` で参照する利用者向けEnvironmentと内部Backend profileのregistry |

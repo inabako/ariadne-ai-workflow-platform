@@ -40,6 +40,12 @@ Parent workflow creates Issue work area
 
 ## Runtime
 
+実行前に推奨環境を確認します。
+
+```powershell
+aiwfctl env select web-svg
+```
+
 入力directoryのWeb画面向けREADMEを作成します。
 
 ```powershell

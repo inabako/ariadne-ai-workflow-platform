@@ -92,6 +92,20 @@ Schema:
 .github/schemas/github-knowledge-analysis.schema.json
 ```
 
+## Context First
+
+`/github-knowledge-maintenance` は、GitHubを読み取る前に `context-manifest.json` へ次のContextを登録します。
+
+- `tool-selection`: GitHub CLI / GitHub API をどう使うかを記録します。
+- `github-operation-gate`: read-only / mutation / clone の許可状態とHuman Check要否を記録します。
+- `github-knowledge-analysis`: Issue、Pull Request、docs、CAR、commit情報の調査結果を後続Workflowへ渡します。
+- `agent-context` / `artifact-index` / `handoff-package`: 作業領域、成果物、引き継ぎ情報を標準Contextとして扱います。
+
+`repair_mode: proposal` では mutation を許可しません。`repair_mode: apply` の場合も、GitHubへの書き込みは `github-operation-gate` とHuman Review Gateの確認後に行います。
+
+`github-sync-plan` は、analysisが `repair_mode: apply` の場合に `github-operation-gate` と `tool-selection` を必須Contextとして確認します。
+`rag-candidate --publish-rag` は、RAG publication前に `github-operation-gate` のHuman Check条件を確認します。
+
 ## GitHub Access Policy
 
 GitHub CLI / API を優先します。

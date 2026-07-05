@@ -24,6 +24,24 @@ source markdown
 
 主なコマンド:
 
+### Integrated CLI
+
+`/rag-build` は、個別CLIを順番に手実行する代わりに、次の統合CLIでも実行できます。
+
+```powershell
+python runtime/rag/rag_build.py `
+  --work-id "<work-id>" `
+  --source-dir rag/corrective-action-report `
+  --document-type corrective-action-report `
+  --clean-output
+```
+
+このCLIは `normalize`、`chunk`、`index`、`embedding` のstage結果を `rag/retrieval/rag-build-run-latest.json` に保存します。
+
+`--work-id` を指定した場合は、`work/<work-id>/context/context-manifest.json` に `rag-build-run` を登録します。
+
+RAG source reportのrenameを避けたい場合は `--skip-standardize` を指定します。source report filenameの標準化も行う場合は、必要に応じて `--replace-references` を付けます。
+
 ```powershell
 python runtime/rag/standardize_corrective_report_names.py `
   --source-dir rag/corrective-action-report `
@@ -113,6 +131,19 @@ python runtime/rag/rag_dispatcher.py `
   --max-chars 4000 `
   --jobs 4
 ```
+
+### Context First
+
+`/rag-load` は `--work-id` が指定された場合、対象workの `context-manifest.json` を確認します。
+
+- `execution-plan`: manifestに存在する場合、RAG検索の上位目的としてdispatch planへ接続します。
+- `rag-dispatch-plan`: 検索前のquery planをmanifestへ登録します。
+- `rag-load-dispatch`: 検索結果、圧縮Context、dispatch結果をmanifestへ登録します。
+
+これにより、RAG検索は単なる全文検索ではなく、Workflowが先に確定した実行計画に沿ったContext取得として扱えます。
+
+`--work-id` を指定したのに `execution-plan` が見つからない場合、検索自体は止めません。
+その代わり、dispatch plan / dispatch result に `human_check_required: true` と理由を記録し、Agentが検索意図を人間確認できるようにします。
 
 ## Outputs
 

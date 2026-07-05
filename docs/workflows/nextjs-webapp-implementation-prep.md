@@ -17,6 +17,12 @@ Next.js 画面機能を実装する前に、対象が新規webappか既存webapp
 - `templates/boilerplates/nextjs-webapp-template/` を採用するか判断する。
 - 画面機能の要件はあるが、API、認証、テスト、環境変数の境界が未整理である。
 
+実行前に推奨環境を確認します。
+
+```powershell
+aiwfctl env select nextjs-webapp-implementation-prep
+```
+
 ## Inputs
 
 ```text

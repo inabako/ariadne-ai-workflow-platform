@@ -24,6 +24,7 @@ from runtime.common import (  # noqa: E402
     write_json,
     write_markdown_bom,
 )
+from runtime.workflow.context_first import register_context, require_environment_selection  # noqa: E402
 
 
 MODE_BY_PREFIX = {
@@ -1290,6 +1291,8 @@ def run_inspect_input(args: argparse.Namespace) -> dict[str, Any]:
 def run_generate(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     work_dir = resolve_work_dir(repo_root, args.issue_id, args.work_dir)
+    if not getattr(args, "skip_context_check", False):
+        require_environment_selection(repo_root, work_dir, expected_environment="gui-mode")
     mode = infer_mode(args.issue_id, args.mode)
     input_prefix = args.input_prefix or input_prefix_for_mode(mode)
     svg_input_dir = resolve_svg_input_dir(repo_root, args.svg_input_dir)
@@ -1335,7 +1338,20 @@ def run_generate(args: argparse.Namespace) -> dict[str, Any]:
                 "integration_policy": "review-generated-candidates-before-copy",
             },
         }
-        write_json(work_dir / "context" / "gui-mode-state.json", state)
+        state_path = work_dir / "context" / "gui-mode-state.json"
+        write_json(state_path, state)
+        register_context(
+            repo_root,
+            work_dir,
+            work_id=args.issue_id,
+            context_type="gui-mode-state",
+            path=state_path,
+            required=False,
+            generated_by="gui-mode",
+            owner="workflow",
+            schema=".github/schemas/gui-mode-state.schema.json",
+            status="skipped",
+        )
         return state
 
     documents = [parse_svg(path) for path in svg_files]
@@ -1357,7 +1373,19 @@ def run_generate(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError(f"Generated GUI mode artifacts failed validation: {validation['errors']}")
     state["validation"] = validation
     write_json(output_dir / "gui-mode-state.json", state)
-    write_json(work_dir / "context" / "gui-mode-state.json", state)
+    state_path = work_dir / "context" / "gui-mode-state.json"
+    write_json(state_path, state)
+    register_context(
+        repo_root,
+        work_dir,
+        work_id=args.issue_id,
+        context_type="gui-mode-state",
+        path=state_path,
+        required=False,
+        generated_by="gui-mode",
+        owner="workflow",
+        schema=".github/schemas/gui-mode-state.schema.json",
+    )
     return state
 
 
@@ -1394,6 +1422,7 @@ def make_self_test_args(repo_root: Path, issue_id: str, mode: str = "auto") -> a
         force=False,
         svg_input_dir=None,
         input_prefix=None,
+        skip_context_check=True,
     )
 
 
@@ -1525,6 +1554,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--input-prefix",
         choices=["SYS", "FEAT", "FIX", "GUI"],
         help="Override the SVG filename prefix selected from the GUI mode.",
+    )
+    run_parser.add_argument(
+        "--skip-context-check",
+        action="store_true",
+        help="Skip Context First environment-selection gate. Intended for runtime self-tests only.",
     )
     run_parser.set_defaults(handler=run_generate)
 

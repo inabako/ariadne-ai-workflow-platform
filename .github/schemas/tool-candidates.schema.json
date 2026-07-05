@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tool Candidate Registry",
+  "type": "object",
+  "required": ["registry_version", "tools"],
+  "properties": {
+    "registry_version": { "type": "string" },
+    "description": { "type": "string" },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "default_mode", "purpose"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "aliases": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "default_mode": {
+            "enum": ["read-only", "mutation", "local", "generated"]
+          },
+          "purpose": { "type": "string" },
+          "workflows": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "keywords": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "runtime_paths": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "install_required": { "type": "boolean" },
+          "mutation_capable": { "type": "boolean" },
+          "human_check_required": { "type": "boolean" },
+          "human_check_reasons": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -33,6 +33,17 @@ Git branch は次の形式にします。
 feature/issue-<issue-number>
 ```
 
+## Context First
+
+`report` 引数が明示されていない場合、`/corrective-action-fix` は次の順でCorrective Action Reportを解決します。
+
+1. `--base-work-id` の `context-manifest.json` にある `corrective-action-report`
+2. `work/<target-branch>/context/context-manifest.json` にある `corrective-action-report`
+3. `work/<work-id>/context/context-manifest.json` にある `corrective-action-report`
+4. 見つからない場合は、従来どおりflow内でCorrective Action Reportを作成する
+
+解決したreportは、fix側の `work/<work-id>/context/corrective-action-report.json` にも引き継ぎます。
+
 ## Flow
 
 1. `work/<target-branch>` を初期化する。

@@ -26,6 +26,7 @@ from runtime.common import (  # noqa: E402
     write_json,
     write_markdown_bom,
 )
+from runtime.workflow.context_first import context_entry, load_manifest, manifest_path_for_work_dir, register_context  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -45,6 +46,7 @@ def build_parser() -> argparse.ArgumentParser:
     template_parser.add_argument("--work-id", required=True)
     template_parser.add_argument("--analysis-path", default="")
     template_parser.add_argument("--repo-root", default=None)
+    template_parser.add_argument("--allow-missing-scm-state", action="store_true")
 
     issue_parser = subparsers.add_parser("issue-body", help="Create a GitHub Issue body from docs drift analysis JSON.")
     issue_parser.add_argument("--work-id", required=True)
@@ -67,6 +69,35 @@ def repository_name(repository: str, default_owner: str = "") -> str:
     if name.endswith(".git"):
         name = name[:-4]
     return slugify(name)
+
+
+def register_docs_sync_contexts(repo_root: Path, work_dir: Path, work_id: str) -> None:
+    context_dir = work_dir / "context"
+    registrations = [
+        ("agent-context", context_dir / "agent-context.json", True, ".github/schemas/agent-context.schema.json"),
+        ("artifact-index", context_dir / "artifact-index.json", True, ".github/schemas/artifact-index.schema.json"),
+        ("handoff-package", context_dir / "handoff-package.json", False, ".github/schemas/handoff-package.schema.json"),
+        ("qa-records", context_dir / "qa-records.json", False, ".github/schemas/qa-record.schema.json"),
+        ("finding-records", context_dir / "finding-records.json", False, ".github/schemas/finding-record.schema.json"),
+        ("decision-records", context_dir / "decision-records.json", False, ".github/schemas/decision-record.schema.json"),
+        ("test-evidence", context_dir / "test-evidence.json", False, ".github/schemas/test-evidence.schema.json"),
+        ("scm-state", context_dir / "scm-state.json", True, ".github/schemas/scm-state.schema.json"),
+        ("docs-drift-analysis", context_dir / "docs-drift-analysis.json", False, ".github/schemas/docs-drift-analysis.schema.json"),
+    ]
+    for context_type, path, required, schema in registrations:
+        if not path.exists():
+            continue
+        register_context(
+            repo_root,
+            work_dir,
+            work_id=work_id,
+            context_type=context_type,
+            path=path,
+            required=required,
+            generated_by="docs-sync",
+            owner="workflow",
+            schema=schema,
+        )
 
 
 def init_work(args: argparse.Namespace) -> dict[str, Any]:
@@ -198,6 +229,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
         },
     )
     write_json(context_dir / "artifact-index.json", index)
+    register_docs_sync_contexts(repo_root, work_dir, work_id)
     return {
         "work_id": work_id,
         "work_dir": relative_to_repo(repo_root, work_dir),
@@ -246,6 +278,11 @@ def create_analysis_template(args: argparse.Namespace) -> dict[str, Any]:
     work_dir = repo_root / "work" / args.work_id
     if not work_dir.exists():
         raise FileNotFoundError(f"Work directory does not exist: {work_dir}")
+    gate = require_docs_sync_scm_state(
+        repo_root,
+        work_dir,
+        allow_missing=bool(getattr(args, "allow_missing_scm_state", False)),
+    )
     analysis_path = Path(args.analysis_path).resolve() if args.analysis_path else work_dir / "context" / "docs-drift-analysis.json"
     analysis = default_analysis(work_dir, repo_root)
     write_json(analysis_path, analysis)
@@ -253,7 +290,55 @@ def create_analysis_template(args: argparse.Namespace) -> dict[str, Any]:
     return {
         "analysis_path": relative_to_repo(repo_root, analysis_path),
         "drift_item_count": 0,
+        "context_gate": gate,
     }
+
+
+def require_docs_sync_scm_state(repo_root: Path, work_dir: Path, *, allow_missing: bool) -> dict[str, Any]:
+    manifest_path = manifest_path_for_work_dir(work_dir)
+    manifest_exists = manifest_path.exists()
+    manifest = load_manifest(work_dir)
+    entry = context_entry(manifest, "scm-state")
+    fallback_path = work_dir / "context" / "scm-state.json"
+    if entry:
+        return {
+            "status": "ready",
+            "context_type": "scm-state",
+            "mode": "manifest",
+            "path": entry.get("path", ""),
+            "manifest_path": relative_to_repo(repo_root, manifest_path),
+        }
+    if fallback_path.exists():
+        register_context(
+            repo_root,
+            work_dir,
+            work_id=work_dir.name,
+            context_type="scm-state",
+            path=fallback_path,
+            required=True,
+            generated_by="runtime-scm",
+            owner="workflow",
+            schema=".github/schemas/scm-state.schema.json",
+        )
+        return {
+            "status": "ready",
+            "context_type": "scm-state",
+            "mode": "fallback-registered",
+            "path": relative_to_repo(repo_root, fallback_path),
+            "manifest_path": relative_to_repo(repo_root, manifest_path),
+        }
+    if allow_missing:
+        return {
+            "status": "allowed-missing",
+            "context_type": "scm-state",
+            "mode": "legacy-fallback",
+            "path": relative_to_repo(repo_root, fallback_path),
+            "manifest_path": relative_to_repo(repo_root, manifest_path) if manifest_exists else "",
+        }
+    raise RuntimeError(
+        "Context First gate: docs-sync analysis requires scm-state. "
+        f"Prepare repository context first or rerun with --allow-missing-scm-state for legacy fallback: {fallback_path}"
+    )
 
 
 def register_analysis_artifact(repo_root: Path, work_dir: Path, analysis_path: Path, status: str) -> None:
@@ -279,6 +364,31 @@ def register_analysis_artifact(repo_root: Path, work_dir: Path, analysis_path: P
         },
     )
     write_json(work_dir / "context" / "artifact-index.json", index)
+    register_context(
+        repo_root,
+        work_dir,
+        work_id=work_dir.name,
+        context_type="docs-drift-analysis",
+        path=analysis_path,
+        required=True,
+        generated_by="docs-sync",
+        owner="workflow",
+        schema=".github/schemas/docs-drift-analysis.schema.json",
+        status="available" if status != "missing" else "missing",
+    )
+    scm_state_path = work_dir / "context" / "scm-state.json"
+    if scm_state_path.exists():
+        register_context(
+            repo_root,
+            work_dir,
+            work_id=work_dir.name,
+            context_type="scm-state",
+            path=scm_state_path,
+            required=True,
+            generated_by="runtime-scm",
+            owner="workflow",
+            schema=".github/schemas/scm-state.schema.json",
+        )
 
 
 def markdown_list(items: list[str]) -> str:

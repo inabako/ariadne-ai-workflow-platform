@@ -1,0 +1,276 @@
+{
+  "registry_version": "1.0",
+  "description": "Workflow execution environment profiles. aiwfctl env reads this registry before workflow execution to reduce OS/runtime/tool selection guesswork.",
+  "environments": [
+    {
+      "name": "gui-mode",
+      "backend": "windows-msys2-gui",
+      "purpose": "PyQt / Qt / GStreamer / Windows GUI 開発",
+      "recommended_for": ["PyQt6", "Qt", "GStreamer", "Windows GUI", "QTest candidate", "SYS_ / FEAT_ / FIX_ SVG"],
+      "example_commands": [
+        "aiwfctl env select gui-mode",
+        "aiwfctl env select gui-mode --work-id issue-123"
+      ],
+      "notes": [
+        "利用者は gui-mode を指定する。windows-msys2-gui は内部Backend名として表示する。",
+        "GUI表示、QTest、GStreamer、Windows APIが絡む場合はこの環境を優先する。"
+      ]
+    },
+    {
+      "name": "web-svg",
+      "backend": "wsl-ubuntu-web",
+      "purpose": "Web / SVG / Node.js / Next.js / Linux 開発",
+      "recommended_for": ["Web SVG", "Node.js", "npm", "Next.js", "React", "Playwright", "WEB_SYS_ / WEB_FEAT_ / WEB_FIX_ SVG"],
+      "example_commands": [
+        "aiwfctl env select web-svg",
+        "aiwfctl env select web-svg --work-id issue-123"
+      ],
+      "notes": [
+        "利用者は web-svg を指定する。wsl-ubuntu-web は内部Backend名として表示する。",
+        "Web UI候補、React候補、Playwright候補、Linux CLI系toolchainを扱う場合はこの環境を優先する。"
+      ]
+    },
+    {
+      "name": "docker",
+      "backend": "docker-compose",
+      "purpose": "Container / Integration Test / Production-like validation",
+      "recommended_for": ["Docker", "Docker Compose", "container-only validation", "integration test", "production-like validation"],
+      "example_commands": [
+        "aiwfctl env select docker",
+        "aiwfctl env select docker --work-id issue-123"
+      ],
+      "notes": [
+        "利用者は docker を指定する。docker-compose は内部Backend名として表示する。",
+        "Docker Desktop起動やnetwork公開などローカル環境に影響する場合はHuman Checkを挟む。"
+      ]
+    },
+    {
+      "name": "vscode-environment",
+      "backend": "vscode-workspace",
+      "purpose": "VSCode workspace as code / terminal / task / aiwfctl 導線整備",
+      "recommended_for": ["VSCode settings", "tasks.json", "launch.json", "extensions.json", "terminal PATH", "aiwfctl path"],
+      "example_commands": [
+        "aiwfctl env select vscode-environment",
+        "aiwfctl env select vscode-environment --work-id vscode-environment"
+      ],
+      "notes": [
+        "利用者は vscode-environment を指定する。vscode-workspace は内部Backend名として表示する。",
+        "User Pathやterminal設定など人間の開発環境に影響する場合はHuman Checkを挟む。"
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "windows-powershell",
+      "aliases": ["windows", "powershell"],
+      "title": "Windows PowerShell",
+      "environment": "Windows host",
+      "shell": "PowerShell",
+      "os": "Windows",
+      "summary": "Windows host上で実行する標準profile。aiwfctl、Git、uv、Python、VSCode taskなど、repo-local workflow操作の既定環境。",
+      "applies_when": [
+        "aiwfctl自体を呼び出す",
+        "Windows上のrepo-local helperを実行する",
+        "VSCode統合ターミナルからworkflowを操作する"
+      ],
+      "primary_tools": ["aiwfctl", "PowerShell", "Git", "uv", "Python"],
+      "verification": [
+        "aiwfctl path check",
+        "aiwfctl help list",
+        "uv run python --version"
+      ],
+      "preflight_profile": "corrective-action-fix",
+      "run_command": "aiwfctl help list",
+      "docs": ["docs/reference/workflow-help.md", "docs/reference/vscode-environment.md"],
+      "human_check_required_when": [
+        "PowerShell実行ではなくWSL/Linux側で実行すべき可能性がある",
+        "Windows固有権限や管理者権限が必要か判断できない"
+      ]
+    },
+    {
+      "id": "windows-msys2-gui",
+      "aliases": ["gui-pyqt", "pyqt", "qt", "msys2"],
+      "title": "Windows MSYS2 GUI / PyQt",
+      "environment": "Windows host + MSYS2",
+      "shell": "PowerShell / MSYS2 bash",
+      "os": "Windows",
+      "summary": "PyQt、Qt、GStreamer、Windows GUI、QTest候補を扱うprofile。GUI系workflowはこのprofileを優先する。",
+      "applies_when": [
+        "PyQtまたはQt GUIを扱う",
+        "GStreamer on Windowsを扱う",
+        "SYS_ / FEAT_ / FIX_ SVGからPyQt6候補やQTest候補を作る",
+        "Windows GUI applicationやWindows APIに依存する"
+      ],
+      "primary_tools": ["aiwfctl", "PowerShell", "MSYS2", "Python", "PyQt6", "Qt", "QTest", "GStreamer"],
+      "verification": [
+        "aiwfctl env select gui-mode",
+        "uv run python runtime/environment/preflight.py --profile gui-pyqt --work-id <work-id> --source-dir <target-repo>",
+        "uv run python runtime/workflow/gui_mode.py self-test"
+      ],
+      "preflight_profile": "gui-pyqt",
+      "run_command": "uv run python runtime/environment/preflight.py --profile gui-pyqt --work-id <work-id> --source-dir <target-repo>",
+      "docs": ["docs/workflows/gui-mode.md", "docs/reference/runtime.md"],
+      "human_check_required_when": [
+        "PyQt6やMSYS2 packageの有無を確認できない",
+        "WindowsとWSLのどちらでも実行可能だが、GUI表示やQTestの実行場所を判断できない",
+        "実機、camera、GStreamer、field networkなど外部I/Oが絡む"
+      ]
+    },
+    {
+      "id": "wsl-ubuntu-web",
+      "aliases": ["web", "web-nextjs", "nextjs", "node", "react", "playwright"],
+      "title": "WSL Ubuntu Web / Node.js",
+      "environment": "WSL Ubuntu",
+      "shell": "Bash",
+      "os": "Linux on WSL",
+      "summary": "Node.js、Next.js、React、Playwright、Linux CLI、webapp実装前準備を扱うprofile。Web系workflowはこのprofileを優先する。",
+      "applies_when": [
+        "Node.jsまたはnpmを使う",
+        "Next.js、React、Playwrightを扱う",
+        "WEB_SYS_ / WEB_FEAT_ / WEB_FIX_ SVGからWeb UI候補を作る",
+        "Linux CLIやWSL上のtoolchainを使う"
+      ],
+      "primary_tools": ["aiwfctl", "WSL", "Bash", "Node.js", "npm", "Next.js", "React", "Playwright"],
+      "verification": [
+        "aiwfctl env select web-svg",
+        "node --version",
+        "npm --version",
+        "npx playwright --version"
+      ],
+      "preflight_profile": "web-nextjs",
+      "run_command": "aiwfctl env select web-svg",
+      "docs": ["docs/workflows/web-svg-layout-mode.md", "docs/workflows/nextjs-webapp-implementation-prep.md"],
+      "human_check_required_when": [
+        "Windows PowerShellとWSLのどちらでNode.jsを使うべきか判断できない",
+        "target appのpackage manager、lockfile、Node.js version policyが不明",
+        "npm installなど依存関係installに人間承認が必要"
+      ]
+    },
+    {
+      "id": "docker-compose",
+      "aliases": ["docker", "compose", "container"],
+      "title": "Docker / Docker Compose",
+      "environment": "Docker runtime",
+      "shell": "PowerShell or Bash",
+      "os": "Containerized Linux",
+      "summary": "Docker内でのみ確認可能な処理、本番相当環境、Docker Compose結合試験を扱うprofile。",
+      "applies_when": [
+        "DockerまたはDocker Composeでの検証が必要",
+        "container内でのみ再現できる",
+        "本番相当環境やintegration testを行う"
+      ],
+      "primary_tools": ["aiwfctl", "Docker", "Docker Compose"],
+      "verification": ["docker version", "docker compose version"],
+      "preflight_profile": "docker-compose",
+      "run_command": "uv run python runtime/environment/preflight.py --profile docker-compose --work-id <work-id> --source-dir <target-repo>",
+      "docs": ["docs/workflows/realtime-iac.md", "docs/reference/vscode-environment.md"],
+      "human_check_required_when": [
+        "Docker Desktop起動やnetwork公開などローカル環境へ影響がある",
+        "containerとhostのどちらでtestすべきか判断できない"
+      ]
+    },
+    {
+      "id": "vscode-workspace",
+      "aliases": ["vscode", "workspace"],
+      "title": "VSCode Workspace-as-Code",
+      "environment": "Windows host + VSCode",
+      "shell": "PowerShell",
+      "os": "Windows",
+      "summary": "VSCode workspace、terminal profile、task、launch、extension、aiwfctl導線を整えるprofile。",
+      "applies_when": [
+        "/vscode-environmentを実行する",
+        ".vscode/settings.json、tasks.json、launch.json、extensions.jsonを扱う",
+        "aiwfctlをVSCode統合ターミナルから使えるようにする"
+      ],
+      "primary_tools": ["aiwfctl", "VSCode", "PowerShell", "runtime/tools", "workflow doctor"],
+      "verification": [
+        "aiwfctl path check",
+        "uv run python runtime/workflow/validate_vscode_workspace.py --workspace .",
+        "uv run python runtime/workflow/workflow_doctor.py --fail-on-warning"
+      ],
+      "preflight_profile": "vscode-environment",
+      "run_command": "uv run python runtime/environment/preflight.py --profile vscode-environment --work-id vscode-environment --source-dir .",
+      "docs": ["docs/workflows/vscode-environment.md", "docs/reference/vscode-environment.md"],
+      "human_check_required_when": [
+        "default terminalやUser Pathなど人間の開発環境に影響する",
+        "拡張機能やtool installが必要"
+      ]
+    }
+  ],
+  "mappings": [
+    {
+      "subject_type": "extension",
+      "subject": "gac-uac-gui-mode",
+      "profiles": ["windows-msys2-gui"],
+      "selection_reason": "PyQt、Qt、QTest、Windows GUI、MSYS2/GStreamerに依存するため。",
+      "triggers": ["SYS_*.svg", "FEAT_*.svg", "FIX_*.svg"],
+      "docs": ["docs/workflows/gui-mode.md"]
+    },
+    {
+      "subject_type": "extension",
+      "subject": "gui-mode",
+      "profiles": ["windows-msys2-gui"],
+      "selection_reason": "gui-mode aliasはPyQt、Qt、QTest、Windows GUI、MSYS2/GStreamerに依存するため。",
+      "triggers": ["SYS_*.svg", "FEAT_*.svg", "FIX_*.svg"],
+      "docs": ["docs/workflows/gui-mode.md"]
+    },
+    {
+      "subject_type": "extension",
+      "subject": "web-svg-layout-mode",
+      "profiles": ["wsl-ubuntu-web"],
+      "selection_reason": "React候補、Playwright候補、Web routing / component検証にNode.js系toolchainを使うため。",
+      "triggers": ["WEB_SYS_*.svg", "WEB_FEAT_*.svg", "WEB_FIX_*.svg"],
+      "docs": ["docs/workflows/web-svg-layout-mode.md"]
+    },
+    {
+      "subject_type": "extension",
+      "subject": "web-svg",
+      "profiles": ["wsl-ubuntu-web"],
+      "selection_reason": "web-svg aliasはReact候補、Playwright候補、Web routing / component検証にNode.js系toolchainを使うため。",
+      "triggers": ["WEB_SYS_*.svg", "WEB_FEAT_*.svg", "WEB_FIX_*.svg"],
+      "docs": ["docs/workflows/web-svg-layout-mode.md"]
+    },
+    {
+      "subject_type": "subworkflow",
+      "subject": "nextjs-webapp-implementation-prep",
+      "profiles": ["wsl-ubuntu-web"],
+      "selection_reason": "Next.js、Node.js、npm、Playwright、env/auth/API contract確認を扱うため。",
+      "triggers": ["Next.js", "Node.js", "React", "Playwright"],
+      "docs": ["docs/workflows/nextjs-webapp-implementation-prep.md"]
+    },
+    {
+      "subject_type": "command",
+      "subject": "/vscode-environment",
+      "profiles": ["vscode-workspace"],
+      "selection_reason": "VSCode workspace、terminal、task、aiwfctl導線を整えるworkflowであるため。",
+      "triggers": ["/vscode-environment"],
+      "docs": ["docs/workflows/vscode-environment.md"]
+    },
+    {
+      "subject_type": "command",
+      "subject": "/realtime-iac",
+      "profiles": ["docker-compose"],
+      "selection_reason": "Docker Compose、gateway、network、Linux runtime validationを扱うため。",
+      "triggers": ["Docker", "Docker Compose", "gateway", "IaC"],
+      "docs": ["docs/workflows/realtime-iac.md"]
+    },
+    {
+      "subject_type": "keyword",
+      "subject": "pyqt qt msys2 gui gstreamer qtest",
+      "profiles": ["windows-msys2-gui"],
+      "selection_reason": "Windows GUI / PyQt / Qt / MSYS2 / GStreamer / QTestに該当するため。"
+    },
+    {
+      "subject_type": "keyword",
+      "subject": "web node nextjs next.js react playwright npm",
+      "profiles": ["wsl-ubuntu-web"],
+      "selection_reason": "Web / Node.js / Next.js / React / Playwrightに該当するため。"
+    },
+    {
+      "subject_type": "keyword",
+      "subject": "docker compose container kubernetes terraform",
+      "profiles": ["docker-compose"],
+      "selection_reason": "Docker / container / IaC検証に該当するため。"
+    }
+  ]
+}

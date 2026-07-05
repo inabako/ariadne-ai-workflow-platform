@@ -54,6 +54,7 @@ work/<receipt-id>/design-document/architecture-decision-record.md
 work/<receipt-id>/process-report/shared-artifact-validation.md
 work/<receipt-id>/context/shared-artifact-validation.json
 work/<receipt-id>/context/realtime-iac-handoff.json
+work/<receipt-id>/context/execution-plan.json
 ```
 
 必要に応じて:
@@ -71,6 +72,35 @@ Validatorは、Shared ArtifactsがIaC workflowへ渡せる品質かを判定し�
 | pass | IaCへ渡せる | `/realtime-iac` |
 | conditional-pass | 一部制約付きでIaCへ渡せる | residual riskを記録して `/realtime-iac` |
 | fail | IaCへ渡すと危険または不完全 | 新システム設計またはShared Artifacts生成へ戻る |
+
+## Context First Handoff
+
+Shared Artifact Validator が `pass` または human-approved `conditional-pass` の場合、Realtime IaCへ進む前に handoff context と execution plan を作成します。
+
+```powershell
+uv run python runtime/workflow/iac_handoff_context.py `
+  --work-id <receipt-id> `
+  --validator-judgment <pass|conditional-pass|fail> `
+  --source-artifact work/<receipt-id>/design-document/shared-artifacts-index.md
+```
+
+生成物:
+
+```text
+work/<receipt-id>/context/realtime-iac-handoff.json
+work/<receipt-id>/context/execution-plan.json
+work/<receipt-id>/context/context-manifest.json
+```
+
+`execution-plan.json` は、`/realtime-iac` へ渡す前に必要な `environment-selection`、停止条件、次commandを明示します。
+Realtime IaC開始前には Docker environment gate を確認します。
+
+```powershell
+aiwfctl env select docker --work-id <receipt-id>
+uv run python runtime/workflow/context_first.py `
+  --work-dir work/<receipt-id> `
+  require-environment --environment docker
+```
 
 ## Stop Rules
 

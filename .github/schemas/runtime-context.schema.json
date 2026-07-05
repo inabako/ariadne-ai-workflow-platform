@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Context First Runtime Context",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "architecture",
+    "workflow",
+    "work_id",
+    "mode",
+    "target_dir",
+    "created_at",
+    "runtime",
+    "tool_paths",
+    "verification_commands",
+    "human_check_required_when"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "artifact_type": {
+      "const": "runtime-context"
+    },
+    "architecture": {
+      "const": "context-first"
+    },
+    "workflow": {
+      "type": "string"
+    },
+    "work_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "type": "string"
+    },
+    "target_dir": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "runtime": {
+      "type": "object",
+      "required": [
+        "host_os",
+        "default_shell",
+        "terminal_scope"
+      ],
+      "properties": {
+        "host_os": {
+          "type": "string"
+        },
+        "default_shell": {
+          "type": "string"
+        },
+        "terminal_scope": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "tool_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "verification_commands": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "human_check_required_when": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

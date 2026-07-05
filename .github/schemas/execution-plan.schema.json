@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Context First Execution Plan",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "architecture",
+    "work_id",
+    "source_workflow",
+    "target_workflow",
+    "created_at",
+    "status",
+    "required_dispatcher_contexts",
+    "required_environment",
+    "handoff_context",
+    "validation_context",
+    "source_artifacts",
+    "stop_conditions",
+    "next_commands"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "artifact_type": {
+      "const": "execution-plan"
+    },
+    "architecture": {
+      "const": "context-first"
+    },
+    "work_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_workflow": {
+      "type": "string"
+    },
+    "target_workflow": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "ready-for-human-check",
+        "approved",
+        "blocked",
+        "complete"
+      ]
+    },
+    "required_dispatcher_contexts": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "environment-selection",
+          "workflow-selection",
+          "tool-selection",
+          "runtime-context",
+          "execution-plan"
+        ]
+      }
+    },
+    "required_environment": {
+      "type": "string"
+    },
+    "handoff_context": {
+      "type": "string"
+    },
+    "validation_context": {
+      "type": "string"
+    },
+    "source_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "stop_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_commands": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

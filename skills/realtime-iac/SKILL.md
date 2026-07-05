@@ -39,6 +39,26 @@ The harness must reject the order when:
 
 Do not treat chat history as a substitute for an accepted requirement document.
 
+## Context First Environment Gate
+
+Before `/realtime-iac` design, generation, Docker Desktop validation, Linux runtime validation, or integration validation, the work directory must have a Docker environment-selection context.
+
+Create or refresh the context:
+
+```powershell
+aiwfctl env select docker --work-id <receipt-id>
+```
+
+Then verify it:
+
+```powershell
+uv run python runtime/workflow/context_first.py `
+  --work-dir work/<receipt-id> `
+  require-environment --environment docker
+```
+
+If the context is missing or the selected environment is not `docker`, stop before IaC design and ask the human to select the correct environment. Do not infer Docker availability from chat history, OS name, or prior runs.
+
 ## Required Shared Artifacts
 
 Do not proceed to IaC design or generation unless these shared artifacts exist in the accepted requirement document or work artifacts:
@@ -86,13 +106,14 @@ The AI must not infer software components, port numbers, communication routes, p
 ## Workflow
 
 1. Run `/pre-development-preparation`.
-2. Determine repository mode from `Repository Control`:
+2. Run the Context First Environment Gate and require `environment-selection.environment == docker`.
+3. Determine repository mode from `Repository Control`:
    - `existing`: sync the target repository, create a GitHub Issue, then create `feature/issue-<issue-number>`.
    - `precreated-new`: use a GitHub repository that the human has already created, prepare `work/<receipt-id>/source/repository/` as the first content workspace, then push the initial branch before creating the issue branch.
-3. Run `/rag-load` before design. Derive retrieval queries from the runtime platform, network/security area, deployment target, observability area, prior incidents, and known target repository or planned repository name.
-4. Confirm the required shared artifacts and software inventory. If they are absent or contradictory, stop and write `open-questions.md`.
-5. Run `/realtime-iac` only after relevant RAG context and shared artifacts are summarized.
-6. Create the IaC design set before implementation:
+4. Run `/rag-load` before design. Derive retrieval queries from the runtime platform, network/security area, deployment target, observability area, prior incidents, and known target repository or planned repository name.
+5. Confirm the required shared artifacts and software inventory. If they are absent or contradictory, stop and write `open-questions.md`.
+6. Run `/realtime-iac` only after relevant RAG context and shared artifacts are summarized.
+7. Create the IaC design set before implementation:
    - `requirements.md`
    - `network-design.md`
    - `security-design.md`
@@ -101,14 +122,14 @@ The AI must not infer software components, port numbers, communication routes, p
    - `docker-compose-design.md`
    - `observability-design.md`
    - `monitoring-policy.md`
-7. Run the Boilerplate Template Selection Gate. If realtime gateway infrastructure matches `templates/boilerplates/realtime-gateway-infra-template/`, copy it to the target IaC destination and edit only the copy. If it does not match, record `decision: traditional-coding`.
-8. Generate IaC artifacts only from approved designs and the approved boilerplate selection result.
-9. For `precreated-new` repository mode, confirm the GitHub repository already exists, push the initial branch after human approval, create the GitHub Issue with `[IaC]` prefix, then create `feature/issue-<issue-number>` from the pushed initial branch.
-10. Run security review before local runtime tests.
-11. Validate in this order: Docker Desktop, Linux runtime, integration.
-12. Create documentation and handoff artifacts.
-13. Preserve artifacts under `work/<receipt-id>/` and target repository `docs/evidence/issue-<issue-number>/`.
-14. Record decisions, QA, findings, test evidence, RAG context references, specialist review references, boilerplate selection result, and handoff context as JSON where schemas exist.
+8. Run the Boilerplate Template Selection Gate. If realtime gateway infrastructure matches `templates/boilerplates/realtime-gateway-infra-template/`, copy it to the target IaC destination and edit only the copy. If it does not match, record `decision: traditional-coding`.
+9. Generate IaC artifacts only from approved designs and the approved boilerplate selection result.
+10. For `precreated-new` repository mode, confirm the GitHub repository already exists, push the initial branch after human approval, create the GitHub Issue with `[IaC]` prefix, then create `feature/issue-<issue-number>` from the pushed initial branch.
+11. Run security review before local runtime tests.
+12. Validate in this order: Docker Desktop, Linux runtime, integration.
+13. Create documentation and handoff artifacts.
+14. Preserve artifacts under `work/<receipt-id>/` and target repository `docs/evidence/issue-<issue-number>/`.
+15. Record decisions, QA, findings, test evidence, RAG context references, specialist review references, boilerplate selection result, and handoff context as JSON where schemas exist.
 
 ## Boilerplate Template Selection Gate
 

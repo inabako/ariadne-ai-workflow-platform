@@ -21,6 +21,7 @@ from runtime.common import (  # noqa: E402
     utc_now_iso,
     write_json,
 )
+from runtime.workflow.context_first import register_context  # noqa: E402
 
 REQUIREMENT_EXTENSIONS = {".md", ".markdown", ".txt"}
 
@@ -277,6 +278,46 @@ def initialize_context(
     )
 
 
+def register_initial_context_manifest(repo_root: Path, work_dir: Path, receipt_id: str) -> None:
+    context_dir = work_dir / "context"
+    registrations = [
+        (
+            "agent-context",
+            context_dir / "agent-context.json",
+            True,
+            ".github/schemas/agent-context.schema.json",
+        ),
+        (
+            "artifact-index",
+            context_dir / "artifact-index.json",
+            True,
+            ".github/schemas/artifact-index.schema.json",
+        ),
+        (
+            "handoff-package",
+            context_dir / "handoff-package.json",
+            False,
+            ".github/schemas/handoff-package.schema.json",
+        ),
+        ("qa-records", context_dir / "qa-records.json", False, ""),
+        ("finding-records", context_dir / "finding-records.json", False, ""),
+        ("decision-records", context_dir / "decision-records.json", False, ""),
+        ("test-evidence", context_dir / "test-evidence.json", False, ""),
+    ]
+    for context_type, path, required, schema in registrations:
+        register_context(
+            repo_root,
+            work_dir,
+            work_id=receipt_id,
+            context_type=context_type,
+            path=path,
+            required=required,
+            generated_by="runtime-intake",
+            owner="workflow",
+            schema=schema,
+        )
+
+
 def run(args: argparse.Namespace) -> dict[str, object]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     receipt_id = args.receipt_id or make_receipt_id(
@@ -348,6 +389,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
     handoff_data["artifacts"] = accepted_files
     write_json(context_dir / "handoff-package.json", handoff_data)
     write_json(context_dir / "artifact-index.json", artifact_index)
+    register_initial_context_manifest(repo_root, work_dir, receipt_id)
 
     return {
         "receipt_id": receipt_id,

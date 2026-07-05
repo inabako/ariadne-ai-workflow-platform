@@ -124,6 +124,7 @@ Before starting `/realtime-iac`, create:
 
 ```text
 work/<receipt-id>/context/realtime-iac-handoff.json
+work/<receipt-id>/context/execution-plan.json
 ```
 
 The handoff must include:
@@ -138,6 +139,25 @@ The handoff must include:
 - required human approvals
 - recommended `/realtime-iac` next command
 - boilerplate template selection expectation for realtime gateway infrastructure
+
+Create and register the handoff context and execution plan with the runtime helper:
+
+```powershell
+uv run python runtime/workflow/iac_handoff_context.py `
+  --work-id <receipt-id> `
+  --validator-judgment <pass|conditional-pass|fail> `
+  --source-artifact work/<receipt-id>/design-document/shared-artifacts-index.md
+```
+
+The helper must register both `realtime-iac-handoff` and `execution-plan` in `work/<receipt-id>/context/context-manifest.json`.
+Before actually starting `/realtime-iac`, verify the Docker environment context:
+
+```powershell
+aiwfctl env select docker --work-id <receipt-id>
+uv run python runtime/workflow/context_first.py `
+  --work-dir work/<receipt-id> `
+  require-environment --environment docker
+```
 
 ## Stop Rules
 

@@ -1,0 +1,238 @@
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+from typing import Any, Sequence
+
+if __package__ in {None, ""}:
+    sys.path.append(str(Path(__file__).resolve().parents[2]))
+
+from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.rag import build_index, chunk_documents, embed_chunks, normalize_documents  # noqa: E402
+from runtime.rag import standardize_corrective_report_names  # noqa: E402
+from runtime.workflow.context_first import register_context  # noqa: E402
+
+
+def resolve_repo_path(repo_root: Path, value: str) -> Path:
+    path = Path(value)
+    return path if path.is_absolute() else repo_root / path
+
+
+def resolve_work_dir(repo_root: Path, work_id: str, work_dir: str) -> Path | None:
+    if work_dir:
+        raw = Path(work_dir)
+        return raw if raw.is_absolute() else repo_root / raw
+    if work_id:
+        return repo_root / "work" / work_id
+    return None
+
+
+def stage_record(name: str, result: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "name": name,
+        "status": "completed",
+        "result": result,
+    }
+
+
+def should_standardize(args: argparse.Namespace) -> bool:
+    if args.skip_standardize:
+        return False
+    if args.standardize_filenames:
+        return True
+    return args.document_type == "corrective-action-report" and "corrective-action-report" in args.source_dir.replace("\\", "/")
+
+
+def build_run_artifact(
+    repo_root: Path,
+    args: argparse.Namespace,
+    stages: list[dict[str, Any]],
+) -> dict[str, Any]:
+    normalize_result = next((item["result"] for item in stages if item["name"] == "normalize-documents"), {})
+    chunk_result = next((item["result"] for item in stages if item["name"] == "chunk-documents"), {})
+    index_result = next((item["result"] for item in stages if item["name"] == "build-index"), {})
+    embedding_result = next((item["result"] for item in stages if item["name"] == "embed-chunks"), {})
+    source_dir = resolve_repo_path(repo_root, args.source_dir).resolve()
+    normalized_dir = resolve_repo_path(repo_root, args.normalized_dir).resolve()
+    chunks_dir = resolve_repo_path(repo_root, args.chunks_dir).resolve()
+    indexes_dir = resolve_repo_path(repo_root, args.indexes_dir).resolve()
+    embeddings_output = resolve_repo_path(repo_root, args.embeddings_output).resolve()
+    human_check_reasons: list[str] = []
+    if args.clean_output:
+        human_check_reasons.append("clean-output was used for generated RAG artifact directories.")
+    if should_standardize(args):
+        human_check_reasons.append("source report filenames may be standardized before normalization.")
+    return {
+        "schema_version": "1.0",
+        "artifact_type": "rag-build-run",
+        "architecture": "context-first",
+        "created_at": utc_now_iso(),
+        "status": "completed",
+        "pipeline": "file-based-rag-build",
+        "work_id": args.work_id,
+        "inputs": {
+            "source_dir": relative_to_repo(repo_root, source_dir),
+            "document_type": args.document_type,
+            "standardize_filenames": should_standardize(args),
+            "clean_output": bool(args.clean_output),
+        },
+        "outputs": {
+            "normalized_dir": relative_to_repo(repo_root, normalized_dir),
+            "chunks_dir": relative_to_repo(repo_root, chunks_dir),
+            "indexes_dir": relative_to_repo(repo_root, indexes_dir),
+            "embeddings_output": relative_to_repo(repo_root, embeddings_output),
+            "document_count": normalize_result.get("document_count", 0),
+            "chunk_count": chunk_result.get("chunk_count", 0),
+            "embedding_count": embedding_result.get("embedding_count", 0),
+            "documents_index": index_result.get("documents_index", ""),
+            "chunks_index": index_result.get("chunks_index", ""),
+        },
+        "stages": stages,
+        "human_check_required": bool(human_check_reasons),
+        "human_check_reasons": human_check_reasons,
+    }
+
+
+def register_rag_build_context(
+    repo_root: Path,
+    args: argparse.Namespace,
+    artifact_path: Path,
+) -> None:
+    work_dir = resolve_work_dir(repo_root, args.work_id, args.work_dir)
+    if work_dir is None:
+        return
+    work_id = args.work_id or work_dir.name
+    register_context(
+        repo_root,
+        work_dir,
+        work_id=work_id,
+        context_type="rag-build-run",
+        path=artifact_path,
+        required=False,
+        generated_by="runtime-rag-build",
+        owner="workflow",
+        schema=".github/schemas/rag-build-run.schema.json",
+    )
+
+
+def run(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    stages: list[dict[str, Any]] = []
+
+    if should_standardize(args):
+        standardize_result = standardize_corrective_report_names.run(
+            argparse.Namespace(
+                source_dir=args.source_dir,
+                repo_root=str(repo_root),
+                replace_references=args.replace_references,
+                random_length=args.random_length,
+            )
+        )
+        stages.append(stage_record("standardize-corrective-report-filenames", standardize_result))
+
+    normalize_result = normalize_documents.run(
+        argparse.Namespace(
+            source_dir=args.source_dir,
+            output_dir=args.normalized_dir,
+            document_type=args.document_type,
+            repo_root=str(repo_root),
+            project=args.project,
+            repository=args.repository,
+            branch=args.branch,
+            commit=args.commit,
+            status=args.status,
+            clean_output=args.clean_output,
+        )
+    )
+    stages.append(stage_record("normalize-documents", normalize_result))
+
+    chunk_result = chunk_documents.run(
+        argparse.Namespace(
+            input_dir=args.normalized_dir,
+            output_dir=args.chunks_dir,
+            chunk_size=args.chunk_size,
+            chunk_overlap=args.chunk_overlap,
+            repo_root=str(repo_root),
+            clean_output=args.clean_output,
+        )
+    )
+    stages.append(stage_record("chunk-documents", chunk_result))
+
+    index_result = build_index.run(
+        argparse.Namespace(
+            normalized_dir=args.normalized_dir,
+            chunks_dir=args.chunks_dir,
+            output_dir=args.indexes_dir,
+            repo_root=str(repo_root),
+        )
+    )
+    stages.append(stage_record("build-index", index_result))
+
+    embedding_result = embed_chunks.run(
+        argparse.Namespace(
+            chunks_index=str(resolve_repo_path(repo_root, args.indexes_dir) / "chunks.jsonl"),
+            output=args.embeddings_output,
+            dimensions=args.embedding_dimensions,
+            repo_root=str(repo_root),
+        )
+    )
+    stages.append(stage_record("embed-chunks", embedding_result))
+
+    artifact = build_run_artifact(repo_root, args, stages)
+    artifact_path = resolve_repo_path(repo_root, args.output).resolve()
+    write_json(artifact_path, artifact)
+    register_rag_build_context(repo_root, args, artifact_path)
+    return {
+        "status": "completed",
+        "rag_build_run": relative_to_repo(repo_root, artifact_path),
+        "document_count": artifact["outputs"]["document_count"],
+        "chunk_count": artifact["outputs"]["chunk_count"],
+        "embedding_count": artifact["outputs"]["embedding_count"],
+        "stages": [item["name"] for item in stages],
+    }
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Run the file-based RAG build pipeline and register Context First output.")
+    parser.add_argument("--repo-root", default="")
+    parser.add_argument("--work-id", default="")
+    parser.add_argument("--work-dir", default="")
+    parser.add_argument("--source-dir", default="rag/corrective-action-report")
+    parser.add_argument("--document-type", default="corrective-action-report")
+    parser.add_argument("--normalized-dir", default="rag/normalized")
+    parser.add_argument("--chunks-dir", default="rag/chunks")
+    parser.add_argument("--indexes-dir", default="rag/indexes")
+    parser.add_argument("--embeddings-output", default="rag/embeddings/chunks-embeddings.jsonl")
+    parser.add_argument("--output", default="rag/retrieval/rag-build-run-latest.json")
+    parser.add_argument("--project", default="")
+    parser.add_argument("--repository", default="")
+    parser.add_argument("--branch", default="")
+    parser.add_argument("--commit", default="")
+    parser.add_argument("--status", default="draft")
+    parser.add_argument("--chunk-size", type=int, default=1800)
+    parser.add_argument("--chunk-overlap", type=int, default=180)
+    parser.add_argument("--embedding-dimensions", type=int, default=768)
+    parser.add_argument("--clean-output", action="store_true")
+    parser.add_argument("--standardize-filenames", action="store_true")
+    parser.add_argument("--skip-standardize", action="store_true")
+    parser.add_argument("--replace-references", action="store_true")
+    parser.add_argument("--random-length", type=int, default=8, choices=range(5, 9))
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    try:
+        result = run(args)
+    except Exception as exc:  # pragma: no cover - CLI boundary
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0 if result.get("status") != "failed" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import sys
 from pathlib import Path
 from typing import Any, Sequence
@@ -10,7 +11,9 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from runtime.common import find_repo_root, read_json, relative_to_repo  # noqa: E402
+from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.workflow import dispatcher_context  # noqa: E402
+from runtime.workflow.context_first import register_context  # noqa: E402
 
 ANSI_YELLOW = "\033[33m"
 ANSI_RESET = "\033[0m"
@@ -20,12 +23,26 @@ def registry_path(repo_root: Path) -> Path:
     return repo_root / "runtime" / "registries" / "workflow_help.json"
 
 
+def environment_registry_path(repo_root: Path) -> Path:
+    return repo_root / "runtime" / "registries" / "workflow_environment_profiles.json"
+
+
 def load_registry(repo_root: Path) -> dict[str, Any]:
     data = read_json(registry_path(repo_root), default={})
     if not isinstance(data, dict):
         raise ValueError("workflow help registry must be a JSON object.")
     data.setdefault("commands", [])
     data.setdefault("extensions", [])
+    return data
+
+
+def load_environment_registry(repo_root: Path) -> dict[str, Any]:
+    data = read_json(environment_registry_path(repo_root), default={})
+    if not isinstance(data, dict):
+        raise ValueError("workflow environment profiles registry must be a JSON object.")
+    data.setdefault("environments", [])
+    data.setdefault("profiles", [])
+    data.setdefault("mappings", [])
     return data
 
 
@@ -96,6 +113,578 @@ def search_extensions(registry: dict[str, Any], keywords: list[str]) -> list[dic
         if all(term in blob for term in terms):
             matches.append(extension)
     return sorted(matches, key=extension_key)
+
+
+def profile_key(profile: dict[str, Any]) -> str:
+    return str(profile.get("id", "")).lower()
+
+
+def environment_key(environment: dict[str, Any]) -> str:
+    return str(environment.get("name", "")).lower()
+
+
+def environment_names(registry: dict[str, Any]) -> list[str]:
+    return [str(environment.get("name", "")) for environment in sorted(registry.get("environments", []), key=environment_key)]
+
+
+def find_public_environment(registry: dict[str, Any], value: str) -> dict[str, Any]:
+    target = value.strip().lower().lstrip("/")
+    for environment in registry.get("environments", []):
+        if target == str(environment.get("name", "")).lower().lstrip("/"):
+            return environment
+    raise KeyError(f"Unknown environment: {value}")
+
+
+def find_public_environment_by_backend(registry: dict[str, Any], backend: str) -> dict[str, Any] | None:
+    target = backend.strip().lower()
+    for environment in registry.get("environments", []):
+        if target == str(environment.get("backend", "")).lower():
+            return environment
+    return None
+
+
+def find_environment_profile(registry: dict[str, Any], value: str) -> dict[str, Any]:
+    target = value.strip().lower().lstrip("/")
+    for profile in registry.get("profiles", []):
+        names = [profile.get("id", ""), *profile.get("aliases", [])]
+        if target in {str(name).lower().lstrip("/") for name in names}:
+            return profile
+    raise KeyError(f"Unknown environment profile: {value}")
+
+
+def profile_by_id(registry: dict[str, Any], profile_id: str) -> dict[str, Any]:
+    for profile in registry.get("profiles", []):
+        if profile.get("id") == profile_id:
+            return profile
+    raise KeyError(f"Unknown environment profile id: {profile_id}")
+
+
+def environment_mapping_matches(mapping: dict[str, Any], target: str) -> bool:
+    normalized_target = target.strip().lower().lstrip("/")
+    subject = str(mapping.get("subject", "")).strip().lower().lstrip("/")
+    subject_type = mapping.get("subject_type", "")
+    if subject_type in {"command", "extension", "subworkflow"}:
+        return normalized_target == subject
+    if subject_type == "keyword":
+        words = {word.lower() for word in subject.replace("/", " ").replace("-", " ").split() if word.strip()}
+        target_words = {word.lower() for word in normalized_target.replace("/", " ").replace("-", " ").split() if word.strip()}
+        return bool(words & target_words)
+    return False
+
+
+def select_environment(registry: dict[str, Any], target: str) -> dict[str, Any]:
+    try:
+        environment = find_public_environment(registry, target)
+        profile = profile_by_id(registry, environment["backend"])
+        return {
+            "status": "selected",
+            "target": target,
+            "environment": environment,
+            "mapping": {
+                "subject_type": "environment",
+                "subject": environment["name"],
+                "profiles": [environment["backend"]],
+                "selection_reason": environment.get("purpose", ""),
+                "docs": profile.get("docs", []),
+            },
+            "profiles": [profile],
+            "human_check_required": False,
+            "human_check_reasons": [],
+        }
+    except KeyError:
+        pass
+
+    matches = [mapping for mapping in registry.get("mappings", []) if environment_mapping_matches(mapping, target)]
+    explicit_matches = [mapping for mapping in matches if mapping.get("subject_type") != "keyword"]
+    if explicit_matches:
+        matches = explicit_matches
+    elif matches:
+        return {
+            "status": "human-check-required",
+            "target": target,
+            "mapping": None,
+            "profiles": [profile_by_id(registry, profile_id) for mapping in matches for profile_id in mapping.get("profiles", [])],
+            "candidate_mappings": matches,
+            "candidate_environments": [
+                find_public_environment_by_backend(registry, profile_id)
+                for mapping in matches
+                for profile_id in mapping.get("profiles", [])
+                if find_public_environment_by_backend(registry, profile_id)
+            ],
+            "human_check_required": True,
+            "human_check_reasons": [
+                "環境名ではなくtool名またはkeywordに一致しました。利用者向けEnvironment名を指定してください。",
+            ],
+        }
+    if not matches:
+        return {
+            "status": "human-check-required",
+            "target": target,
+            "mapping": None,
+            "profiles": [],
+            "human_check_required": True,
+            "human_check_reasons": [
+                "実行環境を特定できません。workflow名、extension名、または利用者向けEnvironment名を明示してください。",
+                "Windows / WSL / Docker のどれを使うべきか判断できません。",
+            ],
+        }
+    if len(matches) > 1:
+        return {
+            "status": "human-check-required",
+            "target": target,
+            "mapping": None,
+            "profiles": [profile_by_id(registry, profile_id) for mapping in matches for profile_id in mapping.get("profiles", [])],
+            "candidate_environments": [
+                find_public_environment_by_backend(registry, profile_id)
+                for mapping in matches
+                for profile_id in mapping.get("profiles", [])
+                if find_public_environment_by_backend(registry, profile_id)
+            ],
+            "candidate_mappings": matches,
+            "human_check_required": True,
+            "human_check_reasons": [
+                "複数の環境候補に一致しました。推奨環境を人間確認してください。",
+            ],
+        }
+    mapping = matches[0]
+    profiles = [profile_by_id(registry, profile_id) for profile_id in mapping.get("profiles", [])]
+    environment = find_public_environment_by_backend(registry, profiles[0]["id"]) if profiles else None
+    return {
+        "status": "selected",
+        "target": target,
+        "environment": environment,
+        "mapping": mapping,
+        "profiles": profiles,
+        "human_check_required": False,
+        "human_check_reasons": [],
+    }
+
+
+def environment_selection_record(registry: dict[str, Any], target: str) -> dict[str, Any]:
+    selection = select_environment(registry, target)
+    return {
+        "schema_version": "1.0",
+        "artifact_type": "workflow-environment-selection",
+        "created_at": utc_now_iso(),
+        **selection,
+    }
+
+
+def environment_backend(environment: dict[str, Any]) -> str:
+    return str(environment.get("backend", ""))
+
+
+def environment_profile(registry: dict[str, Any], environment: dict[str, Any]) -> dict[str, Any]:
+    return profile_by_id(registry, environment_backend(environment))
+
+
+def format_env_usage() -> str:
+    return "\n".join(
+        [
+            "Environment Management",
+            "",
+            "Commands",
+            "  list      利用可能な環境一覧を表示する",
+            "  show      指定した環境の詳細を表示する",
+            "  select    作業に使用する環境を選択する",
+            "  check     select と同じ。実行前確認用の別名",
+            "",
+            "Examples",
+            "  aiwfctl env list",
+            "  aiwfctl env show gui-mode",
+            "  aiwfctl env select gui-mode",
+            "  aiwfctl env select web-svg --work-id issue-123",
+            "",
+            "Rule",
+            "  Environment名は gui-mode / web-svg / docker のような目的ベース名を指定します。",
+            "  windows-msys2-gui などのBackend名は表示情報であり、利用者が直接指定する名前ではありません。",
+        ]
+    ) + "\n"
+
+
+def format_environment_list(registry: dict[str, Any]) -> str:
+    lines = ["Available Environments", ""]
+    for environment in sorted(registry.get("environments", []), key=environment_key):
+        lines.extend(
+            [
+                str(environment.get("name", "")),
+                f"  Backend : {environment.get('backend', '')}",
+                f"  Purpose : {environment.get('purpose', '')}",
+                "",
+            ]
+        )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def format_public_environment_detail(registry: dict[str, Any], environment: dict[str, Any]) -> str:
+    profile = environment_profile(registry, environment)
+    recommended = "\n".join(f"  - {item}" for item in environment.get("recommended_for", [])) or "  - なし"
+    tools = "\n".join(f"  - {item}" for item in profile.get("primary_tools", [])) or "  - なし"
+    examples = "\n".join(f"  {item}" for item in environment.get("example_commands", [])) or "  なし"
+    notes = "\n".join(f"  - {item}" for item in environment.get("notes", [])) or "  - なし"
+    docs = "\n".join(f"  - {item}" for item in profile.get("docs", [])) or "  - なし"
+    context_example = {
+        "schema_version": "1.0",
+        "selected_at": "...",
+        "selected_by": "dispatcher",
+        "selection_mode": "manual",
+        "environment": environment.get("name", ""),
+        "backend": environment.get("backend", ""),
+        "reason": environment.get("purpose", ""),
+        "work_id": "issue-123",
+    }
+    return "\n".join(
+        [
+            f"Environment : {environment.get('name', '')}",
+            "",
+            "Backend",
+            f"  {environment.get('backend', '')}",
+            "",
+            "Purpose",
+            f"  {environment.get('purpose', '')}",
+            "",
+            "Recommended for",
+            recommended,
+            "",
+            "Required Tools",
+            tools,
+            "",
+            "Example Commands",
+            examples,
+            "",
+            "Notes",
+            notes,
+            "",
+            "Context Output",
+            "",
+            "Path",
+            "  work/<work-id>/context/environment-selection.json",
+            "",
+            "JSON",
+            *[f"  {line}" for line in json.dumps(context_example, ensure_ascii=False, indent=2).splitlines()],
+            "",
+            "Docs",
+            docs,
+        ]
+    ) + "\n"
+
+
+def format_unknown_environment(registry: dict[str, Any], target: str, record: dict[str, Any] | None = None) -> str:
+    candidate_environments = []
+    if record:
+        candidate_environments = [
+            environment for environment in record.get("candidate_environments", []) if isinstance(environment, dict)
+        ]
+    names = [str(environment.get("name", "")) for environment in candidate_environments] or environment_names(registry)
+    lines = [
+        "Error",
+        f"  Unknown environment : {target}",
+        "",
+        "Reason",
+        f"  {target} appears to be a tool/framework/workflow hint, not necessarily a public Environment name.",
+        "",
+        "Available Environments",
+        "",
+    ]
+    if candidate_environments:
+        for environment in candidate_environments:
+            lines.extend(
+                [
+                    f"  {environment.get('name', '')}",
+                    f"    Reason: {environment.get('purpose', '')}",
+                ]
+            )
+    else:
+        lines.extend(f"  {name}" for name in names)
+    lines.extend(
+        [
+            "",
+            "Action Required",
+            "  Human Check:",
+            f"    aiwfctl env select {names[0]} --work-id <work-id>" if names else "    aiwfctl env list",
+        ]
+    )
+    if record and record.get("human_check_reasons"):
+        lines.extend(["", "Human Check"])
+        lines.extend(f"  - {reason}" for reason in record.get("human_check_reasons", []))
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def run_environment_quick_checks(repo_root: Path, profile: dict[str, Any]) -> dict[str, Any]:
+    runtime_tools = repo_root / "runtime" / "tools"
+    path_entries = [Path(entry).resolve() for entry in os.environ.get("PATH", "").split(os.pathsep) if entry.strip()]
+    runtime_tools_in_path = runtime_tools.resolve() in path_entries
+    tool_names = ["aiwfctl"]
+    for tool in profile.get("primary_tools", []):
+        normalized = str(tool).strip()
+        if normalized in {"Git", "uv", "Python", "Docker", "node", "npm"}:
+            tool_names.append(normalized.lower() if normalized != "Python" else "python")
+    tool_names = sorted(set(tool_names))
+    checks = {
+        "repo_root": str(repo_root),
+        "runtime_tools": relative_to_repo(repo_root, runtime_tools),
+        "runtime_tools_exists": runtime_tools.exists(),
+        "runtime_tools_in_path": runtime_tools_in_path,
+        "aiwfctl_cmd_exists": (runtime_tools / "aiwfctl.cmd").exists(),
+        "workflow_doctor_exists": (repo_root / "runtime" / "workflow" / "workflow_doctor.py").exists(),
+        "tool_presence": {tool: bool(shutil.which(tool)) for tool in tool_names},
+        "path_hint": "aiwfctl path shell",
+    }
+    checks["status"] = "ready" if checks["runtime_tools_exists"] and checks["aiwfctl_cmd_exists"] and checks["workflow_doctor_exists"] else "human-check-required"
+    return checks
+
+
+def enrich_environment_selection(repo_root: Path, registry: dict[str, Any], record: dict[str, Any], *, work_id: str = "") -> dict[str, Any]:
+    profiles = record.get("profiles", [])
+    if profiles:
+        record["initialization"] = {
+            "status": "checked",
+            "scope": "repo-local current session",
+            "checks": run_environment_quick_checks(repo_root, profiles[0]),
+        }
+    else:
+        record["initialization"] = {
+            "status": "human-check-required",
+            "scope": "repo-local current session",
+            "checks": {},
+        }
+    if not record.get("environment") and profiles:
+        record["environment"] = find_public_environment_by_backend(registry, str(profiles[0].get("id", "")))
+    record["workflow_context"] = {
+        "status": "pending" if work_id else "not-written",
+        "path": f"work/{work_id}/context/environment-selection.json" if work_id else "",
+        "reason": "" if work_id else "--work-id が未指定のため固定contextは書き込みません。",
+    }
+    return record
+
+
+def environment_context_record(
+    record: dict[str, Any],
+    *,
+    work_id: str,
+    selected_by: str = "dispatcher",
+    selection_mode: str = "manual",
+) -> dict[str, Any]:
+    environment = record.get("environment") or {}
+    profiles = record.get("profiles", [])
+    profile = profiles[0] if profiles else {}
+    mapping = record.get("mapping") or {}
+    backend = str(environment.get("backend", "") or profile.get("id", ""))
+    status = str(record.get("status", ""))
+    mode = "human-check" if record.get("human_check_required") else selection_mode
+    return {
+        "schema_version": "1.0",
+        "artifact_type": "environment-selection-context",
+        "selected_at": record.get("created_at", utc_now_iso()),
+        "selected_by": selected_by,
+        "selection_mode": mode,
+        "environment": str(environment.get("name", record.get("target", ""))),
+        "backend": backend,
+        "reason": str(mapping.get("selection_reason", "")),
+        "work_id": work_id,
+        "status": status,
+        "human_check_required": bool(record.get("human_check_required", False)),
+        "human_check_reasons": record.get("human_check_reasons", []),
+        "recommended_for": environment.get("recommended_for", []),
+        "required_tools": profile.get("primary_tools", []),
+        "preflight_profile": profile.get("preflight_profile", ""),
+        "context_path": f"work/{work_id}/context/environment-selection.json",
+        "source": {
+            "registry": "runtime/registries/workflow_environment_profiles.json",
+            "schema": ".github/schemas/environment-selection.schema.json",
+        },
+        "initialization": record.get("initialization", {}),
+    }
+
+
+def environment_context_warnings(existing: Any, new_context: dict[str, Any]) -> list[str]:
+    if existing is None or existing == {}:
+        return []
+    if not isinstance(existing, dict):
+        return ["既存のenvironment-selection.jsonがJSON objectではありません。上書き前に内容確認が必要です。"]
+    warnings = []
+    if existing.get("work_id") and existing.get("work_id") != new_context.get("work_id"):
+        warnings.append(
+            f"既存contextのwork_id `{existing.get('work_id')}` と今回のwork_id `{new_context.get('work_id')}` が異なります。"
+        )
+    if existing.get("environment") and existing.get("environment") != new_context.get("environment"):
+        warnings.append(
+            f"既存contextのenvironment `{existing.get('environment')}` と今回のenvironment `{new_context.get('environment')}` が異なります。"
+        )
+    if existing.get("backend") and existing.get("backend") != new_context.get("backend"):
+        warnings.append(
+            f"既存contextのbackend `{existing.get('backend')}` と今回のbackend `{new_context.get('backend')}` が異なります。"
+        )
+    return warnings
+
+
+def format_environment_profile(profile: dict[str, Any]) -> str:
+    docs = "\n".join(f"    - {doc}" for doc in profile.get("docs", [])) or "    - なし"
+    applies = "\n".join(f"    - {item}" for item in profile.get("applies_when", [])) or "    - なし"
+    tools = ", ".join(profile.get("primary_tools", [])) or "なし"
+    verification = "\n".join(f"    - {item}" for item in profile.get("verification", [])) or "    - なし"
+    human = "\n".join(f"    - {item}" for item in profile.get("human_check_required_when", [])) or "    - なし"
+    lines = [
+        f"{profile.get('id', '')}",
+        f"  名称: {profile.get('title', '')}",
+        f"  環境: {profile.get('environment', '')}",
+        f"  Shell: {profile.get('shell', '')}",
+        f"  OS: {profile.get('os', '')}",
+        f"  概要: {profile.get('summary', '')}",
+        f"  主要ツール: {tools}",
+        f"  実行コマンド: {profile.get('run_command', '')}",
+        f"  preflight: {profile.get('preflight_profile', 'なし') or 'なし'}",
+        "  該当条件:",
+        applies,
+        "  実行前確認:",
+        verification,
+        "  Human Check条件:",
+        human,
+        "  docs:",
+        docs,
+    ]
+    return "\n".join(lines)
+
+
+def format_environment_selection(record: dict[str, Any]) -> str:
+    environment = record.get("environment") or {}
+    profiles = record.get("profiles", [])
+    backend = str(environment.get("backend", ""))
+    if not backend and profiles:
+        backend = str(profiles[0].get("id", ""))
+    mapping = record.get("mapping") or {}
+    if record.get("human_check_required"):
+        return format_environment_human_check(record)
+    context = record.get("workflow_context", {})
+    init = record.get("initialization", {})
+    checks = init.get("checks", {}) if isinstance(init, dict) else {}
+    lines = [
+        f"Selected Environment : {environment.get('name', record.get('target', ''))}",
+        f"Backend              : {backend}",
+        f"Reason               : {mapping.get('selection_reason', '')}",
+        f"Work ID              : {record.get('work_id', '') or 'なし'}",
+        f"Workflow Context     : {context.get('path', '') or '未登録'}",
+        "",
+        "Initialization",
+        f"  status              : {init.get('status', 'not-run') if isinstance(init, dict) else 'not-run'}",
+        f"  runtime/tools exists: {str(checks.get('runtime_tools_exists', False)).lower()}",
+        f"  runtime/tools in PATH: {str(checks.get('runtime_tools_in_path', False)).lower()}",
+        f"  aiwfctl.cmd exists  : {str(checks.get('aiwfctl_cmd_exists', False)).lower()}",
+        f"  doctor script exists: {str(checks.get('workflow_doctor_exists', False)).lower()}",
+    ]
+    warnings = context.get("warnings", []) if isinstance(context, dict) else []
+    if warnings:
+        lines.extend(["", "Warnings"])
+        lines.extend(f"  - {warning}" for warning in warnings)
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def format_environment_human_check(record: dict[str, Any]) -> str:
+    lines = [
+        "Environment Human Check Required",
+        "",
+        f"Target : {record.get('target', '')}",
+        f"Status : {record.get('status', '')}",
+        "",
+        "Reasons",
+    ]
+    lines.extend(f"  - {reason}" for reason in record.get("human_check_reasons", []))
+    candidates = [
+        environment for environment in record.get("candidate_environments", []) if isinstance(environment, dict)
+    ]
+    if candidates:
+        lines.extend(["", "Candidate Environments"])
+        for environment in candidates:
+            lines.extend(
+                [
+                    f"  {environment.get('name', '')}",
+                    f"    Backend : {environment.get('backend', '')}",
+                    f"    Purpose : {environment.get('purpose', '')}",
+                ]
+            )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def environment_selection_markdown(record: dict[str, Any]) -> str:
+    return format_environment_selection(record)
+
+
+def write_environment_selection(
+    repo_root: Path,
+    record: dict[str, Any],
+    *,
+    work_id: str = "",
+    output: str = "",
+    selected_by: str = "dispatcher",
+    selection_mode: str = "manual",
+) -> list[str]:
+    written: list[str] = []
+    if work_id:
+        record["work_id"] = work_id
+        base = repo_root / "work" / work_id / "process-report"
+        stamp = local_timestamp()
+        json_path = base / f"environment-selection-{stamp}.json"
+        md_path = base / f"environment-selection-{stamp}.md"
+        context_path = repo_root / "work" / work_id / "context" / "environment-selection.json"
+        context = environment_context_record(
+            record,
+            work_id=work_id,
+            selected_by=selected_by,
+            selection_mode=selection_mode,
+        )
+        existing_context = read_json(context_path, default={}) if context_path.exists() else {}
+        warnings = environment_context_warnings(existing_context, context)
+        if warnings:
+            context["warnings"] = warnings
+        record.setdefault("workflow_context", {})
+        record["workflow_context"].update(
+            {
+                "status": "written",
+                "path": relative_to_repo(repo_root, context_path),
+                "schema": ".github/schemas/environment-selection.schema.json",
+                "warnings": warnings,
+            }
+        )
+        record["context"] = context
+        write_json(json_path, record)
+        write_json(context_path, context)
+        manifest = register_context(
+            repo_root,
+            repo_root / "work" / work_id,
+            work_id=work_id,
+            context_type="environment-selection",
+            path=context_path,
+            required=True,
+            generated_by="environment-dispatcher",
+            owner="dispatcher",
+            schema=".github/schemas/environment-selection.schema.json",
+            status="available" if not context.get("human_check_required") else "human-check-required",
+        )
+        record["context_manifest"] = {
+            "path": relative_to_repo(repo_root, repo_root / "work" / work_id / "context" / "context-manifest.json"),
+            "context_count": len(manifest.get("contexts", [])),
+        }
+        write_json(json_path, record)
+        md_path.parent.mkdir(parents=True, exist_ok=True)
+        md_path.write_text(environment_selection_markdown(record), encoding="utf-8")
+        written.extend(
+            [
+                relative_to_repo(repo_root, json_path),
+                relative_to_repo(repo_root, md_path),
+                relative_to_repo(repo_root, context_path),
+                relative_to_repo(repo_root, repo_root / "work" / work_id / "context" / "context-manifest.json"),
+            ]
+        )
+    if output:
+        output_path = Path(output)
+        output_path = output_path if output_path.is_absolute() else repo_root / output_path
+        if output_path.suffix.lower() == ".json":
+            write_json(output_path, record)
+        else:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(environment_selection_markdown(record), encoding="utf-8")
+        written.append(relative_to_repo(repo_root, output_path))
+    return written
 
 
 def format_arg_table(title: str, args: list[dict[str, Any]]) -> str:
@@ -308,6 +897,36 @@ def build_parser() -> argparse.ArgumentParser:
     markdown = help_sub.add_parser("markdown", help="Write searchable help markdown.")
     markdown.add_argument("--output", default="work/help/ai-workflow-help.md")
     markdown.add_argument("--query", action="append", default=[], help="Filter markdown by keyword. Can be repeated.")
+
+    env_cmd = sub.add_parser("env", help="Select workflow execution environment.")
+    env_sub = env_cmd.add_subparsers(dest="env_command")
+
+    env_sub.add_parser("list", help="List public execution environments.")
+
+    env_show = env_sub.add_parser("show", help="Show one public execution environment.")
+    env_show.add_argument("environment")
+
+    env_select = env_sub.add_parser("select", help="Select an execution environment for a workflow, extension, or keyword.")
+    env_select.add_argument("target")
+    env_select.add_argument("--json", action="store_true", help="Print selection as JSON.")
+    env_select.add_argument("--work-id", default="", help="Write selection artifacts under work/<work-id>/process-report/.")
+    env_select.add_argument("--output", default="", help="Write selection artifact to an explicit .md or .json path.")
+    env_select.add_argument("--selected-by", choices=["dispatcher", "human", "workflow"], default="dispatcher")
+    env_select.add_argument("--selection-mode", choices=["manual", "auto", "human-check"], default="manual")
+
+    env_check = env_sub.add_parser("check", help="Alias of env select for pre-execution checks.")
+    env_check.add_argument("target")
+    env_check.add_argument("--json", action="store_true", help="Print selection as JSON.")
+    env_check.add_argument("--work-id", default="", help="Write selection artifacts under work/<work-id>/process-report/.")
+    env_check.add_argument("--output", default="", help="Write selection artifact to an explicit .md or .json path.")
+    env_check.add_argument("--selected-by", choices=["dispatcher", "human", "workflow"], default="dispatcher")
+    env_check.add_argument("--selection-mode", choices=["manual", "auto", "human-check"], default="manual")
+
+    context_cmd = sub.add_parser("context", help="Create and inspect Context First Dispatcher Context.")
+    context_sub = context_cmd.add_subparsers(dest="context_command")
+    context_init = context_sub.add_parser("init", help="Create workflow/tool/runtime/execution-plan context.")
+    dispatcher_context.add_init_arguments(context_init)
+    context_init.add_argument("--json", action="store_true", help="Print result as JSON.")
     return parser
 
 
@@ -343,6 +962,10 @@ def format_root_usage_warning(color: bool = False) -> str:
             "  aiwfctl help list",
             "  aiwfctl help show /vscode-environment",
             "  aiwfctl help search svg gui",
+            "  aiwfctl env list",
+            "  aiwfctl env select web-svg",
+            "  aiwfctl env select gui-mode",
+            "  aiwfctl context init --work-id issue-123 --workflow /docs-sync",
             "  aiwfctl path check",
             "  aiwfctl path register",
             "  aiwfctl path shell",
@@ -372,6 +995,10 @@ def format_help_usage_warning(color: bool = False) -> str:
             "",
             "PATH登録やsession更新を行う場合:",
             "  aiwfctl path shell",
+            "",
+            "実行環境を選択する場合:",
+            "  aiwfctl env select web-svg",
+            "  aiwfctl context init --work-id issue-123 --workflow /docs-sync",
         ]
     ) + "\n"
 
@@ -383,6 +1010,74 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
     help_command = getattr(args, "help_command", None)
     if command is None:
         return 1, format_root_usage_warning(color=color)
+    if command == "env":
+        environment_registry = load_environment_registry(repo_root)
+        env_command = getattr(args, "env_command", None)
+        if env_command is None:
+            return 0, format_env_usage()
+        if env_command == "list":
+            return 0, format_environment_list(environment_registry)
+        if env_command == "show":
+            try:
+                environment = find_public_environment(environment_registry, args.environment)
+            except KeyError as exc:
+                return 1, format_unknown_environment(environment_registry, args.environment)
+            return 0, format_public_environment_detail(environment_registry, environment)
+        if env_command in {"select", "check"}:
+            record = environment_selection_record(environment_registry, args.target)
+            record = enrich_environment_selection(repo_root, environment_registry, record, work_id=args.work_id)
+            written = write_environment_selection(
+                repo_root,
+                record,
+                work_id=args.work_id,
+                output=args.output,
+                selected_by=args.selected_by,
+                selection_mode=args.selection_mode,
+            )
+            if written:
+                record["written"] = written
+            if getattr(args, "json", False):
+                return (0 if not record.get("human_check_required") else 2), json.dumps(record, ensure_ascii=False, indent=2) + "\n"
+            if record.get("human_check_required"):
+                return 2, format_unknown_environment(environment_registry, args.target, record)
+            output = format_environment_selection(record)
+            if written:
+                output += "\n### Written Artifacts\n\n" + "\n".join(f"- `{path}`" for path in written) + "\n"
+            return (0 if not record.get("human_check_required") else 2), output
+        return 1, f"Unknown env command: {env_command}\n"
+
+    if command == "context":
+        context_command = getattr(args, "context_command", None)
+        if context_command is None:
+            return 1, (
+                "Context Management\n\n"
+                "Usage:\n"
+                "  aiwfctl context init --work-id <work-id> --workflow <workflow>\n\n"
+                "Example:\n"
+                "  aiwfctl context init --work-id issue-123 --workflow /docs-sync --tool gh:read-only:GitHub metadata collection\n"
+            )
+        if context_command == "init":
+            result = dispatcher_context.run_init(args)
+            if getattr(args, "json", False):
+                return (0 if result.get("status") != "human-check-required" else 2), json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+            lines = [
+                "Context First Dispatcher Context",
+                "",
+                f"Status        : {result.get('status', '')}",
+                f"Work ID       : {result.get('work_id', '')}",
+                f"Workflow      : {result.get('workflow', '')}",
+                f"Manifest      : {result.get('manifest_path', '')}",
+                "",
+                "Contexts",
+            ]
+            lines.extend(f"  - {item}" for item in result.get("contexts", []))
+            written = result.get("written", [])
+            if written:
+                lines.extend(["", "Written Artifacts"])
+                lines.extend(f"  - {item}" for item in written)
+            return (0 if result.get("status") != "human-check-required" else 2), "\n".join(lines).rstrip() + "\n"
+        return 1, f"Unknown context command: {context_command}\n"
+
     if command != "help":
         return 1, f"Unknown command: {command}\n"
     if help_command is None:

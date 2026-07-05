@@ -40,6 +40,15 @@ Report output directory:
 C:\github\intent-driven-robotics-ai-workflow\rag\corrective-action-report
 ```
 
+After writing the report, register it as Context First artifact:
+
+```powershell
+python runtime/workflow/corrective_action_report.py register `
+  --repository "<target repository>" `
+  --target-branch "<target branch>" `
+  --report-path "rag/corrective-action-report/<report>.md"
+```
+
 Recommended filename:
 
 ```text

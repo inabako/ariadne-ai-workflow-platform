@@ -49,6 +49,12 @@ Parent workflow creates Issue work area
 
 ## Runtime
 
+実行前に推奨環境を確認します。
+
+```powershell
+aiwfctl env select gui-mode
+```
+
 入力directoryを準備:
 
 ```powershell

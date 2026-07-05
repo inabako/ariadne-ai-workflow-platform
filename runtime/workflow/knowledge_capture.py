@@ -10,6 +10,13 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.workflow.context_first import (  # noqa: E402
+    context_entry,
+    context_path,
+    load_manifest,
+    manifest_path_for_work_dir,
+    register_context,
+)
 
 
 RAG_SOURCE_DIRS = ["process-report", "test-specifications", "test-evidence"]
@@ -58,6 +65,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repo-root", default=None)
     parser.add_argument("--source-dir", default=None)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--allow-legacy-scm-fallback",
+        action="store_true",
+        help="Allow old work folders without manifest scm-state. Close archives still allow fallback automatically.",
+    )
     return parser
 
 
@@ -170,6 +182,48 @@ def latest_issue_title(repo_root: Path, work_dir: Path, base_work_id: str = "") 
     return ""
 
 
+def read_context_with_fallback(
+    repo_root: Path,
+    work_dir: Path,
+    *,
+    context_type: str,
+    fallback_relative_path: str,
+    require_manifest: bool = False,
+    allow_legacy_fallback: bool = False,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    manifest_path = manifest_path_for_work_dir(work_dir)
+    manifest_exists = manifest_path.exists()
+    if manifest_exists:
+        manifest = load_manifest(work_dir)
+        entry = context_entry(manifest, context_type)
+        if entry:
+            path = context_path(repo_root, entry)
+            data = read_json(path, default={}) or {}
+            return data if isinstance(data, dict) else {}, {
+                "context_type": context_type,
+                "mode": "manifest",
+                "path": relative_to_repo(repo_root, path),
+                "manifest_path": relative_to_repo(repo_root, manifest_path),
+                "found": path.exists(),
+            }
+    fallback_path = work_dir / fallback_relative_path
+    if require_manifest and not allow_legacy_fallback:
+        reason = "context-manifest missing" if not manifest_exists else f"{context_type} not registered in context-manifest"
+        raise RuntimeError(
+            f"Context First gate: knowledge-capture requires manifest {context_type}. "
+            f"{reason}. Use --allow-legacy-scm-fallback only for old work folders, or run close archive fallback for archived work: {fallback_path}"
+        )
+    data = read_json(fallback_path, default={}) or {}
+    return data if isinstance(data, dict) else {}, {
+        "context_type": context_type,
+        "mode": "fallback",
+        "path": relative_to_repo(repo_root, fallback_path),
+        "manifest_path": relative_to_repo(repo_root, manifest_path) if manifest_exists else "",
+        "found": fallback_path.exists(),
+        "reason": "context-manifest missing or context entry not registered",
+    }
+
+
 def build_pr_title(issue: str, repository: str, issue_title: str = "") -> str:
     if issue_title:
         return issue_title
@@ -267,7 +321,15 @@ def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
     if not work_dir.exists():
         raise FileNotFoundError(f"Work directory does not exist: {repo_root / 'work' / args.issue}")
 
-    scm_state = read_json(work_dir / "context" / "scm-state.json", default={}) or {}
+    archive_mode = work_dir.resolve() == close_target.resolve()
+    scm_state, scm_resolution = read_context_with_fallback(
+        repo_root,
+        work_dir,
+        context_type="scm-state",
+        fallback_relative_path="context/scm-state.json",
+        require_manifest=not archive_mode,
+        allow_legacy_fallback=archive_mode or bool(getattr(args, "allow_legacy_scm_fallback", False)),
+    )
     source_dir = Path(args.source_dir).resolve() if args.source_dir else work_dir / "source" / "repository"
     repository = args.repository or scm_state.get("github_repo") or scm_state.get("repository") or ""
     branch = args.branch or scm_state.get("working_branch") or scm_state.get("current_branch") or ""
@@ -450,6 +512,13 @@ python runtime/workflow/close_archive.py audit `
             "policy": "report-only",
         },
         "base_work_reset": base_work_status,
+        "context_resolution": {
+            "scm_state": scm_resolution,
+            "manifest_present": manifest_path_for_work_dir(work_dir).exists(),
+            "manifest_scm_state_required": not archive_mode,
+            "legacy_scm_fallback_allowed": archive_mode
+            or bool(getattr(args, "allow_legacy_scm_fallback", False)),
+        },
         "human_actions": [
             f"docs evidenceをcommitした後に {branch or 'feature/issue-XXX'} をpushする。",
             f"承認済み候補について work/{args.issue} からRAG buildを実行する。",
@@ -460,6 +529,17 @@ python runtime/workflow/close_archive.py audit `
     }
     if not args.dry_run:
         write_json(output_paths["knowledge_capture_json"], result)
+        register_context(
+            repo_root,
+            work_dir,
+            work_id=args.issue,
+            context_type="knowledge-capture",
+            path=output_paths["knowledge_capture_json"],
+            required=False,
+            generated_by="knowledge-capture",
+            owner="workflow",
+            schema=".github/schemas/knowledge-capture.schema.json",
+        )
     return result
 
 

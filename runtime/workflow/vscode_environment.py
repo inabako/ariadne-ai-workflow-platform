@@ -13,6 +13,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo, slugify, utc_now_iso, write_json  # noqa: E402
+from runtime.workflow.context_first import register_context  # noqa: E402
 
 
 DEFAULT_DRAFT_DIR = "work/requirements/devlop-edit-draft"
@@ -105,7 +106,65 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
     }
     state_path = base / "context" / "vscode-environment-state.json"
     write_json(state_path, state)
-    return {"work_dir": relative_to_repo(repo_root, base), "state_path": relative_to_repo(repo_root, state_path), **state}
+    runtime_context = {
+        "schema_version": "1.0",
+        "artifact_type": "runtime-context",
+        "architecture": "context-first",
+        "workflow": "vscode-environment",
+        "work_id": args.work_id,
+        "mode": args.mode,
+        "target_dir": str(target_dir) if target_dir else "",
+        "created_at": utc_now_iso(),
+        "runtime": {
+            "host_os": "Windows",
+            "default_shell": "PowerShell",
+            "terminal_scope": "VSCode integrated terminal",
+        },
+        "tool_paths": [
+            "runtime/tools",
+        ],
+        "verification_commands": [
+            "aiwfctl path check",
+            "aiwfctl help list",
+            "uv run python runtime/workflow/validate_vscode_workspace.py --workspace .",
+            "uv run python runtime/workflow/workflow_doctor.py --fail-on-warning",
+        ],
+        "human_check_required_when": [
+            "User Path, default terminal, extensions, Docker Desktop, or local tool installation changes affect the human environment.",
+            "A target workspace has existing .vscode files that would be overwritten.",
+            "custom-design mode requests personal paths, special terminals, or non-standard toolchains.",
+        ],
+    }
+    runtime_context_path = base / "context" / "runtime-context.json"
+    write_json(runtime_context_path, runtime_context)
+    register_context(
+        repo_root,
+        base,
+        work_id=args.work_id,
+        context_type="vscode-environment-state",
+        path=state_path,
+        required=True,
+        generated_by="vscode-environment",
+        owner="workflow",
+        schema=".github/schemas/vscode-environment-state.schema.json",
+    )
+    register_context(
+        repo_root,
+        base,
+        work_id=args.work_id,
+        context_type="runtime-context",
+        path=runtime_context_path,
+        required=True,
+        generated_by="vscode-environment",
+        owner="workflow",
+        schema=".github/schemas/runtime-context.schema.json",
+    )
+    return {
+        "work_dir": relative_to_repo(repo_root, base),
+        "state_path": relative_to_repo(repo_root, state_path),
+        "runtime_context_path": relative_to_repo(repo_root, runtime_context_path),
+        **state,
+    }
 
 
 def draft_template_text() -> str:

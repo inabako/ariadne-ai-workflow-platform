@@ -95,9 +95,34 @@ def python_module_check(module: str, *, required: bool, install_hint: str, insta
     )
 
 
+def docker_compose_check(*, required: bool) -> Check:
+    if shutil.which("docker") is None:
+        return Check(
+            id="docker-plugin:compose",
+            label="Docker Compose",
+            kind="docker-plugin",
+            required=required,
+            ok=False,
+            detected="",
+            install_hint="Install Docker Desktop with Compose support, then verify: docker compose version.",
+            install_command="winget install --id Docker.DockerDesktop -e",
+        )
+    completed = run_command(["docker", "compose", "version"])
+    return Check(
+        id="docker-plugin:compose",
+        label="Docker Compose",
+        kind="docker-plugin",
+        required=required,
+        ok=completed.returncode == 0,
+        detected=completed.stdout.strip() if completed.returncode == 0 else completed.stderr.strip(),
+        install_hint="Install Docker Desktop with Compose support, then verify: docker compose version.",
+        install_command="winget install --id Docker.DockerDesktop -e",
+    )
+
+
 def localty_protocol_check(args: argparse.Namespace, protocol_dir: Path | None, bash_path: Path) -> Check:
     verify_code = "from localty_protocol.telemetry import UDP_PORTS; print(UDP_PORTS)"
-    use_msys2_python = args.profile == "localty-msys2" and bash_path.exists()
+    use_msys2_python = args.profile in {"localty-msys2", "gui-pyqt"} and bash_path.exists()
     if use_msys2_python:
         env = {**os.environ, "MSYSTEM": "MINGW64", "CHERE_INVOKING": "1"}
         completed = run_command([str(bash_path), "-lc", f"python -c '{verify_code}'"], env=env)
@@ -209,16 +234,16 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
         which_check("python", required=False, install_hint="Optional when uv provides Python. Install Python or use uv run python."),
     ]
 
-    if args.profile in {"corrective-action-fix", "localty-msys2"}:
+    if args.profile in {"corrective-action-fix", "localty-msys2", "gui-pyqt"}:
         checks.append(path_check(
             bash_path,
             check_id="path:msys2-bash",
             label="MSYS2 bash.exe",
-            required=args.profile == "localty-msys2",
+            required=args.profile in {"localty-msys2", "gui-pyqt"},
             install_hint="Install MSYS2 to C:\\msys64 or pass --msys2-root.",
         ))
 
-    if args.profile == "localty-msys2":
+    if args.profile in {"localty-msys2", "gui-pyqt"}:
         if source_dir:
             checks.append(path_check(
                 source_dir / "pyproject.toml",
@@ -305,6 +330,43 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
                 required=True,
                 install_hint="Pass --source-dir pointing at the target workspace root.",
             ))
+
+    if args.profile == "web-nextjs":
+        checks.append(which_check(
+            "node",
+            required=True,
+            install_hint="Install Node.js LTS. Prefer the target repository's documented version policy when available.",
+            install_command="winget install --id OpenJS.NodeJS.LTS -e",
+        ))
+        checks.append(which_check(
+            "npm",
+            required=True,
+            install_hint="Install npm with Node.js, then verify npm --version.",
+            install_command="winget install --id OpenJS.NodeJS.LTS -e",
+        ))
+        checks.append(which_check(
+            "npx",
+            required=False,
+            install_hint="Required when running Playwright through npx.",
+            install_command="winget install --id OpenJS.NodeJS.LTS -e",
+        ))
+        if source_dir:
+            checks.append(path_check(
+                source_dir / "package.json",
+                check_id="path:target-package-json",
+                label="target package.json",
+                required=False,
+                install_hint="Pass --source-dir pointing at the Next.js / web app root when validating an existing app.",
+            ))
+
+    if args.profile == "docker-compose":
+        checks.append(which_check(
+            "docker",
+            required=True,
+            install_hint="Install Docker Desktop and ensure docker is on PATH.",
+            install_command="winget install --id Docker.DockerDesktop -e",
+        ))
+        checks.append(docker_compose_check(required=True))
 
     return checks
 
@@ -402,7 +464,18 @@ def install_missing(checks: list[Check]) -> list[dict[str, Any]]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Check workflow environment dependencies and produce an install plan.")
-    parser.add_argument("--profile", choices=["corrective-action-fix", "localty-msys2", "vscode-environment"], default="corrective-action-fix")
+    parser.add_argument(
+        "--profile",
+        choices=[
+            "corrective-action-fix",
+            "localty-msys2",
+            "gui-pyqt",
+            "web-nextjs",
+            "docker-compose",
+            "vscode-environment",
+        ],
+        default="corrective-action-fix",
+    )
     parser.add_argument("--work-id", default="")
     parser.add_argument("--source-dir", default="")
     parser.add_argument("--protocol-dir", default="")

@@ -26,6 +26,7 @@ from runtime.common import (  # noqa: E402
     write_json,
 )
 from runtime.scm.scm_utils import current_branch, current_commit, github_token_git_env, is_git_repository, require_success, run_git  # noqa: E402
+from runtime.workflow.context_first import register_context  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -108,7 +109,19 @@ def prepare_repository(args: argparse.Namespace) -> dict[str, Any]:
     }
 
     context_dir = work_dir / "context"
-    write_json(context_dir / "scm-state.json", state)
+    scm_state_path = context_dir / "scm-state.json"
+    write_json(scm_state_path, state)
+    register_context(
+        repo_root,
+        work_dir,
+        work_id=args.work_id,
+        context_type="scm-state",
+        path=scm_state_path,
+        required=True,
+        generated_by="runtime-scm",
+        owner="workflow",
+        schema=".github/schemas/scm-state.schema.json",
+    )
 
     agent_context = read_json(context_dir / "agent-context.json", default={}) or {}
     project_name = agent_context.get("project", {}).get("name", args.work_id)

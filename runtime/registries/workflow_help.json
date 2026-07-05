@@ -75,7 +75,8 @@
       "prerequisites": [
         "work/requirements/ に完成版要件定義書が1件だけある。",
         "通信仕様、port定義、network boundary、安全traceabilityの材料がある。",
-        "IaCへ渡す前にShared Artifactsの不足をHuman Gateで止められる。"
+        "IaCへ渡す前にShared Artifactsの不足をHuman Gateで止められる。",
+        "Realtime IaCへ渡す前に execution-plan.json と realtime-iac-handoff.json を作成できる。"
       ],
       "arguments": [
         {
@@ -89,10 +90,11 @@
         "新システムworkflowの入力を受け付ける。",
         "Shared Artifactsを作成し、IaC readinessを検証する。",
         "realtime-iac workflowへ渡す前に不足QAを止める。",
+        "runtime/workflow/iac_handoff_context.py で execution-plan と realtime-iac-handoff をContext Manifestへ登録する。",
         "Docker、systemd、network、security、observabilityの設計へ接続する。"
       ],
       "examples": ["/robotics-new-system-iac"],
-      "related_runtime": ["runtime/intake/intake_requirements.py", "runtime/workflow/workflow_state.py"],
+      "related_runtime": ["runtime/intake/intake_requirements.py", "runtime/workflow/workflow_state.py", "runtime/workflow/iac_handoff_context.py", "runtime/workflow/context_first.py"],
       "docs": ["docs/workflows/robotics-new-system-iac.md", "docs/workflows/realtime-iac.md"]
     },
     {
@@ -160,7 +162,7 @@
         "不明領域がある場合は外部Web RAGや専門reviewを補助参照する。"
       ],
       "examples": ["/corrective-action-report localty-system-gui develop"],
-      "related_runtime": ["runtime/rag/rag_dispatcher.py"],
+      "related_runtime": ["runtime/rag/rag_dispatcher.py", "runtime/workflow/corrective_action_report.py"],
       "docs": ["docs/workflows/corrective-action-report.md"]
     },
     {
@@ -291,6 +293,7 @@
         "特殊なterminal、Docker、extension、launch、local path、multi-root要件がある場合はcustom-design modeとして扱い、草案またはHuman質問で補う。",
         "既存 .vscode 設定を無条件に上書きしない。",
         "repo-local command toolがある場合は、tools directoryをVSCode統合ターミナルのPATHへ追加する。",
+        "runtime-context.json でterminal、tool path、検証コマンド、Human Check条件を確認する。",
         "不足toolのinstallは人間承認後に行う。"
       ],
       "arguments": [
@@ -308,12 +311,13 @@
         "settings、tasks、launch、extensions、terminal profilesを設計する。",
         "既存設定を無条件に上書きしない。",
         "runtime/tools/*.cmd などのrepo-local command toolがある場合、terminal.integrated.env.windows.Pathへ追加する。",
+        "work/<work-id>/context/runtime-context.json にterminal scope、tool path、verification commandを記録する。",
         "長いinline PowerShellではなくrepo-local helperを優先する。",
         "検証結果とevidenceを保存する。"
       ],
       "examples": ["/vscode-environment", "/vscode-environment C:/github/localty-system-gui", "/vscode-environment --custom-design"],
-      "related_runtime": ["runtime/workflow/vscode_environment.py", "runtime/workflow/validate_vscode_workspace.py"],
-      "docs": ["docs/workflows/vscode-environment.md", "docs/reference/vscode-environment.md"]
+      "related_runtime": ["runtime/workflow/vscode_environment.py", "runtime/workflow/context_first.py", "runtime/workflow/validate_vscode_workspace.py"],
+      "docs": ["docs/workflows/vscode-environment.md", "docs/reference/vscode-environment.md", "docs/reference/environment-selection.md"]
     },
     {
       "command": "/realtime-iac",
@@ -324,6 +328,7 @@
       "prompt_path": ".github/prompts/realtime-iac.prompt.md",
       "overview": "リアルタイムシステム向けIaCを設計、生成、レビュー、検証、文書化する。",
       "prerequisites": [
+        "aiwfctl env select docker --work-id <work-id> を実行し、environment-selection.environment が docker である。",
         "通信仕様、port定義、network boundary、ADR、安全traceabilityなどのShared Artifactsがある。",
         "secretや.env実値は生成しない前提で進める。",
         "外部I/O、実機、network影響がある検証はHuman Gateに従う。"
@@ -337,13 +342,14 @@
         }
       ],
       "details": [
+        "IaC設計前に Context First gate で docker environment-selection を検証する。",
         "requirements、network/security、runtime、observabilityを設計する。",
         "Docker Compose、systemd、firewall、reverse proxy、logrotateなどを生成する。",
         "Docker Desktop、Linux runtime、integration testを検証する。",
         "secretや.env実値は生成しない。"
       ],
       "examples": ["/realtime-iac work/issue-12/shared-artifacts/"],
-      "related_runtime": ["runtime/workflow/workflow_state.py"],
+      "related_runtime": ["runtime/workflow/context_first.py", "runtime/workflow/workflow_state.py"],
       "docs": ["docs/workflows/realtime-iac.md"]
     },
     {
@@ -417,7 +423,7 @@
         "RAG生成物はgit追跡対象にしない。"
       ],
       "examples": ["/rag-build"],
-      "related_runtime": ["runtime/rag/normalize_documents.py", "runtime/rag/chunk_documents.py", "runtime/rag/build_index.py", "runtime/rag/embed_chunks.py"],
+      "related_runtime": ["runtime/rag/rag_build.py", "runtime/rag/normalize_documents.py", "runtime/rag/chunk_documents.py", "runtime/rag/build_index.py", "runtime/rag/embed_chunks.py"],
       "docs": ["docs/workflows/rag-build-load.md", "docs/reference/rag.md"]
     },
     {
@@ -484,6 +490,7 @@
         "Issue作業領域作成後に、対象prefixのSVGをclaimする。",
         "SVG構造を解析し、Semantic Layout Graph、Widget Mapping、Layout Specを作る。",
         "PyQt6候補とQTest候補をgenerated artifactとして作る。",
+        "実行環境は aiwfctl env select gui-mode で windows-msys2-gui を確認する。",
         "生成候補はtarget sourceへ自動コピーしない。親workflowのreview後に採用する。",
         "SVGが無い場合はskippedとして親workflowへ戻る。"
       ],
@@ -494,7 +501,7 @@
         "aiwfctl help show gui-mode"
       ],
       "related_runtime": ["runtime/workflow/gui_mode.py"],
-      "docs": ["docs/workflows/gui-mode.md"]
+      "docs": ["docs/workflows/gui-mode.md", "docs/reference/environment-selection.md"]
     },
     {
       "name": "web-svg-layout-mode",
@@ -515,6 +522,7 @@
         "Issue作業領域作成後に、WEB_* prefixのSVGをclaimする。",
         "SVGからroute layout map、component mapping、responsive layout specを作る。",
         "React候補とPlaywright候補をgenerated artifactとして作る。",
+        "実行環境は aiwfctl env select web-svg で wsl-ubuntu-web を確認する。",
         "既存画面への最小修正候補としてreviewし、無条件コピーしない。",
         "WEB_* SVGが無い場合はskippedとして親workflowへ戻る。"
       ],
@@ -525,7 +533,7 @@
         "aiwfctl help show web-svg"
       ],
       "related_runtime": ["runtime/workflow/web_svg_layout_mode.py"],
-      "docs": ["docs/workflows/web-svg-layout-mode.md"]
+      "docs": ["docs/workflows/web-svg-layout-mode.md", "docs/reference/environment-selection.md"]
     }
   ]
 }

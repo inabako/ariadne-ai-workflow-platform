@@ -13,6 +13,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.workflow.context_first import context_entry, context_path, load_manifest, manifest_path_for_work_dir, register_context  # noqa: E402
 
 
 DEFAULT_QUERIES = [
@@ -93,6 +94,54 @@ def collect_work_context(work_dir: Path) -> str:
             if text:
                 parts.append(f"# {path.name}\n{text}")
     return "\n\n".join(parts)
+
+
+def default_work_dir(repo_root: Path, args: argparse.Namespace) -> Path | None:
+    if args.work_dir:
+        return resolve_path(repo_root, args.work_dir)
+    if args.work_id:
+        return repo_root / "work" / args.work_id
+    return None
+
+
+def execution_plan_reference(repo_root: Path, work_dir: Path | None) -> str:
+    if work_dir is None:
+        return ""
+    manifest_path = manifest_path_for_work_dir(work_dir)
+    if manifest_path.exists():
+        manifest = load_manifest(work_dir)
+        entry = context_entry(manifest, "execution-plan")
+        if entry:
+            return relative_to_repo(repo_root, context_path(repo_root, entry))
+    fallback = work_dir / "context" / "execution-plan.json"
+    return relative_to_repo(repo_root, fallback) if fallback.exists() else ""
+
+
+def execution_plan_gate(repo_root: Path, args: argparse.Namespace, work_dir: Path | None) -> dict[str, Any]:
+    if not args.work_id:
+        return {
+            "status": "not-required",
+            "human_check_required": False,
+            "execution_plan": "",
+            "reason": "work-id was not provided",
+        }
+    execution_plan = execution_plan_reference(repo_root, work_dir)
+    if execution_plan:
+        return {
+            "status": "ready",
+            "human_check_required": False,
+            "execution_plan": execution_plan,
+            "reason": "",
+        }
+    return {
+        "status": "human-check-required",
+        "human_check_required": True,
+        "execution_plan": "",
+        "reason": "work-id was provided but execution-plan context was not found",
+        "human_check_reasons": [
+            "Confirm the RAG query plan manually because execution-plan context is missing.",
+        ],
+    }
 
 
 def unique_keep_order(values: list[str]) -> list[str]:
@@ -275,9 +324,25 @@ def build_dispatch_plan(args: argparse.Namespace, repo_root: Path) -> dict[str, 
         data.setdefault("schema_version", "1.0")
         data.setdefault("plan_id", str(uuid.uuid4()))
         data.setdefault("queries", [])
+        if args.work_id and "execution_plan_gate" not in data:
+            gate = execution_plan_gate(repo_root, args, default_work_dir(repo_root, args))
+            if data.get("execution_plan") and not gate.get("execution_plan"):
+                gate = {
+                    "status": "ready",
+                    "human_check_required": False,
+                    "execution_plan": str(data.get("execution_plan", "")),
+                    "reason": "execution-plan was provided by the existing dispatch plan",
+                }
+            data.setdefault("execution_plan", gate.get("execution_plan", ""))
+            data["execution_plan_gate"] = gate
+            data["human_check_required"] = bool(gate.get("human_check_required", False))
+            data["human_check_reasons"] = gate.get("human_check_reasons", [])
         return data
 
     query_items, semantic_hints = derive_query_items(args, repo_root)
+    work_dir = default_work_dir(repo_root, args)
+    gate = execution_plan_gate(repo_root, args, work_dir)
+    execution_plan = str(gate.get("execution_plan", ""))
     return {
         "schema_version": "1.0",
         "artifact_type": "rag-dispatch-plan",
@@ -299,7 +364,12 @@ def build_dispatch_plan(args: argparse.Namespace, repo_root: Path) -> dict[str, 
         "inputs": {
             "context_files": args.context_file,
             "work_dir": args.work_dir,
+            "execution_plan": execution_plan,
         },
+        "execution_plan": execution_plan,
+        "execution_plan_gate": gate,
+        "human_check_required": bool(gate.get("human_check_required", False)),
+        "human_check_reasons": gate.get("human_check_reasons", []),
     }
 
 
@@ -311,6 +381,43 @@ def write_dispatch_plan(repo_root: Path, output_dir: Path, plan: dict[str, Any],
     plan_path = output_dir / f"{plan_id}.json"
     write_json(plan_path, plan)
     return relative_to_repo(repo_root, plan_path)
+
+
+def register_rag_contexts(
+    repo_root: Path,
+    args: argparse.Namespace,
+    *,
+    dispatch_plan_path: str,
+    dispatch_result_path: str = "",
+) -> None:
+    work_dir = default_work_dir(repo_root, args)
+    if work_dir is None or not args.work_id:
+        return
+    context_dir = work_dir / "context"
+    context_dir.mkdir(parents=True, exist_ok=True)
+    register_context(
+        repo_root,
+        work_dir,
+        work_id=args.work_id,
+        context_type="rag-dispatch-plan",
+        path=resolve_path(repo_root, dispatch_plan_path),
+        required=False,
+        generated_by="rag-load",
+        owner="workflow",
+        schema=".github/schemas/rag-dispatch-plan.schema.json",
+    )
+    if dispatch_result_path:
+        register_context(
+            repo_root,
+            work_dir,
+            work_id=args.work_id,
+            context_type="rag-load-dispatch",
+            path=resolve_path(repo_root, dispatch_result_path),
+            required=False,
+            generated_by="rag-load",
+            owner="workflow",
+            schema=".github/schemas/rag-load-dispatch.schema.json",
+        )
 
 
 def run_command(command: list[str], cwd: Path) -> dict[str, Any]:
@@ -538,6 +645,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if not query_items:
         raise ValueError("No RAG queries were provided or derived.")
     dispatch_plan_path = write_dispatch_plan(repo_root, output_dir, plan, args.dispatch_plan)
+    register_rag_contexts(repo_root, args, dispatch_plan_path=dispatch_plan_path)
     ensure_indexes(args, repo_root)
 
     retrievals = run_retrievals(args, repo_root, query_items)
@@ -578,17 +686,31 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "queries": query_items,
         "search_mode": args.search_mode,
         "filters": plan.get("metadata", base_filters_from_args(args)),
+        "execution_plan": plan.get("execution_plan", ""),
+        "execution_plan_gate": plan.get("execution_plan_gate", {}),
+        "human_check_required": bool(plan.get("human_check_required", False)),
+        "human_check_reasons": plan.get("human_check_reasons", []),
         "context_packs": context_packs,
         "aggregate_context": aggregate_context,
         "sources": sources,
     }
     write_json(json_path, result)
+    dispatch_result_path = relative_to_repo(repo_root, json_path)
+    register_rag_contexts(
+        repo_root,
+        args,
+        dispatch_plan_path=dispatch_plan_path,
+        dispatch_result_path=dispatch_result_path,
+    )
     if args.write_markdown:
         write_dispatch_markdown(markdown_path, result)
     return {
         "dispatch_plan": dispatch_plan_path,
-        "dispatch_result": relative_to_repo(repo_root, json_path),
+        "dispatch_result": dispatch_result_path,
         "dispatch_markdown": relative_to_repo(repo_root, markdown_path) if args.write_markdown else "",
+        "execution_plan": plan.get("execution_plan", ""),
+        "execution_plan_gate": plan.get("execution_plan_gate", {}),
+        "human_check_required": bool(plan.get("human_check_required", False)),
         "query_count": len(query_items),
         "context_pack_count": len(context_packs),
         "source_count": len(sources),

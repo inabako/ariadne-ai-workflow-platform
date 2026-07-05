@@ -106,6 +106,29 @@ repo root の `runtime/tools` がPATHに入っている場合も、`aiwfctl help
 
 PowerShell のExecutionPolicyに依存しないよう、標準入口は `.ps1` ではなく `.cmd` に統一します。
 
+## Environment Selection
+
+実行環境を選択する場合は `aiwfctl env` を使います。
+
+```powershell
+aiwfctl env
+aiwfctl env list
+aiwfctl env show gui-mode
+aiwfctl env select gui-mode
+aiwfctl env select web-svg
+aiwfctl env select docker
+```
+
+`gui-mode` / `web-svg` / `docker` は利用者向けEnvironment名です。`windows-msys2-gui` などの内部Backend名は表示情報として扱います。
+
+判断不能な場合は `human-check-required` を返します。作業証跡と後続Workflow用contextとして保存する場合は `--work-id` を指定します。
+
+```powershell
+aiwfctl env select gui-mode --work-id issue-123
+```
+
+この場合、詳細ログは `work/<work-id>/process-report/` に、標準Contextは `work/<work-id>/context/environment-selection.json` に保存されます。同時に `work/<work-id>/context/context-manifest.json` へ登録されます。
+
 ## よく使う操作
 
 workflow command 一覧:

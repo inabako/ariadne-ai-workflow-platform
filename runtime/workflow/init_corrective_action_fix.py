@@ -16,6 +16,7 @@ from runtime.common import (  # noqa: E402
     load_env,
     load_artifact_index,
     normalize_repository_value,
+    read_json,
     relative_to_repo,
     repository_to_github_slug,
     slugify,
@@ -23,6 +24,7 @@ from runtime.common import (  # noqa: E402
     utc_now_iso,
     write_json,
 )
+from runtime.workflow.context_first import context_entry, context_path, load_manifest, register_context  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -56,6 +58,155 @@ def repository_name(repository: str, default_owner: str = "") -> str:
     return slugify(name)
 
 
+def report_context_from_work_dir(repo_root: Path, work_dir: Path) -> dict[str, str]:
+    manifest = load_manifest(work_dir)
+    entry = context_entry(manifest, "corrective-action-report")
+    if entry is None:
+        return {}
+    context_file = context_path(repo_root, entry)
+    context = read_json(context_file, default={})
+    if not isinstance(context, dict):
+        return {}
+    report_path = str(context.get("report_path", "")).strip()
+    if not report_path:
+        return {}
+    resolved = Path(report_path)
+    if not resolved.is_absolute():
+        resolved = repo_root / resolved
+    return {
+        "report_path": relative_to_repo(repo_root, resolved),
+        "context_path": relative_to_repo(repo_root, context_file),
+        "resolution": "manifest",
+    }
+
+
+def resolve_report_input(repo_root: Path, args: argparse.Namespace, work_id: str) -> dict[str, str]:
+    if args.report_path:
+        raw_report = Path(args.report_path)
+        report_path = raw_report if raw_report.is_absolute() else repo_root / raw_report
+        return {
+            "report_path": relative_to_repo(repo_root, report_path.resolve()),
+            "context_path": "",
+            "resolution": "argument",
+        }
+    candidate_work_ids = []
+    if args.base_work_id:
+        candidate_work_ids.append(args.base_work_id)
+    candidate_work_ids.append(branch_to_work_id(args.target_branch))
+    candidate_work_ids.append(work_id)
+    seen: set[str] = set()
+    for candidate_work_id in candidate_work_ids:
+        if not candidate_work_id or candidate_work_id in seen:
+            continue
+        seen.add(candidate_work_id)
+        context = report_context_from_work_dir(repo_root, repo_root / "work" / candidate_work_id)
+        if context:
+            return context
+    return {"report_path": "", "context_path": "", "resolution": "missing"}
+
+
+def write_corrective_report_context(
+    repo_root: Path,
+    work_dir: Path,
+    *,
+    work_id: str,
+    repository: str,
+    target_branch: str,
+    report_rel: str,
+    report_resolution: str,
+    source_context_path: str,
+) -> None:
+    if not report_rel:
+        return
+    report_path = Path(report_rel)
+    if not report_path.is_absolute():
+        report_path = repo_root / report_path
+    context_path = work_dir / "context" / "corrective-action-report.json"
+    write_json(
+        context_path,
+        {
+            "schema_version": "1.0",
+            "artifact_type": "corrective-action-report",
+            "architecture": "context-first",
+            "created_at": utc_now_iso(),
+            "repository": repository,
+            "target_branch": target_branch,
+            "target_commit": "",
+            "status": "draft",
+            "report_path": report_rel,
+            "report_filename": report_path.name,
+            "report_exists": report_path.exists(),
+            "rag_candidate": True,
+            "rag_source_path": report_rel,
+            "docs_candidate": False,
+            "finding_summary": {
+                "finding_count": 0,
+                "rag_capture_candidate_count": 0,
+            },
+            "front_matter": {},
+            "resolution": {
+                "mode": report_resolution,
+                "source_context_path": source_context_path,
+            },
+            "source": {
+                "schema": ".github/schemas/corrective-action-report.schema.json",
+                "registered_by": "corrective-action-fix-init",
+            },
+        },
+    )
+    register_context(
+        repo_root,
+        work_dir,
+        work_id=work_id,
+        context_type="corrective-action-report",
+        path=context_path,
+        required=False,
+        generated_by="corrective-action-fix-init",
+        owner="workflow",
+        schema=".github/schemas/corrective-action-report.schema.json",
+    )
+
+
+def register_initial_context_manifest(repo_root: Path, work_dir: Path, work_id: str) -> None:
+    context_dir = work_dir / "context"
+    registrations = [
+        (
+            "agent-context",
+            context_dir / "agent-context.json",
+            True,
+            ".github/schemas/agent-context.schema.json",
+        ),
+        (
+            "artifact-index",
+            context_dir / "artifact-index.json",
+            True,
+            ".github/schemas/artifact-index.schema.json",
+        ),
+        (
+            "handoff-package",
+            context_dir / "handoff-package.json",
+            False,
+            ".github/schemas/handoff-package.schema.json",
+        ),
+        ("qa-records", context_dir / "qa-records.json", False, ""),
+        ("finding-records", context_dir / "finding-records.json", False, ""),
+        ("decision-records", context_dir / "decision-records.json", False, ""),
+        ("test-evidence", context_dir / "test-evidence.json", False, ""),
+    ]
+    for context_type, path, required, schema in registrations:
+        register_context(
+            repo_root,
+            work_dir,
+            work_id=work_id,
+            context_type=context_type,
+            path=path,
+            required=required,
+            generated_by="corrective-action-fix-init",
+            owner="workflow",
+            schema=schema,
+        )
+
+
 def run(args: argparse.Namespace) -> dict[str, object]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     settings = load_env(repo_root)
@@ -75,10 +226,8 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         f"Create corrective action report for {repository} {args.target_branch}, "
         "then implement the approved improvements."
     )
-    report_path = args.report_path
-    report_rel = ""
-    if report_path:
-        report_rel = relative_to_repo(repo_root, Path(report_path).resolve())
+    report_input = resolve_report_input(repo_root, args, work_id)
+    report_rel = report_input["report_path"]
 
     agent_context = {
         "schema_version": "1.0",
@@ -128,6 +277,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
             f"target_repository={repository}",
             f"repository_argument={args.repository}",
             f"target_branch={args.target_branch}",
+            f"report_resolution={report_input['resolution']}",
         ],
         "constraints": [
             "Do not push until the human startup/integration check is explicitly approved.",
@@ -201,6 +351,17 @@ def run(args: argparse.Namespace) -> dict[str, object]:
             },
         )
     write_json(context_dir / "artifact-index.json", index)
+    register_initial_context_manifest(repo_root, work_dir, work_id)
+    write_corrective_report_context(
+        repo_root,
+        work_dir,
+        work_id=work_id,
+        repository=repository,
+        target_branch=args.target_branch,
+        report_rel=report_rel,
+        report_resolution=report_input["resolution"],
+        source_context_path=report_input["context_path"],
+    )
     return {
         "work_id": work_id,
         "work_dir": relative_to_repo(repo_root, work_dir),
@@ -208,6 +369,8 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         "target_branch": args.target_branch,
         "base_work_id": args.base_work_id,
         "report_path": report_rel,
+        "report_resolution": report_input["resolution"],
+        "report_context_path": report_input["context_path"],
     }
 
 

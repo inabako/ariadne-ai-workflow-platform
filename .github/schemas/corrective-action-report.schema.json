@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Corrective Action Report Context",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "architecture",
+    "created_at",
+    "repository",
+    "target_branch",
+    "report_path",
+    "report_exists",
+    "rag_candidate",
+    "source"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "artifact_type": { "type": "string", "const": "corrective-action-report" },
+    "architecture": { "type": "string", "const": "context-first" },
+    "created_at": { "type": "string" },
+    "repository": { "type": "string" },
+    "target_branch": { "type": "string" },
+    "target_commit": { "type": "string" },
+    "status": { "type": "string" },
+    "report_path": { "type": "string" },
+    "report_filename": { "type": "string" },
+    "report_exists": { "type": "boolean" },
+    "rag_candidate": { "type": "boolean" },
+    "rag_source_path": { "type": "string" },
+    "docs_candidate": { "type": "boolean" },
+    "finding_summary": {
+      "type": "object",
+      "properties": {
+        "finding_count": { "type": "integer", "minimum": 0 },
+        "rag_capture_candidate_count": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "front_matter": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "source": {
+      "type": "object",
+      "required": ["schema"],
+      "properties": {
+        "schema": { "type": "string" },
+        "registered_by": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

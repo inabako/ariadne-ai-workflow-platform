@@ -28,6 +28,13 @@ from runtime.common import (  # noqa: E402
     write_json,
     write_markdown_bom,
 )
+from runtime.workflow.context_first import (  # noqa: E402
+    context_entry,
+    context_path,
+    load_manifest,
+    manifest_path_for_work_dir,
+    register_context,
+)
 
 
 SCAN_MODES = ["repository", "issue", "pull-request", "recent", "full"]
@@ -109,6 +116,127 @@ def rag_source_report_name(topic: str) -> str:
     timestamp = local_timestamp().replace("_", "")
     random_id = "".join(secrets.choice(RAG_SOURCE_ID_ALPHABET) for _ in range(6))
     return f"{timestamp}_{random_id}_{slugify(topic)}.md"
+
+
+def github_operation_gate(
+    *,
+    work_id: str,
+    repository: str,
+    repair_mode: str,
+    rag_output: bool,
+) -> dict[str, Any]:
+    mutation_allowed = repair_mode == "apply"
+    reasons = []
+    if mutation_allowed:
+        reasons.append("repair-mode apply may execute GitHub mutation and requires item-level human approval.")
+    if rag_output:
+        reasons.append("RAG publication requires human approval before publication.")
+    return {
+        "schema_version": "1.0",
+        "artifact_type": "github-operation-gate",
+        "workflow": "github-knowledge-maintenance",
+        "work_id": work_id,
+        "created_at": utc_now_iso(),
+        "repository": repository,
+        "read_only_allowed": True,
+        "mutation_allowed": mutation_allowed,
+        "clone_allowed": False,
+        "human_check_required": bool(reasons),
+        "human_check_reasons": reasons,
+        "rules": [
+            "Read-only GitHub CLI/API collection may proceed.",
+            "GitHub mutation requires human-reviewed sync plan and explicit approval.",
+            "Clone requires separate human approval when API evidence is insufficient.",
+        ],
+    }
+
+
+def github_tool_selection(
+    *,
+    work_id: str,
+    repair_mode: str,
+) -> dict[str, Any]:
+    tools = [
+        {
+            "name": "gh",
+            "mode": "read-only",
+            "purpose": "Collect GitHub Issue, PR, label, comment, release, and metadata evidence.",
+            "required": True,
+            "source": "github-knowledge-maintenance",
+            "human_check_required": False,
+        },
+        {
+            "name": "github-api",
+            "mode": "read-only",
+            "purpose": "Collect GitHub metadata when gh output needs API-backed detail.",
+            "required": False,
+            "source": "github-knowledge-maintenance",
+            "human_check_required": False,
+        },
+    ]
+    if repair_mode == "apply":
+        tools.append(
+            {
+                "name": "gh",
+                "mode": "mutation",
+                "purpose": "Apply human-approved GitHub documentation sync actions.",
+                "required": False,
+                "source": "github-knowledge-maintenance",
+                "human_check_required": True,
+            }
+        )
+    return {
+        "schema_version": "1.0",
+        "artifact_type": "tool-selection",
+        "architecture": "context-first",
+        "selected_at": utc_now_iso(),
+        "selected_by": "dispatcher",
+        "selection_mode": "manual",
+        "work_id": work_id,
+        "workflow": "github-knowledge-maintenance",
+        "status": "selected",
+        "tools": tools,
+        "human_check_required": any(item["human_check_required"] for item in tools),
+        "human_check_reasons": [
+            f"Tool `{item['name']}` is selected for mutation mode."
+            for item in tools
+            if item["human_check_required"]
+        ],
+        "source": {
+            "registry": "runtime/registries/workflow_help.json",
+            "schema": ".github/schemas/tool-selection.schema.json",
+        },
+    }
+
+
+def register_github_knowledge_contexts(repo_root: Path, work_dir: Path, work_id: str) -> None:
+    context_dir = work_dir / "context"
+    registrations = [
+        ("agent-context", context_dir / "agent-context.json", True, ".github/schemas/agent-context.schema.json"),
+        ("artifact-index", context_dir / "artifact-index.json", True, ".github/schemas/artifact-index.schema.json"),
+        ("handoff-package", context_dir / "handoff-package.json", False, ".github/schemas/handoff-package.schema.json"),
+        ("tool-selection", context_dir / "tool-selection.json", True, ".github/schemas/tool-selection.schema.json"),
+        ("github-operation-gate", context_dir / "github-operation-gate.json", True, ".github/schemas/github-operation-gate.schema.json"),
+        ("github-knowledge-analysis", context_dir / "github-knowledge-analysis.json", False, ".github/schemas/github-knowledge-analysis.schema.json"),
+        ("qa-records", context_dir / "qa-records.json", False, ".github/schemas/qa-record.schema.json"),
+        ("finding-records", context_dir / "finding-records.json", False, ".github/schemas/finding-record.schema.json"),
+        ("decision-records", context_dir / "decision-records.json", False, ".github/schemas/decision-record.schema.json"),
+        ("test-evidence", context_dir / "test-evidence.json", False, ".github/schemas/test-evidence.schema.json"),
+    ]
+    for context_type, path, required, schema in registrations:
+        if not path.exists():
+            continue
+        register_context(
+            repo_root,
+            work_dir,
+            work_id=work_id,
+            context_type=context_type,
+            path=path,
+            required=required,
+            generated_by="github-knowledge-maintenance",
+            owner="workflow" if context_type not in {"tool-selection"} else "dispatcher",
+            schema=schema,
+        )
 
 
 def init_work(args: argparse.Namespace) -> dict[str, Any]:
@@ -229,6 +357,19 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
             ],
         },
     )
+    write_json(
+        context_dir / "tool-selection.json",
+        github_tool_selection(work_id=work_id, repair_mode=args.repair_mode),
+    )
+    write_json(
+        context_dir / "github-operation-gate.json",
+        github_operation_gate(
+            work_id=work_id,
+            repository=repository,
+            repair_mode=args.repair_mode,
+            rag_output=bool(args.rag_output),
+        ),
+    )
 
     index = load_artifact_index(work_dir, repo_name, "github-knowledge-maintenance")
     upsert_artifact(
@@ -249,6 +390,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
         },
     )
     write_json(context_dir / "artifact-index.json", index)
+    register_github_knowledge_contexts(repo_root, work_dir, work_id)
     return {
         "work_id": work_id,
         "work_dir": relative_to_repo(repo_root, work_dir),
@@ -351,6 +493,18 @@ def register_artifact(repo_root: Path, work_dir: Path, artifact_id: str, title: 
         },
     )
     write_json(work_dir / "context" / "artifact-index.json", index)
+    if path.name == "github-knowledge-analysis.json":
+        register_context(
+            repo_root,
+            work_dir,
+            work_id=work_dir.name,
+            context_type="github-knowledge-analysis",
+            path=path,
+            required=True,
+            generated_by="github-knowledge-maintenance",
+            owner="workflow",
+            schema=".github/schemas/github-knowledge-analysis.schema.json",
+        )
 
 
 def create_analysis_template(args: argparse.Namespace) -> dict[str, Any]:
@@ -437,6 +591,53 @@ def load_analysis(repo_root: Path, work_id: str, raw_path: str) -> tuple[Path, P
     if not isinstance(analysis, dict):
         raise ValueError(f"GitHub knowledge analysis must be a JSON object: {path}")
     return work_dir, path, analysis
+
+
+def require_github_operation_gate(
+    repo_root: Path,
+    work_dir: Path,
+    *,
+    require_mutation_gate: bool = False,
+    require_rag_gate: bool = False,
+) -> dict[str, Any]:
+    manifest_path = manifest_path_for_work_dir(work_dir)
+    manifest = load_manifest(work_dir)
+    gate_entry = context_entry(manifest, "github-operation-gate")
+    tool_entry = context_entry(manifest, "tool-selection")
+    missing = []
+    if gate_entry is None:
+        missing.append("github-operation-gate")
+    if require_mutation_gate and tool_entry is None:
+        missing.append("tool-selection")
+    if missing:
+        raise RuntimeError(
+            "Context First gate: github-knowledge-maintenance requires "
+            + ", ".join(missing)
+            + f" before this operation. Re-run init or repair the manifest: {manifest_path}"
+        )
+
+    gate_path = context_path(repo_root, gate_entry) if gate_entry else work_dir / "context" / "github-operation-gate.json"
+    gate = read_json(gate_path, default={}) or {}
+    tool_path = context_path(repo_root, tool_entry) if tool_entry else work_dir / "context" / "tool-selection.json"
+    tool_selection = read_json(tool_path, default={}) or {}
+    reasons = []
+    if require_mutation_gate and not bool(gate.get("mutation_allowed")):
+        reasons.append("github-operation-gate does not allow mutation.")
+    if require_mutation_gate and not bool(tool_selection.get("human_check_required")):
+        reasons.append("tool-selection must mark GitHub mutation as Human Check required.")
+    if require_rag_gate and not bool(gate.get("human_check_required")):
+        reasons.append("github-operation-gate must require Human Check for RAG publication.")
+    if reasons:
+        raise RuntimeError("Context First gate: " + " ".join(reasons))
+
+    return {
+        "status": "ready",
+        "manifest_path": relative_to_repo(repo_root, manifest_path),
+        "github_operation_gate": relative_to_repo(repo_root, gate_path),
+        "tool_selection": relative_to_repo(repo_root, tool_path) if tool_entry else "",
+        "require_mutation_gate": require_mutation_gate,
+        "require_rag_gate": require_rag_gate,
+    }
 
 
 def build_repair_plan(analysis: dict[str, Any]) -> str:
@@ -579,6 +780,11 @@ def build_sync_plan(analysis: dict[str, Any]) -> str:
 def create_sync_plan(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     work_dir, analysis_path, analysis = load_analysis(repo_root, args.work_id, args.analysis_path)
+    context_gate = require_github_operation_gate(
+        repo_root,
+        work_dir,
+        require_mutation_gate=str(analysis.get("repair_mode", "proposal")) == "apply",
+    )
     output_path = (
         Path(args.output).resolve()
         if args.output
@@ -590,6 +796,7 @@ def create_sync_plan(args: argparse.Namespace) -> dict[str, Any]:
         "sync_plan": relative_to_repo(repo_root, output_path),
         "analysis_path": relative_to_repo(repo_root, analysis_path),
         "action_count": len(analysis.get("github_sync_actions", []) or []),
+        "context_gate": context_gate,
     }
 
 
@@ -641,6 +848,11 @@ def create_rag_candidate(args: argparse.Namespace) -> dict[str, Any]:
     work_dir, analysis_path, analysis = load_analysis(repo_root, args.work_id, args.analysis_path)
     if args.publish_rag and args.human_check != "approved":
         raise PermissionError("RAG publication requires --human-check approved.")
+    context_gate = require_github_operation_gate(
+        repo_root,
+        work_dir,
+        require_rag_gate=bool(args.publish_rag),
+    )
     topic = args.topic or f"github-knowledge-{repository_name(analysis.get('repository', 'repository'))}"
     if args.output:
         output_path = Path(args.output).resolve()
@@ -654,6 +866,7 @@ def create_rag_candidate(args: argparse.Namespace) -> dict[str, Any]:
         "rag_candidate": relative_to_repo(repo_root, output_path),
         "analysis_path": relative_to_repo(repo_root, analysis_path),
         "published": bool(args.publish_rag),
+        "context_gate": context_gate,
     }
 
 

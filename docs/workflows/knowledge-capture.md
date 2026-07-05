@@ -66,6 +66,20 @@ work/<issue-id>/process-report/knowledge-capture-*.json
 `pull-request-title.md` は、利用可能なGitHub Issue recordのtitleを使います。
 `pull-request-description.md` には、Issueからbranch、test evidence、push、Pull Request、`develop` までのMermaid式sequence diagramを含めます。
 
+## Context First
+
+`/knowledge-capture` は、作業完了時の回収処理として `context-manifest.json` を優先して読みます。
+
+- `scm-state`: manifestに存在する場合はmanifest経由で読みます。古い作業領域では `context/scm-state.json` へfallbackします。
+- `knowledge-capture`: 生成した回収結果をmanifestへ登録し、後続のclose archive / RAG候補抽出が参照できるようにします。
+- `context_resolution`: `scm-state` をmanifestで読んだかfallbackで読んだかを出力JSONへ記録します。
+
+これにより、Context First導入前の既存workも壊さず、導入後のworkではmanifestを第一入力として扱えます。
+
+active workでは、manifest上の `scm-state` を必須にします。
+`work/close/...` のclose archiveは、古い成果物を読めるようにfallbackを継続します。
+旧workを明示的に読む場合は `--allow-legacy-scm-fallback` を付けます。
+
 ## Pull Request
 
 Issue branch push後に、`develop` へPull Requestを送信します。

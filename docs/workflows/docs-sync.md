@@ -41,6 +41,20 @@ feature/issue-<issue-number>
 10. Issue titleをPR titleとして `develop` へPull Requestを作成する。
 11. RAG候補とreport-only close archive準備を確認する。
 
+## Context First
+
+`/docs-sync` は `context-manifest.json` を参照し、以下のContextを登録します。
+
+- `scm-state`: target repository / branch / checkout state
+- `docs-drift-analysis`: docs drift analysis JSON
+- `agent-context`
+- `artifact-index`
+- `handoff-package`
+
+新規workでは、`analysis-template` 作成前に `scm-state` が必要です。
+`context/scm-state.json` が存在する場合はmanifestへ登録して進みます。
+旧運用のworkを明示的に読む場合だけ、`--allow-missing-scm-state` を指定します。
+
 ## Issue Title
 
 docs同期は改善扱いとして、Issue titleに次のprefixを付けます。

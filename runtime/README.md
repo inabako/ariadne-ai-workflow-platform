@@ -60,6 +60,12 @@ runtime/rag/standardize_corrective_report_names.py
 
 `preflight.py` は、workflow や target repository の作業前に必要な executable / Python module / Python package / MSYS2 package / fallback support repository を確認し、不足時は install list を `work/<id>/process-report/` に出力します。`--install --human-check approved` が指定された場合のみ install を実行します。Localty の MSYS2 profile では公開済み `localty-system-protocol>=0.1.0` を優先し、取得できない場合だけ `localty-system-protocol` repository を support repository として準備します。
 
+`aiwfctl env` は、preflight の前段で実行環境を選択する Environment Dispatcher です。source of truth は `runtime/registries/workflow_environment_profiles.json` です。利用者は `gui-mode`、`web-svg`、`docker` などの目的ベースEnvironment名を指定し、`windows-msys2-gui`、`wsl-ubuntu-web`、`docker-compose` などの内部Backend名は表示情報として扱います。判断不能時はHuman Checkへ戻し、`--work-id` 指定時は `work/<work-id>/context/environment-selection.json` と `work/<work-id>/context/context-manifest.json` を後続Workflow用contextとして書き込みます。
+
+`context_first.py` は、Context First Architecture の manifest を確認する補助CLIです。必須Dispatcher Contextがない場合は `human-check-required` を返します。
+
+`dispatcher_context.py` は Phase 3 のDispatcher Context生成CLIです。`workflow-selection.json`、`tool-selection.json`、`runtime-context.json`、`execution-plan.json` を生成し、`context-manifest.json` に登録します。通常は `aiwfctl context init --work-id <work-id> --workflow <workflow>` から呼び出します。
+
 `init_corrective_action_fix.py` は、corrective action fix 用に repository / branch 引数から `work/<branch>/` または `work/issue-<issue-number>/` と初期contextを作成します。
 
 `vscode_environment.py` は、VSCode Environment workflow 用に `work/<id>/` を初期化し、`workspace-requirements.md` と `workspace-shared-artifact-validation` のscaffoldを作成します。
