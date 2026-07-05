@@ -4,6 +4,8 @@ Context First Architecture は、Workflow / Agent が毎回 Environment、Tool�
 
 先に Dispatcher が標準Contextを生成し、後続WorkflowはそのContextを第一入力として担当処理に集中します。
 
+Dispatcher群と各Workflowの関係図は [Dispatcher / Workflow Map](../diagrams/dispatcher-workflow-map.md) を参照してください。
+
 ## 基本原則
 
 1. Workflow は Context を最初に読む。
