@@ -1,4 +1,4 @@
-﻿---
+---
 name: corrective-action-report
 description: 指定された repository / branch の現状を調査し、改善点を corrective action report として保存します。
 argument-hint: "<target-repository> <target-branch>"
@@ -37,7 +37,7 @@ current branch を勝手に採用しない。user が current branch 利用を�
 Report output directory:
 
 ```text
-C:\github\intent-driven-robotics-ai-workflow\rag\corrective-action-report
+C:\github\ariadne-ai-workflow-platform\rag\corrective-action-report
 ```
 
 After writing the report, register it as Context First artifact:

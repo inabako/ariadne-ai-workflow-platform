@@ -28,7 +28,7 @@ RAG artifact filenames are UUID-based. Search must use JSON content and metadata
 Default workflow repository root:
 
 ```text
-C:\github\intent-driven-robotics-ai-workflow
+C:\github\ariadne-ai-workflow-platform
 ```
 
 Default source reports:
@@ -68,7 +68,7 @@ If the execution environment requires approval for sandbox, filesystem, or write
 Run commands from:
 
 ```powershell
-cd C:\github\intent-driven-robotics-ai-workflow
+cd C:\github\ariadne-ai-workflow-platform
 ```
 
 ### 0. Standardize Corrective Action Report Filenames

@@ -44,7 +44,7 @@ feature/issue-<issue-number>
 Run from:
 
 ```powershell
-cd C:\github\intent-driven-robotics-ai-workflow
+cd C:\github\ariadne-ai-workflow-platform
 ```
 
 ### 1. Initialize Base Work Area

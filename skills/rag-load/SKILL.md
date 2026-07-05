@@ -30,7 +30,7 @@ This is the RAG reading flow. Use `rag-build` to create or refresh RAG indexes.
 Default workflow repository root:
 
 ```text
-C:\github\intent-driven-robotics-ai-workflow
+C:\github\ariadne-ai-workflow-platform
 ```
 
 ## Parameters
@@ -118,7 +118,7 @@ Use direct `retrieve_context.py` only for debugging a single query.
 Run commands from:
 
 ```powershell
-cd C:\github\intent-driven-robotics-ai-workflow
+cd C:\github\ariadne-ai-workflow-platform
 ```
 
 ```powershell

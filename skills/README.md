@@ -54,43 +54,43 @@ Codex の Skill 候補として表示するには、`C:\Users\User\.codex\skills
 
 ```text
 C:\Users\User\.codex\skills\requirement-discovery
-  -> C:\github\intent-driven-robotics-ai-workflow\skills\requirement-discovery
+  -> C:\github\ariadne-ai-workflow-platform\skills\requirement-discovery
 
 C:\Users\User\.codex\skills\docs-sync
-  -> C:\github\intent-driven-robotics-ai-workflow\skills\docs-sync
+  -> C:\github\ariadne-ai-workflow-platform\skills\docs-sync
 
 C:\Users\User\.codex\skills\github-knowledge-maintenance
-  -> C:\github\intent-driven-robotics-ai-workflow\skills\github-knowledge-maintenance
+  -> C:\github\ariadne-ai-workflow-platform\skills\github-knowledge-maintenance
 
 C:\Users\User\.codex\skills\vscode-environment
-  -> C:\github\intent-driven-robotics-ai-workflow\skills\vscode-environment
+  -> C:\github\ariadne-ai-workflow-platform\skills\vscode-environment
 
 C:\Users\User\.codex\skills\robotics-new-system
-  -> C:\github\intent-driven-robotics-ai-workflow\skills\robotics-new-system
+  -> C:\github\ariadne-ai-workflow-platform\skills\robotics-new-system
 
 C:\Users\User\.codex\skills\robotics-new-system-iac
-  -> C:\github\intent-driven-robotics-ai-workflow\skills\robotics-new-system-iac
+  -> C:\github\ariadne-ai-workflow-platform\skills\robotics-new-system-iac
 
 C:\Users\User\.codex\skills\robotics-feature-maintenance
-  -> C:\github\intent-driven-robotics-ai-workflow\skills\robotics-feature-maintenance
+  -> C:\github\ariadne-ai-workflow-platform\skills\robotics-feature-maintenance
 
 C:\Users\User\.codex\skills\realtime-iac
-  -> C:\github\intent-driven-robotics-ai-workflow\skills\realtime-iac
+  -> C:\github\ariadne-ai-workflow-platform\skills\realtime-iac
 
 C:\Users\User\.codex\skills\corrective-action-report
-  -> C:\github\intent-driven-robotics-ai-workflow\skills\corrective-action-report
+  -> C:\github\ariadne-ai-workflow-platform\skills\corrective-action-report
 
 C:\Users\User\.codex\skills\corrective-action-fix
-  -> C:\github\intent-driven-robotics-ai-workflow\skills\corrective-action-fix
+  -> C:\github\ariadne-ai-workflow-platform\skills\corrective-action-fix
 
 C:\Users\User\.codex\skills\rag-build
-  -> C:\github\intent-driven-robotics-ai-workflow\skills\rag-build
+  -> C:\github\ariadne-ai-workflow-platform\skills\rag-build
 
 C:\Users\User\.codex\skills\rag-load
-  -> C:\github\intent-driven-robotics-ai-workflow\skills\rag-load
+  -> C:\github\ariadne-ai-workflow-platform\skills\rag-load
 
 C:\Users\User\.codex\skills\knowledge-capture
-  -> C:\github\intent-driven-robotics-ai-workflow\skills\knowledge-capture
+  -> C:\github\ariadne-ai-workflow-platform\skills\knowledge-capture
 ```
 
 VS Code Copilot Chat の `/` 候補は `.github/prompts/*.prompt.md`、Codex Skill 候補は `C:\Users\User\.codex\skills` を主に見ます。
@@ -104,5 +104,5 @@ VS Code Copilot Chat の `/` 候補は `.github/prompts/*.prompt.md`、Codex Ski
 Report は以下へ保存します。
 
 ```text
-C:\github\intent-driven-robotics-ai-workflow\rag\corrective-action-report
+C:\github\ariadne-ai-workflow-platform\rag\corrective-action-report
 ```

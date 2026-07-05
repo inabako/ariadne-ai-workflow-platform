@@ -1,4 +1,4 @@
-﻿---
+---
 name: corrective-action-fix
 description: GitHub repository / branch と任意の corrective action report を受け取り、work/<branch> に原本を取得し、report作成または読込、RAG build/load、GitHub Issue、work/issue-XXX + feature/issue-XXX、修正、単体テスト、起動/結合確認、人間チェック、push まで進めます。
 argument-hint: "<target-repository> <target-branch> [report]"
@@ -101,7 +101,7 @@ Guardrail:
 - `work/<branch>` または `work/issue-XXX` が既に存在する場合は止めて、既存フォルダを確認するよう user に伝える。
 - 既存フォルダを再利用する場合は、確認後に `--reuse-existing` を指定する。
 - 人間チェックが承認されるまで push しない。
-- `intent-driven-robotics-ai-workflow` はworkflow/RAG/report置き場であり、このflowのpush対象にしない。
+- `ariadne-ai-workflow-platform` はworkflow/RAG/report置き場であり、このflowのpush対象にしない。
 - push対象は、step 1で指定されたrepositoryの `work/issue-XXX/source/repository` と `feature/issue-XXX` のみ。
 - target branch へ直接実装しない。
 - RAG build/load を省略しない。

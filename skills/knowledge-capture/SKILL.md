@@ -55,7 +55,7 @@ work/<issue-id>/source/repository/docs/evidence/<issue-id>/human_check/
 Run from repository root:
 
 ```powershell
-cd C:\github\intent-driven-robotics-ai-workflow
+cd C:\github\ariadne-ai-workflow-platform
 ```
 
 ### 1. Generate Knowledge Capture Package

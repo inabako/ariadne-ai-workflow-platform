@@ -147,7 +147,7 @@ Workflow taskとsmoke-check taskは、`runtime/workflow/vscode_task_runner.py` �
 uv run python runtime/environment/preflight.py `
   --profile vscode-environment `
   --work-id vscode-environment `
-  --source-dir C:\github\intent-driven-robotics-ai-workflow
+  --source-dir C:\github\ariadne-ai-workflow-platform
 ```
 
 reportは次へ保存します。

@@ -450,7 +450,7 @@
           "name": "repository",
           "required": false,
           "description": "検索を特定repositoryに絞るfilter。",
-          "examples": ["intent-driven-robotics-ai-workflow"]
+          "examples": ["ariadne-ai-workflow-platform"]
         },
         {
           "name": "branch",

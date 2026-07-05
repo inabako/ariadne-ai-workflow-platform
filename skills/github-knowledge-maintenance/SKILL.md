@@ -117,7 +117,7 @@ rag/normalized/<uuid>.json
 Run from:
 
 ```powershell
-cd C:\github\intent-driven-robotics-ai-workflow
+cd C:\github\ariadne-ai-workflow-platform
 ```
 
 ### 1. Initialize Work Area

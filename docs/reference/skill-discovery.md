@@ -23,14 +23,14 @@ VS Code / GitHub Copilot Chat の `/` 候補に出すpromptは、次に置きま
 .github/prompts/robotics-feature-maintenance.prompt.md
 ```
 
-候補に出ない場合は、`C:\github\intent-driven-robotics-ai-workflow` をworkspaceとして開いているか確認します。
+候補に出ない場合は、`C:\github\ariadne-ai-workflow-platform` をworkspaceとして開いているか確認します。
 
 ## Codex Skill Discovery
 
 このrepositoryのSkill source of truthは次です。
 
 ```text
-C:\github\intent-driven-robotics-ai-workflow\skills
+C:\github\ariadne-ai-workflow-platform\skills
 ```
 
 ただし、repo-local `skills/` に置くだけではCodex候補に出ない場合があります。
@@ -39,7 +39,7 @@ Codex候補として表示するには、Codexが探索するlocal skill directo
 
 ```text
 C:\Users\User\.codex\skills\<skill-name>
-  -> C:\github\intent-driven-robotics-ai-workflow\skills\<skill-name>
+  -> C:\github\ariadne-ai-workflow-platform\skills\<skill-name>
 ```
 
 この接続は、NTFS Junctionで行います。

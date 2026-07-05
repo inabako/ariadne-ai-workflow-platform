@@ -1,4 +1,4 @@
-﻿---
+---
 name: corrective-action-fix
 description: Create a corrective action report for a specified GitHub repository and branch, store the base branch under work/<branch>, build/load RAG, create a GitHub Issue, create a separate work/issue-XXX folder with feature/issue-XXX branch, implement fixes, test, request human startup/integration approval, then push. Use when the user selects /corrective-action-fix or asks to move from improvement report creation into corrective implementation.
 ---
@@ -52,7 +52,7 @@ Do not use `feature/issue-<issue-number>` directly as a work folder name because
 Run commands from:
 
 ```powershell
-cd C:\github\intent-driven-robotics-ai-workflow
+cd C:\github\ariadne-ai-workflow-platform
 ```
 
 ### 1. Initialize Base Work Area
@@ -680,7 +680,7 @@ Before pushing, confirm:
 - `work/issue-<issue-number>/context/scm-state.json` points to the repository given in step 1.
 - `source_dir` is `work/issue-<issue-number>/source/repository`.
 - `working_branch` is `feature/issue-<issue-number>`.
-- The push target is not `intent-driven-robotics-ai-workflow`.
+- The push target is not `ariadne-ai-workflow-platform`.
 
 ```powershell
 python runtime/scm/push_branch.py `
@@ -768,7 +768,7 @@ Do not prepare or prune the close archive until the user approves archive.
 
 ## Guardrails
 
-- Never push `intent-driven-robotics-ai-workflow` during this flow. This repository is only the workflow/RAG/report workspace.
+- Never push `ariadne-ai-workflow-platform` during this flow. This repository is only the workflow/RAG/report workspace.
 - Push only the issue branch in the repository specified by the user in step 1.
 - Treat `work/issue-<issue-number>/source/repository` as the only valid source directory for push unless the user explicitly overrides it after reviewing the push target.
 - Do not silently reuse an existing `work/<branch>` or `work/issue-<issue-number>` folder. Stop and ask the user to confirm reuse first.
