@@ -206,7 +206,7 @@ docs/reference/agent-inventory.md
 - `aiwfctl help list`
 - `aiwfctl help show <name>`
 - `uv run --with pytest python -m pytest -c runtime\pytest.ini ...`
-- `uv run python runtime\workflow\workflow_doctor.py --fail-on-warning`
+- `uv run --project runtime python runtime\workflow\workflow_doctor.py --fail-on-warning`
 - language check:
 ```
 

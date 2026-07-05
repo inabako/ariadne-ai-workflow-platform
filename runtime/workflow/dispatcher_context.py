@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -623,8 +623,8 @@ def runtime_context(
             "runtime/tools",
         ],
         "verification_commands": [
-            "uv run python runtime/workflow/context_first.py --work-dir work/<work-id> show",
-            "uv run python runtime/workflow/workflow_doctor.py --fail-on-warning",
+            "uv run --project runtime python runtime/workflow/context_first.py --work-dir work/<work-id> show",
+            "uv run --project runtime python runtime/workflow/workflow_doctor.py --fail-on-warning",
         ],
         "human_check_required_when": [
             "The selected workflow needs external mutation, install, network, device, Docker, or personal environment changes.",

@@ -1,4 +1,4 @@
-# VSCode Environment
+﻿# VSCode Environment
 
 `/vscode-environment` は、VSCode Workspace-as-Code 環境を整備し、AIさんと人間が同じ手順で workflow、terminal、task、debug、検証、evidence を再現できるようにする workflow です。
 
@@ -181,7 +181,7 @@ rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 正しい名前のnoteを作る例:
 
 ```powershell
-uv run python runtime/workflow/vscode_environment.py rag-template `
+uv run --project runtime python runtime/workflow/vscode_environment.py rag-template `
   --work-id "vscode-environment" `
   --topic "localty-vscode-environment" `
   --repository "localty"
@@ -192,7 +192,7 @@ Markdown noteはreview sourceです。最終knowledge artifactはUUID名JSONで�
 Human approval後、`workspace-environment-pattern` としてnormalizeします。
 
 ```powershell
-uv run python runtime/rag/normalize_documents.py `
+uv run --project runtime python runtime/rag/normalize_documents.py `
   --source-dir rag/workspace-environment `
   --output-dir rag/normalized `
   --document-type workspace-environment-pattern
@@ -207,16 +207,16 @@ rag/normalized/<uuid>.json
 normalize後、必要に応じて派生RAG artifactを生成します。
 
 ```powershell
-uv run python runtime/rag/chunk_documents.py `
+uv run --project runtime python runtime/rag/chunk_documents.py `
   --input-dir rag/normalized `
   --output-dir rag/chunks
 
-uv run python runtime/rag/build_index.py `
+uv run --project runtime python runtime/rag/build_index.py `
   --normalized-dir rag/normalized `
   --chunks-dir rag/chunks `
   --output-dir rag/indexes
 
-uv run python runtime/rag/embed_chunks.py `
+uv run --project runtime python runtime/rag/embed_chunks.py `
   --chunks-index rag/indexes/chunks.jsonl `
   --output rag/embeddings/chunks-embeddings.jsonl
 ```

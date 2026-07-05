@@ -1,4 +1,4 @@
-# RAG
+﻿# RAG
 
 ## Workspace Environment Source
 
@@ -11,7 +11,7 @@ rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 After human approval, normalize approved notes with:
 
 ```powershell
-uv run python runtime/rag/normalize_documents.py `
+uv run --project runtime python runtime/rag/normalize_documents.py `
   --source-dir rag/workspace-environment `
   --output-dir rag/normalized `
   --document-type workspace-environment-pattern
@@ -36,7 +36,7 @@ rag/github-knowledge/YYYYMMDD_HHMMSS_<topic>.md
 Normalize approved notes with:
 
 ```powershell
-uv run python runtime/rag/normalize_documents.py `
+uv run --project runtime python runtime/rag/normalize_documents.py `
   --source-dir rag/github-knowledge `
   --output-dir rag/normalized `
   --document-type github-repository-knowledge

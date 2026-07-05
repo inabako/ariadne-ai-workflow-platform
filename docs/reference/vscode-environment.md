@@ -1,4 +1,4 @@
-# VSCode Environment
+﻿# VSCode Environment
 
 このrepositoryは、VSCode Workspace as Codeとして `.vscode` を持ちます。
 
@@ -32,7 +32,7 @@ custom-design modeでは、terminal構成、Docker、extension policy、launch�
 | Profile | Role |
 | --- | --- |
 | `Dispatcher PowerShell` | workflow repository rootでCodex / AI workflowを調整する |
-| `Software Workflow PowerShell` | `uv run python`、runtime helper、RAG script、testを実行する |
+| `Software Workflow PowerShell` | `uv run --project runtime python`、runtime helper、RAG script、testを実行する |
 | `MSYS2 Localty MINGW64` | Localty GUI / GStreamer / PyQt smoke check用 |
 | `IaC Workflow PowerShell` | Docker / Go / gateway / IaC作業用 |
 | `Docker Test PowerShell` | Docker Desktop検証用 |
@@ -144,7 +144,7 @@ Workflow taskとsmoke-check taskは、`runtime/workflow/vscode_task_runner.py` �
 実行例:
 
 ```powershell
-uv run python runtime/environment/preflight.py `
+uv run --project runtime python runtime/environment/preflight.py `
   --profile vscode-environment `
   --work-id vscode-environment `
   --source-dir C:\github\ariadne-ai-workflow-platform
@@ -177,7 +177,7 @@ rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 Human approval後、最終的なUUID名RAG knowledge JSONへnormalizeします。
 
 ```powershell
-uv run python runtime/rag/normalize_documents.py `
+uv run --project runtime python runtime/rag/normalize_documents.py `
   --source-dir rag/workspace-environment `
   --output-dir rag/normalized `
   --document-type workspace-environment-pattern

@@ -126,8 +126,8 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
         "verification_commands": [
             "aiwfctl path check",
             "aiwfctl help list",
-            "uv run python runtime/workflow/validate_vscode_workspace.py --workspace .",
-            "uv run python runtime/workflow/workflow_doctor.py --fail-on-warning",
+            "uv run --project runtime python runtime/workflow/validate_vscode_workspace.py --workspace .",
+            "uv run --project runtime python runtime/workflow/workflow_doctor.py --fail-on-warning",
         ],
         "human_check_required_when": [
             "User Path, default terminal, extensions, Docker Desktop, or local tool installation changes affect the human environment.",
@@ -383,7 +383,7 @@ VSCode environmentが機能することを証明するtrial runは何ですか�
 人間の回答を追記し、承認後、確定したtargetでwork areaを初期化します。
 
 ```powershell
-uv run python runtime/workflow/vscode_environment.py init `
+uv run --project runtime python runtime/workflow/vscode_environment.py init `
   --work-id "{work_id}" `
   --target-dir "<answered-target-workspace>" `
   --reuse-existing
@@ -546,11 +546,11 @@ rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 その後、次の順序でRAG artifactを生成します。
 
 ```powershell
-uv run python runtime/rag/standardize_corrective_report_names.py `
+uv run --project runtime python runtime/rag/standardize_corrective_report_names.py `
   --source-dir rag/workspace-environment `
   --replace-references
 
-uv run python runtime/rag/normalize_documents.py `
+uv run --project runtime python runtime/rag/normalize_documents.py `
   --source-dir rag/workspace-environment `
   --output-dir rag/normalized `
   --document-type workspace-environment-pattern
@@ -610,7 +610,7 @@ TODO: このVSCode workspaceが必要な理由と、支援するAI / human workf
 | --- | --- | --- | --- | --- |
 | Git | yes | TODO | `git --version` | TODO |
 | Docker Desktop | TODO | TODO | `docker version` | TODO |
-| Python | TODO | TODO | `python --version` or `uv run python --version` | TODO |
+| Python | TODO | TODO | `python --version` or `uv run --project runtime python --version` | TODO |
 | Node.js | TODO | TODO | `node --version` | TODO |
 | Java | TODO | TODO | `java --version` | TODO |
 

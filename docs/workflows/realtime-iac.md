@@ -1,4 +1,4 @@
-# Realtime IaC
+﻿# Realtime IaC
 
 リアルタイムシステム向けの Docker Compose、systemd、firewall、reverse proxy、TURN / STUN、logrotate、monitoring などの IaC を扱う workflow です。
 
@@ -45,7 +45,7 @@ Target Branch: develop
 
 ```powershell
 aiwfctl env select docker --work-id <receipt-id>
-uv run python runtime/workflow/context_first.py `
+uv run --project runtime python runtime/workflow/context_first.py `
   --work-dir work/<receipt-id> `
   require-environment --environment docker
 ```
@@ -177,9 +177,9 @@ Precreated owner/repository confirmation
 補助CLI:
 
 ```powershell
-uv run python runtime/scm/bootstrap_repository.py --work-id <receipt-id> --github-repo <owner>/<repo> --push --human-check approved
-uv run python runtime/github/issue_manager.py --work-id <receipt-id> --github-repo <owner>/<repo> --title "<title>" --flow-label iac --create
-uv run python runtime/scm/create_issue_branch.py --work-id <receipt-id> --issue-number <number> --github-repo <owner>/<repo> --base-branch main --link-to-issue
+uv run --project runtime python runtime/scm/bootstrap_repository.py --work-id <receipt-id> --github-repo <owner>/<repo> --push --human-check approved
+uv run --project runtime python runtime/github/issue_manager.py --work-id <receipt-id> --github-repo <owner>/<repo> --title "<title>" --flow-label iac --create
+uv run --project runtime python runtime/scm/create_issue_branch.py --work-id <receipt-id> --issue-number <number> --github-repo <owner>/<repo> --base-branch main --link-to-issue
 ```
 
 ## Main Artifacts

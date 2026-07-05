@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -103,7 +103,7 @@ def create_handoff(
         "required_environment": "docker",
         "recommended_next_commands": [
             f"aiwfctl env select docker --work-id {work_id}",
-            "uv run python runtime/workflow/context_first.py "
+            "uv run --project runtime python runtime/workflow/context_first.py "
             f"--work-dir work/{work_id} require-environment --environment docker",
             "/realtime-iac",
         ],
@@ -142,7 +142,7 @@ def create_execution_plan(
         ],
         "next_commands": [
             f"aiwfctl env select docker --work-id {work_id}",
-            "uv run python runtime/workflow/context_first.py "
+            "uv run --project runtime python runtime/workflow/context_first.py "
             f"--work-dir work/{work_id} require-environment --environment docker",
             "/realtime-iac",
         ],

@@ -1,4 +1,4 @@
-# Robotics New System + Realtime IaC
+﻿# Robotics New System + Realtime IaC
 
 新しい robotics system を作り、その設計結果を Shared Artifacts として固定してから realtime IaC workflow へ渡す統合workflowです。
 
@@ -78,7 +78,7 @@ Validatorは、Shared ArtifactsがIaC workflowへ渡せる品質かを判定し�
 Shared Artifact Validator が `pass` または human-approved `conditional-pass` の場合、Realtime IaCへ進む前に handoff context と execution plan を作成します。
 
 ```powershell
-uv run python runtime/workflow/iac_handoff_context.py `
+uv run --project runtime python runtime/workflow/iac_handoff_context.py `
   --work-id <receipt-id> `
   --validator-judgment <pass|conditional-pass|fail> `
   --source-artifact work/<receipt-id>/design-document/shared-artifacts-index.md
@@ -97,7 +97,7 @@ Realtime IaC開始前には Docker environment gate を確認します。
 
 ```powershell
 aiwfctl env select docker --work-id <receipt-id>
-uv run python runtime/workflow/context_first.py `
+uv run --project runtime python runtime/workflow/context_first.py `
   --work-dir work/<receipt-id> `
   require-environment --environment docker
 ```

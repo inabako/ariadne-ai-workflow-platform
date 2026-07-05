@@ -59,7 +59,7 @@ templates/
 - テスト成果物の保存先は [Test Artifact Storage](test-artifact-storage.md) に従う。
 - 出力先は `work/<work-id>/` 配下の対応directoryにする。
 - 生成後は可能な限り `work/<work-id>/context/artifact-index.json` に登録する。
-- 生成後は必要に応じて `uv run python runtime/workflow/validate_output_language.py --paths work rag docs --fail-on-violation` で英語主体の成果物を検出する。
+- 生成後は必要に応じて `uv run --project runtime python runtime/workflow/validate_output_language.py --paths work rag docs --fail-on-violation` で英語主体の成果物を検出する。
 
 ## Requirements
 

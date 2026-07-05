@@ -1,4 +1,4 @@
----
+﻿---
 name: github-knowledge-maintenance
 description: Maintain a GitHub repository as a long-lived knowledge asset without erasing Git history. Use GitHub CLI/API first, discover Issue/PR/docs/CAR/commit-source/commit-message/semantic-subject knowledge gaps, create human-reviewed repair proposals, optionally sync approved GitHub documentation assets, and prepare Knowledge DB/RAG candidates.
 ---
@@ -75,7 +75,7 @@ After publishing source Markdown, regenerate the RAG artifacts in this order:
 Normalize:
 
 ```powershell
-uv run python runtime/rag/normalize_documents.py `
+uv run --project runtime python runtime/rag/normalize_documents.py `
   --source-dir rag/github-knowledge `
   --output-dir rag/normalized `
   --document-type github-repository-knowledge
@@ -84,7 +84,7 @@ uv run python runtime/rag/normalize_documents.py `
 Chunk:
 
 ```powershell
-uv run python runtime/rag/chunk_documents.py `
+uv run --project runtime python runtime/rag/chunk_documents.py `
   --input-dir rag/normalized `
   --output-dir rag/chunks
 ```
@@ -92,7 +92,7 @@ uv run python runtime/rag/chunk_documents.py `
 Index:
 
 ```powershell
-uv run python runtime/rag/build_index.py `
+uv run --project runtime python runtime/rag/build_index.py `
   --normalized-dir rag/normalized `
   --chunks-dir rag/chunks `
   --output-dir rag/indexes
@@ -101,7 +101,7 @@ uv run python runtime/rag/build_index.py `
 Embedding:
 
 ```powershell
-uv run python runtime/rag/embed_chunks.py `
+uv run --project runtime python runtime/rag/embed_chunks.py `
   --chunks-index rag/indexes/chunks.jsonl `
   --output rag/embeddings/chunks-embeddings.jsonl
 ```
@@ -123,7 +123,7 @@ cd C:\github\ariadne-ai-workflow-platform
 ### 1. Initialize Work Area
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py init `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py init `
   --repository "<target-repository>" `
   --scan-mode recent `
   --repair-mode proposal `
@@ -135,7 +135,7 @@ If the work folder already exists, stop and ask whether to reuse it. After confi
 ### 2. Create Analysis Scaffold
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py analysis-template `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py analysis-template `
   --work-id "<work-id>"
 ```
 
@@ -253,7 +253,7 @@ Use:
 Create the human review plan:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py repair-plan `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py repair-plan `
   --work-id "<work-id>"
 ```
 
@@ -283,7 +283,7 @@ Use:
 Create the sync plan:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py github-sync-plan `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py github-sync-plan `
   --work-id "<work-id>"
 ```
 
@@ -310,14 +310,14 @@ Use:
 Create a candidate note:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
   --work-id "<work-id>"
 ```
 
 Publish to `rag/github-knowledge/` only after explicit approval:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
   --work-id "<work-id>" `
   --publish-rag `
   --human-check approved

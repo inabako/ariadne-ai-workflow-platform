@@ -1,4 +1,4 @@
-# 実行環境選択
+﻿# 実行環境選択
 
 AI workflowを実行する前に、OS、shell、runtime、toolの違いによる失敗を避けるため、`aiwfctl env` で実行環境を選択します。
 
@@ -197,7 +197,7 @@ docker-compose
 例:
 
 ```powershell
-uv run python runtime/environment/preflight.py `
+uv run --project runtime python runtime/environment/preflight.py `
   --profile gui-pyqt `
   --work-id issue-123 `
   --source-dir C:\github\localty-system-gui
@@ -206,7 +206,7 @@ uv run python runtime/environment/preflight.py `
 Webの場合:
 
 ```powershell
-uv run python runtime/environment/preflight.py `
+uv run --project runtime python runtime/environment/preflight.py `
   --profile web-nextjs `
   --work-id issue-123 `
   --source-dir C:\github\some-next-app
@@ -215,7 +215,7 @@ uv run python runtime/environment/preflight.py `
 Dockerの場合:
 
 ```powershell
-uv run python runtime/environment/preflight.py `
+uv run --project runtime python runtime/environment/preflight.py `
   --profile docker-compose `
   --work-id issue-123
 ```

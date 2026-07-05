@@ -1,4 +1,4 @@
-# Output Language Policy
+﻿# Output Language Policy
 
 ## 目的
 
@@ -36,7 +36,7 @@
 生成後は、可能な範囲で次の検証を行います。
 
 ```powershell
-uv run python runtime/workflow/validate_output_language.py `
+uv run --project runtime python runtime/workflow/validate_output_language.py `
   --paths work rag docs `
   --fail-on-violation
 ```

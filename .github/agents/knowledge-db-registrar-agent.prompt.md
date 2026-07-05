@@ -45,14 +45,14 @@ work/<work-id>/context/github-knowledge-analysis.json
 Generate candidate:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
   --work-id "<work-id>"
 ```
 
 Publish only after approval:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
   --work-id "<work-id>" `
   --publish-rag `
   --human-check approved

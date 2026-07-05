@@ -231,7 +231,7 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
             required=True,
             install_hint="Install uv with an approved installer or package manager and ensure uv is on PATH.",
         ),
-        which_check("python", required=False, install_hint="Optional when uv provides Python. Install Python or use uv run python."),
+        which_check("python", required=False, install_hint="Optional when uv provides Python. Install Python or use uv run --project runtime python."),
     ]
 
     if args.profile in {"corrective-action-fix", "localty-msys2", "gui-pyqt"}:
@@ -271,8 +271,8 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
         checks.append(python_module_check(
             "pytest",
             required=False,
-            install_hint="Needed for local pytest execution. Prefer uv run --with pytest ... instead of global install.",
-            install_command="uv run --with pytest python -m pytest --version",
+            install_hint="Needed for local pytest execution. Prefer the runtime pyproject dev dependency group instead of global install.",
+            install_command="uv run --project runtime --group dev pytest --version",
         ))
 
     if args.profile == "vscode-environment":

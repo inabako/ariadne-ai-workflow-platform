@@ -177,7 +177,7 @@ Markdown source artifact の front matter には、可能な限り `language: ja
 生成後は、必要に応じて次を実行して英語主体の成果物を検出します。
 
 ```powershell
-uv run python runtime/workflow/validate_output_language.py `
+uv run --project runtime python runtime/workflow/validate_output_language.py `
   --paths work rag docs `
   --fail-on-violation
 ```

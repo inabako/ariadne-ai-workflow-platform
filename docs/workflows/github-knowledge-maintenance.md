@@ -1,4 +1,4 @@
-# GitHub Knowledge Maintenance
+﻿# GitHub Knowledge Maintenance
 
 `/github-knowledge-maintenance` は、GitHub Repositoryを長期的な知識資産として保守するworkflowです。
 
@@ -45,7 +45,7 @@ Repository URL
 Initialize:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py init `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py init `
   --repository "<target-repository>" `
   --scan-mode recent `
   --repair-mode proposal `
@@ -55,28 +55,28 @@ uv run python runtime/workflow/github_knowledge_maintenance.py init `
 Create the analysis scaffold:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py analysis-template `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py analysis-template `
   --work-id "<work-id>"
 ```
 
 Create a human review repair plan:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py repair-plan `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py repair-plan `
   --work-id "<work-id>"
 ```
 
 Create the GitHub sync plan:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py github-sync-plan `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py github-sync-plan `
   --work-id "<work-id>"
 ```
 
 Create a RAG candidate:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
   --work-id "<work-id>"
 ```
 

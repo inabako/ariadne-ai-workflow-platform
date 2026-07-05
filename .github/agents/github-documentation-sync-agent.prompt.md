@@ -56,6 +56,6 @@ work/<work-id>/context/github-knowledge-analysis.json
 Then generate:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py github-sync-plan `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py github-sync-plan `
   --work-id "<work-id>"
 ```

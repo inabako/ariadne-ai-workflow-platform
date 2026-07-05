@@ -1,4 +1,4 @@
-# Context First Architecture
+﻿# Context First Architecture
 
 Context First Architecture は、Workflow / Agent が毎回 Environment、Tool、Runtime を推論する状態を避けるための設計方針です。
 
@@ -214,7 +214,7 @@ Workflowは次を行いません。
 Context First の基本確認:
 
 ```powershell
-uv run python runtime/workflow/context_first.py `
+uv run --project runtime python runtime/workflow/context_first.py `
   --work-dir work/issue-123 `
   require --context environment-selection
 ```

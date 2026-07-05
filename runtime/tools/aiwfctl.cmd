@@ -5,9 +5,8 @@ set "PYTHONIOENCODING=utf-8"
 set "REPO_ROOT=%~dp0..\..\"
 set "AIWFCTL_TOOLS_DIR=%~dp0"
 if /I "%~1"=="path" goto :path_command
-where uv >nul 2>nul
-if %ERRORLEVEL%==0 (
-  uv run python "%REPO_ROOT%runtime\ctl.py" %*
+if exist "%AIWFCTL_TOOLS_DIR%uv.cmd" (
+  call "%AIWFCTL_TOOLS_DIR%uv.cmd" run --project "%REPO_ROOT%runtime" python "%REPO_ROOT%runtime\ctl.py" %*
 ) else (
   python "%REPO_ROOT%runtime\ctl.py" %*
 )

@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+.codex/
 
 # Local work workspace
 # GitHubにはworkflow本体とwork構成説明READMEのみを上げる。
@@ -21,3 +22,8 @@ rag/**
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.venv/
+.coverage
+coverage.xml
+htmlcov/
+runtime/.coverage_html/

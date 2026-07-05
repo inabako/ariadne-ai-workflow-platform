@@ -209,7 +209,7 @@ GITHUB_TOKEN=
 検証が必要な場合:
 
 ```powershell
-uv run python runtime/workflow/validate_output_language.py `
+uv run --project runtime python runtime/workflow/validate_output_language.py `
   --paths work rag docs `
   --fail-on-violation
 ```

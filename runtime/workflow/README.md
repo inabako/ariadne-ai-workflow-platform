@@ -221,7 +221,24 @@ python runtime/workflow/workflow_doctor.py --fail-on-warning
 runtimeの重要CLIを変更した場合は、軽量pytestを実行します。
 
 ```powershell
-uv run --with pytest python -m pytest -c runtime/pytest.ini -q
+cd runtime
+uv run --group dev pytest -q
 ```
 
+pytest / coverage は `runtime/pyproject.toml` の `dev` dependency groupで管理します。
 現時点では `close_archive.py` のgolden testを含みます。
+
+分岐coverageを確認する場合:
+
+```powershell
+cd runtime
+uv run --group dev coverage run --branch -m pytest
+uv run --group dev coverage report -m
+uv run --group dev coverage html
+```
+
+`uv` がPATHにない場合:
+
+```powershell
+.\runtime\tools\register-uv-path.cmd --shell
+```

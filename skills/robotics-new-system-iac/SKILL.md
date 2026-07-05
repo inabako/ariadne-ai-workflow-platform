@@ -1,4 +1,4 @@
----
+﻿---
 name: robotics-new-system-iac
 description: Run the integrated new robotics system plus realtime IaC workflow. Use when the user selects /robotics-new-system-iac or asks to create a new robotics system and then generate validated Shared Artifacts for the realtime IaC workflow.
 ---
@@ -41,7 +41,7 @@ New System Workflow
 Before starting, run or require the intake harness.
 
 ```powershell
-uv run python runtime/intake/intake_requirements.py --workflow robotics-new-system-iac
+uv run --project runtime python runtime/intake/intake_requirements.py --workflow robotics-new-system-iac
 ```
 
 The harness must reject the order when:
@@ -143,7 +143,7 @@ The handoff must include:
 Create and register the handoff context and execution plan with the runtime helper:
 
 ```powershell
-uv run python runtime/workflow/iac_handoff_context.py `
+uv run --project runtime python runtime/workflow/iac_handoff_context.py `
   --work-id <receipt-id> `
   --validator-judgment <pass|conditional-pass|fail> `
   --source-artifact work/<receipt-id>/design-document/shared-artifacts-index.md
@@ -154,7 +154,7 @@ Before actually starting `/realtime-iac`, verify the Docker environment context:
 
 ```powershell
 aiwfctl env select docker --work-id <receipt-id>
-uv run python runtime/workflow/context_first.py `
+uv run --project runtime python runtime/workflow/context_first.py `
   --work-dir work/<receipt-id> `
   require-environment --environment docker
 ```

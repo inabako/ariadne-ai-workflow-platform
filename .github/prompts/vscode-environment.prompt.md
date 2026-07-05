@@ -102,7 +102,7 @@ Use `work/requirements/devlop-edit-draft/README.md` and `README_*.md` only as op
 For Localty workspace environment knowledge, use:
 
 ```powershell
-uv run python runtime/workflow/vscode_environment.py rag-template `
+uv run --project runtime python runtime/workflow/vscode_environment.py rag-template `
   --work-id "vscode-environment" `
   --topic "localty-vscode-environment" `
   --repository "localty"

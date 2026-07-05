@@ -1,4 +1,4 @@
-{
+﻿{
   "registry_version": "1.0",
   "description": "Workflow execution environment profiles. aiwfctl env reads this registry before workflow execution to reduce OS/runtime/tool selection guesswork.",
   "environments": [
@@ -77,7 +77,7 @@
       "verification": [
         "aiwfctl path check",
         "aiwfctl help list",
-        "uv run python --version"
+        "uv run --project runtime python --version"
       ],
       "preflight_profile": "corrective-action-fix",
       "run_command": "aiwfctl help list",
@@ -104,11 +104,11 @@
       "primary_tools": ["aiwfctl", "PowerShell", "MSYS2", "Python", "PyQt6", "Qt", "QTest", "GStreamer"],
       "verification": [
         "aiwfctl env select gui-mode",
-        "uv run python runtime/environment/preflight.py --profile gui-pyqt --work-id <work-id> --source-dir <target-repo>",
-        "uv run python runtime/workflow/gui_mode.py self-test"
+        "uv run --project runtime python runtime/environment/preflight.py --profile gui-pyqt --work-id <work-id> --source-dir <target-repo>",
+        "uv run --project runtime python runtime/workflow/gui_mode.py self-test"
       ],
       "preflight_profile": "gui-pyqt",
-      "run_command": "uv run python runtime/environment/preflight.py --profile gui-pyqt --work-id <work-id> --source-dir <target-repo>",
+      "run_command": "uv run --project runtime python runtime/environment/preflight.py --profile gui-pyqt --work-id <work-id> --source-dir <target-repo>",
       "docs": ["docs/workflows/gui-mode.md", "docs/reference/runtime.md"],
       "human_check_required_when": [
         "PyQt6やMSYS2 packageの有無を確認できない",
@@ -162,7 +162,7 @@
       "primary_tools": ["aiwfctl", "Docker", "Docker Compose"],
       "verification": ["docker version", "docker compose version"],
       "preflight_profile": "docker-compose",
-      "run_command": "uv run python runtime/environment/preflight.py --profile docker-compose --work-id <work-id> --source-dir <target-repo>",
+      "run_command": "uv run --project runtime python runtime/environment/preflight.py --profile docker-compose --work-id <work-id> --source-dir <target-repo>",
       "docs": ["docs/workflows/realtime-iac.md", "docs/reference/vscode-environment.md"],
       "human_check_required_when": [
         "Docker Desktop起動やnetwork公開などローカル環境へ影響がある",
@@ -185,11 +185,11 @@
       "primary_tools": ["aiwfctl", "VSCode", "PowerShell", "runtime/tools", "workflow doctor"],
       "verification": [
         "aiwfctl path check",
-        "uv run python runtime/workflow/validate_vscode_workspace.py --workspace .",
-        "uv run python runtime/workflow/workflow_doctor.py --fail-on-warning"
+        "uv run --project runtime python runtime/workflow/validate_vscode_workspace.py --workspace .",
+        "uv run --project runtime python runtime/workflow/workflow_doctor.py --fail-on-warning"
       ],
       "preflight_profile": "vscode-environment",
-      "run_command": "uv run python runtime/environment/preflight.py --profile vscode-environment --work-id vscode-environment --source-dir .",
+      "run_command": "uv run --project runtime python runtime/environment/preflight.py --profile vscode-environment --work-id vscode-environment --source-dir .",
       "docs": ["docs/workflows/vscode-environment.md", "docs/reference/vscode-environment.md"],
       "human_check_required_when": [
         "default terminalやUser Pathなど人間の開発環境に影響する",

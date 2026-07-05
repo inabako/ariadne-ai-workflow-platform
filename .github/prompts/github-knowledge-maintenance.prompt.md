@@ -45,7 +45,7 @@ Use the agents in this order:
 Initialize:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py init `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py init `
   --repository "<target-repository>" `
   --scan-mode recent `
   --repair-mode proposal `
@@ -55,35 +55,35 @@ uv run python runtime/workflow/github_knowledge_maintenance.py init `
 Create analysis scaffold:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py analysis-template `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py analysis-template `
   --work-id "<work-id>"
 ```
 
 Create repair plan:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py repair-plan `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py repair-plan `
   --work-id "<work-id>"
 ```
 
 Create GitHub sync plan:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py github-sync-plan `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py github-sync-plan `
   --work-id "<work-id>"
 ```
 
 Create RAG candidate:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
   --work-id "<work-id>"
 ```
 
 Publish RAG candidate only after approval:
 
 ```powershell
-uv run python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
   --work-id "<work-id>" `
   --publish-rag `
   --human-check approved

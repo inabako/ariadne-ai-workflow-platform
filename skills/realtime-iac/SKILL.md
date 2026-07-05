@@ -1,4 +1,4 @@
----
+﻿---
 name: realtime-iac
 description: Run the realtime-system Infrastructure as Code workflow for robotics, IoT, edge AI, video streaming, remote operation, or realtime gateway infrastructure. Use when the user selects /realtime-iac or asks to design, generate, review, test, and document IaC artifacts such as Docker Compose, systemd, firewall, reverse proxy, TURN/STUN, logrotate, monitoring, or runtime environment configuration.
 ---
@@ -28,7 +28,7 @@ This skill delegates the detailed workflow to:
 Before starting design or implementation, run or require the intake harness.
 
 ```powershell
-uv run python runtime/intake/intake_requirements.py --workflow realtime-iac
+uv run --project runtime python runtime/intake/intake_requirements.py --workflow realtime-iac
 ```
 
 The harness must reject the order when:
@@ -52,7 +52,7 @@ aiwfctl env select docker --work-id <receipt-id>
 Then verify it:
 
 ```powershell
-uv run python runtime/workflow/context_first.py `
+uv run --project runtime python runtime/workflow/context_first.py `
   --work-dir work/<receipt-id> `
   require-environment --environment docker
 ```
@@ -189,9 +189,9 @@ Order:
 Runtime helpers:
 
 ```powershell
-uv run python runtime/scm/bootstrap_repository.py --work-id <receipt-id> --github-repo <owner>/<repo> --push --human-check approved
-uv run python runtime/github/issue_manager.py --work-id <receipt-id> --github-repo <owner>/<repo> --title "<title>" --flow-label iac --create
-uv run python runtime/scm/create_issue_branch.py --work-id <receipt-id> --issue-number <number> --github-repo <owner>/<repo> --base-branch <initial-branch> --link-to-issue
+uv run --project runtime python runtime/scm/bootstrap_repository.py --work-id <receipt-id> --github-repo <owner>/<repo> --push --human-check approved
+uv run --project runtime python runtime/github/issue_manager.py --work-id <receipt-id> --github-repo <owner>/<repo> --title "<title>" --flow-label iac --create
+uv run --project runtime python runtime/scm/create_issue_branch.py --work-id <receipt-id> --issue-number <number> --github-repo <owner>/<repo> --base-branch <initial-branch> --link-to-issue
 ```
 
 ## IaC Artifact Scope

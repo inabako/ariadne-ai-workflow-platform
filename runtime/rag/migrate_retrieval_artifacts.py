@@ -188,6 +188,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     for artifact_path in sorted(retrieval_dir.glob("*.json")):
         payload = read_json(artifact_path)
         updated = replace_refs(payload, path_map)
+        if isinstance(payload.get("legacy_artifact_paths"), list):
+            updated["legacy_artifact_paths"] = payload["legacy_artifact_paths"]
         if updated != payload:
             write_json(artifact_path, updated)
             updated_refs.append(relative_to_repo(repo_root, artifact_path))

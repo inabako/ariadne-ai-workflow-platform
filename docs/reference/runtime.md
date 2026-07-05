@@ -94,13 +94,30 @@ Windows環境では `python` / `py` がStore aliasに当たる場合がありま
 このrepoでは検証時に次を優先します。
 
 ```powershell
-uv run python <script>
+uv run --project runtime python <script>
 ```
+
+pytest / coverage は `runtime/pyproject.toml` の `dev` dependency groupで管理します。
+
+```powershell
+cd runtime
+uv run --group dev pytest -q
+uv run --group dev coverage run --branch -m pytest
+uv run --group dev coverage report -m
+```
+
+`uv` がPATHにない場合は、Ariadne runtime toolsのPATHを登録します。
+
+```powershell
+.\runtime\tools\register-uv-path.cmd --shell
+```
+
+`runtime\tools\uv.cmd` は、実uvが見つからない場合にinstall guidanceを表示します。
 
 生成物の既定言語を確認する場合:
 
 ```powershell
-uv run python runtime/workflow/validate_output_language.py `
+uv run --project runtime python runtime/workflow/validate_output_language.py `
   --paths work rag docs `
   --fail-on-violation
 ```

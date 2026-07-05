@@ -1,4 +1,4 @@
----
+﻿---
 name: vscode-environment
 description: Build or maintain reproducible VSCode Workspace-as-Code environments for AI workflows. Use when the user selects /vscode-environment or asks to standardize .vscode/settings.json, tasks.json, launch.json, extensions.json, workspace.code-workspace, terminal profiles, AI extension setup, Docker/Git/Python/Node/Java tooling, or evidence-backed VSCode environment setup.
 ---
@@ -116,20 +116,20 @@ Workspace files are written only to the target workspace after requirements and 
 Create or refresh the draft README scaffold:
 
 ```powershell
-uv run python runtime/workflow/vscode_environment.py draft-template
+uv run --project runtime python runtime/workflow/vscode_environment.py draft-template
 ```
 
 Create open questions for unresolved custom-design choices:
 
 ```powershell
-uv run python runtime/workflow/vscode_environment.py open-questions `
+uv run --project runtime python runtime/workflow/vscode_environment.py open-questions `
   --work-id "vscode-environment"
 ```
 
 Initialize a workflow work area:
 
 ```powershell
-uv run python runtime/workflow/vscode_environment.py init `
+uv run --project runtime python runtime/workflow/vscode_environment.py init `
   --work-id "vscode-environment" `
   --target-dir "<target-workspace>"
 ```
@@ -147,21 +147,21 @@ work/vscode-environment/context/context-manifest.json
 Create a requirements scaffold:
 
 ```powershell
-uv run python runtime/workflow/vscode_environment.py requirements-template `
+uv run --project runtime python runtime/workflow/vscode_environment.py requirements-template `
   --work-id "vscode-environment"
 ```
 
 Create a shared artifact validation scaffold:
 
 ```powershell
-uv run python runtime/workflow/vscode_environment.py validation-template `
+uv run --project runtime python runtime/workflow/vscode_environment.py validation-template `
   --work-id "vscode-environment"
 ```
 
 Create a reusable VSCode environment RAG source note:
 
 ```powershell
-uv run python runtime/workflow/vscode_environment.py rag-template `
+uv run --project runtime python runtime/workflow/vscode_environment.py rag-template `
   --work-id "vscode-environment" `
   --topic "localty-vscode-environment" `
   --repository "localty"
@@ -170,7 +170,7 @@ uv run python runtime/workflow/vscode_environment.py rag-template `
 Run environment preflight:
 
 ```powershell
-uv run python runtime/environment/preflight.py `
+uv run --project runtime python runtime/environment/preflight.py `
   --profile vscode-environment `
   --work-id "vscode-environment" `
   --source-dir "<target-workspace>"
@@ -325,7 +325,7 @@ rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 Use the runtime helper to create a correctly named draft:
 
 ```powershell
-uv run python runtime/workflow/vscode_environment.py rag-template `
+uv run --project runtime python runtime/workflow/vscode_environment.py rag-template `
   --work-id "<work-id>" `
   --topic "localty-vscode-environment" `
   --repository "localty"
@@ -336,7 +336,7 @@ The Markdown file is the human-reviewable source note. It is not the final machi
 After human approval, normalize the approved source through the file-based RAG pipeline with `--source-dir rag/workspace-environment` and `--document-type workspace-environment-pattern`.
 
 ```powershell
-uv run python runtime/rag/normalize_documents.py `
+uv run --project runtime python runtime/rag/normalize_documents.py `
   --source-dir rag/workspace-environment `
   --output-dir rag/normalized `
   --document-type workspace-environment-pattern

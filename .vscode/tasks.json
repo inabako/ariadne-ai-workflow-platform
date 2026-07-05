@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "2.0.0",
   "tasks": [
     {
@@ -7,6 +7,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
@@ -26,6 +28,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
@@ -45,6 +49,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
@@ -64,6 +70,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
@@ -83,6 +91,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
@@ -102,6 +112,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
@@ -121,6 +133,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
@@ -140,6 +154,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
@@ -159,6 +175,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
@@ -178,6 +196,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
@@ -197,6 +217,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
@@ -216,6 +238,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
@@ -235,6 +259,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
@@ -254,6 +280,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "open-questions",
@@ -271,6 +299,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "preflight",
@@ -301,11 +331,65 @@
       }
     },
     {
+      "label": "test:runtime-pytest",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--group",
+        "dev",
+        "pytest",
+        "-q"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}\\runtime"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "test:runtime-coverage",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--group",
+        "dev",
+        "coverage",
+        "run",
+        "--branch",
+        "-m",
+        "pytest"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}\\runtime"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "test:runtime-coverage-report",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--group",
+        "dev",
+        "coverage",
+        "report",
+        "-m"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}\\runtime"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "test:vscode-json",
       "type": "process",
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/validate_vscode_workspace.py",
         "--workspace",
@@ -322,6 +406,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "helper-help"
@@ -337,6 +423,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "msys2-localty-smoke"
@@ -352,6 +440,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "docker-version"
@@ -367,6 +457,8 @@
       "command": "uv",
       "args": [
         "run",
+        "--project",
+        "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "go-version"
