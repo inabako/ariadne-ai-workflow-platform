@@ -71,6 +71,7 @@ Use `work/requirements/devlop-edit-draft/README.md` and `README_*.md` only as op
     - If the workspace has repo-local command tools such as `runtime/tools/*.cmd`, add that tools directory to `terminal.integrated.env.windows.Path`.
     - For this workflow repository, include `${workspaceFolder}\\runtime\\tools` so `aiwfctl help` works in VSCode integrated terminals.
     - Add a provisioning/support task for `runtime/tools/register-aiwfctl-path.cmd --shell` when `aiwfctl` should also work from normal PowerShell or Windows Terminal.
+    - The same registration and refreshed shell can be invoked through `runtime/tools/aiwfctl.cmd path shell`.
 12. Run workspace tests and record evidence.
 13. Update setup / troubleshooting docs.
 14. If the environment pattern is reusable, capture it under `rag/workspace-environment/` as `YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md`.

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any, Sequence
@@ -10,6 +11,9 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo  # noqa: E402
+
+ANSI_YELLOW = "\033[33m"
+ANSI_RESET = "\033[0m"
 
 
 def registry_path(repo_root: Path) -> Path:
@@ -311,13 +315,78 @@ def repo_root_from_args(args: argparse.Namespace) -> Path:
     return Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
 
 
-def run(args: argparse.Namespace) -> tuple[int, str]:
+def colorize_warning(line: str, color: bool = False) -> str:
+    if not color:
+        return line
+    return f"{ANSI_YELLOW}{line}{ANSI_RESET}"
+
+
+def should_use_color(stream: Any = sys.stdout) -> bool:
+    color_mode = os.environ.get("AIWFCTL_COLOR", "").strip().lower()
+    if color_mode in {"always", "1", "true", "yes"}:
+        return True
+    if color_mode in {"never", "0", "false", "no"}:
+        return False
+    if os.environ.get("NO_COLOR") is not None:
+        return False
+    return bool(getattr(stream, "isatty", lambda: False)())
+
+
+def format_root_usage_warning(color: bool = False) -> str:
+    return "\n".join(
+        [
+            colorize_warning("警告: aiwfctl の後続修飾子が指定されていません。", color),
+            "",
+            "次のように、実行したい操作を指定してください。",
+            "",
+            "使用例:",
+            "  aiwfctl help list",
+            "  aiwfctl help show /vscode-environment",
+            "  aiwfctl help search svg gui",
+            "  aiwfctl path check",
+            "  aiwfctl path register",
+            "  aiwfctl path shell",
+            "",
+            "まず一覧を見たい場合:",
+            "  aiwfctl help list",
+            "",
+            "PATH登録と更新済みPowerShell session起動を行う場合:",
+            "  aiwfctl path shell",
+        ]
+    ) + "\n"
+
+
+def format_help_usage_warning(color: bool = False) -> str:
+    return "\n".join(
+        [
+            colorize_warning("警告: aiwfctl help の後続修飾子が指定されていません。", color),
+            "",
+            "help の後に、list / show / search / open / markdown のいずれかを指定してください。",
+            "",
+            "使用例:",
+            "  aiwfctl help list",
+            "  aiwfctl help show /vscode-environment",
+            "  aiwfctl help search vscode",
+            "  aiwfctl help open",
+            "  aiwfctl help markdown --output work/help/ai-workflow-help.md",
+            "",
+            "PATH登録やsession更新を行う場合:",
+            "  aiwfctl path shell",
+        ]
+    ) + "\n"
+
+
+def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
     repo_root = repo_root_from_args(args)
     registry = load_registry(repo_root)
-    command = args.command or "help"
-    help_command = getattr(args, "help_command", None) or "list"
+    command = args.command
+    help_command = getattr(args, "help_command", None)
+    if command is None:
+        return 1, format_root_usage_warning(color=color)
     if command != "help":
         return 1, f"Unknown command: {command}\n"
+    if help_command is None:
+        return 1, format_help_usage_warning(color=color)
 
     if help_command == "list":
         rows = []
@@ -393,7 +462,7 @@ def run(args: argparse.Namespace) -> tuple[int, str]:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    code, output = run(args)
+    code, output = run(args, color=should_use_color(sys.stdout))
     print(output, end="")
     return code
 

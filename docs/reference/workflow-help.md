@@ -58,6 +58,18 @@ PATH未反映のterminalでは、次のように直接呼び出せます。
 .\runtime\tools\register-aiwfctl-path.cmd
 ```
 
+`aiwfctl.cmd` から呼ぶ場合:
+
+```powershell
+.\runtime\tools\aiwfctl.cmd path register
+```
+
+登録状態を確認する場合:
+
+```powershell
+.\runtime\tools\aiwfctl.cmd path check
+```
+
 登録後、新しいPowerShellを開いてから確認します。
 Windows Terminal や VSCode 本体を登録前から開いていた場合は、そのアプリ自体を閉じて開き直してください。同じアプリ内の新規タブでは古い環境を継承する場合があります。
 
@@ -65,6 +77,12 @@ Windows Terminal や VSCode 本体を登録前から開いていた場合は、�
 
 ```powershell
 .\runtime\tools\register-aiwfctl-path.cmd --shell
+```
+
+`aiwfctl.cmd` から登録と更新済みsession起動をまとめて行う場合:
+
+```powershell
+.\runtime\tools\aiwfctl.cmd path shell
 ```
 
 VSCode taskから実行する場合:

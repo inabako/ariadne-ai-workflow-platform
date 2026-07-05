@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 
@@ -22,3 +23,20 @@ def test_aiwfctl_path_shell_task_is_provisioned() -> None:
     assert task["command"] == "${workspaceFolder}\\runtime\\tools\\register-aiwfctl-path.cmd"
     assert task["args"] == ["--shell"]
 
+
+def test_aiwfctl_cmd_exposes_path_usage() -> None:
+    command = repo_root() / "runtime" / "tools" / "aiwfctl.cmd"
+
+    result = subprocess.run(
+        [str(command), "path"],
+        cwd=repo_root(),
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+
+    assert result.returncode == 1
+    assert "aiwfctl path check" in result.stdout
+    assert "aiwfctl path register" in result.stdout
+    assert "aiwfctl path shell" in result.stdout

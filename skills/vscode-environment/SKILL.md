@@ -190,6 +190,12 @@ For this workflow repository, include an explicit provisioning task or step that
 
 This registers `runtime\tools` in User Path and opens a refreshed PowerShell session where `aiwfctl help list` is immediately available.
 
+The same behavior can be invoked through the aiwfctl wrapper:
+
+```powershell
+.\runtime\tools\aiwfctl.cmd path shell
+```
+
 ## Workflow
 
 ### 1. Mode Selection And Intake

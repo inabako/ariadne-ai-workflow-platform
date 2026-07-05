@@ -15,6 +15,39 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     assert parser.prog == "aiwfctl"
 
 
+def test_ctl_without_modifier_warns_and_does_not_show_list() -> None:
+    args = ctl.build_parser().parse_args(["--repo-root", str(repo_root())])
+
+    code, output = ctl.run(args)
+
+    assert code == 1
+    assert "警告" in output
+    assert "aiwfctl help list" in output
+    assert "aiwfctl path shell" in output
+    assert "## Workflow Commands" not in output
+
+
+def test_ctl_help_without_modifier_warns_and_does_not_show_list() -> None:
+    args = ctl.build_parser().parse_args(["--repo-root", str(repo_root()), "help"])
+
+    code, output = ctl.run(args)
+
+    assert code == 1
+    assert "警告" in output
+    assert "list / show / search / open / markdown" in output
+    assert "aiwfctl path shell" in output
+    assert "## Workflow Commands" not in output
+
+
+def test_ctl_warning_can_be_colored_yellow() -> None:
+    output = ctl.format_root_usage_warning(color=True)
+
+    assert "\033[33m" in output
+    assert "\033[0m" in output
+    assert "aiwfctl help list" in output
+    assert "aiwfctl path shell" in output
+
+
 def test_ctl_help_list_contains_workflow_commands() -> None:
     args = ctl.build_parser().parse_args(["--repo-root", str(repo_root()), "help", "list"])
 

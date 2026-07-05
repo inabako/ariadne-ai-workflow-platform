@@ -72,10 +72,22 @@ $env:Path = "$PWD\runtime\tools;$env:Path"
 .\runtime\tools\register-aiwfctl-path.cmd
 ```
 
+`aiwfctl.cmd` から呼ぶ場合:
+
+```powershell
+.\runtime\tools\aiwfctl.cmd path register
+```
+
 登録後、すぐに `aiwfctl` が使えるPowerShell sessionを開く場合:
 
 ```powershell
 .\runtime\tools\register-aiwfctl-path.cmd --shell
+```
+
+`aiwfctl.cmd` から登録と更新済みsession起動をまとめて行う場合:
+
+```powershell
+.\runtime\tools\aiwfctl.cmd path shell
 ```
 
 登録後も同じPowerShellで `aiwfctl` が見つからない場合は、現在のPATHを壊さないように `runtime\tools` だけを先頭追加します。
@@ -125,7 +137,7 @@ Workflow taskとsmoke-check taskは、`runtime/workflow/vscode_task_runner.py` �
 
 `workflow:vscode-preflight` と `test:go-version` は、Go確認前にPython task runner内でMachine/User PATHを再読込します。VSCode起動後にGoをinstallした場合の古いPATH問題を避けます。
 
-`workflow:aiwfctl-path-shell` は、`runtime/tools/register-aiwfctl-path.cmd --shell` を実行し、User Path登録後に `aiwfctl` が使えるPowerShell sessionを開くprovisioning taskです。
+`workflow:aiwfctl-path-shell` は、`runtime/tools/register-aiwfctl-path.cmd --shell` を実行し、User Path登録後に `aiwfctl` が使えるPowerShell sessionを開くprovisioning taskです。同じ動作は `runtime/tools/aiwfctl.cmd path shell` からも呼べます。
 
 ## Preflight
 

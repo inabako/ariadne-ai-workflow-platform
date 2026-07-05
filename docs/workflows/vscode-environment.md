@@ -155,6 +155,12 @@ workflow:aiwfctl-path-shell
 .\runtime\tools\register-aiwfctl-path.cmd --shell
 ```
 
+同じ処理は `aiwfctl.cmd` からも呼び出せます。
+
+```powershell
+.\runtime\tools\aiwfctl.cmd path shell
+```
+
 既に開いているterminalにはPATH変更が反映されません。terminalを閉じて開き直すか、現在のPowerShellで次を実行します。
 
 ```powershell
