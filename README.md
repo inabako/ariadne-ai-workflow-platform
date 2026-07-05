@@ -1,4 +1,10 @@
-﻿# Intent-Driven Robotics AI Workflow
+﻿# Ariadne AI Workflow Platform
+
+Ariadne AI Workflow Platform は、AI Agent が複雑なworkflow迷宮を迷わず進むためのContext First型AI workflow repositoryです。
+
+アリアドネの糸が迷宮を消すのではなく、迷宮を歩く者の帰還を助けたように、このplatformはDispatcher、Context、RAG、Evidence、Human Checkを一本の糸として結び、AIが本質的な問題解決へ集中できる状態を作ります。
+
+この思想の背景は [Prologue](docs/reference/prologue.md)、[Philosophy](docs/reference/philosophy.md)、[Epilogue](docs/reference/epilogue.md) にまとめています。
 
 Localty の robotics system development を、Intent、Safety、Operational Learning を中心に進めるための AI workflow repository です。
 
