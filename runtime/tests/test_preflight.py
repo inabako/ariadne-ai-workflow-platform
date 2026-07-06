@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import runpy
 import subprocess
 import sys
 from pathlib import Path
@@ -152,6 +153,25 @@ def test_localty_protocol_check_reports_missing_without_work_id(monkeypatch: pyt
     assert check.detected == "missing stdout"
 
 
+def test_localty_protocol_check_reports_missing_with_fallback_command(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        preflight,
+        "run_command",
+        lambda command, cwd=None, env=None: subprocess.CompletedProcess(command, 1, stdout="", stderr="missing package"),
+    )
+    args = argparse.Namespace(profile="corrective-action-fix", work_id="issue-9", support_branch="")
+
+    check = preflight.localty_protocol_check(args, protocol_dir=None, bash_path=tmp_path / "missing-bash.exe")
+
+    assert check.ok is False
+    assert check.fallback_command is not None
+    assert "--branch \"develop\"" in check.fallback_command
+    assert "download the support repository" in check.install_hint
+
+
 def test_msys2_package_check_missing_bash_and_success(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     missing = preflight.msys2_package_check(tmp_path / "missing-bash.exe", "mingw-pkg", required=True)
     assert missing.ok is False
@@ -233,6 +253,54 @@ def test_build_checks_profiles_add_expected_checks(
     assert expected_ids <= {check.id for check in checks}
 
 
+def test_build_checks_localty_gui_and_profiles_without_source_dir(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: f"C:/tools/{name}.exe")
+    monkeypatch.setattr(preflight, "localty_protocol_check", lambda args, protocol_dir, bash_path: preflight.Check(
+        id="python-package:localty-system-protocol",
+        label="localty-system-protocol package",
+        kind="python-package",
+        required=True,
+        ok=True,
+        detected="ok",
+        install_hint="ok",
+    ))
+    monkeypatch.setattr(preflight, "msys2_package_check", lambda bash_path, package, required: preflight.Check(
+        id=f"msys2-package:{package}",
+        label=package,
+        kind="msys2-package",
+        required=required,
+        ok=True,
+        detected="ok",
+        install_hint="ok",
+    ))
+
+    gui_args = argparse.Namespace(
+        profile="gui-pyqt",
+        source_dir=str(tmp_path / "gui"),
+        protocol_dir="",
+        support_branch="develop",
+        msys2_root=str(tmp_path / "msys64"),
+        work_id="issue-1",
+    )
+    (tmp_path / "gui").mkdir()
+    gui_checks = preflight.build_checks(gui_args, tmp_path)
+    gui_ids = {check.id for check in gui_checks}
+    assert "path:target-pyproject" in gui_ids
+    assert any(item.startswith("msys2-package:") for item in gui_ids)
+
+    localty_args = argparse.Namespace(**{**vars(gui_args), "profile": "localty-msys2", "source_dir": ""})
+    assert "path:target-pyproject" not in {check.id for check in preflight.build_checks(localty_args, tmp_path)}
+
+    vscode_args = argparse.Namespace(**{**vars(gui_args), "profile": "vscode-environment", "source_dir": ""})
+    assert "path:target-workspace" not in {check.id for check in preflight.build_checks(vscode_args, tmp_path)}
+
+    web_args = argparse.Namespace(**{**vars(gui_args), "profile": "web-nextjs", "source_dir": ""})
+    assert "path:target-package-json" not in {check.id for check in preflight.build_checks(web_args, tmp_path)}
+
+
 def test_install_requires_human_approval_before_running_commands(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     repo = tmp_path / "repo"
     (repo / ".git").mkdir(parents=True)
@@ -281,6 +349,60 @@ def test_install_missing_runs_required_commands_and_fallback(monkeypatch: pytest
 
     assert calls == ["install primary", "install fallback"]
     assert [item["label"] for item in executed] == ["required", "required fallback"]
+
+
+def test_install_missing_breaks_without_fallback_or_when_fallback_fails(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str] = []
+
+    def fake_subprocess_run(command, text, stdout, stderr, shell, check):
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 1, stdout="out", stderr="err")
+
+    monkeypatch.setattr(preflight.subprocess, "run", fake_subprocess_run)
+    checks = [
+        preflight.Check(
+            id="first",
+            label="first",
+            kind="executable",
+            required=True,
+            ok=False,
+            detected="",
+            install_hint="install",
+            install_command="first install",
+        ),
+        preflight.Check(
+            id="second",
+            label="second",
+            kind="executable",
+            required=True,
+            ok=False,
+            detected="",
+            install_hint="install",
+            install_command="second install",
+        ),
+    ]
+
+    executed = preflight.install_missing(checks)
+
+    assert calls == ["first install"]
+    assert len(executed) == 1
+
+    calls.clear()
+    checks[0] = preflight.Check(
+        id="first",
+        label="first",
+        kind="executable",
+        required=True,
+        ok=False,
+        detected="",
+        install_hint="install",
+        install_command="first install",
+        fallback_command="fallback install",
+    )
+    executed = preflight.install_missing(checks)
+
+    assert calls == ["first install", "fallback install"]
+    assert len(executed) == 2
 
 
 def test_install_missing_runs_msys2_package_with_bash(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -334,6 +456,76 @@ def test_markdown_report_includes_fallback_command() -> None:
     assert "localty-system-protocol package" in markdown
     assert "fallback:" in markdown
     assert "prepare_support_repository.py" in markdown
+
+
+def test_markdown_report_includes_missing_optional_items() -> None:
+    result = {
+        "profile": "web-nextjs",
+        "status": "ready",
+        "created_at": "2026-07-06T00:00:00+00:00",
+        "checks": [
+            preflight.Check(
+                id="exe:npx",
+                label="npx",
+                kind="executable",
+                required=False,
+                ok=False,
+                detected="",
+                install_hint="Install Node.js.",
+                install_command=None,
+            ).to_dict(),
+            preflight.Check(
+                id="exe:node",
+                label="node",
+                kind="executable",
+                required=True,
+                ok=True,
+                detected="C:/node.exe",
+                install_hint="Install Node.js.",
+            ).to_dict(),
+        ],
+    }
+
+    markdown = preflight.markdown_report(result)
+
+    assert "## Missing Optional" in markdown
+    assert "`npx`" in markdown
+    assert "manual install required" in markdown
+
+
+def test_markdown_report_iterates_multiple_required_missing_items() -> None:
+    result = {
+        "profile": "docker-compose",
+        "status": "install-list-required",
+        "created_at": "2026-07-06T00:00:00+00:00",
+        "checks": [
+            preflight.Check(
+                id="exe:docker",
+                label="docker",
+                kind="executable",
+                required=True,
+                ok=False,
+                detected="",
+                install_hint="Install Docker.",
+                install_command="install docker",
+            ).to_dict(),
+            preflight.Check(
+                id="docker-plugin:compose",
+                label="Docker Compose",
+                kind="docker-plugin",
+                required=True,
+                ok=False,
+                detected="",
+                install_hint="Install Compose.",
+                install_command="install compose",
+            ).to_dict(),
+        ],
+    }
+
+    markdown = preflight.markdown_report(result)
+
+    assert "`docker`" in markdown
+    assert "`Docker Compose`" in markdown
 
 
 def test_markdown_report_reports_none_when_all_checks_ready() -> None:
@@ -427,3 +619,31 @@ def test_main_returns_two_when_required_check_missing(monkeypatch: pytest.Monkey
     output = json.loads(captured.out)
     assert code == 2
     assert output["status"] == "install-list-required"
+
+
+def test_main_runs_install_after_human_approval_and_module_script_load(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    missing = preflight.Check(
+        id="exe:uv",
+        label="uv",
+        kind="executable",
+        required=True,
+        ok=False,
+        detected="",
+        install_hint="install uv",
+        install_command="install uv",
+    )
+    monkeypatch.setattr(preflight, "build_checks", lambda args, repo_root: [missing])
+    monkeypatch.setattr(preflight, "install_missing", lambda checks: [{"id": "exe:uv", "returncode": 0}])
+
+    code = preflight.main(["--repo-root", str(tmp_path), "--install", "--human-check", "approved"])
+
+    output = json.loads(capsys.readouterr().out)
+    assert code == 2
+    assert output["install_executions"] == [{"id": "exe:uv", "returncode": 0}]
+
+    namespace = runpy.run_path(str(Path(preflight.__file__)))
+    assert namespace["build_parser"]

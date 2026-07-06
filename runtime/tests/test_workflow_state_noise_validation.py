@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import runpy
 from pathlib import Path
 
 import pytest
@@ -139,6 +140,78 @@ def test_noise_reduction_can_reach_warning_when_only_unknown_terms_remain(tmp_pa
     assert summary["readiness"] == "WARNING"
     assert "SYS_GATE" in reports["unknown-words-report.md"]
     assert "Requirement Review Draft May Start | yes" in reports["readiness-report.md"]
+
+
+def test_noise_reduction_passes_and_uses_default_output_dir(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".git").mkdir(parents=True)
+    (repo / "work").mkdir()
+    draft = repo / "work" / "requirements" / "draft" / "clean.md"
+    draft.parent.mkdir(parents=True)
+    draft.write_text(
+        "repository: inabako/example\n"
+        "target branch: develop\n"
+        "safety requirements are defined.\n"
+        "stop behavior is defined.\n"
+        "communication loss behavior is defined.\n",
+        encoding="utf-8",
+    )
+    args = argparse.Namespace(repo_root=str(repo), draft="work/requirements/draft/clean.md", output_dir="")
+
+    result = noise_reduction.run(args)
+
+    output_dir = draft.parent / "clean-noise-reduction"
+    readiness = (output_dir / "readiness-report.md").read_text(encoding="utf-8")
+    assert result["status"] == "ready"
+    assert result["readiness"] == "PASS"
+    assert output_dir.exists()
+    assert "Status | PASS" in readiness
+    assert "Requirement Review Draft May Start | yes" in readiness
+
+
+def test_noise_reduction_helpers_cover_duplicate_unknown_and_missing_draft(tmp_path: Path) -> None:
+    unknowns = noise_reduction.unknown_terms("SYS_GATE SYS_GATE\nTODO: SYS_GATE\n")
+
+    assert [item[1] for item in unknowns].count("SYS_GATE") == 2
+    assert noise_reduction.determine_readiness([], []) == "PASS"
+    with pytest.raises(FileNotFoundError, match="Draft not found"):
+        noise_reduction.resolve_draft(tmp_path, "missing.md")
+
+
+def test_noise_reduction_parser_main_and_script_load_paths(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    parser = noise_reduction.build_parser()
+    parsed = parser.parse_args(
+        [
+            "run",
+            "--draft",
+            "draft.md",
+            "--output-dir",
+            "out",
+            "--repo-root",
+            str(tmp_path),
+        ]
+    )
+    assert parsed.draft == "draft.md"
+    assert parsed.output_dir == "out"
+    assert parsed.repo_root == str(tmp_path)
+
+    monkeypatch.setattr(noise_reduction, "run", lambda args: {"status": "ready", "readiness": "PASS"})
+    assert noise_reduction.main(["run", "--draft", "draft.md", "--repo-root", str(tmp_path)]) == 0
+    assert '"status": "ready"' in capsys.readouterr().out
+
+    def raise_error(args: argparse.Namespace) -> dict[str, object]:
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(noise_reduction, "run", raise_error)
+    assert noise_reduction.main(["run", "--draft", "draft.md", "--repo-root", str(tmp_path)]) == 1
+    assert "ERROR: boom" in capsys.readouterr().err
+
+    namespace = runpy.run_path(str(Path(noise_reduction.__file__)))
+    assert namespace["build_parser"]
 
 
 def test_validate_output_language_detects_english_dominant_markdown(tmp_path: Path) -> None:

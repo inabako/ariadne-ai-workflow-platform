@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import runpy
 import subprocess
 from pathlib import Path
 
@@ -334,6 +335,132 @@ def test_prepare_support_repository_updates_existing_git_repo(
         ["fetch", "upstream", "develop"],
         ["checkout", "develop"],
     ]
+
+
+def test_prepare_support_repository_parser_clone_pull_main_and_script_paths(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo, work_dir = make_work_repo(tmp_path)
+    parser = prepare_support_repository.build_parser()
+    parsed = parser.parse_args(
+        [
+            "--work-id",
+            "issue-1",
+            "--name",
+            "protocol",
+            "--repository",
+            "inabako/localty-system-protocol",
+            "--branch",
+            "develop",
+            "--remote",
+            "upstream",
+            "--repo-root",
+            str(repo),
+            "--source-dir",
+            str(work_dir / "source" / "protocol"),
+            "--no-pull",
+            "--dry-run",
+        ]
+    )
+    assert parsed.work_id == "issue-1"
+    assert parsed.name == "protocol"
+    assert parsed.no_pull is True
+    assert parsed.dry_run is True
+
+    clone_calls: list[tuple[list[str], Path, dict[str, str] | None]] = []
+
+    def fake_run_git(args, cwd, env=None):
+        clone_calls.append((list(args), cwd, env))
+        return subprocess.CompletedProcess(["git", *args], 0, stdout="", stderr="")
+
+    monkeypatch.setattr(prepare_support_repository, "run_git", fake_run_git)
+    prepare_support_repository.clone_repository(
+        "https://github.com/inabako/example.git",
+        "main",
+        work_dir / "source" / "example",
+        "token",
+        dry_run=False,
+    )
+    assert clone_calls[0][0][:4] == ["clone", "--branch", "main", "--single-branch"]
+    assert clone_calls[0][2] is not None
+
+    source = work_dir / "source" / "protocol"
+    (source / ".git").mkdir(parents=True)
+    update_calls: list[list[str]] = []
+
+    def fake_update_git(args, cwd):
+        update_calls.append(list(args))
+        return subprocess.CompletedProcess(["git", *args], 0, stdout="", stderr="")
+
+    monkeypatch.setattr(prepare_support_repository, "run_git", fake_update_git)
+    monkeypatch.setattr(prepare_support_repository, "current_branch", lambda path: "develop")
+    monkeypatch.setattr(prepare_support_repository, "current_commit", lambda path: "abc123")
+    update_args = argparse.Namespace(
+        work_id="issue-1",
+        name="protocol",
+        repository="inabako/localty-system-protocol",
+        branch="develop",
+        remote="origin",
+        repo_root=str(repo),
+        source_dir=str(source),
+        no_pull=False,
+        dry_run=False,
+    )
+
+    result = prepare_support_repository.prepare_support_repository(update_args)
+
+    assert result["action"] == "updated"
+    assert ["pull", "--ff-only", "origin", "develop"] in update_calls
+
+    dry_existing_args = argparse.Namespace(**{**vars(update_args), "dry_run": True})
+    dry_existing = prepare_support_repository.prepare_support_repository(dry_existing_args)
+    assert dry_existing["action"] == "dry-run"
+
+    missing_args = argparse.Namespace(**{**vars(update_args), "work_id": "missing"})
+    with pytest.raises(FileNotFoundError, match="Work directory does not exist"):
+        prepare_support_repository.prepare_support_repository(missing_args)
+
+    monkeypatch.setattr(
+        prepare_support_repository,
+        "prepare_support_repository",
+        lambda args: {"status": "ok", "work_id": args.work_id},
+    )
+    assert prepare_support_repository.main(
+        [
+            "--work-id",
+            "issue-1",
+            "--name",
+            "protocol",
+            "--repository",
+            "inabako/localty-system-protocol",
+            "--repo-root",
+            str(repo),
+        ]
+    ) == 0
+    assert '"work_id": "issue-1"' in capsys.readouterr().out
+
+    def raise_error(args):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(prepare_support_repository, "prepare_support_repository", raise_error)
+    assert prepare_support_repository.main(
+        [
+            "--work-id",
+            "issue-1",
+            "--name",
+            "protocol",
+            "--repository",
+            "inabako/localty-system-protocol",
+            "--repo-root",
+            str(repo),
+        ]
+    ) == 1
+    assert "ERROR: boom" in capsys.readouterr().err
+
+    namespace = runpy.run_path(str(Path(prepare_support_repository.__file__)))
+    assert namespace["build_parser"]
 
 
 def test_create_issue_branch_dry_run_records_remote_branch_without_api(tmp_path: Path) -> None:
@@ -977,6 +1104,93 @@ def test_bootstrap_repository_rejects_non_semantic_message(tmp_path: Path) -> No
         bootstrap_repository.bootstrap_repository(args)
 
 
+def test_bootstrap_repository_parser_main_and_script_load(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    parser = bootstrap_repository.build_parser()
+    parsed = parser.parse_args(
+        [
+            "--work-id",
+            "issue-1",
+            "--github-repo",
+            "inabako/example",
+            "--initial-branch",
+            "develop",
+            "--remote",
+            "upstream",
+            "--message",
+            "chore: bootstrap repository",
+            "--repo-root",
+            str(tmp_path),
+            "--source-dir",
+            str(tmp_path / "source"),
+            "--push",
+            "--human-check",
+            "approved",
+            "--dry-run",
+        ]
+    )
+
+    assert parsed.work_id == "issue-1"
+    assert parsed.github_repo == "inabako/example"
+    assert parsed.initial_branch == "develop"
+    assert parsed.remote == "upstream"
+    assert parsed.message == "chore: bootstrap repository"
+    assert parsed.repo_root == str(tmp_path)
+    assert parsed.source_dir == str(tmp_path / "source")
+    assert parsed.push is True
+    assert parsed.human_check == "approved"
+    assert parsed.dry_run is True
+
+    repo, _work_dir = make_work_repo(tmp_path)
+
+    assert bootstrap_repository.main(
+        [
+            "--work-id",
+            "issue-1",
+            "--repo-root",
+            str(repo),
+            "--github-repo",
+            "inabako/example",
+            "--dry-run",
+        ]
+    ) == 0
+    assert '"github_repo": "inabako/example"' in capsys.readouterr().out
+
+    def fail_bootstrap(_args: argparse.Namespace) -> dict[str, object]:
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(bootstrap_repository, "bootstrap_repository", fail_bootstrap)
+
+    assert bootstrap_repository.main(["--work-id", "issue-1", "--dry-run"]) == 1
+    assert "ERROR: boom" in capsys.readouterr().err
+
+    namespace = runpy.run_path(str(Path(bootstrap_repository.__file__)))
+    assert namespace["build_parser"]
+
+
+def test_bootstrap_repository_requires_existing_work_directory(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".git").mkdir(parents=True)
+    args = argparse.Namespace(
+        work_id="missing-work",
+        github_repo="inabako/example",
+        initial_branch="main",
+        remote="origin",
+        message="chore: bootstrap realtime iac repository",
+        repo_root=str(repo),
+        source_dir=None,
+        push=False,
+        human_check=None,
+        dry_run=True,
+    )
+
+    with pytest.raises(FileNotFoundError, match="Work directory does not exist"):
+        bootstrap_repository.bootstrap_repository(args)
+
+
 def test_bootstrap_repository_dry_run_uses_scm_state_repository_and_writes_record(tmp_path: Path) -> None:
     repo, work_dir = make_work_repo(tmp_path)
     (work_dir / "context" / "scm-state.json").write_text(
@@ -1131,6 +1345,50 @@ def test_bootstrap_repository_non_dry_run_commits_and_pushes(
     assert ["commit", "-m", "chore: bootstrap realtime iac repository"] in calls
     assert ["remote", "add", "origin", "https://github.com/inabako/example.git"] in calls
     assert ["push", "-u", "origin", "main"] in calls
+
+
+def test_bootstrap_repository_non_dry_run_skips_commit_when_head_exists(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo, work_dir = make_work_repo(tmp_path)
+    source = work_dir / "source" / "repository"
+    calls: list[list[str]] = []
+
+    def fake_run_git(args, cwd, env=None):
+        calls.append(list(args))
+        if args == ["status", "--short"]:
+            return subprocess.CompletedProcess(["git", *args], 0, stdout="", stderr="")
+        if args == ["rev-parse", "--verify", "HEAD"]:
+            return subprocess.CompletedProcess(["git", *args], 0, stdout="abc123\n", stderr="")
+        if args == ["remote", "get-url", "origin"]:
+            return subprocess.CompletedProcess(["git", *args], 0, stdout="https://github.com/inabako/example.git\n", stderr="")
+        return subprocess.CompletedProcess(["git", *args], 0, stdout="", stderr="")
+
+    monkeypatch.setattr(bootstrap_repository, "run_git", fake_run_git)
+    monkeypatch.setattr(bootstrap_repository, "load_env", lambda repo_root: {"GITHUB_TOKEN": "token"})
+    monkeypatch.setattr(bootstrap_repository, "is_git_repository", lambda path: True)
+    monkeypatch.setattr(bootstrap_repository, "current_branch", lambda path: "main")
+    monkeypatch.setattr(bootstrap_repository, "current_commit", lambda path: "abc123")
+    args = argparse.Namespace(
+        work_id="issue-1",
+        github_repo="inabako/example",
+        initial_branch="main",
+        remote="origin",
+        message="chore: bootstrap realtime iac repository",
+        repo_root=str(repo),
+        source_dir=str(source),
+        push=False,
+        human_check=None,
+        dry_run=False,
+    )
+
+    result = bootstrap_repository.bootstrap_repository(args)
+
+    assert result["current_commit"] == "abc123"
+    assert ["rev-parse", "--verify", "HEAD"] in calls
+    assert ["commit", "-m", "chore: bootstrap realtime iac repository"] not in calls
+    assert ["remote", "set-url", "origin", "https://github.com/inabako/example.git"] in calls
 
 
 def test_bootstrap_repository_non_dry_run_requires_files_when_no_head(

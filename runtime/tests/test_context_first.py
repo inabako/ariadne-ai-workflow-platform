@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import runpy
 from pathlib import Path
 
 import pytest
@@ -95,6 +96,126 @@ def test_context_first_require_passes_when_context_exists(tmp_path: Path) -> Non
     assert result["status"] == "ready"
     assert result["human_check_required"] is False
     assert result["missing"] == []
+
+
+def test_context_first_parser_show_and_main_status_paths(tmp_path: Path, monkeypatch, capsys) -> None:
+    parser = context_first.build_parser()
+    parsed_show = parser.parse_args(["--repo-root", str(tmp_path), "--work-dir", "work/issue-1", "show"])
+    parsed_require = parser.parse_args(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--work-dir",
+            "work/issue-1",
+            "require",
+            "--context",
+            "workflow-selection",
+            "--context",
+            "runtime-context",
+        ]
+    )
+    parsed_environment = parser.parse_args(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--work-dir",
+            "work/issue-1",
+            "require-environment",
+            "--environment",
+            "docker",
+        ]
+    )
+
+    assert parsed_show.command == "show"
+    assert parsed_require.context == ["workflow-selection", "runtime-context"]
+    assert parsed_environment.environment == "docker"
+
+    missing = context_first.run_show(parsed_show)
+    assert missing["status"] == "missing"
+    assert missing["manifest"]["artifact_type"] == "context-manifest"
+
+    context_dir = tmp_path / "work" / "issue-1" / "context"
+    context_dir.mkdir(parents=True)
+    (context_dir / "context-manifest.json").write_text(json.dumps({"contexts": []}), encoding="utf-8")
+    existing = context_first.run_show(parsed_show)
+    assert existing["status"] == "ok"
+
+    monkeypatch.setattr(context_first, "run_show", lambda args: {"status": "ready"})
+    assert context_first.main(["--repo-root", str(tmp_path), "--work-dir", "work/issue-1", "show"]) == 0
+    assert '"status": "ready"' in capsys.readouterr().out
+
+    monkeypatch.setattr(context_first, "run_show", lambda args: {"status": "human-check-required"})
+    assert context_first.main(["--repo-root", str(tmp_path), "--work-dir", "work/issue-1", "show"]) == 2
+
+    def raise_error(args: argparse.Namespace) -> dict[str, object]:
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(context_first, "run_show", raise_error)
+    assert context_first.main(["--repo-root", str(tmp_path), "--work-dir", "work/issue-1", "show"]) == 1
+    assert "ERROR: boom" in capsys.readouterr().err
+
+
+def test_context_first_require_environment_rejects_missing_entry_after_status_ready(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    work_dir = tmp_path / "work" / "issue-9001"
+    context_dir = work_dir / "context"
+    context_dir.mkdir(parents=True)
+    (context_dir / "context-manifest.json").write_text(
+        json.dumps(
+            {
+                "artifact_type": "context-manifest",
+                "contexts": [
+                    {
+                        "type": "environment-selection",
+                        "path": "work/issue-9001/context/environment-selection.json",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(context_first, "context_entry", lambda manifest, context_type: None)
+
+    with pytest.raises(RuntimeError, match="context entry was not found"):
+        context_first.require_environment_selection(
+            tmp_path,
+            work_dir,
+            expected_environment="docker",
+        )
+
+
+def test_context_first_require_environment_rejects_invalid_selection_document(tmp_path: Path) -> None:
+    work_dir = tmp_path / "work" / "issue-9001"
+    context_dir = work_dir / "context"
+    context_dir.mkdir(parents=True)
+    selection_path = context_dir / "environment-selection.json"
+    selection_path.write_text(json.dumps(["not", "a", "dict"]), encoding="utf-8")
+    context_first.register_context(
+        tmp_path,
+        work_dir,
+        work_id="issue-9001",
+        context_type="environment-selection",
+        path=selection_path,
+        required=True,
+        generated_by="environment-dispatcher",
+        owner="dispatcher",
+        schema=".github/schemas/environment-selection.schema.json",
+    )
+
+    with pytest.raises(RuntimeError, match="invalid environment-selection context"):
+        context_first.require_environment_selection(
+            tmp_path,
+            work_dir,
+            expected_environment="docker",
+        )
+
+
+def test_context_first_module_can_be_loaded_as_script_path() -> None:
+    namespace = runpy.run_path(str(Path(context_first.__file__)))
+
+    assert namespace["build_parser"]
 
 
 def test_requirement_intake_registers_context_manifest(tmp_path: Path) -> None:
@@ -347,6 +468,115 @@ def test_iac_handoff_context_registers_execution_plan_and_handoff(tmp_path: Path
     assert execution_plan["required_environment"] == "docker"
     handoff = json.loads((work_dir / "context" / "realtime-iac-handoff.json").read_text(encoding="utf-8"))
     assert handoff["shared_artifact_validation"]["judgment"] == "pass"
+
+
+def test_iac_handoff_context_parser_paths_and_handoff_defaults(tmp_path: Path) -> None:
+    parser = iac_handoff_context.build_parser()
+    args = parser.parse_args(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--work-id",
+            "SYS-9001",
+            "--force",
+            "--target-repository",
+            "owner/realtime-target",
+            "--target-branch",
+            "main",
+            "--validator-judgment",
+            "conditional-pass",
+            "--source-artifact",
+            "work/SYS-9001/design-document/shared-artifacts-index.md",
+            "--validation-path",
+            "work/SYS-9001/context/validator.json",
+            "--handoff-path",
+            "work/SYS-9001/context/custom-handoff.json",
+        ]
+    )
+
+    assert args.work_id == "SYS-9001"
+    assert args.force is True
+    assert args.validator_judgment == "conditional-pass"
+    assert args.source_artifact == ["work/SYS-9001/design-document/shared-artifacts-index.md"]
+    assert iac_handoff_context.resolve_path(tmp_path, "", tmp_path / "default.json") == tmp_path / "default.json"
+    assert iac_handoff_context.resolve_path(tmp_path, "relative.json", tmp_path / "default.json") == tmp_path / "relative.json"
+    assert iac_handoff_context.resolve_path(tmp_path, str(tmp_path / "absolute.json"), tmp_path / "default.json") == (
+        tmp_path / "absolute.json"
+    )
+
+    validation_path = tmp_path / "work" / "SYS-9001" / "context" / "validator.json"
+    validation_path.parent.mkdir(parents=True)
+    validation_path.write_text(json.dumps(["not", "a", "dict"]), encoding="utf-8")
+
+    handoff = iac_handoff_context.create_handoff(
+        tmp_path,
+        "SYS-9001",
+        validation_path=validation_path,
+        source_artifacts=[],
+        validator_judgment="conditional-pass",
+        target_repository="owner/realtime-target",
+        target_branch="main",
+    )
+
+    assert handoff["shared_artifact_validation"]["judgment"] == "conditional-pass"
+    assert handoff["target_repository"] == "owner/realtime-target"
+    assert handoff["required_environment"] == "docker"
+
+
+def test_iac_handoff_context_reuses_existing_handoff_and_rejects_invalid_existing(tmp_path: Path) -> None:
+    work_dir = tmp_path / "work" / "SYS-9001"
+    context_dir = work_dir / "context"
+    context_dir.mkdir(parents=True)
+    handoff_path = context_dir / "realtime-iac-handoff.json"
+    validation_path = context_dir / "shared-artifact-validation.json"
+    validation_path.write_text(json.dumps({"status": "pass"}), encoding="utf-8")
+    handoff_path.write_text(json.dumps({"preserved": True}), encoding="utf-8")
+    args = argparse.Namespace(
+        repo_root=str(tmp_path),
+        work_id="SYS-9001",
+        force=False,
+        target_repository="",
+        target_branch="",
+        validator_judgment="unknown",
+        source_artifact=[],
+        validation_path="",
+        handoff_path="",
+    )
+
+    result = iac_handoff_context.run(args)
+
+    assert result["status"] == "ready-for-human-check"
+    assert json.loads(handoff_path.read_text(encoding="utf-8")) == {"preserved": True}
+
+    handoff_path.write_text(json.dumps(["not", "a", "dict"]), encoding="utf-8")
+    with pytest.raises(ValueError, match="Existing handoff context is not a JSON object"):
+        iac_handoff_context.run(args)
+
+
+def test_iac_handoff_context_main_and_script_load_paths(tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.setattr(
+        iac_handoff_context,
+        "run",
+        lambda args: {
+            "status": "ready-for-human-check",
+            "work_id": args.work_id,
+        },
+    )
+    assert iac_handoff_context.main(["--repo-root", str(tmp_path), "--work-id", "SYS-9001"]) == 0
+    assert '"status": "ready-for-human-check"' in capsys.readouterr().out
+
+    monkeypatch.setattr(iac_handoff_context, "run", lambda args: {"status": "failed"})
+    assert iac_handoff_context.main(["--repo-root", str(tmp_path), "--work-id", "SYS-9001"]) == 1
+
+    def raise_error(args: argparse.Namespace) -> dict[str, object]:
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(iac_handoff_context, "run", raise_error)
+    assert iac_handoff_context.main(["--repo-root", str(tmp_path), "--work-id", "SYS-9001"]) == 1
+    assert "ERROR: boom" in capsys.readouterr().err
+
+    namespace = runpy.run_path(str(Path(iac_handoff_context.__file__)))
+    assert namespace["build_parser"]
 
 
 def test_dispatcher_context_init_registers_phase3_contexts(tmp_path: Path) -> None:

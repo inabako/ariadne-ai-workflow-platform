@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import runpy
 from pathlib import Path
 
 import pytest
@@ -672,3 +673,66 @@ def test_pull_request_draft_writes_record_and_updates_scm_state(tmp_path: Path) 
     assert record["base"] == "develop"
     state = json.loads((work_dir / "context" / "scm-state.json").read_text(encoding="utf-8"))
     assert state["pull_request_record"].startswith("work/issue-1/process-report/pull-request-")
+
+
+def test_pull_request_parser_file_defaults_main_and_script_paths(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    parser = pull_request_manager.build_parser()
+    parsed = parser.parse_args(
+        [
+            "--work-id",
+            "issue-1",
+            "--github-repo",
+            "inabako/example",
+            "--base",
+            "main",
+            "--head",
+            "feature/issue-1",
+            "--title-file",
+            "title.md",
+            "--body-file",
+            "body.md",
+            "--repo-root",
+            str(tmp_path),
+            "--create",
+            "--human-check",
+            "approved",
+        ]
+    )
+    assert parsed.work_id == "issue-1"
+    assert parsed.github_repo == "inabako/example"
+    assert parsed.create is True
+    assert parsed.human_check == "approved"
+
+    repo, work_dir = make_work_repo(tmp_path)
+    title_file = work_dir / "process-report" / "pull-request-title.md"
+    body_file = work_dir / "process-report" / "pull-request-description.md"
+    title_file.write_text("Saved PR title\n", encoding="utf-8")
+    body_file.write_text("Saved PR body\n", encoding="utf-8")
+    assert pull_request_manager.default_pr_title(repo, work_dir) == "Saved PR title"
+    assert pull_request_manager.default_pr_body(work_dir) == "Saved PR body"
+
+    (work_dir / "process-report" / "github-issue-empty.json").write_text(json.dumps({"title": ""}), encoding="utf-8")
+    title_file.unlink()
+    assert pull_request_manager.latest_issue_title(repo, work_dir) == ""
+
+    monkeypatch.setattr(
+        pull_request_manager,
+        "manage_pull_request",
+        lambda args: {"status": "draft", "work_id": args.work_id},
+    )
+    assert pull_request_manager.main(["--repo-root", str(repo), "--work-id", "issue-1", "--head", "feature/issue-1"]) == 0
+    assert '"work_id": "issue-1"' in capsys.readouterr().out
+
+    def raise_error(args):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(pull_request_manager, "manage_pull_request", raise_error)
+    assert pull_request_manager.main(["--repo-root", str(repo), "--work-id", "issue-1", "--head", "feature/issue-1"]) == 1
+    assert "ERROR: boom" in capsys.readouterr().err
+
+    namespace = runpy.run_path(str(Path(pull_request_manager.__file__)))
+    assert namespace["build_parser"]

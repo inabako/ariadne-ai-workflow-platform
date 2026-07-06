@@ -453,7 +453,7 @@ def test_web_svg_mode_parse_model_render_and_validate_outputs(tmp_path: Path) ->
     assert (work_dir / "web-ui" / "generated" / "web" / "SvgLayoutCandidate.tsx").exists()
 
 
-def test_web_svg_mode_helpers_cover_prefix_discovery_claim_and_modes(tmp_path: Path) -> None:
+def test_web_svg_mode_helpers_cover_prefix_discovery_claim_and_modes(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     repo_root, work_dir = make_work(tmp_path, "WEB_FEAT-200")
     inbox = repo_root / "work" / "requirements" / "svg-input"
     write_svg(inbox / "NEXT_FEAT_dashboard.svg", WEB_SVG_TEXT)
@@ -474,7 +474,32 @@ def test_web_svg_mode_helpers_cover_prefix_discovery_claim_and_modes(tmp_path: P
     assert web_svg_layout_mode.infer_mode("NEXTFEAT-1", "auto") == "existing-app-feature"
     assert web_svg_layout_mode.infer_mode("FIX-1", "auto") == "corrective-fix"
     assert web_svg_layout_mode.infer_mode("OTHER-1", "auto") == "generic-web-ui"
+    assert web_svg_layout_mode.infer_mode("WEB_FIX-1", "corrective-fix") == "corrective-fix"
     assert web_svg_layout_mode.pascal_case("header-toolbar") == "HeaderToolbar"
+    assert web_svg_layout_mode.input_prefix_for_mode("generic-web-ui") == "WEB"
+    assert web_svg_layout_mode.discover_inbox_svg_files(repo_root / "missing", "WEB") == []
+
+    generic_inbox = repo_root / "generic-inbox"
+    generic_inbox.mkdir()
+    write_svg(generic_inbox / "NEXT_generic.svg", WEB_SVG_TEXT)
+    write_svg(generic_inbox / "WEB_generic.svg", WEB_SVG_TEXT)
+    assert [path.name for path in web_svg_layout_mode.discover_inbox_svg_files(generic_inbox, "WEB")] == [
+        "NEXT_generic.svg",
+        "WEB_generic.svg",
+    ]
+
+    existing = write_svg(work_dir / "input" / "web-ui" / "WEB_FEAT_existing.svg", WEB_SVG_TEXT)
+    claimed_existing, existing_sources = web_svg_layout_mode.claim_svg_inputs(work_dir, inbox, "WEB_FEAT", repo_root)
+    assert existing in claimed_existing
+    assert existing_sources == []
+
+    conflict_work = repo_root / "work" / "WEB_FEAT-201"
+    (conflict_work / "input" / "web-ui").mkdir(parents=True)
+    write_svg(inbox / "WEB_FEAT_conflict.svg", WEB_SVG_TEXT)
+    write_svg(conflict_work / "input" / "web-ui" / "WEB_FEAT_conflict.svg", WEB_SVG_TEXT)
+    monkeypatch.setattr(web_svg_layout_mode, "discover_svg_files", lambda work_dir_arg: [])
+    with pytest.raises(FileExistsError, match="Cannot claim SVG"):
+        web_svg_layout_mode.claim_svg_inputs(conflict_work, inbox, "WEB_FEAT", repo_root)
 
 
 def test_web_svg_mode_renderers_and_failure_paths(tmp_path: Path) -> None:
@@ -486,6 +511,10 @@ def test_web_svg_mode_renderers_and_failure_paths(tmp_path: Path) -> None:
     assert web_svg_layout_mode.parse_style("fill: red; ignored; stroke: blue") == {"fill": "red", "stroke": "blue"}
     assert web_svg_layout_mode.safe_identifier("123 bad id", "fallback") == "item_123_bad_id"
     assert web_svg_layout_mode.html_element("unknown") == "div"
+    assert web_svg_layout_mode.html_element("checkbox") == "input"
+    assert web_svg_layout_mode.infer_section_role("nav_sidebar") == "navigation"
+    assert web_svg_layout_mode.infer_section_role("footer_status") == "status"
+    assert "移動" in web_svg_layout_mode.infer_responsibility("navigation", "Menu")
     assert "# Web SVG Analysis" in web_svg_layout_mode.render_svg_analysis([document], "WEB_FIX-300", "corrective-fix")
     assert "screen:" in web_svg_layout_mode.render_yaml(model)
     assert "# Component Mapping" in web_svg_layout_mode.render_component_mapping(model, "WEB_FIX-300", "corrective-fix")
@@ -499,6 +528,235 @@ def test_web_svg_mode_renderers_and_failure_paths(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="Invalid SVG XML"):
         web_svg_layout_mode.parse_svg(write_svg(tmp_path / "bad-web.svg", "<svg><g></svg>"))
+
+
+def test_web_svg_mode_model_fallbacks_duplicate_ids_and_component_edges(tmp_path: Path) -> None:
+    _, work_dir = make_work(tmp_path, "WEB_MISC-301")
+    decorative_svg = write_svg(
+        work_dir / "input" / "web-ui" / "WEB_decorative.svg",
+        """\
+<svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
+  <g id="content"><path id="shape" d="M0,0 L10,10"/></g>
+</svg>
+""",
+    )
+    rich_svg = write_svg(
+        work_dir / "input" / "web-ui" / "WEB_rich.svg",
+        """\
+<svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+  <g id="nav_sidebar">
+    <rect id="nav_menu" class="menu" width="100" height="30"/>
+    <rect id="panel_card" class="panel" width="100" height="30"/>
+    <text id="same">Apply</text>
+    <text id="same">Plain Label</text>
+  </g>
+</svg>
+""",
+    )
+
+    fallback_model = web_svg_layout_mode.build_model(
+        [web_svg_layout_mode.parse_svg(decorative_svg)],
+        "WEB_MISC-301",
+        "generic-web-ui",
+    )
+    rich_model = web_svg_layout_mode.build_model(
+        [web_svg_layout_mode.parse_svg(rich_svg)],
+        "WEB_MISC-301",
+        "generic-web-ui",
+    )
+
+    assert fallback_model["components"] == [
+        {
+            "id": "content_region",
+            "type": "section",
+            "label": "Content",
+            "section": "content",
+            "responsibility": "画面の主要内容を表示する",
+            "source": "WEB_decorative.svg",
+        }
+    ]
+    assert {component["type"] for component in rich_model["components"]} >= {"navigation", "section", "button", "text"}
+    assert [component["id"] for component in rich_model["components"] if component["id"].startswith("same")] == [
+        "same",
+        "same_2",
+    ]
+    button = next(component for component in rich_model["components"] if component["id"] == "same")
+    assert button["type"] == "button"
+    assert button["label"] == "Apply"
+
+
+def test_web_svg_validate_detects_policy_react_playwright_and_state_errors(tmp_path: Path) -> None:
+    _, work_dir = make_work(tmp_path, "WEB_FIX-350")
+    output_dir = work_dir / "web-ui"
+    component_path = output_dir / "generated" / "web" / "SvgLayoutCandidate.tsx"
+    test_path = output_dir / "generated" / "tests" / "svg-layout.spec.ts"
+    component_path.parent.mkdir(parents=True)
+    test_path.parent.mkdir(parents=True)
+    component_path.write_text(
+        "export function Broken(){ return <div dangerouslySetInnerHTML={{__html: ''}} /> }",
+        encoding="utf-8",
+    )
+    test_path.write_text("test('x', async()=>{})", encoding="utf-8")
+    (output_dir / "web-svg-layout-state.json").write_text("{bad json", encoding="utf-8")
+
+    result = web_svg_layout_mode.validate_outputs(work_dir)
+
+    assert result["status"] == "fail"
+    assert any(error.startswith("missing:") for error in result["errors"])
+    assert "policy:dangerouslySetInnerHTML" in result["errors"]
+    assert "react:data-testid-missing" in result["errors"]
+    assert "react:SvgLayoutCandidate-missing" in result["errors"]
+    assert "react:onAction-missing" in result["errors"]
+    assert "playwright:@playwright/test-missing" in result["errors"]
+    assert "playwright:getByTestId-missing" in result["errors"]
+    assert "playwright:toBeVisible-missing" in result["errors"]
+    assert any(error.startswith("state-json:") for error in result["errors"])
+
+    component_path.write_text(
+        "export function SvgLayoutCandidate(){ return <div data-testid='x' style={{position: \"absolute\"}}>x</div> }",
+        encoding="utf-8",
+    )
+    (output_dir / "web-svg-layout-state.json").write_text(
+        json.dumps({"parent_workflow_return": {"ready": False}}),
+        encoding="utf-8",
+    )
+    result = web_svg_layout_mode.validate_outputs(work_dir)
+    assert 'policy:position: "absolute"' in result["errors"]
+    assert "state:parent-workflow-return-not-ready" in result["errors"]
+
+
+def test_web_svg_init_input_and_resolvers(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work(tmp_path, "WEB_SYS-360")
+    inbox = repo_root / "work" / "requirements" / "svg-input"
+
+    result = web_svg_layout_mode.run_init_input(
+        argparse.Namespace(repo_root=str(repo_root), svg_input_dir=None, force=False)
+    )
+    readme = repo_root / result["readme"]
+    readme.write_text("custom\n", encoding="utf-8")
+    web_svg_layout_mode.run_init_input(argparse.Namespace(repo_root=str(repo_root), svg_input_dir=None, force=False))
+    assert readme.read_text(encoding="utf-8") == "custom\n"
+    web_svg_layout_mode.run_init_input(argparse.Namespace(repo_root=str(repo_root), svg_input_dir=None, force=True))
+    assert "SVG Input Inbox" in readme.read_text(encoding="utf-8-sig")
+    assert web_svg_layout_mode.resolve_work_dir(repo_root, "WEB_SYS-360", None) == work_dir
+    assert web_svg_layout_mode.resolve_work_dir(repo_root, "WEB_SYS-360", str(work_dir)) == work_dir.resolve()
+    assert web_svg_layout_mode.resolve_svg_input_dir(repo_root, None) == inbox
+    assert web_svg_layout_mode.resolve_svg_input_dir(repo_root, str(inbox)) == inbox.resolve()
+
+
+def test_web_svg_run_generate_complete_force_and_validation_error(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root, work_dir = make_work(tmp_path, "WEB_FEAT-600")
+    inbox = repo_root / "work" / "requirements" / "svg-input"
+    write_svg(inbox / "WEB_FEAT_dashboard.svg", WEB_SVG_TEXT)
+
+    state = web_svg_layout_mode.run_generate(
+        argparse.Namespace(
+            issue_id="WEB_FEAT-600",
+            work_dir=str(work_dir),
+            repo_root=str(repo_root),
+            svg_input_dir=str(inbox),
+            mode="auto",
+            force=False,
+            input_prefix=None,
+            skip_context_check=True,
+        )
+    )
+
+    assert state["status"] == "complete"
+    assert state["validation"]["status"] == "pass"
+    assert state["parent_workflow_return"]["ready"] is True
+    assert (work_dir / "context" / "artifact-index.json").exists()
+    assert (work_dir / "context" / "context-manifest.json").exists()
+
+    write_svg(inbox / "WEB_FEAT_new.svg", WEB_SVG_TEXT)
+    with pytest.raises(FileExistsError, match="Web SVG layout outputs already exist"):
+        web_svg_layout_mode.run_generate(
+            argparse.Namespace(
+                issue_id="WEB_FEAT-600",
+                work_dir=str(work_dir),
+                repo_root=str(repo_root),
+                svg_input_dir=str(inbox),
+                mode="auto",
+                force=False,
+                input_prefix=None,
+                skip_context_check=True,
+            )
+        )
+
+    forced = web_svg_layout_mode.run_generate(
+        argparse.Namespace(
+            issue_id="WEB_FEAT-600",
+            work_dir=str(work_dir),
+            repo_root=str(repo_root),
+            svg_input_dir=str(inbox),
+            mode="auto",
+            force=True,
+            input_prefix=None,
+            skip_context_check=True,
+        )
+    )
+    assert forced["status"] == "complete"
+
+    failure_work = repo_root / "work" / "WEB_FEAT-601"
+    (failure_work / "context").mkdir(parents=True)
+    write_svg(inbox / "WEB_FEAT_failure.svg", WEB_SVG_TEXT)
+    monkeypatch.setattr(web_svg_layout_mode, "validate_outputs", lambda work_dir_arg: {"status": "fail", "errors": ["boom"]})
+    with pytest.raises(RuntimeError, match="failed validation"):
+        web_svg_layout_mode.run_generate(
+            argparse.Namespace(
+                issue_id="WEB_FEAT-601",
+                work_dir=str(failure_work),
+                repo_root=str(repo_root),
+                svg_input_dir=str(inbox),
+                mode="auto",
+                force=False,
+                input_prefix=None,
+                skip_context_check=True,
+            )
+        )
+
+
+def test_web_svg_main_run_and_error_boundary(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo_root, work_dir = make_work(tmp_path, "WEB-700")
+    inbox = repo_root / "work" / "requirements" / "svg-input"
+    write_svg(inbox / "WEB_console.svg", WEB_SVG_TEXT)
+
+    code = web_svg_layout_mode.main(
+        [
+            "run",
+            "--issue-id",
+            "WEB-700",
+            "--work-dir",
+            str(work_dir),
+            "--repo-root",
+            str(repo_root),
+            "--svg-input-dir",
+            str(inbox),
+            "--mode",
+            "generic-web-ui",
+            "--input-prefix",
+            "WEB",
+            "--skip-context-check",
+        ]
+    )
+    captured = capsys.readouterr()
+    assert code == 0
+    assert '"status": "complete"' in captured.out
+
+    monkeypatch.setattr(web_svg_layout_mode, "run_validate", lambda args: {"status": "fail"})
+    assert web_svg_layout_mode.main(["validate", "--issue-id", "WEB-700", "--repo-root", str(repo_root)]) == 1
+    assert '"status": "fail"' in capsys.readouterr().out
+
+    monkeypatch.setattr(web_svg_layout_mode, "run_validate", lambda args: (_ for _ in ()).throw(RuntimeError("boom")))
+    assert web_svg_layout_mode.main(["validate", "--issue-id", "WEB-700", "--repo-root", str(repo_root)]) == 1
+    assert "ERROR: boom" in capsys.readouterr().err
 
 
 def test_web_svg_run_generate_skips_when_no_svg_and_main_prints_json(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:

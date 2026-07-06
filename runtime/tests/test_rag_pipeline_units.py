@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import runpy
 from pathlib import Path
 
 import pytest
@@ -52,6 +53,203 @@ def test_normalize_document_preserves_front_matter_and_headings(tmp_path: Path) 
     assert document["metadata"]["tags"] == ["iac", "docker"]
     assert document["headings"] == ["Docker検証レポート", "Health Check"]
     assert (repo / document["normalized_path"]).exists()
+
+
+def test_normalize_documents_parser_and_scalar_helpers(tmp_path: Path) -> None:
+    parser = normalize_documents.build_parser()
+    args = parser.parse_args(
+        [
+            "--source-dir",
+            "custom/source",
+            "--output-dir",
+            "custom/normalized",
+            "--document-type",
+            "external-web-knowledge",
+            "--repo-root",
+            str(tmp_path),
+            "--project",
+            "ariadne",
+            "--repository",
+            "inabako/ariadne",
+            "--branch",
+            "main",
+            "--commit",
+            "abc123",
+            "--status",
+            "approved",
+            "--clean-output",
+        ]
+    )
+
+    assert args.source_dir == "custom/source"
+    assert args.output_dir == "custom/normalized"
+    assert args.document_type == "external-web-knowledge"
+    assert args.repo_root == str(tmp_path)
+    assert args.clean_output is True
+    assert normalize_documents.parse_scalar("   ") == ""
+    assert normalize_documents.parse_scalar("[alpha, 'beta', \"gamma\", ]") == ["alpha", "beta", "gamma"]
+    assert normalize_documents.parse_scalar("'quoted value'") == "quoted value"
+    assert normalize_documents.parse_bool(True) is True
+    assert normalize_documents.parse_bool("YES") is True
+    assert normalize_documents.parse_bool("off") is False
+    assert normalize_documents.parse_bool(1) is True
+
+
+def test_normalize_documents_front_matter_helper_edges(tmp_path: Path) -> None:
+    list_value, next_index = normalize_documents.parse_front_matter_value(
+        ["tags:", "- alpha", "- 'beta'", "summary: done"],
+        0,
+    )
+    empty_value, empty_next = normalize_documents.parse_front_matter_value(["tags:", "summary: done"], 0)
+    metadata, content = normalize_documents.parse_front_matter(
+        "---\n"
+        "\n"
+        "# comment\n"
+        "ignored line\n"
+        "title: Example\n"
+        "claims:\n"
+        "- safe\n"
+        "---\n"
+        "# Body\n"
+    )
+
+    assert list_value == ["alpha", "beta"]
+    assert next_index == 3
+    assert empty_value == ""
+    assert empty_next == 1
+    assert metadata == {"title": "Example", "claims": ["safe"]}
+    assert content == "# Body\n"
+    assert normalize_documents.title_from_content("plain body", tmp_path / "fallback-name.md") == "fallback-name"
+    assert normalize_documents.ensure_list("single") == ["single"]
+    assert normalize_documents.first_string(["", "alpha", "beta"]) == "alpha, beta"
+
+
+def test_normalize_document_includes_external_web_metadata_and_defaults(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    source = repo / "rag" / "external" / "web.md"
+    source.parent.mkdir(parents=True)
+    source.write_text(
+        "---\n"
+        "type: external-web-knowledge\n"
+        "artifact_type: source-note\n"
+        "source_type: web\n"
+        "source_kind: official-docs\n"
+        "source_owner: vendor\n"
+        "category: runtime\n"
+        "topic: docker\n"
+        "trust_level: high\n"
+        "retrieved_at: 2026-07-07T00:00:00Z\n"
+        "freshness_policy: verify-before-use\n"
+        "sources: [official docs, changelog]\n"
+        "urls:\n"
+        "- https://example.test/docs\n"
+        "claims:\n"
+        "- current behavior\n"
+        "verification_notes:\n"
+        "- cite before use\n"
+        "verify_before_use: yes\n"
+        "areas: api\n"
+        "severity_focus:\n"
+        "- medium\n"
+        "owner_agent: web-rag\n"
+        "---\n"
+        "No heading body.\n",
+        encoding="utf-8",
+    )
+    args = argparse.Namespace(
+        document_type="corrective-action-report",
+        project="ariadne",
+        repository="",
+        branch="main",
+        commit="",
+        status="draft",
+    )
+
+    document = normalize_documents.normalize_document(repo, source, repo / "rag" / "normalized", args)
+
+    assert document["document_type"] == "external-web-knowledge"
+    assert document["title"] == "web"
+    assert document["metadata"]["commit"] == "unknown"
+    assert document["metadata"]["agent"] == "web-rag"
+    assert document["metadata"]["tags"] == ["external-web-knowledge"]
+    assert document["metadata"]["areas"] == ["api"]
+    assert document["metadata"]["severity_focus"] == ["medium"]
+    assert document["metadata"]["artifact_type"] == "source-note"
+    assert document["metadata"]["sources"] == ["official docs", "changelog"]
+    assert document["metadata"]["urls"] == ["https://example.test/docs"]
+    assert document["metadata"]["claims"] == ["current behavior"]
+    assert document["metadata"]["verify_before_use"] is True
+
+
+def test_normalize_documents_run_cleans_json_output_and_accepts_absolute_paths(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    source_dir = tmp_path / "absolute-source"
+    output_dir = tmp_path / "absolute-output"
+    source_dir.mkdir()
+    output_dir.mkdir()
+    (source_dir / "README.md").write_text("# ignored\n", encoding="utf-8")
+    (source_dir / "report.md").write_text("# Report\n\nBody\n", encoding="utf-8")
+    old_json = output_dir / "old.json"
+    old_text = output_dir / "old.txt"
+    old_json.write_text("{}", encoding="utf-8")
+    old_text.write_text("keep", encoding="utf-8")
+    args = argparse.Namespace(
+        repo_root=str(repo),
+        source_dir=str(source_dir),
+        output_dir=str(output_dir),
+        document_type="note",
+        project="ariadne",
+        repository="repo",
+        branch="main",
+        commit="abc123",
+        status="approved",
+        clean_output=True,
+    )
+
+    result = normalize_documents.run(args)
+
+    assert result["source_dir"] == str(source_dir.resolve())
+    assert result["output_dir"] == str(output_dir.resolve())
+    assert result["document_count"] == 1
+    assert len(result["documents"]) == 1
+    assert not old_json.exists()
+    assert old_text.exists()
+
+
+def test_normalize_documents_missing_source_and_main_paths(tmp_path: Path, monkeypatch, capsys) -> None:
+    with pytest.raises(FileNotFoundError, match="RAG source directory not found"):
+        normalize_documents.discover_sources(tmp_path / "missing")
+
+    repo = make_repo(tmp_path)
+    source_dir = repo / "rag" / "source"
+    source_dir.mkdir(parents=True)
+    (source_dir / "report.md").write_text("# Report\n\nBody\n", encoding="utf-8")
+    assert normalize_documents.main(
+        [
+            "--repo-root",
+            str(repo),
+            "--source-dir",
+            "rag/source",
+            "--output-dir",
+            "rag/normalized",
+            "--document-type",
+            "note",
+        ]
+    ) == 0
+    assert '"document_count": 1' in capsys.readouterr().out
+
+    def raise_error(args: argparse.Namespace) -> dict[str, object]:
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(normalize_documents, "run", raise_error)
+    assert normalize_documents.main(["--repo-root", str(repo)]) == 1
+    assert "ERROR: boom" in capsys.readouterr().err
+
+
+def test_normalize_documents_module_can_be_loaded_as_script_path() -> None:
+    namespace = runpy.run_path(str(Path(normalize_documents.__file__)))
+
+    assert namespace["build_parser"]
 
 
 def test_discover_sources_ignores_readme(tmp_path: Path) -> None:
@@ -314,6 +512,44 @@ def test_embed_chunks_is_deterministic_and_validates_dimensions(tmp_path: Path) 
         embed_chunks.sparse_embedding("Docker", 0)
 
 
+def test_embed_chunks_parser_jsonl_edges_and_empty_embedding(tmp_path: Path) -> None:
+    parser = embed_chunks.build_parser()
+
+    args = parser.parse_args(
+        [
+            "--chunks-index",
+            "custom/chunks.jsonl",
+            "--output",
+            "custom/embeddings.jsonl",
+            "--dimensions",
+            "16",
+            "--repo-root",
+            str(tmp_path),
+        ]
+    )
+
+    assert args.chunks_index == "custom/chunks.jsonl"
+    assert args.output == "custom/embeddings.jsonl"
+    assert args.dimensions == 16
+    assert args.repo_root == str(tmp_path)
+
+    with pytest.raises(FileNotFoundError, match="RAG chunk index not found"):
+        embed_chunks.read_jsonl(tmp_path / "missing.jsonl")
+
+    mixed_jsonl = tmp_path / "mixed.jsonl"
+    mixed_jsonl.write_text('{"ok": true}\n\n["ignored"]\n', encoding="utf-8")
+
+    assert embed_chunks.read_jsonl(mixed_jsonl) == [{"ok": True}]
+
+    invalid_jsonl = tmp_path / "invalid.jsonl"
+    invalid_jsonl.write_text('{"ok": true}\n\n{bad}\n', encoding="utf-8")
+
+    with pytest.raises(ValueError, match=r"Invalid JSONL .*:3"):
+        embed_chunks.read_jsonl(invalid_jsonl)
+
+    assert embed_chunks.sparse_embedding("", 8) == {}
+
+
 def test_embed_chunks_run_writes_jsonl(tmp_path: Path) -> None:
     repo = make_repo(tmp_path)
     chunks_index = repo / "rag" / "indexes" / "chunks.jsonl"
@@ -335,3 +571,45 @@ def test_embed_chunks_run_writes_jsonl(tmp_path: Path) -> None:
     output = repo / result["embeddings_index"]
     assert output.exists()
     assert '"embedding_model": "local-hash-embedding-v1"' in output.read_text(encoding="utf-8")
+
+
+def test_embed_chunks_main_success_error_and_script_load(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo = make_repo(tmp_path)
+    chunks_index = repo / "rag" / "indexes" / "chunks.jsonl"
+    chunks_index.parent.mkdir(parents=True)
+    chunks_index.write_text(
+        json.dumps({"chunk_id": "chunk-1", "document_id": "doc-1", "content": "Docker"}) + "\n",
+        encoding="utf-8",
+    )
+
+    exit_code = embed_chunks.main(
+        [
+            "--repo-root",
+            str(repo),
+            "--chunks-index",
+            "rag/indexes/chunks.jsonl",
+            "--output",
+            "rag/embeddings/chunks-embeddings.jsonl",
+            "--dimensions",
+            "16",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert '"embedding_count": 1' in captured.out
+
+    def fail_run(_args: argparse.Namespace) -> dict[str, object]:
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(embed_chunks, "run", fail_run)
+
+    assert embed_chunks.main(["--repo-root", str(repo)]) == 1
+    assert "ERROR: boom" in capsys.readouterr().err
+
+    namespace = runpy.run_path(str(Path(embed_chunks.__file__)))
+    assert namespace["build_parser"]
