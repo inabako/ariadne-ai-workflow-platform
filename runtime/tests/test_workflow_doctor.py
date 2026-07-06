@@ -1,9 +1,40 @@
 from __future__ import annotations
 
 import argparse
+import subprocess
 from pathlib import Path
 
 from runtime.workflow import close_archive, workflow_doctor
+
+
+def test_run_git_allows_returncode_one_and_filters_blank_lines(monkeypatch, tmp_path: Path) -> None:
+    def fake_run(command, cwd, text, capture_output, check):
+        assert command == ["git", "ls-files", "work", "rag"]
+        assert cwd == tmp_path
+        assert text is True
+        assert capture_output is True
+        assert check is False
+        return subprocess.CompletedProcess(command, 1, stdout="\nwork/a.txt\n\nrag/b.txt\n", stderr="")
+
+    monkeypatch.setattr(workflow_doctor.subprocess, "run", fake_run)
+
+    lines = workflow_doctor.run_git(tmp_path, ["ls-files", "work", "rag"])
+
+    assert lines == ["work/a.txt", "rag/b.txt"]
+
+
+def test_run_git_raises_for_unexpected_returncode(monkeypatch, tmp_path: Path) -> None:
+    def fake_run(command, cwd, text, capture_output, check):
+        return subprocess.CompletedProcess(command, 2, stdout="fallback", stderr="fatal")
+
+    monkeypatch.setattr(workflow_doctor.subprocess, "run", fake_run)
+
+    try:
+        workflow_doctor.run_git(tmp_path, ["ls-files", "work", "rag"])
+    except RuntimeError as exc:
+        assert str(exc) == "fatal"
+    else:  # pragma: no cover
+        raise AssertionError("RuntimeError was not raised")
 
 
 def test_tracked_policy_violations_allows_only_readme_under_work_and_rag(monkeypatch) -> None:
@@ -48,6 +79,16 @@ def test_human_gate_registry_flags_schema_responsibility_boundary(tmp_path: Path
     assert "does not contain registry_version" in findings[2]
 
 
+def test_human_gate_registry_findings_accepts_missing_or_valid_registry(tmp_path: Path) -> None:
+    assert workflow_doctor.human_gate_registry_findings(tmp_path) == []
+
+    registry = tmp_path / "runtime" / "registries" / "human_gates.json"
+    registry.parent.mkdir(parents=True)
+    registry.write_text('{"registry_version": "1.0", "gates": []}', encoding="utf-8")
+
+    assert workflow_doctor.human_gate_registry_findings(tmp_path) == []
+
+
 def test_close_archive_findings_reports_partial_archive(tmp_path: Path) -> None:
     archive = tmp_path / "work" / "close" / "improvement" / "issue-1"
     archive.mkdir(parents=True)
@@ -56,6 +97,17 @@ def test_close_archive_findings_reports_partial_archive(tmp_path: Path) -> None:
     findings = workflow_doctor.close_archive_findings(tmp_path)
 
     assert findings == ["work/close/improvement/issue-1"]
+
+
+def test_close_archive_findings_accepts_missing_root_and_complete_archive(tmp_path: Path) -> None:
+    assert workflow_doctor.close_archive_findings(tmp_path) == []
+
+    archive = tmp_path / "work" / "close" / "improvement" / "issue-1"
+    archive.mkdir(parents=True)
+    for report_file in close_archive.REPORT_FILES:
+        (archive / report_file).write_text("# report\n", encoding="utf-8")
+
+    assert workflow_doctor.close_archive_findings(tmp_path) == []
 
 
 def test_workflow_doctor_fail_on_warning_turns_warning_into_fail(monkeypatch, tmp_path: Path) -> None:
@@ -70,3 +122,64 @@ def test_workflow_doctor_fail_on_warning_turns_warning_into_fail(monkeypatch, tm
     assert result["status"] == "fail"
     assert result["warning_count"] == 1
     assert result["warnings"][0]["id"] == "tracked-local-workspace-files"
+
+
+def test_workflow_doctor_run_reports_all_warning_types(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: ["work/issue-1/tmp.txt"])
+    monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: ["runtime/ctl.py"])
+    monkeypatch.setattr(
+        workflow_doctor,
+        "human_gate_registry_findings",
+        lambda repo_root: ["runtime/registries/human_gates.json contains $schema"],
+    )
+    monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: ["work/close/improvement/issue-1"])
+    args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=False)
+
+    result = workflow_doctor.run(args)
+
+    assert result["status"] == "warning"
+    assert result["warning_count"] == 4
+    assert [warning["id"] for warning in result["warnings"]] == [
+        "tracked-local-workspace-files",
+        "missing-required-files",
+        "human-gate-registry-responsibility-boundary",
+        "incomplete-close-archive",
+    ]
+
+
+def test_workflow_doctor_run_passes_without_warnings(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=True)
+
+    result = workflow_doctor.run(args)
+
+    assert result == {"status": "pass", "warning_count": 0, "warnings": []}
+
+
+def test_workflow_doctor_main_prints_pass_json(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+
+    code = workflow_doctor.main(["--repo-root", str(tmp_path)])
+
+    captured = capsys.readouterr()
+    assert code == 0
+    assert '"status": "pass"' in captured.out
+
+
+def test_workflow_doctor_main_returns_one_on_fail_on_warning(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: ["rag/chunks/chunks.jsonl"])
+    monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+
+    code = workflow_doctor.main(["--repo-root", str(tmp_path), "--fail-on-warning"])
+
+    captured = capsys.readouterr()
+    assert code == 1
+    assert '"status": "fail"' in captured.out

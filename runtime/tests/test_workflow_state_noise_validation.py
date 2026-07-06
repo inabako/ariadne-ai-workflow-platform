@@ -46,6 +46,60 @@ def test_workflow_state_rejects_invalid_status(tmp_path: Path) -> None:
         )
 
 
+def test_workflow_state_run_show_reports_missing_state(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    work_dir = repo / "work" / "issue-1"
+    (repo / ".git").mkdir(parents=True)
+    work_dir.mkdir(parents=True)
+    args = argparse.Namespace(repo_root=str(repo), work_dir="work/issue-1")
+
+    result = workflow_state.run_show(args)
+
+    assert result["status"] == "missing"
+    assert result["state_path"] == "work/issue-1/context/workflow-state.json"
+    assert result["state"] == {}
+
+
+def test_workflow_state_run_set_updates_relative_work_dir(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".git").mkdir(parents=True)
+    (repo / "work" / "issue-1").mkdir(parents=True)
+    args = argparse.Namespace(
+        repo_root=str(repo),
+        work_dir="work/issue-1",
+        workflow="docs-sync",
+        work_id="issue-1",
+        phase="review",
+        status="review-ready",
+        blocking_reason="",
+        next_human_action="確認してください",
+    )
+
+    result = workflow_state.run_set(args)
+
+    assert result["status"] == "updated"
+    assert result["state_path"] == "work/issue-1/context/workflow-state.json"
+    assert result["state"]["next_human_action"] == "確認してください"
+
+
+def test_workflow_state_main_show_prints_json(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    repo = tmp_path / "repo"
+    work_dir = repo / "work" / "issue-1"
+    (repo / ".git").mkdir(parents=True)
+    (work_dir / "context").mkdir(parents=True)
+    (work_dir / "context" / "workflow-state.json").write_text(
+        json.dumps({"status": "in-progress"}),
+        encoding="utf-8",
+    )
+
+    code = workflow_state.main(["--repo-root", str(repo), "--work-dir", "work/issue-1", "show"])
+
+    captured = capsys.readouterr()
+    assert code == 0
+    assert '"status": "ok"' in captured.out
+    assert '"in-progress"' in captured.out
+
+
 def test_noise_reduction_blocks_when_critical_items_are_missing(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / ".git").mkdir(parents=True)
@@ -115,6 +169,133 @@ def test_validate_output_language_ignores_code_blocks_and_allowed_terms(tmp_path
     args = argparse.Namespace(min_english_words=5, min_japanese_chars=5, english_ratio_threshold=0.62)
 
     assert validate_output_language.analyze(path, args) is None
+
+
+def test_validate_output_language_iter_markdown_skips_missing_non_md_and_excluded_paths(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "docs"
+    rag_chunks = repo / "rag" / "chunks"
+    work_source = repo / "work" / "issue-1" / "source"
+    docs.mkdir(parents=True)
+    rag_chunks.mkdir(parents=True)
+    work_source.mkdir(parents=True)
+    included = docs / "guide.md"
+    excluded_rag = rag_chunks / "chunk.md"
+    excluded_work = work_source / "README.md"
+    non_md = docs / "note.txt"
+    included.write_text("# ガイド\n", encoding="utf-8")
+    excluded_rag.write_text("# chunk\n", encoding="utf-8")
+    excluded_work.write_text("# source\n", encoding="utf-8")
+    non_md.write_text("not markdown\n", encoding="utf-8")
+
+    results = validate_output_language.iter_markdown(
+        ["docs", "missing", str(non_md)],
+        repo,
+        validate_output_language.DEFAULT_EXCLUDES,
+    )
+
+    assert results == [included.resolve()]
+
+
+def test_validate_output_language_strip_non_prose_removes_frontmatter_urls_tables_and_inline_code() -> None:
+    text = "\n".join(
+        [
+            "---",
+            "title: English metadata should be ignored",
+            "---",
+            "これは本文です。",
+            "`inline English code`",
+            "```text",
+            "large English code block",
+            "```",
+            "https://example.com/english/path",
+            "| --- | --- |",
+        ]
+    )
+
+    prose = validate_output_language.strip_non_prose(text)
+
+    assert "English metadata" not in prose
+    assert "inline English code" not in prose
+    assert "large English code block" not in prose
+    assert "https://example.com" not in prose
+    assert "これは本文です" in prose
+
+
+def test_validate_output_language_main_returns_zero_when_only_warnings(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "docs"
+    docs.mkdir(parents=True)
+    (docs / "english.md").write_text(
+        "Architecture decisions implementation details testing strategy deployment operations "
+        "troubleshooting procedure runtime behavior validation evidence maintenance policy monitoring design.\n",
+        encoding="utf-8",
+    )
+
+    code = validate_output_language.main(
+        [
+            "--repo-root",
+            str(repo),
+            "--paths",
+            "docs",
+            "--min-english-words",
+            "5",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert code == 0
+    assert "found likely English-dominant" in captured.out
+    assert "english.md" in captured.out
+
+
+def test_validate_output_language_main_fails_on_violation(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "docs"
+    docs.mkdir(parents=True)
+    (docs / "english.md").write_text(
+        "Architecture decisions implementation details testing strategy deployment operations "
+        "troubleshooting procedure runtime behavior validation evidence maintenance policy monitoring design.\n",
+        encoding="utf-8",
+    )
+
+    code = validate_output_language.main(
+        [
+            "--repo-root",
+            str(repo),
+            "--paths",
+            "docs",
+            "--min-english-words",
+            "5",
+            "--fail-on-violation",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert code == 1
+    assert "english_ratio=" in captured.out
+
+
+def test_validate_output_language_main_reports_ok_for_japanese_dominant(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "docs"
+    docs.mkdir(parents=True)
+    (docs / "guide.md").write_text("これは日本語中心の説明です。workflow runtime GitHub は許可語です。\n", encoding="utf-8")
+
+    code = validate_output_language.main(["--repo-root", str(repo), "--paths", "docs"])
+
+    captured = capsys.readouterr()
+    assert code == 0
+    assert "Output language check OK" in captured.out
 
 
 def test_validate_vscode_workspace_accepts_utf8_sig_json(tmp_path: Path) -> None:
