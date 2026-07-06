@@ -83,3 +83,41 @@ def test_run_skip_run_writes_json_and_markdown(tmp_path: Path) -> None:
     saved = json.loads(json_path.read_text(encoding="utf-8"))
     assert saved["coverage"]["measurement_status"] == "skipped"
     assert saved["outputs"]["markdown"] == "work/coverage-audit/process-report/runtime-coverage-audit.md"
+
+
+def test_run_coverage_measurement_removes_stale_json_before_commands(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    runtime_root = tmp_path / "runtime"
+    runtime_root.mkdir()
+    coverage_json = runtime_root / ".coverage.json"
+    coverage_json.write_text("stale", encoding="utf-8")
+    commands: list[list[str]] = []
+
+    def fake_run_command(command: list[str], cwd: Path) -> coverage_audit.CommandResult:
+        commands.append(command)
+        assert cwd == runtime_root
+        assert not coverage_json.exists()
+        if command[:3] == [command[0], "-m", "coverage"] and command[3] == "json":
+            coverage_json.write_text(
+                json.dumps(
+                    {
+                        "totals": {
+                            "covered_lines": 1,
+                            "missing_lines": 0,
+                            "percent_covered": 100.0,
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+        return coverage_audit.CommandResult(command=command, returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(coverage_audit, "run_command", fake_run_command)
+
+    result = coverage_audit.run_coverage_measurement(runtime_root, ["-q"])
+
+    assert result["measurement_status"] == "measured"
+    assert result["coverage_json"] == ".coverage.json"
+    assert len(commands) == 4

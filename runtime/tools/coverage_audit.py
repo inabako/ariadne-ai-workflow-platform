@@ -193,6 +193,7 @@ def command_payload(result: CommandResult) -> dict[str, Any]:
 
 def run_coverage_measurement(runtime_root: Path, pytest_args: Sequence[str]) -> dict[str, Any]:
     coverage_json_path = runtime_root / ".coverage.json"
+    coverage_json_path.unlink(missing_ok=True)
     commands: list[CommandResult] = []
     for command in [
         [sys.executable, "-m", "coverage", "erase"],

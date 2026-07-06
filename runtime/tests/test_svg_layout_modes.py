@@ -142,6 +142,255 @@ def test_gui_mode_renderers_and_failure_paths(tmp_path: Path) -> None:
         gui_mode.parse_svg(write_svg(tmp_path / "bad.svg", "<svg><g></svg>"))
 
 
+def test_gui_mode_model_fallbacks_duplicate_ids_and_no_relationship_yaml(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work(tmp_path, "GUI-001")
+    decorative_svg = write_svg(
+        work_dir / "input" / "gui" / "GUI_decorative.svg",
+        """\
+<svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
+  <g id="footer_log"><path id="shape" d="M0,0 L10,10"/></g>
+</svg>
+""",
+    )
+    duplicate_svg = write_svg(
+        work_dir / "input" / "gui" / "GUI_duplicate.svg",
+        """\
+<svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
+  <g id="content">
+    <text id="same">Alpha</text>
+    <text id="same">Beta</text>
+    <text id="orphan_button_text">Apply</text>
+  </g>
+</svg>
+""",
+    )
+
+    decorative_doc = gui_mode.parse_svg(decorative_svg)
+    fallback_model = gui_mode.build_model([decorative_doc], "GUI-001", "generic-gui")
+    duplicate_model = gui_mode.build_model([gui_mode.parse_svg(duplicate_svg)], "GUI-001", "generic-gui")
+
+    assert fallback_model["widgets"] == [
+        {
+            "id": "content_label",
+            "type": "label",
+            "label": "GUI content",
+            "parent": "footer_log",
+            "responsibility": "画面内容を表示する",
+            "source": "GUI_decorative.svg",
+        }
+    ]
+    assert "relationships:\n  []" in gui_mode.render_semantic_yaml(fallback_model)
+    assert gui_mode.infer_area_role("footer_log") == "information_area"
+    assert gui_mode.infer_area_role("misc") == "content_area"
+    assert [widget["id"] for widget in duplicate_model["widgets"]] == ["same", "same_2", "orphan_button_text"]
+    assert duplicate_model["widgets"][-1]["type"] == "button"
+    assert duplicate_model["relationships"][0]["from"] == "orphan_button_text"
+    assert gui_mode.infer_mode("SYS-1", "feature-development") == "feature-development"
+    assert gui_mode.infer_responsibility("unknown", "Decoration").endswith("表示する")
+
+
+def test_gui_mode_input_init_inspect_and_claim_edge_paths(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo_root, work_dir = make_work(tmp_path, "SYS-500")
+    inbox = repo_root / "work" / "requirements" / "svg-input"
+
+    init_result = gui_mode.run_init_input(
+        argparse.Namespace(repo_root=str(repo_root), svg_input_dir=None, force=False)
+    )
+    readme = repo_root / init_result["readme"]
+    readme.write_text("custom\n", encoding="utf-8")
+    gui_mode.run_init_input(argparse.Namespace(repo_root=str(repo_root), svg_input_dir=None, force=False))
+    assert readme.read_text(encoding="utf-8") == "custom\n"
+    gui_mode.run_init_input(argparse.Namespace(repo_root=str(repo_root), svg_input_dir=None, force=True))
+    assert "GUI SVG Input Inbox" in readme.read_text(encoding="utf-8-sig")
+
+    write_svg(inbox / "SYS_console.svg")
+    write_svg(inbox / "FEAT_console.svg")
+    write_svg(inbox / "WEB_SYS_console.svg")
+    (inbox / "note.txt").write_text("ignore\n", encoding="utf-8")
+    inspection = gui_mode.run_inspect_input(argparse.Namespace(repo_root=str(repo_root), svg_input_dir=str(inbox)))
+
+    assert inspection["status"] == "pass"
+    assert inspection["file_count"] == 3
+    assert any(warning.startswith("same-screen-name:console:") for warning in inspection["warnings"])
+    assert gui_mode.discover_inbox_svg_files(repo_root / "missing", "SYS") == []
+    assert gui_mode.svg_prefix(Path("plain.svg")) == ""
+    not_svg = tmp_path / "not-svg.xml"
+    not_svg.write_text("<not-svg />", encoding="utf-8")
+    assert gui_mode.validate_svg_xml(not_svg) == (False, "root element is not svg: not-svg")
+
+    existing = write_svg(work_dir / "input" / "gui" / "SYS_existing.svg")
+    claimed, source_paths = gui_mode.claim_svg_inputs(repo_root, work_dir, inbox, "SYS")
+    assert claimed == [existing]
+    assert source_paths == []
+
+    destination_work = repo_root / "work" / "SYS-501"
+    (destination_work / "input" / "gui").mkdir(parents=True)
+    write_svg(inbox / "SYS_conflict.svg")
+    write_svg(destination_work / "input" / "gui" / "SYS_conflict.svg")
+    monkeypatch.setattr(gui_mode, "discover_svg_files", lambda work_dir_arg: [])
+    with pytest.raises(FileExistsError, match="Cannot claim SVG"):
+        gui_mode.claim_svg_inputs(repo_root, destination_work, inbox, "SYS")
+
+    assert gui_mode.input_prefix_for_mode("generic-gui") == "GUI"
+    assert gui_mode.resolve_work_dir(repo_root, "SYS-1", None) == repo_root / "work" / "SYS-1"
+    assert gui_mode.resolve_work_dir(repo_root, "SYS-1", str(work_dir)) == work_dir.resolve()
+    assert gui_mode.resolve_svg_input_dir(repo_root, None) == inbox
+    assert gui_mode.resolve_svg_input_dir(repo_root, str(inbox)) == inbox.resolve()
+
+    code = gui_mode.main(["inspect-input", "--repo-root", str(repo_root), "--svg-input-dir", str(inbox)])
+    captured = capsys.readouterr()
+    assert code == 0
+    assert '"allowed_prefixes"' in captured.out
+
+
+def test_gui_mode_validate_detects_policy_syntax_qtest_and_state_errors(tmp_path: Path) -> None:
+    _, work_dir = make_work(tmp_path, "FIX-500")
+    output_dir = work_dir / "gac-uac"
+    pyqt_path = output_dir / "generated" / "pyqt6" / "main_window.py"
+    test_path = output_dir / "generated" / "tests" / "test_gui_smoke.py"
+    pyqt_path.parent.mkdir(parents=True)
+    test_path.parent.mkdir(parents=True)
+    pyqt_path.write_text("def broken(:\n", encoding="utf-8")
+    test_path.write_text("def test_missing_helpers():\n    assert True\n", encoding="utf-8")
+    (output_dir / "gui-mode-state.json").write_text("{bad json", encoding="utf-8")
+
+    result = gui_mode.validate_outputs(work_dir)
+
+    assert result["status"] == "fail"
+    assert any(error.startswith("missing:") for error in result["errors"])
+    assert any(error.startswith("syntax:main_window.py") for error in result["errors"])
+    assert "qtest:QApplication-missing" in result["errors"]
+    assert any(error.startswith("state-json:") for error in result["errors"])
+
+    pyqt_path.write_text("class Window:\n    def setup(self):\n        self.setGeometry(1, 2, 3, 4)\n", encoding="utf-8")
+    (output_dir / "gui-mode-state.json").write_text(
+        json.dumps({"parent_workflow_return": {"ready": False}}),
+        encoding="utf-8",
+    )
+
+    result = gui_mode.validate_outputs(work_dir)
+
+    assert "policy:setGeometry" in result["errors"]
+    assert "policy:objectName-missing" in result["errors"]
+    assert "signal:no-action-signal" in result["warnings"]
+    assert "state:parent-workflow-return-not-ready" in result["errors"]
+
+
+def test_gui_mode_run_generate_complete_force_validation_error_and_self_test(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root, work_dir = make_work(tmp_path, "FEAT-600")
+    inbox = repo_root / "work" / "requirements" / "svg-input"
+    write_svg(inbox / "FEAT_console.svg")
+
+    state = gui_mode.run_generate(
+        argparse.Namespace(
+            issue_id="FEAT-600",
+            work_dir=str(work_dir),
+            repo_root=str(repo_root),
+            svg_input_dir=str(inbox),
+            mode="auto",
+            force=False,
+            input_prefix=None,
+            skip_context_check=True,
+        )
+    )
+
+    assert state["status"] == "complete"
+    assert state["validation"]["status"] == "pass"
+    assert state["parent_workflow_return"]["ready"] is True
+    assert (work_dir / "context" / "artifact-index.json").exists()
+
+    write_svg(inbox / "FEAT_new.svg")
+    with pytest.raises(FileExistsError, match="GUI mode outputs already exist"):
+        gui_mode.run_generate(
+            argparse.Namespace(
+                issue_id="FEAT-600",
+                work_dir=str(work_dir),
+                repo_root=str(repo_root),
+                svg_input_dir=str(inbox),
+                mode="auto",
+                force=False,
+                input_prefix=None,
+                skip_context_check=True,
+            )
+        )
+
+    failure_work = repo_root / "work" / "FEAT-601"
+    (failure_work / "context").mkdir(parents=True)
+    write_svg(inbox / "FEAT_failure.svg")
+    monkeypatch.setattr(gui_mode, "validate_outputs", lambda work_dir_arg: {"status": "fail", "errors": ["boom"]})
+    with pytest.raises(RuntimeError, match="failed validation"):
+        gui_mode.run_generate(
+            argparse.Namespace(
+                issue_id="FEAT-601",
+                work_dir=str(failure_work),
+                repo_root=str(repo_root),
+                svg_input_dir=str(inbox),
+                mode="auto",
+                force=False,
+                input_prefix=None,
+                skip_context_check=True,
+            )
+        )
+
+    monkeypatch.undo()
+    assert gui_mode.run_self_test(argparse.Namespace())["checks"] == [
+        "skip-without-svg",
+        "prefix-isolation",
+        "generate-and-validate",
+        "existing-output-guard",
+    ]
+    with pytest.raises(AssertionError, match="fail message"):
+        gui_mode.assert_self_test(False, "fail message")
+    assert gui_mode.make_self_test_args(repo_root, "SYS-999").skip_context_check is True
+
+
+def test_gui_mode_main_run_and_self_test_error_boundary(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo_root, work_dir = make_work(tmp_path, "GUI-700")
+    inbox = repo_root / "work" / "requirements" / "svg-input"
+    write_svg(inbox / "GUI_console.svg")
+
+    code = gui_mode.main(
+        [
+            "run",
+            "--issue-id",
+            "GUI-700",
+            "--work-dir",
+            str(work_dir),
+            "--repo-root",
+            str(repo_root),
+            "--svg-input-dir",
+            str(inbox),
+            "--mode",
+            "generic-gui",
+            "--input-prefix",
+            "GUI",
+            "--skip-context-check",
+        ]
+    )
+    captured = capsys.readouterr()
+    assert code == 0
+    assert '"status": "complete"' in captured.out
+
+    monkeypatch.setattr(gui_mode, "run_self_test", lambda args: {"status": "fail", "checks": []})
+    assert gui_mode.main(["self-test"]) == 1
+    assert '"status": "fail"' in capsys.readouterr().out
+
+    monkeypatch.setattr(gui_mode, "run_self_test", lambda args: (_ for _ in ()).throw(RuntimeError("boom")))
+    assert gui_mode.main(["self-test"]) == 1
+    assert "ERROR: boom" in capsys.readouterr().err
+
+
 def test_gui_mode_run_generate_skips_when_no_svg_and_main_prints_json(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     repo_root, work_dir = make_work(tmp_path, "SYS-400")
 

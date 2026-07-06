@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 
 from runtime import ctl
 
@@ -463,3 +464,281 @@ def test_environment_profile_registry_referenced_docs_exist() -> None:
             ctl.profile_by_id(registry, profile_id)
         for value in mapping.get("docs", []):
             assert (root / value).exists(), f"{mapping['subject']} references missing {value}"
+
+
+def test_ctl_registry_and_search_helper_edge_cases(tmp_path: Path) -> None:
+    registry_dir = tmp_path / "runtime" / "registries"
+    registry_dir.mkdir(parents=True)
+    (registry_dir / "workflow_help.json").write_text("[]", encoding="utf-8")
+    (registry_dir / "workflow_environment_profiles.json").write_text("[]", encoding="utf-8")
+
+    try:
+        ctl.load_registry(tmp_path)
+    except ValueError as exc:
+        assert "workflow help registry" in str(exc)
+    else:
+        raise AssertionError("non-object workflow help registry should fail")
+
+    try:
+        ctl.load_environment_registry(tmp_path)
+    except ValueError as exc:
+        assert "environment profiles registry" in str(exc)
+    else:
+        raise AssertionError("non-object environment profile registry should fail")
+
+    registry = {
+        "commands": [{"command": "/b"}, {"command": "/a", "aliases": ["/alias-a"], "overview": "alpha"}],
+        "extensions": [{"name": "z-ext"}, {"name": "a-ext", "aliases": ["alias-ext"], "overview": "alpha"}],
+    }
+
+    assert ctl.normalize_command("docs-sync") == "/docs-sync"
+    assert ctl.normalize_command(" /already ") == "/already"
+    assert ctl.find_command(registry, "alias-a")["command"] == "/a"
+    assert ctl.find_help_item(registry, "alias-ext")[0] == "extension"
+    assert [item["command"] for item in ctl.search_commands(registry, [" "])] == ["/a", "/b"]
+    assert [item["name"] for item in ctl.search_extensions(registry, [" "])] == ["a-ext", "z-ext"]
+    assert ctl.profile_key({"id": "B"}) == "b"
+
+    try:
+        ctl.find_extension(registry, "missing")
+    except KeyError as exc:
+        assert "Unknown workflow extension" in str(exc)
+    else:
+        raise AssertionError("unknown extension should fail")
+
+
+def test_ctl_environment_selection_mapping_branches() -> None:
+    registry = {
+        "environments": [
+            {"name": "env-a", "backend": "p1", "purpose": "A"},
+            {"name": "env-b", "backend": "p2", "purpose": "B"},
+        ],
+        "profiles": [
+            {"id": "p1", "aliases": ["profile-a"], "docs": ["docs/a.md"], "primary_tools": ["Git"]},
+            {"id": "p2", "aliases": [], "docs": ["docs/b.md"], "primary_tools": ["Docker"]},
+        ],
+        "mappings": [
+            {"subject_type": "command", "subject": "/mapped", "profiles": ["p1"], "selection_reason": "mapped"},
+            {"subject_type": "keyword", "subject": "gui pyqt", "profiles": ["p1"], "selection_reason": "keyword-a"},
+            {"subject_type": "keyword", "subject": "gui web", "profiles": ["p2"], "selection_reason": "keyword-b"},
+            {"subject_type": "unknown", "subject": "never", "profiles": ["p1"]},
+        ],
+    }
+
+    assert ctl.find_public_environment_by_backend(registry, "missing") is None
+    assert ctl.find_environment_profile(registry, "profile-a")["id"] == "p1"
+    assert not ctl.environment_mapping_matches({"subject_type": "unknown", "subject": "x"}, "x")
+
+    mapped = ctl.select_environment(registry, "/mapped")
+    assert mapped["status"] == "selected"
+    assert mapped["environment"]["name"] == "env-a"
+    assert mapped["profiles"][0]["id"] == "p1"
+
+    keyword = ctl.select_environment(registry, "please use gui")
+    assert keyword["status"] == "human-check-required"
+    assert {item["name"] for item in keyword["candidate_environments"]} == {"env-a", "env-b"}
+
+    try:
+        ctl.profile_by_id(registry, "missing")
+    except KeyError as exc:
+        assert "Unknown environment profile id" in str(exc)
+    else:
+        raise AssertionError("unknown profile id should fail")
+
+
+def test_ctl_environment_formatting_and_context_warning_helpers(tmp_path: Path) -> None:
+    profile = {
+        "id": "p1",
+        "title": "Profile One",
+        "environment": "Windows",
+        "shell": "PowerShell",
+        "os": "Windows",
+        "summary": "summary",
+        "primary_tools": ["Git", "Python"],
+        "run_command": "run",
+        "preflight_profile": "",
+        "applies_when": [],
+        "verification": [],
+        "human_check_required_when": [],
+        "docs": [],
+    }
+    formatted_profile = ctl.format_environment_profile(profile)
+    assert "Profile One" in formatted_profile
+    assert "Git, Python" in formatted_profile
+
+    human_check = ctl.format_environment_human_check(
+        {
+            "target": "gui",
+            "status": "human-check-required",
+            "human_check_reasons": ["choose explicitly"],
+            "candidate_environments": [{"name": "gui-mode", "backend": "windows", "purpose": "GUI"}],
+        }
+    )
+    assert "Environment Human Check Required" in human_check
+    assert "gui-mode" in human_check
+
+    context = {
+        "work_id": "issue-2",
+        "environment": "gui-mode",
+        "backend": "windows-msys2-gui",
+    }
+    assert not ctl.environment_context_warnings({}, context)
+    assert ctl.environment_context_warnings("broken", context)
+    warnings = ctl.environment_context_warnings(
+        {"work_id": "issue-1", "environment": "web-svg", "backend": "wsl-ubuntu-web"},
+        context,
+    )
+    assert len(warnings) == 3
+
+    record = {
+        "status": "selected",
+        "target": "gui-mode",
+        "environment": {"name": "gui-mode", "backend": "windows-msys2-gui", "recommended_for": []},
+        "mapping": {"selection_reason": "manual"},
+        "profiles": [profile],
+        "human_check_required": False,
+        "created_at": "2026-07-07T00:00:00+00:00",
+    }
+    context_record = ctl.environment_context_record(
+        record,
+        work_id="issue-7",
+        selected_by="human",
+        selection_mode="auto",
+    )
+    assert context_record["selected_by"] == "human"
+    assert context_record["selection_mode"] == "auto"
+    assert context_record["context_path"] == "work/issue-7/context/environment-selection.json"
+
+    output_json = tmp_path / "environment-selection.json"
+    output_md = tmp_path / "environment-selection.md"
+    assert ctl.write_environment_selection(tmp_path, record.copy(), output=str(output_json)) == [
+        "environment-selection.json"
+    ]
+    assert json.loads(output_json.read_text(encoding="utf-8"))["target"] == "gui-mode"
+    assert ctl.write_environment_selection(tmp_path, record.copy(), output=str(output_md)) == [
+        "environment-selection.md"
+    ]
+    assert "Selected Environment" in output_md.read_text(encoding="utf-8")
+
+
+def test_ctl_help_formatting_empty_lists_and_open_search_paths(tmp_path: Path) -> None:
+    registry_dir = tmp_path / "runtime" / "registries"
+    registry_dir.mkdir(parents=True)
+    registry = {
+        "description": "minimal help",
+        "commands": [
+            {
+                "command": "/alpha",
+                "workflow": "alpha",
+                "overview": "alpha overview",
+                "arguments": [],
+                "docs": [],
+                "examples": [],
+                "details": [],
+                "prerequisites": [],
+                "related_runtime": [],
+            }
+        ],
+        "extensions": [],
+    }
+    (registry_dir / "workflow_help.json").write_text(json.dumps(registry), encoding="utf-8")
+
+    assert "なし" in ctl.format_arg_table("empty", [])
+    assert ctl.format_prerequisites_for_list([])
+    assert ctl.format_docs_for_list([])
+
+    open_args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "help", "open", "--query", "alpha"])
+    code, output = ctl.run(open_args)
+    assert code == 0
+    assert "# AI Workflow Help" in output
+    assert "/alpha" in output
+
+    markdown_args = ctl.build_parser().parse_args(
+        ["--repo-root", str(tmp_path), "help", "markdown", "--output", "work/help/out.md"]
+    )
+    code, output = ctl.run(markdown_args)
+    assert code == 0
+    assert "wrote: work/help/out.md" in output
+    assert (tmp_path / "work" / "help" / "out.md").exists()
+
+    search_args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "help", "search", "missing"])
+    code, output = ctl.run(search_args)
+    assert code == 1
+    assert "workflow help" in output
+
+
+def test_ctl_color_mode_and_main_output(monkeypatch, capsys) -> None:
+    class TtyStream:
+        def isatty(self) -> bool:
+            return True
+
+    class NonTtyStream:
+        def isatty(self) -> bool:
+            return False
+
+    monkeypatch.setenv("AIWFCTL_COLOR", "always")
+    assert ctl.should_use_color(NonTtyStream())
+    monkeypatch.setenv("AIWFCTL_COLOR", "never")
+    assert not ctl.should_use_color(TtyStream())
+    monkeypatch.delenv("AIWFCTL_COLOR", raising=False)
+    monkeypatch.setenv("NO_COLOR", "1")
+    assert not ctl.should_use_color(TtyStream())
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    assert ctl.should_use_color(TtyStream())
+    assert not ctl.should_use_color(NonTtyStream())
+
+    code = ctl.main(["--repo-root", str(repo_root()), "help", "search", "svg"])
+    captured = capsys.readouterr()
+    assert code == 0
+    assert "# AI Workflow Help" in captured.out
+
+
+def test_ctl_run_manual_error_and_json_branches(monkeypatch, tmp_path: Path) -> None:
+    registry_dir = tmp_path / "runtime" / "registries"
+    registry_dir.mkdir(parents=True)
+    (registry_dir / "workflow_help.json").write_text(
+        json.dumps({"commands": [], "extensions": []}),
+        encoding="utf-8",
+    )
+    (registry_dir / "workflow_environment_profiles.json").write_text(
+        json.dumps({"environments": [], "profiles": [], "mappings": []}),
+        encoding="utf-8",
+    )
+
+    code, output = ctl.run(SimpleNamespace(repo_root=str(tmp_path), command="unknown"))
+    assert code == 1
+    assert "Unknown command: unknown" in output
+
+    code, output = ctl.run(SimpleNamespace(repo_root=str(tmp_path), command="env", env_command="unknown"))
+    assert code == 1
+    assert "Unknown env command: unknown" in output
+
+    code, output = ctl.run(SimpleNamespace(repo_root=str(tmp_path), command="context", context_command=None))
+    assert code == 1
+    assert "Context Management" in output
+
+    code, output = ctl.run(SimpleNamespace(repo_root=str(tmp_path), command="context", context_command="unknown"))
+    assert code == 1
+    assert "Unknown context command: unknown" in output
+
+    code, output = ctl.run(SimpleNamespace(repo_root=str(tmp_path), command="help", help_command="unknown"))
+    assert code == 1
+    assert "Unknown help command: unknown" in output
+
+    monkeypatch.setattr(
+        ctl.dispatcher_context,
+        "run_init",
+        lambda args: {
+            "status": "human-check-required",
+            "work_id": "issue-1",
+            "workflow": "/docs-sync",
+            "manifest_path": "work/issue-1/context/context-manifest.json",
+            "contexts": ["workflow-selection"],
+            "written": ["work/issue-1/context/workflow-selection.json"],
+        },
+    )
+    code, output = ctl.run(
+        SimpleNamespace(repo_root=str(tmp_path), command="context", context_command="init", json=True)
+    )
+    assert code == 2
+    assert '"status": "human-check-required"' in output
