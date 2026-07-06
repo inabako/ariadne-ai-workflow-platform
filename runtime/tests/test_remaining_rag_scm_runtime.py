@@ -193,6 +193,74 @@ def test_compare_requirements_safe_git_returns_error_text(monkeypatch: pytest.Mo
 
     assert compare_requirements.safe_git(["log"], tmp_path) == "fatal: bad revision"
 
+    monkeypatch.setattr(
+        compare_requirements,
+        "run_git",
+        lambda args, cwd: subprocess.CompletedProcess(["git", *args], 0, stdout="ok\n", stderr=""),
+    )
+    assert compare_requirements.safe_git(["status"], tmp_path) == "ok"
+
+
+def test_compare_requirements_parser_main_script_and_no_requirements(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    parser = compare_requirements.build_parser()
+    parsed = parser.parse_args(
+        [
+            "--work-id",
+            "issue-1",
+            "--repo-root",
+            str(tmp_path),
+            "--source-dir",
+            str(tmp_path / "source"),
+            "--requirements",
+            str(tmp_path / "req.md"),
+        ]
+    )
+
+    assert parsed.work_id == "issue-1"
+    assert parsed.repo_root == str(tmp_path)
+    assert parsed.source_dir == str(tmp_path / "source")
+    assert parsed.requirements == [str(tmp_path / "req.md")]
+
+    repo, work_dir = make_repo(tmp_path)
+    source = work_dir / "source" / "repository"
+    source.mkdir(parents=True)
+    monkeypatch.setattr(compare_requirements, "current_branch", lambda path: "main")
+    monkeypatch.setattr(compare_requirements, "current_commit", lambda path: "abc123")
+    monkeypatch.setattr(compare_requirements, "safe_git", lambda args, cwd: "")
+
+    result = compare_requirements.compare_requirements(
+        argparse.Namespace(work_id=work_dir.name, repo_root=str(repo), source_dir=str(source), requirements=[])
+    )
+
+    markdown = (repo / result["markdown_report"]).read_text(encoding="utf-8-sig")
+    assert "No requirement artifact was found" in markdown
+    assert "clean" in markdown
+    assert "no commits" in markdown
+
+    assert compare_requirements.main(
+        [
+            "--work-id",
+            work_dir.name,
+            "--repo-root",
+            str(repo),
+            "--source-dir",
+            str(source),
+            "--requirements",
+        ]
+    ) == 0
+    assert '"work_id":' in capsys.readouterr().out
+
+    monkeypatch.setattr(compare_requirements, "compare_requirements", lambda args: (_ for _ in ()).throw(RuntimeError("boom")))
+    assert compare_requirements.main(["--work-id", "issue-1"]) == 1
+    assert "ERROR: boom" in capsys.readouterr().err
+
+    namespace = runpy.run_path(str(Path(compare_requirements.__file__)))
+    assert namespace["build_parser"]
+
 
 def test_compare_requirements_first_lines_limits_and_reports_read_errors(tmp_path: Path) -> None:
     path = tmp_path / "requirements.md"
@@ -270,3 +338,15 @@ def test_compare_requirements_requires_work_and_source_dirs(tmp_path: Path) -> N
 
     with pytest.raises(FileNotFoundError, match="Work directory does not exist"):
         compare_requirements.compare_requirements(args)
+
+    work_dir = repo / "work" / "issue-1"
+    (work_dir / "context").mkdir(parents=True)
+    with pytest.raises(FileNotFoundError, match="Source repository does not exist"):
+        compare_requirements.compare_requirements(
+            argparse.Namespace(
+                work_id="issue-1",
+                repo_root=str(repo),
+                source_dir=None,
+                requirements=[],
+            )
+        )

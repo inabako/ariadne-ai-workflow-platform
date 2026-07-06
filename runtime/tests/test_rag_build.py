@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import runpy
 from pathlib import Path
 
 from runtime.rag import rag_build
@@ -294,3 +295,6 @@ def test_rag_build_parser_and_main_paths(monkeypatch, tmp_path: Path, capsys) ->
     assert rag_build.main(["--repo-root", str(tmp_path)]) == 1
     captured = capsys.readouterr()
     assert "ERROR: boom" in captured.err
+
+    namespace = runpy.run_path(str(Path(rag_build.__file__)))
+    assert namespace["build_parser"]

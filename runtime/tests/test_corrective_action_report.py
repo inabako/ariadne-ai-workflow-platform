@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import runpy
 from pathlib import Path
 
 import pytest
@@ -257,3 +258,6 @@ def test_corrective_action_report_parser_and_main_paths(monkeypatch: pytest.Monk
     monkeypatch.setattr(corrective_action_report, "run_show", fail)
     assert corrective_action_report.main(["--repo-root", str(repo), "show", "--work-id", "x"]) == 1
     assert "ERROR: boom" in capsys.readouterr().err
+
+    namespace = runpy.run_path(str(Path(corrective_action_report.__file__)))
+    assert namespace["build_parser"]

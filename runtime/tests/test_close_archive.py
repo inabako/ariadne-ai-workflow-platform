@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
+import runpy
 from pathlib import Path
 
 import pytest
@@ -64,6 +66,13 @@ def test_parser_and_path_derivation_helpers(monkeypatch: pytest.MonkeyPatch, tmp
     assert close_archive.derive_archive_id("audit", "x", "github", "", str(tmp_path / "ARCH")) == "ARCH"
     with pytest.raises(ValueError, match="archive-id or --archive-dir"):
         close_archive.derive_archive_id("audit", "github-knowledge-x", "github", "", "")
+
+    suffix = close_archive.random_suffix(6)
+    assert len(suffix) == 6
+    assert re.fullmatch(r"[A-Z0-9]{6}", suffix)
+    namespace = runpy.run_path(str(Path(close_archive.__file__)))
+    assert namespace["build_parser"]
+    assert re.fullmatch(r"\d{12}_[A-Z0-9]{8}", namespace["timestamp_archive_id"]())
 
 
 def test_resolve_paths_supports_issue_alias_explicit_dirs_and_repo_default(
@@ -172,6 +181,23 @@ def test_file_and_markdown_helpers(tmp_path: Path) -> None:
     assert not close_archive.has_mojibake("normal text")
     assert close_archive.bullet_paths(repo, []) == "- なし"
     assert close_archive.archive_title("issue-1", "improvement", "issue-1") == "improvement/issue-1 (issue-1)"
+    assert close_archive.split_cli_paths(["", " 'rag/a.md' , \"rag/b.md\" "]) == ["rag/a.md", "rag/b.md"]
+    assert close_archive.metadata_title("---\nsummary: no title\n---\n# Body") == ""
+    assert close_archive.first_paragraph("# H\n\nBody after blank") == "Body after blank"
+    assert close_archive.markdown_headings("\n".join(f"## H{i}" for i in range(10)), limit=2) == ["H0", "H1"]
+    assert close_archive.markdown_bullets("\n".join(f"- B{i}" for i in range(20)), limit=3) == ["B0", "B1", "B2"]
+    assert close_archive.format_rag_digest(
+        [
+            {
+                "title": "Title",
+                "path": "rag/a.md",
+                "excerpt": "",
+                "headings": [],
+                "bullets": [],
+                "has_mojibake": False,
+            }
+        ]
+    ).startswith("### Title")
 
 
 def test_rag_reference_and_candidate_discovery(tmp_path: Path) -> None:
@@ -495,6 +521,34 @@ def test_prune_execute_removes_targets_and_refuses_missing_reports(tmp_path: Pat
                 human_check="approved",
             )
         )
+
+
+def test_prune_execute_skips_disappeared_target(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    archive = repo / "work" / "close" / "improvement" / "issue-5"
+    write_complete_archive(archive)
+    missing_target = archive / "source" / "repository"
+
+    monkeypatch.setattr(close_archive, "list_prune_targets", lambda archive_dir: [missing_target])
+
+    result = close_archive.run_prune(
+        argparse.Namespace(
+            command="prune",
+            repo_root=str(repo),
+            work_id="issue-5",
+            issue="",
+            category="auto",
+            archive_id="",
+            source_work_dir="",
+            archive_dir=str(archive),
+            execute=True,
+            human_check="approved",
+        )
+    )
+
+    assert result["status"] == "pruned"
+    assert result["target_count"] == 1
+    assert result["removed"] == []
 
 
 def test_remove_helpers_retry_permission_errors(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

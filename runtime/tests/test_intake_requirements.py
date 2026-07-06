@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import runpy
 from pathlib import Path
 
 import pytest
@@ -288,3 +289,6 @@ def test_main_outputs_json_and_reports_error(monkeypatch: pytest.MonkeyPatch, tm
     monkeypatch.setattr(intake_requirements, "run", raise_error)
     assert intake_requirements.main([str(requirement), "--repo-root", str(tmp_path)]) == 1
     assert "ERROR: boom" in capsys.readouterr().err
+
+    namespace = runpy.run_path(str(Path(intake_requirements.__file__)))
+    assert namespace["build_parser"]

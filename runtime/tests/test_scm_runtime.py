@@ -44,6 +44,84 @@ def test_github_token_git_env_sets_non_interactive_auth() -> None:
         assert "GIT_ASKPASS" in env
 
 
+def test_scm_utils_dry_run_posix_askpass_and_git_helpers(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    dry = scm_utils.run_git(["status"], tmp_path, dry_run=True)
+
+    assert dry.returncode == 0
+    assert dry.stdout == "DRY-RUN: git status"
+
+    calls: list[list[str]] = []
+    original_run_git = scm_utils.run_git
+
+    def fake_run_git(args, cwd):
+        calls.append(list(args))
+        if args == ["show-ref", "--verify", "--quiet", "refs/heads/missing"]:
+            return subprocess.CompletedProcess(["git", *args], 1, stdout="", stderr="")
+        return subprocess.CompletedProcess(["git", *args], 0, stdout="value\n", stderr="")
+
+    monkeypatch.setattr(scm_utils, "run_git", fake_run_git)
+
+    assert scm_utils.git_output(["rev-parse", "HEAD"], tmp_path) == "value"
+    assert scm_utils.current_branch(tmp_path) == "value"
+    assert scm_utils.current_commit(tmp_path) == "value"
+    assert scm_utils.local_branch_exists(tmp_path, "feature/issue-1") is True
+    assert scm_utils.local_branch_exists(tmp_path, "missing") is False
+    assert ["rev-parse", "--abbrev-ref", "HEAD"] in calls
+    assert ["rev-parse", "HEAD"] in calls
+
+    def fake_subprocess_run(command, **kwargs):
+        assert command == ["git", "status"]
+        assert kwargs["cwd"] == str(tmp_path)
+        assert kwargs["env"] == {"A": "B"}
+        assert kwargs["shell"] is False
+        return subprocess.CompletedProcess(command, 0, stdout="clean\n", stderr="")
+
+    monkeypatch.setattr(scm_utils.subprocess, "run", fake_subprocess_run)
+    assert original_run_git(["status"], tmp_path, env={"A": "B"}).stdout == "clean\n"
+
+
+def test_scm_utils_posix_askpass_branch(monkeypatch: pytest.MonkeyPatch) -> None:
+    writes: list[tuple[str, str]] = []
+    chmods: list[int] = []
+
+    class DummyTempDirectory:
+        def __enter__(self) -> str:
+            return "dummy-temp"
+
+        def __exit__(self, exc_type, exc, traceback) -> None:
+            return None
+
+    class FakePath:
+        def __init__(self, value: str) -> None:
+            self.value = value
+
+        def __truediv__(self, child: str) -> "FakePath":
+            return FakePath(f"{self.value}/{child}")
+
+        def write_text(self, text: str, encoding: str) -> None:
+            writes.append((text, encoding))
+
+        def chmod(self, mode: int) -> None:
+            chmods.append(mode)
+
+        def __str__(self) -> str:
+            return self.value
+
+    monkeypatch.setattr(scm_utils.os, "name", "posix")
+    monkeypatch.setattr(scm_utils.tempfile, "TemporaryDirectory", DummyTempDirectory)
+    monkeypatch.setattr(scm_utils, "Path", FakePath)
+
+    with scm_utils.github_token_git_env("secret-token") as env:
+        assert env is not None
+        assert env["GIT_ASKPASS"] == "dummy-temp/git-askpass.sh"
+
+    assert writes and writes[0][1] == "utf-8"
+    assert chmods == [0o700]
+
+
 def test_prepare_repository_dry_run_writes_scm_state_and_manifest(tmp_path: Path) -> None:
     repo, _ = make_work_repo(tmp_path)
     args = argparse.Namespace(
@@ -67,6 +145,83 @@ def test_prepare_repository_dry_run_writes_scm_state_and_manifest(tmp_path: Path
     assert (repo / "work" / "issue-1" / "context" / "scm-state.json").exists()
     manifest = json.loads((repo / "work" / "issue-1" / "context" / "context-manifest.json").read_text(encoding="utf-8"))
     assert any(context["type"] == "scm-state" for context in manifest["contexts"])
+
+
+def test_prepare_repository_parser_main_script_and_missing_work(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    parser = prepare_repository.build_parser()
+    parsed = parser.parse_args(
+        [
+            "--work-id",
+            "issue-1",
+            "--repository",
+            "inabako/example",
+            "--target-branch",
+            "develop",
+            "--remote",
+            "upstream",
+            "--requirements",
+            str(tmp_path / "req.md"),
+            "--repo-root",
+            str(tmp_path),
+            "--source-dir",
+            str(tmp_path / "source"),
+            "--no-pull",
+            "--dry-run",
+        ]
+    )
+
+    assert parsed.work_id == "issue-1"
+    assert parsed.repository == "inabako/example"
+    assert parsed.target_branch == "develop"
+    assert parsed.remote == "upstream"
+    assert parsed.requirements == [str(tmp_path / "req.md")]
+    assert parsed.no_pull is True
+    assert parsed.dry_run is True
+
+    repo, _work_dir = make_work_repo(tmp_path)
+
+    assert prepare_repository.main(
+        [
+            "--work-id",
+            "issue-1",
+            "--repository",
+            "inabako/example",
+            "--repo-root",
+            str(repo),
+            "--dry-run",
+        ]
+    ) == 0
+    assert '"repository": "inabako/example"' in capsys.readouterr().out
+
+    namespace = runpy.run_path(str(Path(prepare_repository.__file__)))
+    assert namespace["build_parser"]
+
+    with pytest.raises(FileNotFoundError, match="Work directory does not exist"):
+        prepare_repository.prepare_repository(
+            argparse.Namespace(
+                work_id="missing",
+                repository="inabako/example",
+                target_branch=None,
+                remote=None,
+                requirements=[],
+                repo_root=str(repo),
+                source_dir=None,
+                no_pull=False,
+                dry_run=True,
+            )
+        )
+
+    def fail_prepare(_args: argparse.Namespace) -> dict[str, object]:
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(prepare_repository, "prepare_repository", fail_prepare)
+
+    assert prepare_repository.main(["--work-id", "issue-1", "--repository", "inabako/example"]) == 1
+    assert "ERROR: boom" in capsys.readouterr().err
 
 
 def test_prepare_repository_uses_requirement_config_when_cli_repository_is_missing(tmp_path: Path) -> None:
@@ -211,6 +366,52 @@ def test_prepare_repository_clone_repository_invokes_git_with_token_env(
     assert calls[0][1] == source.parent
     assert calls[0][2] is not None
     assert calls[0][2]["GITHUB_TOKEN"] == "token"
+
+    dry_source = tmp_path / "dry-source" / "repository"
+    create_issue_branch.clone_issue_branch("inabako/example", "feature/issue-43", dry_source, "token", "inabako", dry_run=True)
+    assert dry_source.parent.exists()
+    assert not dry_source.exists()
+
+
+def test_prepare_repository_clone_dry_run_and_no_pull_branch(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source" / "repository"
+    prepare_repository.clone_repository("https://github.com/inabako/example.git", "main", source, "token", dry_run=True)
+    assert source.parent.exists()
+    assert not source.exists()
+
+    repo, work_dir = make_work_repo(tmp_path)
+    source.mkdir(parents=True)
+    calls: list[list[str]] = []
+
+    def fake_run_git(args, cwd):
+        calls.append(list(args))
+        return subprocess.CompletedProcess(["git", *args], 0, stdout="", stderr="")
+
+    monkeypatch.setattr(prepare_repository, "run_git", fake_run_git)
+    monkeypatch.setattr(prepare_repository, "is_git_repository", lambda path: True)
+    monkeypatch.setattr(prepare_repository, "current_branch", lambda path: "develop")
+    monkeypatch.setattr(prepare_repository, "current_commit", lambda path: "abc123")
+    args = argparse.Namespace(
+        work_id=work_dir.name,
+        repository="inabako/example",
+        target_branch="develop",
+        remote="upstream",
+        requirements=[],
+        repo_root=str(repo),
+        source_dir=str(source),
+        no_pull=True,
+        dry_run=False,
+    )
+
+    state = prepare_repository.prepare_repository(args)
+
+    assert state["current_branch"] == "develop"
+    assert ["fetch", "upstream", "develop"] in calls
+    assert ["checkout", "develop"] in calls
+    assert ["pull", "--ff-only", "upstream", "develop"] not in calls
 
 
 def test_prepare_support_repository_dry_run_writes_state_report_and_artifacts(tmp_path: Path) -> None:
@@ -554,6 +755,10 @@ def test_create_issue_branch_checkout_existing_repository_switches_existing_or_t
         ["switch", "--track", "-c", "feature/issue-43", "upstream/feature/issue-43"],
     ]
 
+    calls.clear()
+    create_issue_branch.checkout_existing_repository(source, "origin", "feature/issue-44", dry_run=True)
+    assert calls == []
+
 
 def test_create_issue_branch_local_only_requires_source_repository(tmp_path: Path) -> None:
     repo, _ = make_work_repo(tmp_path)
@@ -616,6 +821,48 @@ def test_create_issue_branch_local_only_switches_existing_branch(
     assert state["current_commit"] == "abc123"
 
 
+def test_create_issue_branch_local_only_creates_missing_branch_and_script_load(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo, work_dir = make_work_repo(tmp_path)
+    source = work_dir / "source" / "repository"
+    source.mkdir(parents=True)
+    calls: list[list[str]] = []
+
+    def fake_run_git(args, cwd):
+        calls.append(list(args))
+        return subprocess.CompletedProcess(["git", *args], 0, stdout="", stderr="")
+
+    monkeypatch.setattr(create_issue_branch, "run_git", fake_run_git)
+    monkeypatch.setattr(create_issue_branch, "local_branch_exists", lambda path, branch: False)
+    monkeypatch.setattr(create_issue_branch, "current_branch", lambda path: "feature/issue-99")
+    monkeypatch.setattr(create_issue_branch, "current_commit", lambda path: "commit99")
+
+    result = create_issue_branch.create_branch(
+        argparse.Namespace(
+            work_id="issue-1",
+            issue_number="99",
+            repository=None,
+            github_repo=None,
+            base_branch=None,
+            branch_prefix=None,
+            remote=None,
+            repo_root=str(repo),
+            source_dir=str(source),
+            local_only=True,
+            link_to_issue=True,
+            dry_run=False,
+        )
+    )
+
+    assert result["linked_branch_status"] == "skipped_local_only"
+    assert ["switch", "-c", "feature/issue-99"] in calls
+
+    namespace = runpy.run_path(str(Path(create_issue_branch.__file__)))
+    assert namespace["build_parser"]
+
+
 def test_create_issue_branch_remote_branch_ref_then_clone(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -664,6 +911,30 @@ def test_create_issue_branch_remote_branch_ref_then_clone(
     state = json.loads((work_dir / "context" / "scm-state.json").read_text(encoding="utf-8"))
     assert state["remote_branch_base_sha"] == "base-sha"
     assert state["current_branch"] == "feature/issue-42"
+
+
+def test_create_issue_branch_remote_dry_run_fills_repository_from_github_repo(tmp_path: Path) -> None:
+    repo, _work_dir = make_work_repo(tmp_path)
+    result = create_issue_branch.create_branch(
+        argparse.Namespace(
+            work_id="issue-1",
+            issue_number="55",
+            repository=None,
+            github_repo="inabako/example",
+            base_branch="main",
+            branch_prefix="feature/issue",
+            remote="origin",
+            repo_root=str(repo),
+            source_dir=None,
+            local_only=False,
+            link_to_issue=False,
+            dry_run=True,
+        )
+    )
+
+    assert result["remote_branch_ref"] == "refs/heads/feature/issue-55"
+    state = json.loads((repo / "work" / "issue-1" / "context" / "scm-state.json").read_text(encoding="utf-8"))
+    assert state["repository"] == "https://github.com/inabako/example.git"
 
 
 def test_create_issue_branch_remote_linked_branch_checks_out_existing_source(
@@ -761,6 +1032,9 @@ def test_create_issue_branch_main_prints_json(tmp_path: Path, capsys: pytest.Cap
     captured = capsys.readouterr()
     assert code == 0
     assert '"branch": "feature/issue-42"' in captured.out
+
+    namespace = runpy.run_path(str(Path(push_branch.__file__)))
+    assert namespace["build_parser"]
 
 
 def test_push_branch_dry_run_refuses_non_issue_branch(tmp_path: Path) -> None:
@@ -953,6 +1227,90 @@ def test_commit_changes_rejects_non_semantic_message(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="semantic commit format"):
         commit_changes.commit_changes(args)
+
+
+def test_commit_changes_parser_main_script_and_plain_commit(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    parser = commit_changes.build_parser()
+    parsed = parser.parse_args(
+        [
+            "--work-id",
+            "issue-1",
+            "--message",
+            "fix: commit change",
+            "--repo-root",
+            str(tmp_path),
+            "--source-dir",
+            str(tmp_path / "repo"),
+            "--all",
+            "--allow-empty",
+            "--dry-run",
+        ]
+    )
+
+    assert parsed.work_id == "issue-1"
+    assert parsed.message == "fix: commit change"
+    assert parsed.all is True
+    assert parsed.allow_empty is True
+    assert parsed.dry_run is True
+
+    repo, work_dir = make_work_repo(tmp_path)
+    source = work_dir / "source" / "repository"
+    source.mkdir(parents=True)
+    calls: list[list[str]] = []
+
+    def fake_run_git(args, cwd):
+        calls.append(list(args))
+        if args == ["status", "--short"]:
+            return subprocess.CompletedProcess(["git", *args], 0, stdout=" M app.py\n", stderr="")
+        return subprocess.CompletedProcess(["git", *args], 0, stdout="", stderr="")
+
+    monkeypatch.setattr(commit_changes, "load_env", lambda repo_root: {})
+    monkeypatch.setattr(commit_changes, "run_git", fake_run_git)
+    monkeypatch.setattr(commit_changes, "current_branch", lambda path: "feature/issue-1")
+    monkeypatch.setattr(commit_changes, "current_commit", lambda path: "commit123")
+
+    result = commit_changes.commit_changes(
+        argparse.Namespace(
+            work_id="issue-1",
+            message="fix: commit change",
+            repo_root=str(repo),
+            source_dir=str(source),
+            all=False,
+            allow_empty=False,
+            dry_run=False,
+        )
+    )
+
+    assert result["commit"] == "commit123"
+    assert ["commit", "-m", "fix: commit change"] in calls
+    assert not any(call[:2] == ["config", "user.name"] for call in calls)
+    assert ["add", "-A"] not in calls
+
+    assert commit_changes.main(
+        [
+            "--work-id",
+            "issue-1",
+            "--message",
+            "fix: commit change",
+            "--repo-root",
+            str(repo),
+            "--source-dir",
+            str(source),
+            "--dry-run",
+        ]
+    ) == 0
+    assert '"message": "fix: commit change"' in capsys.readouterr().out
+
+    monkeypatch.setattr(commit_changes, "commit_changes", lambda args: (_ for _ in ()).throw(RuntimeError("boom")))
+    assert commit_changes.main(["--work-id", "issue-1", "--message", "fix: commit change"]) == 1
+    assert "ERROR: boom" in capsys.readouterr().err
+
+    namespace = runpy.run_path(str(Path(commit_changes.__file__)))
+    assert namespace["build_parser"]
 
 
 def test_commit_changes_dry_run_records_status_without_commit(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

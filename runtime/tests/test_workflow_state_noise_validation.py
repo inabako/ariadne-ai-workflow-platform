@@ -100,6 +100,9 @@ def test_workflow_state_main_show_prints_json(tmp_path: Path, capsys: pytest.Cap
     assert '"status": "ok"' in captured.out
     assert '"in-progress"' in captured.out
 
+    namespace = runpy.run_path(str(Path(workflow_state.__file__)))
+    assert namespace["build_parser"]
+
 
 def test_noise_reduction_blocks_when_critical_items_are_missing(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
@@ -243,6 +246,17 @@ def test_validate_output_language_ignores_code_blocks_and_allowed_terms(tmp_path
 
     assert validate_output_language.analyze(path, args) is None
 
+    mixed = tmp_path / "mixed.md"
+    mixed.write_text(
+        "これは十分な日本語本文です。安全確認と運用確認を行います。" * 4
+        + " architecture implementation deployment troubleshooting observability rollback monitoring validation",
+        encoding="utf-8",
+    )
+    assert validate_output_language.analyze(
+        mixed,
+        argparse.Namespace(min_english_words=5, min_japanese_chars=10, english_ratio_threshold=0.9),
+    ) is None
+
 
 def test_validate_output_language_iter_markdown_skips_missing_non_md_and_excluded_paths(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
@@ -268,6 +282,9 @@ def test_validate_output_language_iter_markdown_skips_missing_non_md_and_exclude
     )
 
     assert results == [included.resolve()]
+    assert validate_output_language.iter_markdown(["docs"], repo, ["docs/guide.md"]) == []
+    assert validate_output_language.is_excluded(tmp_path / "outside.md", repo, ["outside.md"])
+    assert validate_output_language.analyze(docs, argparse.Namespace(min_english_words=1, min_japanese_chars=1, english_ratio_threshold=0.5)) is None
 
 
 def test_validate_output_language_strip_non_prose_removes_frontmatter_urls_tables_and_inline_code() -> None:
@@ -353,6 +370,39 @@ def test_validate_output_language_main_fails_on_violation(
     captured = capsys.readouterr()
     assert code == 1
     assert "english_ratio=" in captured.out
+
+
+def test_validate_output_language_main_prints_absolute_external_path_and_script_load(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    external = tmp_path / "external.md"
+    external.write_text(
+        "Architecture decisions implementation details testing strategy deployment operations "
+        "troubleshooting procedure runtime behavior validation evidence maintenance policy monitoring design.\n",
+        encoding="utf-8",
+    )
+
+    code = validate_output_language.main(
+        [
+            "--repo-root",
+            str(repo),
+            "--paths",
+            str(external),
+            "--min-english-words",
+            "5",
+            "--fail-on-violation",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert code == 1
+    assert str(external) in captured.out
+
+    namespace = runpy.run_path(str(Path(validate_output_language.__file__)))
+    assert namespace["build_parser"]
 
 
 def test_validate_output_language_main_reports_ok_for_japanese_dominant(

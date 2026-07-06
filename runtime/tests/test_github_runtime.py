@@ -88,6 +88,19 @@ def test_github_api_json_reports_http_and_url_errors(monkeypatch: pytest.MonkeyP
     with pytest.raises(RuntimeError, match=r"GitHub API request failed \(422\): Validation failed"):
         api.github_api_json({"GITHUB_TOKEN": "token"}, "GET", "/bad")
 
+    def raise_plain_http_error(request, timeout):
+        raise api.error.HTTPError(
+            request.full_url,
+            500,
+            "server error",
+            hdrs=None,
+            fp=io.BytesIO(b"not-json"),
+        )
+
+    monkeypatch.setattr(api.request, "urlopen", raise_plain_http_error)
+    with pytest.raises(RuntimeError, match=r"GitHub API request failed \(500\): not-json"):
+        api.github_api_json({"GITHUB_TOKEN": "token"}, "GET", "/bad")
+
     def raise_url_error(request, timeout):
         raise api.error.URLError("network down")
 
@@ -118,6 +131,19 @@ def test_github_graphql_json_reports_http_and_url_errors(monkeypatch: pytest.Mon
 
     monkeypatch.setattr(api.request, "urlopen", raise_http_error)
     with pytest.raises(RuntimeError, match=r"GitHub GraphQL request failed \(401\): Bad credentials"):
+        api.github_graphql_json({"GITHUB_TOKEN": "token"}, "query")
+
+    def raise_plain_http_error(request, timeout):
+        raise api.error.HTTPError(
+            request.full_url,
+            502,
+            "bad gateway",
+            hdrs=None,
+            fp=io.BytesIO(b"plain failure"),
+        )
+
+    monkeypatch.setattr(api.request, "urlopen", raise_plain_http_error)
+    with pytest.raises(RuntimeError, match=r"GitHub GraphQL request failed \(502\): plain failure"):
         api.github_graphql_json({"GITHUB_TOKEN": "token"}, "query")
 
     def raise_url_error(request, timeout):
@@ -215,6 +241,7 @@ def test_normalize_issue_title_applies_prefix_once() -> None:
     assert title == "[改善フロー] ログを整理する"
     assert prefix == "改善フロー"
     assert issue_manager.normalize_issue_title(title, flow_label="improvement")[0] == title
+    assert issue_manager.normalize_issue_title("plain title") == ("plain title", "")
 
 
 @pytest.mark.parametrize(
@@ -294,6 +321,40 @@ def test_issue_body_from_args_reads_body_file(tmp_path: Path) -> None:
     assert body == "# Custom body\n"
     assert source == "body-file"
     assert template_path == str(body_file.resolve())
+
+
+def test_issue_manager_template_default_and_package_guard_edges(tmp_path: Path) -> None:
+    repo, work_dir = make_work_repo(tmp_path)
+    source = work_dir / "source" / "repository"
+    template = source / ".github" / "ISSUE_TEMPLATE.md"
+    template.parent.mkdir(parents=True)
+    template.write_text("- Report:\n- Target branch:\n- Target commit:\n", encoding="utf-8")
+    (work_dir / "context" / "scm-state.json").write_text(
+        json.dumps({"source_dir": str(source), "target_branch": "", "current_commit": ""}),
+        encoding="utf-8",
+    )
+
+    body, source_name, template_path = issue_manager.issue_body_from_args(
+        repo,
+        work_dir,
+        argparse.Namespace(body_file=None),
+    )
+
+    assert source_name == "project-template"
+    assert template_path == "work/issue-1/source/repository/.github/ISSUE_TEMPLATE.md"
+    assert "- Report:" in body
+    assert "`" not in body
+
+    template.unlink()
+    (work_dir / "context" / "artifact-index.json").write_text(
+        json.dumps({"artifacts": [{"path": "work/issue-1/design-document/design.md"}]}),
+        encoding="utf-8",
+    )
+    runtime_default = issue_manager.default_issue_body(repo, work_dir)
+    assert "`work/issue-1/design-document/design.md`" in runtime_default
+
+    namespace = runpy.run_path(str(Path(issue_manager.__file__)))
+    assert namespace["build_parser"]
 
 
 def test_manage_issue_draft_writes_body_record_and_artifact_index(tmp_path: Path) -> None:
@@ -426,6 +487,29 @@ def test_manage_issue_rejects_repo_without_owner(tmp_path: Path) -> None:
         issue_manager.manage_issue(args)
 
 
+def test_manage_issue_rejects_slug_without_owner_after_resolution(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo, _work_dir = make_work_repo(tmp_path)
+    monkeypatch.setattr(issue_manager, "repository_to_github_slug", lambda repository, owner=None: "example")
+    args = argparse.Namespace(
+        work_id="issue-1",
+        github_repo="example",
+        title="missing owner",
+        flow_label=None,
+        title_prefix=None,
+        body_file=None,
+        label=[],
+        assignee=[],
+        repo_root=str(repo),
+        create=False,
+    )
+
+    with pytest.raises(ValueError, match="owner/name"):
+        issue_manager.manage_issue(args)
+
+
 def test_create_issue_with_api_extracts_number_from_url_when_missing(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         issue_manager,
@@ -444,6 +528,22 @@ def test_create_issue_with_api_extracts_number_from_url_when_missing(monkeypatch
 
     assert issue_url.endswith("/issues/123")
     assert issue_number == "123"
+
+    monkeypatch.setattr(
+        issue_manager,
+        "github_api_json",
+        lambda settings, method, path, payload: {"html_url": "https://github.com/inabako/example/issues/not-a-number"},
+    )
+    issue_url, issue_number = issue_manager.create_issue_with_api(
+        "inabako/example",
+        "title",
+        "body",
+        [],
+        [],
+        {"GITHUB_TOKEN": "token"},
+    )
+    assert issue_url.endswith("/not-a-number")
+    assert issue_number is None
 
 
 def test_create_issue_with_api_builds_url_from_number_and_rejects_missing_url(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -499,6 +599,10 @@ def test_issue_manager_main_prints_json(tmp_path: Path, capsys: pytest.CaptureFi
     captured = capsys.readouterr()
     assert code == 0
     assert '"status": "draft"' in captured.out
+
+    code = issue_manager.main(["--work-id", "missing", "--title", "x", "--repo-root", str(repo)])
+    assert code == 1
+    assert "ERROR:" in capsys.readouterr().err
 
 
 def test_pull_request_create_requires_human_approval(tmp_path: Path) -> None:

@@ -305,6 +305,7 @@ def test_chunk_documents_parser_and_heading_path_edges(tmp_path: Path) -> None:
 def test_split_content_short_empty_and_overlap_edges() -> None:
     assert chunk_documents.split_content("", 10, 0) == []
     assert chunk_documents.split_content("short text", 100, 0) == [(0, 10, "short text")]
+    assert chunk_documents.split_content("single", 3, 0) == [(0, 6, "single")]
 
     chunks = chunk_documents.split_content("alpha\n\nbeta beta beta\n\ngamma gamma gamma", 18, 4)
 
@@ -316,6 +317,21 @@ def test_split_content_short_empty_and_overlap_edges() -> None:
 
     with pytest.raises(ValueError, match="--chunk-overlap"):
         chunk_documents.split_content("text", 10, -1)
+
+
+def test_split_content_defensive_fallback_preserves_text_when_splitter_yields_no_parts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_split(pattern: str, text: str) -> list[str]:
+        assert pattern == r"(\n\s*\n)"
+        assert text == "runtime rescue thread"
+        return [""]
+
+    monkeypatch.setattr(chunk_documents.re, "split", fake_split)
+
+    assert chunk_documents.split_content("runtime rescue thread", 100, 0) == [
+        (0, len("runtime rescue thread"), "runtime rescue thread")
+    ]
 
 
 def test_chunk_document_writes_chunk_with_heading_path(tmp_path: Path) -> None:
@@ -440,6 +456,9 @@ def test_chunk_documents_main_paths(monkeypatch: pytest.MonkeyPatch, tmp_path: P
     assert chunk_documents.main(["--repo-root", str(tmp_path)]) == 1
     assert "ERROR: boom" in capsys.readouterr().err
 
+    namespace = runpy.run_path(str(Path(chunk_documents.__file__)))
+    assert namespace["build_parser"]
+
 
 def test_build_index_writes_document_and_chunk_jsonl(tmp_path: Path) -> None:
     repo = make_repo(tmp_path)
@@ -489,6 +508,64 @@ def test_build_index_writes_document_and_chunk_jsonl(tmp_path: Path) -> None:
     chunks = (repo / result["chunks_index"]).read_text(encoding="utf-8")
     assert '"document_id": "doc-1"' in documents
     assert '"chunk_id": "chunk-1"' in chunks
+
+
+def test_build_index_parser_invalid_rows_empty_discovery_main_and_script(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    parser = build_index.build_parser()
+    parsed = parser.parse_args(
+        [
+            "--normalized-dir",
+            "custom/normalized",
+            "--chunks-dir",
+            "custom/chunks",
+            "--output-dir",
+            "custom/indexes",
+            "--repo-root",
+            str(tmp_path),
+        ]
+    )
+
+    assert parsed.normalized_dir == "custom/normalized"
+    assert parsed.chunks_dir == "custom/chunks"
+    assert parsed.output_dir == "custom/indexes"
+    assert parsed.repo_root == str(tmp_path)
+    assert build_index.discover_json(tmp_path / "missing") == []
+
+    invalid_document = tmp_path / "doc.json"
+    invalid_chunk = tmp_path / "chunk.json"
+    invalid_document.write_text("[]", encoding="utf-8")
+    invalid_chunk.write_text("[]", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Invalid normalized document"):
+        build_index.document_index_row(tmp_path, invalid_document)
+    with pytest.raises(ValueError, match="Invalid chunk document"):
+        build_index.chunk_index_row(tmp_path, invalid_chunk)
+
+    repo = make_repo(tmp_path)
+    assert build_index.main(
+        [
+            "--repo-root",
+            str(repo),
+            "--normalized-dir",
+            "rag/missing-normalized",
+            "--chunks-dir",
+            "rag/missing-chunks",
+            "--output-dir",
+            "rag/indexes",
+        ]
+    ) == 0
+    assert '"document_count": 0' in capsys.readouterr().out
+
+    monkeypatch.setattr(build_index, "run", lambda args: (_ for _ in ()).throw(RuntimeError("boom")))
+    assert build_index.main(["--repo-root", str(repo)]) == 1
+    assert "ERROR: boom" in capsys.readouterr().err
+
+    namespace = runpy.run_path(str(Path(build_index.__file__)))
+    assert namespace["build_parser"]
 
 
 def test_embed_chunks_is_deterministic_and_validates_dimensions(tmp_path: Path) -> None:

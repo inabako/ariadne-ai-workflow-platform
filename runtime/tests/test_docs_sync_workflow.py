@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import runpy
 from pathlib import Path
 
 import pytest
@@ -212,6 +213,7 @@ def test_markdown_helpers_and_issue_body_render_full_and_empty_sections() -> Non
     empty = docs_sync.build_issue_body({"summary": "No drift yet.", "drift_items": [], "open_questions": []})
 
     assert docs_sync.markdown_list([]) == "- None"
+    assert docs_sync.evidence_lines([]) == "- None"
     assert "runtime/ctl.py" in docs_sync.evidence_lines(sample_analysis()["drift_items"][0]["implementation_evidence"])
     assert "DOCS-1" in full
     assert "Keep this docs-only." in full
@@ -268,6 +270,9 @@ def test_run_dispatches_and_main_prints_json(monkeypatch: pytest.MonkeyPatch, ca
     assert docs_sync.run(argparse.Namespace(command="issue-body")) == {"command": "issue-body"}
     with pytest.raises(ValueError, match="Unsupported command"):
         docs_sync.run(argparse.Namespace(command="unknown"))
+
+    namespace = runpy.run_path(str(Path(docs_sync.__file__)))
+    assert namespace["build_parser"]
 
     code = docs_sync.main(["analysis-template", "--work-id", "docs-develop"])
     captured = capsys.readouterr()

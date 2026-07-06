@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import runpy
 from pathlib import Path
 
 import pytest
@@ -326,6 +327,17 @@ def test_migrate_retrieval_artifacts_prunes_legacy_migration_outputs(tmp_path: P
     repo = make_repo(tmp_path)
     retrieval = repo / "rag" / "retrieval"
     retrieval.mkdir(parents=True)
+    fresh_source = retrieval / "fresh_context-pack.json"
+    fresh_source.write_text(
+        json.dumps(
+            {
+                "artifact_type": "rag-context-pack",
+                "legacy_artifact_paths": ["docs/not-a-legacy-retrieval.json"],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
     stale = retrieval / "12345678-1234-1234-1234-123456789abc.json"
     stale.write_text(
         json.dumps(
@@ -361,6 +373,7 @@ def test_migrate_retrieval_artifacts_prunes_legacy_migration_outputs(tmp_path: P
     result = migrate_retrieval_artifacts.run(args)
 
     assert result["pruned"] == ["rag/retrieval/12345678-1234-1234-1234-123456789abc.json"]
+    assert result["json_migrated_count"] == 1
     assert not stale.exists()
     assert keep.exists()
 
@@ -407,6 +420,9 @@ def test_migrate_retrieval_artifacts_main_paths(monkeypatch: pytest.MonkeyPatch,
     monkeypatch.setattr(migrate_retrieval_artifacts, "run", fail)
     assert migrate_retrieval_artifacts.main(["--repo-root", str(tmp_path)]) == 1
     assert "ERROR: boom" in capsys.readouterr().err
+
+    namespace = runpy.run_path(str(Path(migrate_retrieval_artifacts.__file__)))
+    assert namespace["build_parser"]
 
 
 def test_standardize_report_names_renames_legacy_report_and_updates_references(
@@ -542,7 +558,9 @@ def test_standardize_report_names_parser_and_helper_fallbacks(
     assert standardize_corrective_report_names.replacement_name(report, report.read_text(encoding="utf-8"), 5).endswith(
         "_ABCDE_legacy-report.md"
     )
+    monkeypatch.undo()
     assert len(standardize_corrective_report_names.random_token(8)) == 8
+    assert set(standardize_corrective_report_names.random_token(8)) <= set(standardize_corrective_report_names.CROCKFORD_BASE32)
 
 
 def test_standardize_report_names_missing_dir_and_target_collision(
@@ -621,3 +639,6 @@ def test_standardize_report_names_main_paths(monkeypatch: pytest.MonkeyPatch, tm
     monkeypatch.setattr(standardize_corrective_report_names, "run", fail)
     assert standardize_corrective_report_names.main(["--repo-root", str(tmp_path)]) == 1
     assert "ERROR: boom" in capsys.readouterr().err
+
+    namespace = runpy.run_path(str(Path(standardize_corrective_report_names.__file__)))
+    assert namespace["build_parser"]

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import runpy
 from pathlib import Path
 
 import pytest
@@ -126,6 +127,7 @@ def test_gui_mode_renderers_and_failure_paths(tmp_path: Path) -> None:
     assert gui_mode.infer_mode("FIX-1", "auto") == "corrective-improvement"
     assert gui_mode.infer_mode("OTHER-1", "auto") == "generic-gui"
     assert gui_mode.safe_identifier("123 bad id", "fallback") == "item_123_bad_id"
+    assert gui_mode.safe_identifier("   ", "fallback") == "fallback"
     assert gui_mode.parse_style("fill: red; ignored; stroke: blue") == {"fill": "red", "stroke": "blue"}
     assert gui_mode.qt_widget_name("unknown") == "QWidget"
     assert "# SVG Analysis" in gui_mode.render_svg_analysis([document], "FIX-300", "corrective-improvement")
@@ -180,6 +182,8 @@ def test_gui_mode_model_fallbacks_duplicate_ids_and_no_relationship_yaml(tmp_pat
         }
     ]
     assert "relationships:\n  []" in gui_mode.render_semantic_yaml(fallback_model)
+    fallback_widget_mapping = gui_mode.render_widget_mapping(fallback_model, "GUI-001", "generic-gui")
+    assert "SVGから明示的な操作Widgetを推定できない" in fallback_widget_mapping
     assert gui_mode.infer_area_role("footer_log") == "information_area"
     assert gui_mode.infer_area_role("misc") == "content_area"
     assert [widget["id"] for widget in duplicate_model["widgets"]] == ["same", "same_2", "orphan_button_text"]
@@ -391,6 +395,38 @@ def test_gui_mode_main_run_and_self_test_error_boundary(
     assert "ERROR: boom" in capsys.readouterr().err
 
 
+def test_gui_mode_self_test_fails_if_existing_output_guard_does_not_raise(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = 0
+
+    def fake_run_generate(args):
+        nonlocal calls
+        calls += 1
+        if calls <= 2:
+            return {"status": "skipped"}
+        if calls == 3:
+            pyqt_source = (
+                Path(args.repo_root)
+                / "work"
+                / "FEAT-0001"
+                / "gac-uac"
+                / "generated"
+                / "pyqt6"
+                / "main_window.py"
+            )
+            pyqt_source.parent.mkdir(parents=True, exist_ok=True)
+            pyqt_source.write_text("class MainWindow:\n    pass\n", encoding="utf-8")
+        return {"status": "complete", "mode": "feature-development", "input_prefix": "FEAT"}
+
+    monkeypatch.setattr(gui_mode, "run_generate", fake_run_generate)
+    monkeypatch.setattr(gui_mode, "validate_outputs", lambda work_dir: {"status": "pass"})
+    monkeypatch.setattr(gui_mode, "assert_self_test", lambda condition, message: None)
+
+    with pytest.raises(AssertionError, match="existing outputs should require --force"):
+        gui_mode.run_self_test(argparse.Namespace())
+
+
 def test_gui_mode_run_generate_skips_when_no_svg_and_main_prints_json(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     repo_root, work_dir = make_work(tmp_path, "SYS-400")
 
@@ -423,6 +459,9 @@ def test_gui_mode_run_generate_skips_when_no_svg_and_main_prints_json(tmp_path: 
     assert skipped["status"] == "skipped"
     assert code == 1
     assert '"status": "fail"' in captured.out
+
+    namespace = runpy.run_path(str(Path(gui_mode.__file__)))
+    assert namespace["build_parser"]
 
 
 def test_web_svg_mode_parse_model_render_and_validate_outputs(tmp_path: Path) -> None:
@@ -510,10 +549,12 @@ def test_web_svg_mode_renderers_and_failure_paths(tmp_path: Path) -> None:
 
     assert web_svg_layout_mode.parse_style("fill: red; ignored; stroke: blue") == {"fill": "red", "stroke": "blue"}
     assert web_svg_layout_mode.safe_identifier("123 bad id", "fallback") == "item_123_bad_id"
+    assert web_svg_layout_mode.safe_identifier("   ", "fallback") == "fallback"
     assert web_svg_layout_mode.html_element("unknown") == "div"
     assert web_svg_layout_mode.html_element("checkbox") == "input"
     assert web_svg_layout_mode.infer_section_role("nav_sidebar") == "navigation"
     assert web_svg_layout_mode.infer_section_role("footer_status") == "status"
+    assert web_svg_layout_mode.infer_section_role("misc") == "section"
     assert "移動" in web_svg_layout_mode.infer_responsibility("navigation", "Menu")
     assert "# Web SVG Analysis" in web_svg_layout_mode.render_svg_analysis([document], "WEB_FIX-300", "corrective-fix")
     assert "screen:" in web_svg_layout_mode.render_yaml(model)
@@ -791,3 +832,6 @@ def test_web_svg_run_generate_skips_when_no_svg_and_main_prints_json(tmp_path: P
     assert skipped["status"] == "skipped"
     assert code == 1
     assert '"status": "fail"' in captured.out
+
+    namespace = runpy.run_path(str(Path(web_svg_layout_mode.__file__)))
+    assert namespace["build_parser"]

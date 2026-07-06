@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import runpy
 import subprocess
 from pathlib import Path
 
@@ -104,6 +105,8 @@ def test_dispatcher_planning_helpers_cover_context_and_explicit_paths(tmp_path: 
     assert "# design.md" in collected
     assert "# report.md" in collected
     assert "# state.json" in collected
+    (work_dir / "process-report" / "empty.md").write_text("", encoding="utf-8")
+    assert "# empty.md" not in rag_dispatcher.collect_work_context(work_dir)
     assert rag_dispatcher.collect_work_context(repo / "missing") == ""
     assert rag_dispatcher.default_work_dir(repo, make_args(work_id="issue-2")) == repo / "work" / "issue-2"
     assert rag_dispatcher.default_work_dir(repo, make_args()) is None
@@ -186,6 +189,10 @@ def test_dispatcher_execution_plan_and_plan_normalization_paths(tmp_path: Path) 
     (context_dir / "context-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
     (context_dir / "registered-plan.json").write_text("{}\n", encoding="utf-8")
     assert rag_dispatcher.execution_plan_reference(repo, work_dir) == "work/issue-2/context/registered-plan.json"
+    manifest["contexts"] = [{"type": "other", "path": "work/issue-2/context/other.json"}]
+    (context_dir / "context-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    fallback_plan.write_text("{}\n", encoding="utf-8")
+    assert rag_dispatcher.execution_plan_reference(repo, work_dir) == "work/issue-2/context/execution-plan.json"
 
     plan_args = make_args(max_queries=3, search_mode="semantic")
     plan = {
@@ -256,6 +263,9 @@ def test_dispatcher_existing_plan_validation_and_execution_plan_override(tmp_pat
     assert plan["execution_plan"] == "work/issue-3/context/from-plan.json"
     assert plan["human_check_required"] is False
 
+    namespace = runpy.run_path(str(Path(rag_dispatcher.__file__)))
+    assert namespace["build_parser"]
+
 
 def test_dispatcher_command_index_build_and_aggregation_helpers(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     repo = tmp_path / "repo"
@@ -324,6 +334,8 @@ def test_dispatcher_command_index_build_and_aggregation_helpers(monkeypatch: pyt
 
     pack1 = repo / "pack1.json"
     pack2 = repo / "pack2.json"
+    empty_pack = repo / "empty-pack.json"
+    empty_pack.write_text(json.dumps({"context": "", "sources": [{"chunk_id": "ignored"}]}), encoding="utf-8")
     pack1.write_text(
         json.dumps(
             {
@@ -346,6 +358,7 @@ def test_dispatcher_command_index_build_and_aggregation_helpers(monkeypatch: pyt
         repo,
         [
             {"json": None, "query": "ignored"},
+            {"json": {"context_pack": str(empty_pack)}, "query": "empty"},
             {"json": {"context_pack": str(pack1)}, "query": "q1"},
             {"json": {"context_pack": str(pack2)}, "query": "q2"},
         ],
@@ -489,6 +502,13 @@ def test_dispatcher_run_command_json_boundaries(monkeypatch: pytest.MonkeyPatch,
         lambda command, **kwargs: subprocess.CompletedProcess(command, 0, stdout="not-json", stderr=""),
     )
     assert rag_dispatcher.run_command(["tool"], tmp_path)["json"] is None
+
+    monkeypatch.setattr(
+        rag_dispatcher.subprocess,
+        "run",
+        lambda command, **kwargs: subprocess.CompletedProcess(command, 0, stdout="", stderr=""),
+    )
+    assert "json" not in rag_dispatcher.run_command(["tool"], tmp_path)
 
 
 def test_dispatcher_writes_query_plan_before_dispatch(tmp_path: Path) -> None:

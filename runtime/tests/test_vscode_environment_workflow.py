@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import runpy
 from pathlib import Path
 
 import pytest
@@ -75,6 +76,7 @@ def test_vscode_environment_draft_template_and_discovery(tmp_path: Path) -> None
     assert result["draft_path"].endswith("README.md")
     assert [path.name for path in drafts] == ["notes.txt", "README_custom.md"]
     assert "custom-design mode" in vscode_environment.draft_template_text()
+    assert vscode_environment.discover_drafts(tmp_path / "missing-draft-dir") == []
 
 
 def test_vscode_environment_open_questions_records_drafts(tmp_path: Path) -> None:
@@ -152,6 +154,9 @@ def test_vscode_environment_requirements_and_validation_templates(tmp_path: Path
     req_result = vscode_environment.write_requirements_template(
         namespace(work_id="vscode-env", mode="custom-design", repo_root=str(tmp_path))
     )
+    second_req = vscode_environment.write_requirements_template(
+        namespace(work_id="vscode-env", mode="custom-design", repo_root=str(tmp_path))
+    )
     validation_result = vscode_environment.write_validation_template(
         namespace(work_id="vscode-env", mode="custom-design", status="conditional-pass", repo_root=str(tmp_path))
     )
@@ -161,6 +166,7 @@ def test_vscode_environment_requirements_and_validation_templates(tmp_path: Path
     validation_md = (tmp_path / validation_result["markdown_path"]).read_text(encoding="utf-8")
 
     assert "custom-design" in requirements
+    assert second_req["path"] == req_result["path"]
     assert "terminal.integrated.env.windows" in requirements
     assert validation_json["status"] == "conditional-pass"
     assert "Workspace共有Artifact検証" in validation_md
@@ -193,3 +199,22 @@ def test_vscode_environment_main_dispatch_success_and_error(tmp_path: Path, caps
 
     assert code == 1
     assert "Work directory already exists" in captured.err
+
+
+def test_vscode_environment_main_dispatches_remaining_commands_and_script_load(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    commands = [
+        ["validation-template", "--work-id", "vscode-validation", "--repo-root", str(tmp_path)],
+        ["draft-template", "--draft-dir", "work/requirements/custom-draft", "--repo-root", str(tmp_path)],
+        ["open-questions", "--work-id", "vscode-questions", "--repo-root", str(tmp_path)],
+        ["rag-template", "--work-id", "vscode-rag", "--repo-root", str(tmp_path), "--topic", "Local Env"],
+    ]
+
+    for command in commands:
+        assert vscode_environment.main(command) == 0
+        assert "{" in capsys.readouterr().out
+
+    namespace = runpy.run_path(str(Path(vscode_environment.__file__)))
+    assert namespace["build_parser"]

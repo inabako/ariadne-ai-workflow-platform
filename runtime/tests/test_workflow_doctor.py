@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import runpy
 import subprocess
 from pathlib import Path
 
@@ -183,3 +184,6 @@ def test_workflow_doctor_main_returns_one_on_fail_on_warning(monkeypatch, tmp_pa
     captured = capsys.readouterr()
     assert code == 1
     assert '"status": "fail"' in captured.out
+
+    namespace = runpy.run_path(str(Path(workflow_doctor.__file__)))
+    assert namespace["build_parser"]

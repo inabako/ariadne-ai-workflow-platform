@@ -168,6 +168,9 @@ def test_human_gate_policy_main_reports_error_for_unknown_gate(
     assert code == 1
     assert "Unknown human gate: missing" in captured.err
 
+    namespace = runpy.run_path(str(Path(human_gate_policy.__file__)))
+    assert namespace["build_parser"]
+
 
 def test_vscode_task_runner_refreshed_env_merges_registry_and_extra(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(vscode_task_runner, "windows_registry_paths", lambda: ["C:/Registry/bin"])

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import runpy
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -495,6 +496,9 @@ def test_main_prints_json_and_reports_errors(monkeypatch: pytest.MonkeyPatch, ca
     assert task_runner.main(["--work-id", "issue-1", "--task-file", "tasks.json"]) == 1
     stderr = capsys.readouterr().err
     assert "ERROR: boom" in stderr
+
+    namespace = runpy.run_path(str(Path(task_runner.__file__)))
+    assert namespace["build_parser"]
 
 
 def test_normalize_command_accepts_string_and_array() -> None:

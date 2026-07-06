@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import runpy
 from pathlib import Path
 
 import pytest
@@ -143,6 +144,47 @@ def test_retrieve_scores_semantic_hybrid_no_match_and_below_top_k() -> None:
     assert any(item["reason"] == "below-top-k" for item in dropped)
     assert [row["chunk_id"] for row in hybrid] == ["a", "b"]
     assert any(item["chunk_id"] == "c" and item["reason"] == "no-query-match" for item in hybrid_dropped)
+
+
+def test_retrieve_context_edges_for_empty_terms_embeddings_and_tiny_budget(tmp_path: Path) -> None:
+    row = {"chunk_id": "a", "content": "docker", "heading_path": ["Docker"], "chunk_index": 0}
+
+    assert retrieve_context.score_row(row, ["", "docker"]) > 0
+
+    embeddings_path = tmp_path / "embeddings.jsonl"
+    embeddings_path.write_text(
+        json.dumps({"chunk_id": "", "dimensions": 32, "embedding": {}}) + "\n"
+        + json.dumps({"chunk_id": "a", "dimensions": 32, "embedding": {"1": 1.0}}) + "\n",
+        encoding="utf-8",
+    )
+
+    embeddings, dimensions = retrieve_context.read_embeddings(embeddings_path)
+
+    assert list(embeddings) == ["a"]
+    assert dimensions == 32
+    assert retrieve_context.split_units("\n\n") == []
+
+    context, sources = retrieve_context.build_context([{"chunk_id": "a", "content": "docker"}], make_args(max_chars=150))
+
+    assert context == ""
+    assert sources == []
+
+    fallback_compressed = retrieve_context.compress_chunk(
+        {"content": "alpha one.\n\nbeta two.\n\ngamma three.\n\n" + ("z" * 1200)},
+        ["missing"],
+        max_chars=1000,
+    )
+    assert "alpha one" in fallback_compressed
+    assert "[truncated]" not in fallback_compressed
+
+    truncated_context, _ = retrieve_context.build_context(
+        [{"chunk_id": "long", "source_path": "rag/a.md", "content": "docker " * 200}],
+        make_args(query="docker", max_chars=230, top_k=1),
+    )
+    assert truncated_context.endswith("[truncated]")
+
+    namespace = runpy.run_path(str(Path(retrieve_context.__file__)))
+    assert namespace["build_parser"]
 
 
 def test_retrieve_requires_positive_top_k() -> None:

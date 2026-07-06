@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import runpy
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,6 +17,8 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     parser = ctl.build_parser()
 
     assert parser.prog == "aiwfctl"
+    namespace = runpy.run_path(str(Path(ctl.__file__)))
+    assert namespace["build_parser"]
 
 
 def test_ctl_without_modifier_warns_and_does_not_show_list() -> None:
@@ -87,6 +90,12 @@ def test_ctl_env_select_unknown_requires_human_check() -> None:
     assert "Unknown environment : unknown-runtime" in output
     assert "Available Environments" in output
     assert "実行環境を特定できません" in output
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(repo_root()), "env", "show", "unknown-runtime"])
+    code, output = ctl.run(args)
+
+    assert code == 1
+    assert "Unknown environment : unknown-runtime" in output
 
 
 def test_ctl_env_without_subcommand_shows_environment_management() -> None:
@@ -576,6 +585,14 @@ def test_ctl_environment_formatting_and_context_warning_helpers(tmp_path: Path) 
     )
     assert "Environment Human Check Required" in human_check
     assert "gui-mode" in human_check
+    assert "Candidate Environments" not in ctl.format_environment_human_check(
+        {
+            "target": "unknown",
+            "status": "human-check-required",
+            "human_check_reasons": ["choose explicitly"],
+            "candidate_environments": [],
+        }
+    )
 
     context = {
         "work_id": "issue-2",
@@ -619,6 +636,56 @@ def test_ctl_environment_formatting_and_context_warning_helpers(tmp_path: Path) 
         "environment-selection.md"
     ]
     assert "Selected Environment" in output_md.read_text(encoding="utf-8")
+
+    registry = {
+        "profiles": [
+            {"id": "p1", "primary_tools": []},
+            {"id": "p2", "primary_tools": []},
+        ],
+        "environments": [
+            {"name": "env-one", "backend": "p1", "purpose": "one"},
+            {"name": "env-two", "backend": "p2", "purpose": "two"},
+        ],
+        "mappings": [
+            {"subject_type": "command", "subject": "build", "profiles": ["p1"], "selection_reason": "one"},
+            {"subject_type": "command", "subject": "build", "profiles": ["p2"], "selection_reason": "two"},
+        ],
+    }
+    try:
+        ctl.find_environment_profile(registry, "missing")
+    except KeyError as exc:
+        assert "Unknown environment profile" in str(exc)
+    else:
+        raise AssertionError("unknown profile should fail")
+
+    ambiguous = ctl.select_environment(registry, "build")
+    assert ambiguous["status"] == "human-check-required"
+    assert len(ambiguous["candidate_environments"]) == 2
+    assert "Candidate Environments" in ctl.format_environment_human_check(ambiguous)
+    assert "Human Check" in ctl.format_unknown_environment(registry, "build", ambiguous)
+
+    profile_backend = ctl.format_environment_selection(
+        {
+            "status": "selected",
+            "target": "manual",
+            "environment": {},
+            "mapping": {},
+            "profiles": [{"id": "p1"}],
+            "human_check_required": False,
+            "workflow_context": {},
+            "initialization": {},
+        }
+    )
+    assert "Backend              : p1" in profile_backend
+    assert "Environment Human Check Required" in ctl.format_environment_selection(
+        {
+            "status": "human-check-required",
+            "target": "manual",
+            "human_check_required": True,
+            "human_check_reasons": ["needs human"],
+            "candidate_environments": [],
+        }
+    )
 
 
 def test_ctl_help_formatting_empty_lists_and_open_search_paths(tmp_path: Path) -> None:
