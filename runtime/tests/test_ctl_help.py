@@ -381,6 +381,34 @@ def test_ctl_context_init_creates_phase3_contexts(tmp_path: Path) -> None:
     assert (tmp_path / "work" / "issue-9001" / "context" / "tool-selection.json").exists()
 
 
+def test_ctl_doctor_runs_workflow_doctor(monkeypatch, tmp_path: Path) -> None:
+    registry_dir = tmp_path / "runtime" / "registries"
+    registry_dir.mkdir(parents=True)
+    (registry_dir / "workflow_help.json").write_text('{"commands": [], "extensions": []}', encoding="utf-8")
+    (registry_dir / "workflow_environment_profiles.json").write_text(
+        '{"environments": [], "profiles": [], "mappings": []}',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        ctl.workflow_doctor,
+        "run",
+        lambda args: {"status": "pass", "warning_count": 0, "warnings": []},
+    )
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "doctor"])
+    code, output = ctl.run(args)
+
+    assert code == 0
+    assert "Workflow Doctor" in output
+    assert "Warning Count : 0" in output
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "doctor", "--json"])
+    code, output = ctl.run(args)
+
+    assert code == 0
+    assert '"status": "pass"' in output
+
+
 def test_ctl_help_search_finds_svg_gui_workflows() -> None:
     args = ctl.build_parser().parse_args(["--repo-root", str(repo_root()), "help", "search", "svg", "gui"])
 

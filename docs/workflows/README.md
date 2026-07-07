@@ -19,6 +19,7 @@
 | `/knowledge-capture` | 完了IssueのPR材料、RAG候補、docs候補、archive準備を作る | `work/issue-<number>` | `knowledge-capture-report.md` |
 | `/rag-build` | Markdown reportをRAG artifactへ変換する | `rag/corrective-action-report/*.md` | `rag/normalized/`, `rag/chunks/`, `rag/indexes/`, `rag/embeddings/` |
 | `/rag-load` | 開発前に過去知識を検索し、圧縮contextを読む | task, repository, branch | `rag/retrieval/*.json` |
+| `/runtime-health-check` | Ariadne自身のruntime、pytest、UT仕様書、Context First、docs品質を自己診断する | なし | `runtime/.pytest_cache/pytest-ut-spec-sync-report.*`, `context-manifest.json` |
 | External Web RAG | 要件定義、設計、改善flowで知見不足の領域を外部Web一次情報で補う | `rag/external-web/knowledge-sources.md` | `rag/external-web/<category>/*.md` |
 | Specialist Review | 内部/外部RAGを読んだ後、成果物を専門Agentがreviewする | draft artifact, RAG context | `work/<id>/process-report/specialist-review-<domain>.md` |
 | Noise Reduction Phase | 要件定義前に未知用語、用語衝突、表記揺れ、資料矛盾、曖昧表現を除去する | requirement draft, related docs, RAG, glossary | `work/requirements/draft/<draft-stem>-noise-reduction/` |
@@ -44,6 +45,7 @@
 | VSCode workspace as code、terminal、task、AI workflow起動を整えたい | [VSCode Environment](vscode-environment.md) |
 | 作業完了後にPR文面と知識回収を整えたい | [Knowledge Capture](knowledge-capture.md) |
 | 過去reportを検索可能にしたい | [RAG Build / Load](rag-build-load.md) |
+| Ariadne自身のruntime、pytest、UT仕様書、Context First、docs品質を確認したい | [Runtime Health Check](runtime-health-check.md) |
 | 要件定義、設計、改善flowで知らない技術領域が出た | [External Web RAG](external-web-rag.md) |
 | 成果物の妥当性が専門知識に依存する | [Agent Inventory](../reference/agent-inventory.md) |
 | PyQt GUIの結合疎通試験を自動化したい | [Corrective Action Fix](corrective-action-fix.md) |

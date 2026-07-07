@@ -14,6 +14,7 @@
 | `finding-record.schema.json` | review finding、risk、severity、required action |
 | `qa-record.schema.json` | 未解決QA、回答、blocking status |
 | `test-evidence.schema.json` | test 実行結果、環境、証跡、残リスク |
+| `pytest-ut-spec-sync-report.schema.json` | pytest実体とUT仕様書の同期チェック結果、Context異音検知の証跡 |
 | `handoff-package.schema.json` | Agent から次Agentへ渡す要約パッケージ |
 | `task-plan.schema.json` | sequential / parallel に処理する task 定義 |
 | `task-result.schema.json` | runtime/retrieval による task 実行結果 |

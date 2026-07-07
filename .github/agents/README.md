@@ -55,6 +55,7 @@
 | `documentation-writer-agent.prompt.md` | decision record と再利用可能な知識化 | docs, troubleshooting, RAG notes |
 | `knowledge-capture-agent.prompt.md` | PR資料、証跡整理、RAG/docs候補抽出、archive準備 | PR docs, `knowledge-capture-report.md` |
 | `workflow-help-curator-agent.prompt.md` | aiwfctl help registry、schema、docs、testsの同期確認と検索性改善 | `workflow-help-curation-report.md`, `runtime/registries/workflow_help.json` |
+| `runtime-quality-gate-agent.prompt.md` | pytest、UT仕様書同期、workflow doctor、Context First test-evidence、Markdown品質をAgent実行で確認 | `.pytest_cache/pytest-ut-spec-sync-report.*`, `context-manifest.json` |
 | `python-runtime-specialist-agent.prompt.md` | Python runtime / PyQt / pytest / socket lifecycle の専門review | `specialist-review-python-runtime.md` |
 | `go-realtime-gateway-specialist-agent.prompt.md` | Go realtime gateway / goroutine / context / net の専門review | `specialist-review-go-realtime-gateway.md` |
 | `network-realtime-protocol-specialist-agent.prompt.md` | UDP/TCP/QUIC/NAT/packet evidence の専門review | `specialist-review-network-protocol.md` |

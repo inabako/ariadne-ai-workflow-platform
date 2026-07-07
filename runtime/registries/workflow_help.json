@@ -468,6 +468,57 @@
       "examples": ["/rag-load", "/rag-load --query \"workflow doctor human gate registry\""],
       "related_runtime": ["runtime/rag/rag_dispatcher.py", "runtime/rag/retrieve_context.py"],
       "docs": ["docs/workflows/rag-build-load.md", "docs/reference/rag.md", "docs/reference/rag-dispatcher.md"]
+    },
+    {
+      "command": "/runtime-health-check",
+      "aliases": ["/self-health-check", "/runtime-quality-gate"],
+      "workflow": "runtime-health-check",
+      "skill": "runtime-health-check",
+      "skill_path": "skills/runtime-health-check/SKILL.md",
+      "prompt_path": ".github/prompts/runtime-health-check.prompt.md",
+      "overview": "Ariadne AI Workflow Platform自身のruntime、pytest、UT仕様書、Context First、aiwfctl、docs品質を自己診断する。",
+      "prerequisites": [
+        "Ariadne AI Workflow Platform repository上で実行する。",
+        "GitHub Actionsではなく、Runtime Quality Gate Agentが明示的に実行する。",
+        "runtimeのuv dev dependency groupでpytestとcoverageを利用できる。",
+        "生成reportは原則 runtime/.pytest_cache/ に置き、Git管理しない。"
+      ],
+      "arguments": [
+        {
+          "name": "work_id",
+          "required": false,
+          "description": "Context First test-evidence登録用work id。未指定時は runtime-health-check 相当の一時work idを使う。",
+          "examples": ["runtime-health-check", "context-first-agent-quality-gate"]
+        },
+        {
+          "name": "report_dir",
+          "required": false,
+          "description": "JSON / Markdown report出力先。通常は runtime/.pytest_cache/ を使う。",
+          "examples": ["runtime/.pytest_cache"]
+        }
+      ],
+      "details": [
+        "runtime pytestを実行する。",
+        "pytest収集結果と docs/reference/runtime-pytest-ut-case-specification.md を同期チェックする。",
+        "pytest-ut-spec-sync-report.json と pytest-ut-spec-sync-report.md を生成する。",
+        "Context First manifestへ test-evidence として登録する。",
+        "workflow_doctor.py と aiwfctl doctor を実行する。",
+        "日本語Markdown品質ガードを実行する。",
+        "GitHub Actions workflowは作成しない。"
+      ],
+      "examples": ["/runtime-health-check", "/runtime-health-check --work-id runtime-health-check"],
+      "related_runtime": [
+        "runtime/tools/pytest_ut_spec_sync.py",
+        "runtime/workflow/workflow_doctor.py",
+        "runtime/workflow/context_first.py",
+        "runtime/workflow/validate_output_language.py",
+        "runtime/ctl.py"
+      ],
+      "docs": [
+        "docs/workflows/runtime-health-check.md",
+        "docs/reference/runtime-pytest-ut-test-items.md",
+        "docs/reference/runtime-pytest-ut-case-specification.md"
+      ]
     }
   ],
   "extensions": [

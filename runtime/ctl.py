@@ -12,6 +12,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.workflow import workflow_doctor  # noqa: E402
 from runtime.workflow import dispatcher_context  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
@@ -927,6 +928,11 @@ def build_parser() -> argparse.ArgumentParser:
     context_init = context_sub.add_parser("init", help="Create workflow/tool/runtime/execution-plan context.")
     dispatcher_context.add_init_arguments(context_init)
     context_init.add_argument("--json", action="store_true", help="Print result as JSON.")
+
+    doctor_cmd = sub.add_parser("doctor", help="Run workflow repository health checks.")
+    doctor_cmd.add_argument("--json", action="store_true", help="Print doctor result as JSON.")
+    doctor_cmd.add_argument("--fail-on-warning", action="store_true", help="Return non-zero when warnings are found.")
+    doctor_cmd.add_argument("--skip-ut-spec-sync", action="store_true", help="Skip pytest UT specification sync check.")
     return parser
 
 
@@ -966,6 +972,7 @@ def format_root_usage_warning(color: bool = False) -> str:
             "  aiwfctl env select web-svg",
             "  aiwfctl env select gui-mode",
             "  aiwfctl context init --work-id issue-123 --workflow /docs-sync",
+            "  aiwfctl doctor",
             "  aiwfctl path check",
             "  aiwfctl path register",
             "  aiwfctl path shell",
@@ -999,6 +1006,7 @@ def format_help_usage_warning(color: bool = False) -> str:
             "実行環境を選択する場合:",
             "  aiwfctl env select web-svg",
             "  aiwfctl context init --work-id issue-123 --workflow /docs-sync",
+            "  aiwfctl doctor",
         ]
     ) + "\n"
 
@@ -1077,6 +1085,39 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 lines.extend(f"  - {item}" for item in written)
             return (0 if result.get("status") != "human-check-required" else 2), "\n".join(lines).rstrip() + "\n"
         return 1, f"Unknown context command: {context_command}\n"
+
+    if command == "doctor":
+        result = workflow_doctor.run(
+            argparse.Namespace(
+                repo_root=str(repo_root),
+                fail_on_warning=args.fail_on_warning,
+                skip_ut_spec_sync=args.skip_ut_spec_sync,
+            )
+        )
+        code = 1 if result.get("status") == "fail" else 0
+        if getattr(args, "json", False):
+            return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        lines = [
+            "Workflow Doctor",
+            "",
+            f"Status        : {result.get('status', '')}",
+            f"Warning Count : {result.get('warning_count', 0)}",
+        ]
+        warnings = result.get("warnings", [])
+        if warnings:
+            lines.extend(["", "Warnings"])
+            for warning in warnings:
+                lines.extend(
+                    [
+                        f"  - {warning.get('id', '')}",
+                        f"    message: {warning.get('message', '')}",
+                    ]
+                )
+                for path in warning.get("paths", [])[:10]:
+                    lines.append(f"    path: {path}")
+        else:
+            lines.extend(["", "Warnings", "  - なし"])
+        return code, "\n".join(lines).rstrip() + "\n"
 
     if command != "help":
         return 1, f"Unknown command: {command}\n"

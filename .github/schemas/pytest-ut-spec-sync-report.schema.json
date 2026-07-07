@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Pytest UT Spec Sync Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "generated_at",
+    "status",
+    "observability",
+    "inputs",
+    "result"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "artifact_type": { "type": "string", "const": "pytest-ut-spec-sync-report" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "status": { "type": "string", "enum": ["ok", "error"] },
+    "observability": {
+      "type": "object",
+      "required": ["kind", "detects"],
+      "properties": {
+        "kind": { "type": "string", "const": "context-noise-detection" },
+        "detects": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "inputs": {
+      "type": "object",
+      "required": ["runtime_root", "spec_path", "pytest_collection"],
+      "properties": {
+        "runtime_root": { "type": "string" },
+        "spec_path": { "type": "string" },
+        "pytest_collection": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "result": {
+      "type": "object",
+      "required": [
+        "status",
+        "pytest_count",
+        "spec_count",
+        "missing_in_spec",
+        "stale_in_spec",
+        "order_matches",
+        "confirm_count",
+        "input_count",
+        "expected_count",
+        "bad_input_position"
+      ],
+      "properties": {
+        "status": { "type": "string", "enum": ["ok", "error"] },
+        "pytest_count": { "type": "integer", "minimum": 0 },
+        "spec_count": { "type": "integer", "minimum": 0 },
+        "missing_in_spec": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "stale_in_spec": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "order_matches": { "type": "boolean" },
+        "confirm_count": { "type": "integer", "minimum": 0 },
+        "input_count": { "type": "integer", "minimum": 0 },
+        "expected_count": { "type": "integer", "minimum": 0 },
+        "bad_input_position": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

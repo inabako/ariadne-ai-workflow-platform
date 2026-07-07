@@ -117,6 +117,15 @@
       "prompt_path": ".github/prompts/rag-load.prompt.md",
       "workflow": "rag-load",
       "description": "開発前に file-based RAG を並列検索し、retrieve_context.py の圧縮済み context pack を読み込む。"
+    },
+    {
+      "slash_command": "/runtime-health-check",
+      "skill": "runtime-health-check",
+      "skill_path": "skills/runtime-health-check/SKILL.md",
+      "delegated_prompt": "/runtime-health-check",
+      "prompt_path": ".github/prompts/runtime-health-check.prompt.md",
+      "workflow": "runtime-health-check",
+      "description": "Ariadne AI Workflow Platform自身のruntime、pytest、UT仕様書、Context First、aiwfctl、docs品質を自己診断する。"
     }
   ],
   "intake_gate": {

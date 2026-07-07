@@ -65,7 +65,13 @@ def test_missing_required_files_reports_core_runtime_assets(tmp_path: Path) -> N
     assert ".gitignore" in missing
     assert "runtime/pytest.ini" in missing
     assert "runtime/tools/aiwfctl.cmd" in missing
+    assert "runtime/tools/pytest_ut_spec_sync.py" in missing
+    assert "skills/runtime-health-check/SKILL.md" in missing
+    assert ".github/prompts/runtime-health-check.prompt.md" in missing
+    assert "docs/workflows/runtime-health-check.md" in missing
     assert ".github/schemas/context-manifest.schema.json" in missing
+    assert ".github/schemas/pytest-ut-spec-sync-report.schema.json" in missing
+    assert ".github/agents/runtime-quality-gate-agent.prompt.md" in missing
 
 
 def test_human_gate_registry_flags_schema_responsibility_boundary(tmp_path: Path) -> None:
@@ -116,6 +122,7 @@ def test_workflow_doctor_fail_on_warning_turns_warning_into_fail(monkeypatch, tm
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=True)
 
     result = workflow_doctor.run(args)
@@ -134,17 +141,19 @@ def test_workflow_doctor_run_reports_all_warning_types(monkeypatch, tmp_path: Pa
         lambda repo_root: ["runtime/registries/human_gates.json contains $schema"],
     )
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: ["work/close/improvement/issue-1"])
+    monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: ["missing: runtime/tests/test_new.py::test_new"])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=False)
 
     result = workflow_doctor.run(args)
 
     assert result["status"] == "warning"
-    assert result["warning_count"] == 4
+    assert result["warning_count"] == 5
     assert [warning["id"] for warning in result["warnings"]] == [
         "tracked-local-workspace-files",
         "missing-required-files",
         "human-gate-registry-responsibility-boundary",
         "incomplete-close-archive",
+        "pytest-ut-spec-sync",
     ]
 
 
@@ -153,6 +162,7 @@ def test_workflow_doctor_run_passes_without_warnings(monkeypatch, tmp_path: Path
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=True)
 
     result = workflow_doctor.run(args)
@@ -165,6 +175,7 @@ def test_workflow_doctor_main_prints_pass_json(monkeypatch, tmp_path: Path, caps
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
 
     code = workflow_doctor.main(["--repo-root", str(tmp_path)])
 
@@ -178,6 +189,7 @@ def test_workflow_doctor_main_returns_one_on_fail_on_warning(monkeypatch, tmp_pa
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
 
     code = workflow_doctor.main(["--repo-root", str(tmp_path), "--fail-on-warning"])
 
@@ -187,3 +199,35 @@ def test_workflow_doctor_main_returns_one_on_fail_on_warning(monkeypatch, tmp_pa
 
     namespace = runpy.run_path(str(Path(workflow_doctor.__file__)))
     assert namespace["build_parser"]
+
+
+def test_workflow_doctor_ut_spec_sync_findings_and_skip(monkeypatch, tmp_path: Path) -> None:
+    spec = tmp_path / "docs" / "reference" / "runtime-pytest-ut-case-specification.md"
+    runtime_root = tmp_path / "runtime"
+    spec.parent.mkdir(parents=True)
+    runtime_root.mkdir(parents=True)
+    spec.write_text("# spec\n", encoding="utf-8")
+    monkeypatch.setattr(
+        workflow_doctor.pytest_ut_spec_sync,
+        "check_spec",
+        lambda spec_path, runtime_root: {
+            "status": "error",
+            "missing_in_spec": ["runtime/tests/test_new.py::test_new"],
+            "stale_in_spec": [],
+            "order_matches": False,
+            "bad_input_position": ["RT-UT-CASE-001"],
+        },
+    )
+
+    findings = workflow_doctor.ut_spec_sync_findings(tmp_path)
+
+    assert "missing: runtime/tests/test_new.py::test_new" in findings
+    assert "pytest collection order does not match UT spec order" in findings
+    assert "bad input position: RT-UT-CASE-001" in findings
+
+    monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=True, skip_ut_spec_sync=True)
+    assert workflow_doctor.run(args)["status"] == "pass"

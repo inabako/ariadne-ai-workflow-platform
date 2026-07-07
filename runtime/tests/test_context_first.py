@@ -98,6 +98,31 @@ def test_context_first_require_passes_when_context_exists(tmp_path: Path) -> Non
     assert result["missing"] == []
 
 
+def test_context_first_loads_test_evidence_context(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    work_dir = repo_root / "work" / "issue-123"
+    report = work_dir / "context" / "pytest-ut-spec-sync-report.json"
+    report.parent.mkdir(parents=True)
+    report.write_text('{"status": "ok", "artifact_type": "pytest-ut-spec-sync-report"}', encoding="utf-8")
+    context_first.register_context(
+        repo_root,
+        work_dir,
+        work_id="issue-123",
+        context_type="test-evidence",
+        path=report,
+        required=True,
+        generated_by="pytest-ut-spec-sync",
+        owner="workflow",
+        schema=".github/schemas/pytest-ut-spec-sync-report.schema.json",
+    )
+
+    evidence = context_first.load_test_evidence_context(repo_root, work_dir)
+
+    assert evidence["status"] == "available"
+    assert evidence["count"] == 1
+    assert evidence["items"][0]["payload"]["artifact_type"] == "pytest-ut-spec-sync-report"
+
+
 def test_context_first_parser_show_and_main_status_paths(tmp_path: Path, monkeypatch, capsys) -> None:
     parser = context_first.build_parser()
     parsed_show = parser.parse_args(["--repo-root", str(tmp_path), "--work-dir", "work/issue-1", "show"])

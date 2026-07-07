@@ -132,9 +132,49 @@ def context_entry(manifest: dict[str, Any], context_type: str) -> dict[str, Any]
     return None
 
 
+def context_entries(manifest: dict[str, Any], context_type: str) -> list[dict[str, Any]]:
+    return [
+        item
+        for item in manifest.get("contexts", [])
+        if isinstance(item, dict) and item.get("type") == context_type
+    ]
+
+
 def context_path(repo_root: Path, entry: dict[str, Any]) -> Path:
     raw_path = Path(str(entry.get("path", "")))
     return raw_path if raw_path.is_absolute() else repo_root / raw_path
+
+
+def load_context_payloads(repo_root: Path, work_dir: Path, context_type: str) -> list[dict[str, Any]]:
+    manifest = load_manifest(work_dir)
+    payloads: list[dict[str, Any]] = []
+    for entry in context_entries(manifest, context_type):
+        path = context_path(repo_root, entry)
+        payload = read_json(path, default={}) or {}
+        payloads.append(
+            {
+                "entry": entry,
+                "path": relative_to_repo(repo_root, path),
+                "exists": path.exists(),
+                "payload": payload if isinstance(payload, dict) else {},
+            }
+        )
+    return payloads
+
+
+def load_test_evidence_context(repo_root: Path, work_dir: Path) -> dict[str, Any]:
+    payloads = load_context_payloads(repo_root, work_dir, "test-evidence")
+    statuses = [
+        str(item.get("payload", {}).get("status", "") or item.get("entry", {}).get("status", ""))
+        for item in payloads
+    ]
+    has_error = any(status in {"error", "failed", "human-check-required"} for status in statuses)
+    return {
+        "context_type": "test-evidence",
+        "status": "error" if has_error else "available" if payloads else "missing",
+        "count": len(payloads),
+        "items": payloads,
+    }
 
 
 def require_environment_selection(

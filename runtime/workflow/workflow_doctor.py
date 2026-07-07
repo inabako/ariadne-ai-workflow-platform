@@ -11,6 +11,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
+from runtime.tools import pytest_ut_spec_sync  # noqa: E402
 from runtime.workflow.close_archive import REPORT_FILES  # noqa: E402
 
 
@@ -45,6 +46,12 @@ def missing_required_files(repo_root: Path) -> list[str]:
         "runtime/workflow/dispatcher_context.py",
         "runtime/workflow/iac_handoff_context.py",
         "runtime/workflow/human_gate_policy.py",
+        "runtime/tools/pytest_ut_spec_sync.py",
+        "runtime/tests/test_pytest_ut_spec_sync.py",
+        "skills/runtime-health-check/SKILL.md",
+        ".github/prompts/runtime-health-check.prompt.md",
+        ".github/agents/runtime-quality-gate-agent.prompt.md",
+        "docs/workflows/runtime-health-check.md",
         "runtime/registries/README.md",
         "runtime/registries/human_gates.json",
         "runtime/registries/workflow_help.json",
@@ -54,6 +61,7 @@ def missing_required_files(repo_root: Path) -> list[str]:
         ".github/schemas/workflow-help.schema.json",
         ".github/schemas/tool-candidates.schema.json",
         ".github/schemas/context-manifest.schema.json",
+        ".github/schemas/pytest-ut-spec-sync-report.schema.json",
         ".github/schemas/environment-selection.schema.json",
         ".github/schemas/workflow-selection.schema.json",
         ".github/schemas/tool-selection.schema.json",
@@ -106,10 +114,33 @@ def close_archive_findings(repo_root: Path) -> list[str]:
     return findings
 
 
+def ut_spec_sync_findings(repo_root: Path) -> list[str]:
+    spec_path = repo_root / "docs" / "reference" / "runtime-pytest-ut-case-specification.md"
+    runtime_root = repo_root / "runtime"
+    if not spec_path.exists():
+        return [relative_to_repo(repo_root, spec_path)]
+    if not runtime_root.exists():
+        return [relative_to_repo(repo_root, runtime_root)]
+    result = pytest_ut_spec_sync.check_spec(spec_path, runtime_root)
+    if result.get("status") == "ok":
+        return []
+    findings: list[str] = []
+    if result.get("missing_in_spec"):
+        findings.extend(f"missing: {node}" for node in result["missing_in_spec"])
+    if result.get("stale_in_spec"):
+        findings.extend(f"stale: {node}" for node in result["stale_in_spec"])
+    if result.get("order_matches") is False:
+        findings.append("pytest collection order does not match UT spec order")
+    if result.get("bad_input_position"):
+        findings.extend(f"bad input position: {case_id}" for case_id in result["bad_input_position"])
+    return findings
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run lightweight workflow repository health checks.")
     parser.add_argument("--repo-root", default="")
     parser.add_argument("--fail-on-warning", action="store_true")
+    parser.add_argument("--skip-ut-spec-sync", action="store_true", help="Skip pytest UT specification sync check.")
     return parser
 
 
@@ -140,6 +171,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     close_findings = close_archive_findings(repo_root)
     if close_findings:
         warnings.append({"id": "incomplete-close-archive", "message": "標準8ファイルが揃っていないclose archiveがあります。", "paths": close_findings})
+    if not getattr(args, "skip_ut_spec_sync", False):
+        sync_findings = ut_spec_sync_findings(repo_root)
+        if sync_findings:
+            warnings.append(
+                {
+                    "id": "pytest-ut-spec-sync",
+                    "message": "pytest実体とUT仕様書の同期にズレがあります。",
+                    "paths": sync_findings,
+                }
+            )
     status = "fail" if warnings and args.fail_on_warning else "warning" if warnings else "pass"
     return {
         "status": status,

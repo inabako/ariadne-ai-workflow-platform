@@ -13,6 +13,7 @@ from runtime.common import find_repo_root, local_timestamp, read_json, relative_
 from runtime.workflow.context_first import (  # noqa: E402
     context_entry,
     context_path,
+    load_test_evidence_context,
     load_manifest,
     manifest_path_for_work_dir,
     register_context,
@@ -330,6 +331,7 @@ def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
         require_manifest=not archive_mode,
         allow_legacy_fallback=archive_mode or bool(getattr(args, "allow_legacy_scm_fallback", False)),
     )
+    test_evidence_context = load_test_evidence_context(repo_root, work_dir)
     source_dir = Path(args.source_dir).resolve() if args.source_dir else work_dir / "source" / "repository"
     repository = args.repository or scm_state.get("github_repo") or scm_state.get("repository") or ""
     branch = args.branch or scm_state.get("working_branch") or scm_state.get("current_branch") or ""
@@ -478,6 +480,13 @@ python runtime/workflow/close_archive.py audit `
 | Archive Target Exists | {base_work_status["archive_target_exists"]} |
 | Action | {base_work_status["action"]} |
 
+## Context First Test Evidence
+
+| Item | Value |
+| --- | --- |
+| Status | {test_evidence_context["status"]} |
+| Count | {test_evidence_context["count"]} |
+
 ## Human Action
 
 - docs evidenceが `docs/evidence/{args.issue}/test_specifications`, `docs/evidence/{args.issue}/ut`, `docs/evidence/{args.issue}/integration`, 必要に応じて `docs/evidence/{args.issue}/human_check` に保存されていることを確認する。
@@ -514,6 +523,7 @@ python runtime/workflow/close_archive.py audit `
         "base_work_reset": base_work_status,
         "context_resolution": {
             "scm_state": scm_resolution,
+            "test_evidence": test_evidence_context,
             "manifest_present": manifest_path_for_work_dir(work_dir).exists(),
             "manifest_scm_state_required": not archive_mode,
             "legacy_scm_fallback_allowed": archive_mode
