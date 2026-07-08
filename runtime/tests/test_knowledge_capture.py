@@ -140,6 +140,11 @@ def test_latest_issue_title_and_pr_text_helpers(tmp_path: Path) -> None:
     assert knowledge_capture.latest_issue_title(tmp_path, work_dir) == "Issue title"
     assert knowledge_capture.latest_issue_title(tmp_path, work_dir, "develop") == "Base title"
     assert knowledge_capture.latest_issue_title(tmp_path, tmp_path / "missing") == ""
+    titleless_work = tmp_path / "work" / "issue-titleless"
+    titleless_report = titleless_work / "process-report"
+    titleless_report.mkdir(parents=True)
+    (titleless_report / "github-issue-1.json").write_text(json.dumps({"title": ""}), encoding="utf-8")
+    assert knowledge_capture.latest_issue_title(tmp_path, titleless_work) == ""
     assert knowledge_capture.build_pr_title("issue-2", "owner/repo", "Existing title") == "Existing title"
     assert "owner/repo" in knowledge_capture.build_pr_title("issue-2", "owner/repo")
     assert "target repository" in knowledge_capture.build_pr_title("issue-2", "")

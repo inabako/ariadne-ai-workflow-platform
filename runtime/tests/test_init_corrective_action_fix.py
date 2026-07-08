@@ -185,6 +185,64 @@ def test_init_corrective_action_fix_write_report_context_skips_empty_and_registe
     assert "corrective-action-report" in {item["type"] for item in manifest["contexts"]}
 
 
+def test_defensive_specimen_init_corrective_action_fix_accepts_absolute_report_paths(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    report = repo / "rag" / "corrective-action-report" / "absolute.md"
+    report.parent.mkdir(parents=True)
+    report.write_text("# report\n", encoding="utf-8")
+    args = make_args(repo, report_path=str(report))
+
+    resolved = init_corrective_action_fix.resolve_report_input(repo, args, "issue-abs")
+
+    assert resolved["report_path"] == "rag/corrective-action-report/absolute.md"
+    assert resolved["resolution"] == "argument"
+
+    work_dir = repo / "work" / "issue-abs"
+    (work_dir / "context").mkdir(parents=True)
+    init_corrective_action_fix.write_corrective_report_context(
+        repo,
+        work_dir,
+        work_id="issue-abs",
+        repository="owner/repo",
+        target_branch="feature/issue-abs",
+        report_rel=str(report),
+        report_resolution="argument",
+        source_context_path="",
+    )
+    context = json.loads((work_dir / "context" / "corrective-action-report.json").read_text(encoding="utf-8"))
+    assert context["report_filename"] == "absolute.md"
+    assert context["report_exists"] is True
+
+
+def test_defensive_specimen_report_context_from_manifest_accepts_absolute_path(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    base_work = repo / "work" / "base"
+    context_dir = base_work / "context"
+    context_dir.mkdir(parents=True)
+    report = repo / "rag" / "corrective-action-report" / "manifest-absolute.md"
+    report.parent.mkdir(parents=True)
+    report.write_text("# report\n", encoding="utf-8")
+    context_path = context_dir / "corrective-action-report.json"
+    context_path.write_text(json.dumps({"report_path": str(report)}), encoding="utf-8")
+    (context_dir / "context-manifest.json").write_text(
+        json.dumps(
+            {
+                "contexts": [
+                    {
+                        "type": "corrective-action-report",
+                        "path": "work/base/context/corrective-action-report.json",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    resolved = init_corrective_action_fix.report_context_from_work_dir(repo, base_work)
+
+    assert resolved["report_path"] == "rag/corrective-action-report/manifest-absolute.md"
+
+
 def test_init_corrective_action_fix_run_with_argument_report_and_reuse_existing(tmp_path: Path) -> None:
     repo = make_repo(tmp_path)
     report = repo / "rag" / "corrective-action-report" / "manual.md"

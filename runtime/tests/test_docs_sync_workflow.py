@@ -210,6 +210,9 @@ def test_create_analysis_template_reports_missing_work_dir(tmp_path: Path) -> No
 
 def test_markdown_helpers_and_issue_body_render_full_and_empty_sections() -> None:
     full = docs_sync.build_issue_body(sample_analysis())
+    no_note = sample_analysis()
+    no_note["drift_items"][0].pop("issue_body_note")
+    no_note_body = docs_sync.build_issue_body(no_note)
     empty = docs_sync.build_issue_body({"summary": "No drift yet.", "drift_items": [], "open_questions": []})
 
     assert docs_sync.markdown_list([]) == "- None"
@@ -217,6 +220,7 @@ def test_markdown_helpers_and_issue_body_render_full_and_empty_sections() -> Non
     assert "runtime/ctl.py" in docs_sync.evidence_lines(sample_analysis()["drift_items"][0]["implementation_evidence"])
     assert "DOCS-1" in full
     assert "Keep this docs-only." in full
+    assert "Keep this docs-only." not in no_note_body
     assert "Q-1" in full
     assert "No drift items recorded" in empty
     assert "## Acceptance Summary" in empty

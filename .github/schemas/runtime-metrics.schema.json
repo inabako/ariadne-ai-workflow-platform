@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Runtime Observability Metrics",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "event",
+    "timestamp",
+    "workflow_id",
+    "workflow_name",
+    "agent_name",
+    "duration_ms",
+    "token_usage",
+    "context",
+    "runtime",
+    "cost"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "artifact_type": { "type": "string", "const": "runtime-metrics" },
+    "event": {
+      "type": "string",
+      "enum": [
+        "workflow_started",
+        "workflow_completed",
+        "workflow_failed",
+        "agent_started",
+        "agent_completed",
+        "human_check_required",
+        "evidence_generated",
+        "runtime_error",
+        "token_usage_recorded",
+        "context_usage_recorded"
+      ]
+    },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "workflow_id": { "type": "string" },
+    "workflow_name": { "type": "string" },
+    "agent_name": { "type": "string" },
+    "started_at": { "type": "string" },
+    "ended_at": { "type": "string" },
+    "duration_ms": { "type": "integer", "minimum": 0 },
+    "token_usage": {
+      "type": "object",
+      "required": ["input", "output", "total", "estimated"],
+      "properties": {
+        "input": { "type": "integer", "minimum": 0 },
+        "output": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 0 },
+        "estimated": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "context": {
+      "type": "object",
+      "required": ["selected_context_count", "estimated_context_tokens", "rag_reference_count", "dispatcher_route"],
+      "properties": {
+        "selected_context_count": { "type": "integer", "minimum": 0 },
+        "estimated_context_tokens": { "type": "integer", "minimum": 0 },
+        "rag_reference_count": { "type": "integer", "minimum": 0 },
+        "dispatcher_route": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["retry_count", "human_check_required", "evidence_generated", "error_count"],
+      "properties": {
+        "retry_count": { "type": "integer", "minimum": 0 },
+        "human_check_required": { "type": "boolean" },
+        "evidence_generated": { "type": "boolean" },
+        "error_count": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "model": {
+      "type": "object",
+      "properties": {
+        "provider": { "type": "string" },
+        "name": { "type": "string" },
+        "pricing_estimated": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "cost": {
+      "type": "object",
+      "required": ["input_cost", "output_cost", "total_cost", "currency", "estimated"],
+      "properties": {
+        "input_cost": { "type": "number", "minimum": 0 },
+        "output_cost": { "type": "number", "minimum": 0 },
+        "total_cost": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string" },
+        "estimated": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "metadata": { "type": "object" }
+  },
+  "additionalProperties": true
+}

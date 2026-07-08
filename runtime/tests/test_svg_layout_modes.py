@@ -128,7 +128,7 @@ def test_gui_mode_renderers_and_failure_paths(tmp_path: Path) -> None:
     assert gui_mode.infer_mode("OTHER-1", "auto") == "generic-gui"
     assert gui_mode.safe_identifier("123 bad id", "fallback") == "item_123_bad_id"
     assert gui_mode.safe_identifier("   ", "fallback") == "fallback"
-    assert gui_mode.parse_style("fill: red; ignored; stroke: blue") == {"fill": "red", "stroke": "blue"}
+    assert gui_mode.parse_style("fill: red; ignored; : no-key; stroke: blue") == {"fill": "red", "stroke": "blue"}
     assert gui_mode.qt_widget_name("unknown") == "QWidget"
     assert "# SVG Analysis" in gui_mode.render_svg_analysis([document], "FIX-300", "corrective-improvement")
     assert "semantic-layout-graph" not in gui_mode.render_semantic_yaml(model)
@@ -547,7 +547,7 @@ def test_web_svg_mode_renderers_and_failure_paths(tmp_path: Path) -> None:
     document = web_svg_layout_mode.parse_svg(svg_path)
     model = web_svg_layout_mode.build_model([document], "WEB_FIX-300", "corrective-fix")
 
-    assert web_svg_layout_mode.parse_style("fill: red; ignored; stroke: blue") == {"fill": "red", "stroke": "blue"}
+    assert web_svg_layout_mode.parse_style("fill: red; ignored; : no-key; stroke: blue") == {"fill": "red", "stroke": "blue"}
     assert web_svg_layout_mode.safe_identifier("123 bad id", "fallback") == "item_123_bad_id"
     assert web_svg_layout_mode.safe_identifier("   ", "fallback") == "fallback"
     assert web_svg_layout_mode.html_element("unknown") == "div"

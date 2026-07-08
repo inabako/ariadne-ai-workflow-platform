@@ -36,6 +36,23 @@ def test_workflow_state_update_writes_state_and_history(tmp_path: Path) -> None:
     assert (work_dir / "context" / "workflow-state.json").exists()
 
 
+def test_defensive_specimen_workflow_state_does_not_record_blank_previous_state(tmp_path: Path) -> None:
+    work_dir = tmp_path / "work" / "issue-blank"
+    context_dir = work_dir / "context"
+    context_dir.mkdir(parents=True)
+    (context_dir / "workflow-state.json").write_text(json.dumps({"phase": "", "status": "", "history": []}), encoding="utf-8")
+
+    state = workflow_state.update_state(
+        work_dir,
+        workflow="docs-sync",
+        work_id="issue-blank",
+        phase="analysis",
+        status="in-progress",
+    )
+
+    assert state["history"] == []
+
+
 def test_workflow_state_rejects_invalid_status(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="Invalid workflow status"):
         workflow_state.update_state(

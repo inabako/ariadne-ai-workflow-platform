@@ -170,6 +170,7 @@ def test_file_and_markdown_helpers(tmp_path: Path) -> None:
     text = "See rag/a.md and [linked](rag/b.md) but not [outside](docs/c.md)"
     assert close_archive.extract_rag_references(text) == ["rag/a.md", "rag/b.md", "rag/b.md"]
     assert close_archive.first_heading("", "fallback") == "fallback"
+    assert close_archive.first_heading("plain line\n# Real", "fallback") == "Real"
     assert close_archive.strip_front_matter(sample.read_text(encoding="utf-8")).startswith("# Heading Title")
     assert close_archive.strip_front_matter("---\nno end") == "---\nno end"
     assert close_archive.metadata_title(sample.read_text(encoding="utf-8")) == "Meta Title"
@@ -183,9 +184,11 @@ def test_file_and_markdown_helpers(tmp_path: Path) -> None:
     assert close_archive.archive_title("issue-1", "improvement", "issue-1") == "improvement/issue-1 (issue-1)"
     assert close_archive.split_cli_paths(["", " 'rag/a.md' , \"rag/b.md\" "]) == ["rag/a.md", "rag/b.md"]
     assert close_archive.metadata_title("---\nsummary: no title\n---\n# Body") == ""
+    assert close_archive.metadata_title("---\nsummary: unterminated") == ""
     assert close_archive.first_paragraph("# H\n\nBody after blank") == "Body after blank"
     assert close_archive.markdown_headings("\n".join(f"## H{i}" for i in range(10)), limit=2) == ["H0", "H1"]
     assert close_archive.markdown_bullets("\n".join(f"- B{i}" for i in range(20)), limit=3) == ["B0", "B1", "B2"]
+    assert close_archive.markdown_bullets("- Same\n- Same\n- \n* Other") == ["Same", "Other"]
     assert close_archive.format_rag_digest(
         [
             {
@@ -248,6 +251,41 @@ def test_rag_reference_and_candidate_discovery(tmp_path: Path) -> None:
         auto_discovery=False,
     )
     assert explicit_only == [github_source]
+
+
+def test_defensive_specimen_rag_discovery_keeps_missing_refs_and_low_scores_out(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    source_work = repo / "work" / "github-knowledge-localty-system-robot-recent"
+    source_work.mkdir(parents=True)
+    (source_work / "missing-ref.md").write_text("rag/github-knowledge/missing.md", encoding="utf-8")
+    rag_dir = repo / "rag" / "github-knowledge"
+    rag_dir.mkdir(parents=True)
+    low_score = rag_dir / "unrelated.md"
+    low_score.write_text("# Other\n\nlocalty appears only in text\n", encoding="utf-8")
+
+    assert close_archive.collect_referenced_rag_sources(repo, source_work) == []
+    assert close_archive.score_rag_candidate(low_score, repo, "github-knowledge-localty-system-robot-recent", "none") == 2
+    assert close_archive.discover_rag_sources(repo, source_work, "github-knowledge-localty-system-robot-recent", "none", [], True) == []
+
+
+def test_defensive_specimen_first_heading_empty_after_prefix_removal() -> None:
+    class EmptyAfterPrefix(str):
+        def strip(self, chars=None):
+            return ""
+
+    class HeadingLike(str):
+        def removeprefix(self, prefix: str):
+            return EmptyAfterPrefix("")
+
+    class Line:
+        def strip(self):
+            return HeadingLike("# ")
+
+    class TextLike:
+        def splitlines(self):
+            return [Line()]
+
+    assert close_archive.first_heading(TextLike(), "fallback") == "fallback"
 
 
 def test_rag_summary_formatting_and_report_builder(tmp_path: Path) -> None:

@@ -155,6 +155,18 @@ def test_extract_repository_config_from_markdown_text() -> None:
     }
 
 
+def test_defensive_specimen_repository_config_ignores_empty_values_and_remote_alias() -> None:
+    text = """
+Repository:
+Remote: upstream
+Unknown Field: ignored
+"""
+
+    config = extract_repository_config_from_text(text)
+
+    assert config == {"remote": "upstream"}
+
+
 def test_requirement_config_files_and_artifact_index_edges(tmp_path: Path) -> None:
     markdown = tmp_path / "req.md"
     markdown.write_text(

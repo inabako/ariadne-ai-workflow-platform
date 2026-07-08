@@ -15,6 +15,7 @@
 | `runtime/scm/` | target repository の取得、要件比較、Issue branch作成、semantic commit |
 | `runtime/github/` | GitHub Issue のdraft作成または実作成 |
 | `runtime/rag/` | report / artifact を file-based RAG 用 document、chunk、index に変換する機能 |
+| `runtime/observability/` | Runtime のログ、メトリクス、月次ローテーション、workflow単位の観測証跡 |
 
 ## Environment Files
 
@@ -46,6 +47,7 @@ runtime/scm/push_branch.py
 runtime/github/issue_manager.py
 runtime/github/pull_request_manager.py
 runtime/ctl.py
+runtime/observability/metrics.py
 runtime/rag/normalize_documents.py
 runtime/rag/chunk_documents.py
 runtime/rag/build_index.py
@@ -91,6 +93,8 @@ runtime/rag/standardize_corrective_report_names.py
 `pull_request_manager.py` は、Issue branch push後に `develop` へのPull Request draft / createを行います。PR titleはIssue titleを使い、PR bodyにはMermaid sequence diagramを含めます。
 
 `ctl.py` は、AI workflow prompt command のターミナルヘルプを提供します。repo root の `runtime/tools/aiwfctl.cmd` から呼び出し、command一覧、詳細、検索、Markdown出力を行います。VSCode統合ターミナルでは `.vscode/settings.json` により `runtime/tools` が `PATH` に追加されるため、`aiwfctl help` で呼び出せます。
+
+`observability/metrics.py` は、workflow / agent / token / context / cost / error の観測値を記録します。Runtime全体の時系列ログは `runtime/logs/runtime-metrics-YYYYMM.jsonl` へ月次ローテーションで追記し、workflow単位の要約は `work/<work-id>/test-evidence/runtime-metrics.json` と `work/<work-id>/context/runtime-metrics.json` に保存できます。
 
 `normalize_documents.py` は、Markdown report を metadata 付きの RAG document JSON に変換します。
 

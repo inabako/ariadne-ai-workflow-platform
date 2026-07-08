@@ -150,6 +150,47 @@ def test_migrate_retrieval_artifacts_repairs_from_jsonized_wrapper(tmp_path: Pat
     assert payload["legacy_artifact_paths"] == ["rag/retrieval/missing_rag-load-dispatch.json"]
 
 
+def test_defensive_specimen_migration_does_not_duplicate_existing_legacy_path(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo = make_repo(tmp_path)
+    (repo / "rag" / "retrieval").mkdir(parents=True)
+    jsonized = repo / "rag" / "jsonized"
+    jsonized.mkdir(parents=True)
+    wrapper = jsonized / "wrapper.json"
+    wrapper.write_text(
+        json.dumps(
+            {
+                "source_path": "rag/retrieval/missing_context-pack.json",
+                "source_format": "json",
+                "payload": {
+                    "artifact_type": "rag-context-pack",
+                    "context": "body",
+                    "legacy_artifact_paths": ["rag/retrieval/missing_context-pack.json"],
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(migrate_retrieval_artifacts, "replace_refs", lambda value, path_map: value)
+
+    result = migrate_retrieval_artifacts.run(
+        argparse.Namespace(
+            repo_root=str(repo),
+            retrieval_dir="rag/retrieval",
+            jsonized_dir="rag/jsonized",
+            delete_source=False,
+            delete_duplicate_markdown=False,
+            repair_from_jsonized=True,
+            prune_legacy_migrations=False,
+        )
+    )
+
+    payload = json.loads((repo / result["written"][0]["target"]).read_text(encoding="utf-8"))
+    assert payload["legacy_artifact_paths"] == ["rag/retrieval/missing_context-pack.json"]
+
+
 def test_migrate_retrieval_artifacts_jsonizes_non_duplicate_markdown(tmp_path: Path) -> None:
     repo = make_repo(tmp_path)
     retrieval = repo / "rag" / "retrieval"

@@ -821,6 +821,45 @@ def test_create_issue_branch_local_only_switches_existing_branch(
     assert state["current_commit"] == "abc123"
 
 
+def test_defensive_specimen_create_issue_branch_local_only_dry_run_skips_switch(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo, work_dir = make_work_repo(tmp_path)
+    source = work_dir / "source" / "repository"
+    source.mkdir(parents=True)
+    calls: list[list[str]] = []
+
+    def fake_run_git(args, cwd):
+        calls.append(list(args))
+        return subprocess.CompletedProcess(["git", *args], 0, stdout="", stderr="")
+
+    monkeypatch.setattr(create_issue_branch, "run_git", fake_run_git)
+    monkeypatch.setattr(create_issue_branch, "local_branch_exists", lambda path, branch: True)
+    monkeypatch.setattr(create_issue_branch, "current_branch", lambda path: "develop")
+    monkeypatch.setattr(create_issue_branch, "current_commit", lambda path: "dryrun")
+
+    result = create_issue_branch.create_branch(
+        argparse.Namespace(
+            work_id="issue-1",
+            issue_number="42",
+            repository="inabako/example",
+            github_repo=None,
+            base_branch="develop",
+            branch_prefix=None,
+            remote="origin",
+            repo_root=str(repo),
+            source_dir=str(source),
+            local_only=True,
+            link_to_issue=False,
+            dry_run=True,
+        )
+    )
+
+    assert result["branch"] == "feature/issue-42"
+    assert calls == []
+
+
 def test_create_issue_branch_local_only_creates_missing_branch_and_script_load(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

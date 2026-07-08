@@ -121,6 +121,7 @@ def test_dispatcher_planning_helpers_cover_context_and_explicit_paths(tmp_path: 
     planning_context = rag_dispatcher.collect_planning_context(args, repo)
     assert "DiscoveryService" in planning_context
     assert "MainWindow" in planning_context
+    assert "startup shutdown operator observability" in planning_context
     assert rag_dispatcher.base_filters_from_args(args) == {
         "project": "ariadne",
         "repository": "localty-system",
@@ -153,6 +154,9 @@ def test_dispatcher_planning_helpers_cover_context_and_explicit_paths(tmp_path: 
     query_items_for_append: list[dict] = []
     rag_dispatcher.append_query(query_items_for_append, "   ", "skip", args)
     assert query_items_for_append == []
+
+    no_optional_context = rag_dispatcher.collect_planning_context(make_args(task="", context_file=[], work_dir=""), repo)
+    assert no_optional_context == ""
 
 
 def test_dispatcher_execution_plan_and_plan_normalization_paths(tmp_path: Path) -> None:
@@ -263,6 +267,40 @@ def test_dispatcher_existing_plan_validation_and_execution_plan_override(tmp_pat
     assert plan["execution_plan"] == "work/issue-3/context/from-plan.json"
     assert plan["human_check_required"] is False
 
+    plan_without_gate = repo / "plan-without-gate.json"
+    plan_without_gate.write_text(
+        json.dumps(
+            {
+                "artifact_type": "rag-dispatch-plan",
+                "execution_plan": "work/issue-3/context/from-plan.json",
+                "queries": ["q"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    inferred = rag_dispatcher.build_dispatch_plan(make_args(dispatch_plan=str(plan_without_gate), work_id="issue-3"), repo)
+    assert inferred["execution_plan_gate"]["execution_plan"] == "work/issue-3/context/from-plan.json"
+
+    work_context = repo / "work" / "issue-3" / "context"
+    work_context.mkdir(parents=True)
+    (work_context / "execution-plan.json").write_text("{}\n", encoding="utf-8")
+    plan_with_existing_gate_path = repo / "plan-with-existing-gate-path.json"
+    plan_with_existing_gate_path.write_text(
+        json.dumps(
+            {
+                "artifact_type": "rag-dispatch-plan",
+                "execution_plan": "work/issue-3/context/from-plan.json",
+                "queries": ["q"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    gated = rag_dispatcher.build_dispatch_plan(
+        make_args(dispatch_plan=str(plan_with_existing_gate_path), work_id="issue-3", work_dir=str(repo / "work" / "issue-3")),
+        repo,
+    )
+    assert gated["execution_plan_gate"]["execution_plan"] == "work/issue-3/context/execution-plan.json"
+
     namespace = runpy.run_path(str(Path(rag_dispatcher.__file__)))
     assert namespace["build_parser"]
 
@@ -369,6 +407,16 @@ def test_dispatcher_command_index_build_and_aggregation_helpers(monkeypatch: pyt
     assert "## Query: q1" in aggregate
     assert sources == [{"chunk_id": "c1"}, {"source_path": "same"}]
     assert rag_dispatcher.load_context_pack(repo, str(repo / "missing.json")) == {}
+
+    tiny_pack = repo / "tiny-pack.json"
+    tiny_pack.write_text(json.dumps({"context": "abc", "sources": [{"chunk_id": "tiny"}]}), encoding="utf-8")
+    aggregate, tiny_sources = rag_dispatcher.aggregate_context_packs(
+        repo,
+        [{"json": {"context_pack": str(tiny_pack)}, "query": "tiny"}],
+        max_chars=0,
+    )
+    assert aggregate == "[truncated]"
+    assert tiny_sources == [{"chunk_id": "tiny"}]
 
 
 def test_dispatcher_run_failure_paths_and_markdown_main(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:

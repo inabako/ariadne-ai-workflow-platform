@@ -49,6 +49,7 @@
               "rag-build-run",
               "rag-dispatch-plan",
               "rag-load-dispatch",
+              "runtime-metrics",
               "test-evidence",
               "vscode-environment-state",
               "gui-mode-state",

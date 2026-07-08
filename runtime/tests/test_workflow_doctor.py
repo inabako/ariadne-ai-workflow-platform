@@ -66,10 +66,13 @@ def test_missing_required_files_reports_core_runtime_assets(tmp_path: Path) -> N
     assert "runtime/pytest.ini" in missing
     assert "runtime/tools/aiwfctl.cmd" in missing
     assert "runtime/tools/pytest_ut_spec_sync.py" in missing
+    assert "runtime/observability/metrics.py" in missing
+    assert "runtime/tests/test_observability_metrics.py" in missing
     assert "skills/runtime-health-check/SKILL.md" in missing
     assert ".github/prompts/runtime-health-check.prompt.md" in missing
     assert "docs/workflows/runtime-health-check.md" in missing
     assert ".github/schemas/context-manifest.schema.json" in missing
+    assert ".github/schemas/runtime-metrics.schema.json" in missing
     assert ".github/schemas/pytest-ut-spec-sync-report.schema.json" in missing
     assert ".github/agents/runtime-quality-gate-agent.prompt.md" in missing
 
@@ -231,3 +234,77 @@ def test_workflow_doctor_ut_spec_sync_findings_and_skip(monkeypatch, tmp_path: P
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=True, skip_ut_spec_sync=True)
     assert workflow_doctor.run(args)["status"] == "pass"
+
+
+def test_defensive_specimen_workflow_doctor_reports_missing_ut_spec_inputs(tmp_path: Path) -> None:
+    missing_spec = workflow_doctor.ut_spec_sync_findings(tmp_path)
+    assert missing_spec == ["docs/reference/runtime-pytest-ut-case-specification.md"]
+
+    spec = tmp_path / "docs" / "reference" / "runtime-pytest-ut-case-specification.md"
+    spec.parent.mkdir(parents=True)
+    spec.write_text("# spec\n", encoding="utf-8")
+
+    missing_runtime = workflow_doctor.ut_spec_sync_findings(tmp_path)
+    assert missing_runtime == ["runtime"]
+
+
+def test_defensive_specimen_workflow_doctor_reports_stale_and_bad_position_only(monkeypatch, tmp_path: Path) -> None:
+    spec = tmp_path / "docs" / "reference" / "runtime-pytest-ut-case-specification.md"
+    runtime_root = tmp_path / "runtime"
+    spec.parent.mkdir(parents=True)
+    runtime_root.mkdir(parents=True)
+    spec.write_text("# spec\n", encoding="utf-8")
+    monkeypatch.setattr(
+        workflow_doctor.pytest_ut_spec_sync,
+        "check_spec",
+        lambda spec_path, runtime_root: {
+            "status": "error",
+            "missing_in_spec": [],
+            "stale_in_spec": ["runtime/tests/test_old.py::test_old"],
+            "order_matches": True,
+            "bad_input_position": ["RT-UT-CASE-999"],
+        },
+    )
+
+    findings = workflow_doctor.ut_spec_sync_findings(tmp_path)
+
+    assert findings == [
+        "stale: runtime/tests/test_old.py::test_old",
+        "bad input position: RT-UT-CASE-999",
+    ]
+
+
+def test_defensive_specimen_workflow_doctor_reports_stale_without_bad_position(monkeypatch, tmp_path: Path) -> None:
+    spec = tmp_path / "docs" / "reference" / "runtime-pytest-ut-case-specification.md"
+    runtime_root = tmp_path / "runtime"
+    spec.parent.mkdir(parents=True)
+    runtime_root.mkdir(parents=True)
+    spec.write_text("# spec\n", encoding="utf-8")
+    monkeypatch.setattr(
+        workflow_doctor.pytest_ut_spec_sync,
+        "check_spec",
+        lambda spec_path, runtime_root: {
+            "status": "error",
+            "missing_in_spec": [],
+            "stale_in_spec": ["runtime/tests/test_old.py::test_old"],
+            "order_matches": True,
+            "bad_input_position": [],
+        },
+    )
+
+    assert workflow_doctor.ut_spec_sync_findings(tmp_path) == ["stale: runtime/tests/test_old.py::test_old"]
+
+
+def test_defensive_specimen_workflow_doctor_accepts_clean_ut_spec_sync(monkeypatch, tmp_path: Path) -> None:
+    spec = tmp_path / "docs" / "reference" / "runtime-pytest-ut-case-specification.md"
+    runtime_root = tmp_path / "runtime"
+    spec.parent.mkdir(parents=True)
+    runtime_root.mkdir(parents=True)
+    spec.write_text("# spec\n", encoding="utf-8")
+    monkeypatch.setattr(
+        workflow_doctor.pytest_ut_spec_sync,
+        "check_spec",
+        lambda spec_path, runtime_root: {"status": "ok"},
+    )
+
+    assert workflow_doctor.ut_spec_sync_findings(tmp_path) == []

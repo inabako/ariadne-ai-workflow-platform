@@ -409,6 +409,42 @@ def test_ctl_doctor_runs_workflow_doctor(monkeypatch, tmp_path: Path) -> None:
     assert '"status": "pass"' in output
 
 
+def test_defensive_specimen_ctl_doctor_formats_warning_paths(monkeypatch, tmp_path: Path) -> None:
+    registry_dir = tmp_path / "runtime" / "registries"
+    registry_dir.mkdir(parents=True)
+    (registry_dir / "workflow_help.json").write_text('{"commands": [], "extensions": []}', encoding="utf-8")
+    (registry_dir / "workflow_environment_profiles.json").write_text(
+        '{"environments": [], "profiles": [], "mappings": []}',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        ctl.workflow_doctor,
+        "run",
+        lambda args: {
+            "status": "warning",
+            "warning_count": 1,
+            "warnings": [
+                {
+                    "id": "defensive-specimen",
+                    "message": "rare warning specimen",
+                    "paths": [f"path-{index}" for index in range(12)],
+                }
+            ],
+        },
+    )
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "doctor"])
+    code, output = ctl.run(args)
+
+    assert code == 0
+    assert "Warnings" in output
+    assert "defensive-specimen" in output
+    assert "rare warning specimen" in output
+    assert "path-0" in output
+    assert "path-9" in output
+    assert "path-10" not in output
+
+
 def test_ctl_help_search_finds_svg_gui_workflows() -> None:
     args = ctl.build_parser().parse_args(["--repo-root", str(repo_root()), "help", "search", "svg", "gui"])
 
@@ -628,6 +664,7 @@ def test_ctl_environment_formatting_and_context_warning_helpers(tmp_path: Path) 
         "backend": "windows-msys2-gui",
     }
     assert not ctl.environment_context_warnings({}, context)
+    assert ctl.environment_context_warnings({"work_id": "issue-2"}, context) == []
     assert ctl.environment_context_warnings("broken", context)
     warnings = ctl.environment_context_warnings(
         {"work_id": "issue-1", "environment": "web-svg", "backend": "wsl-ubuntu-web"},
@@ -837,3 +874,27 @@ def test_ctl_run_manual_error_and_json_branches(monkeypatch, tmp_path: Path) -> 
     )
     assert code == 2
     assert '"status": "human-check-required"' in output
+
+    monkeypatch.setattr(
+        ctl.dispatcher_context,
+        "run_init",
+        lambda args: {
+            "status": "ready",
+            "work_id": "issue-2",
+            "workflow": "/docs-sync",
+            "manifest_path": "work/issue-2/context/context-manifest.json",
+            "contexts": ["workflow-selection"],
+            "written": [],
+        },
+    )
+    code, output = ctl.run(
+        SimpleNamespace(repo_root=str(tmp_path), command="context", context_command="init", json=False)
+    )
+    assert code == 0
+    assert "Written Artifacts" not in output
+
+    code, output = ctl.run(
+        SimpleNamespace(repo_root=str(tmp_path), command="help", help_command="list")
+    )
+    assert code == 0
+    assert "## Workflow Extensions" not in output

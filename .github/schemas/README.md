@@ -35,6 +35,7 @@
 | `workflow-selection.schema.json` | Dispatcherが選択したworkflow command、intent、confidence、Human Check要否 |
 | `tool-selection.schema.json` | Dispatcherが選択したtool、read-only / mutation / local mode、Human Check要否 |
 | `runtime-context.schema.json` | Context Firstでworkflow実行時のterminal、tool path、検証コマンド、Human Check条件を共有する構造定義 |
+| `runtime-metrics.schema.json` | Runtime Observabilityのworkflow / agent / token / context / cost / errorメトリクス |
 | `execution-plan.schema.json` | workflow間handoff前に、必要Context、停止条件、次commandを共有する実行計画 |
 | `realtime-iac-handoff.schema.json` | Robotics New System + IaCからRealtime IaCへ渡すShared Artifacts、validator結果、残リスク、次command |
 | `workflow-environment-profiles.schema.json` | `aiwfctl env` 用Environment Dispatcher registryの構造定義 |

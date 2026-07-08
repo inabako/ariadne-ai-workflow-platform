@@ -32,6 +32,10 @@ def test_github_api_urls_support_dotcom_and_enterprise_hosts() -> None:
     assert api.github_graphql_url({"GH_HOST": "github.example.local"}) == "https://github.example.local/api/graphql"
 
 
+def test_defensive_specimen_issue_body_report_path_returns_empty_without_car_artifact() -> None:
+    assert issue_manager.corrective_action_report_path(["work/issue-1/context/state.json", "docs/report.md"]) == ""
+
+
 class FakeResponse:
     def __init__(self, body: str) -> None:
         self.body = body.encode("utf-8")

@@ -584,7 +584,7 @@ def aggregate_context_packs(repo_root: Path, retrievals: list[dict[str, Any]], m
         section = f"{header}\n\n{context}".strip()
         if len(section) > remaining:
             section = section[: max(0, remaining - 20)].rstrip() + "\n\n[truncated]"
-        if section:
+        if section:  # pragma: no branch - header or truncation marker keeps this non-empty.
             sections.append(section)
             remaining -= len(section) + 2
         for source in pack.get("sources", []):
