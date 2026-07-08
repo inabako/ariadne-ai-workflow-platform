@@ -120,11 +120,86 @@ def test_close_archive_findings_accepts_missing_root_and_complete_archive(tmp_pa
     assert workflow_doctor.close_archive_findings(tmp_path) == []
 
 
+def test_vscode_utf8_first_findings_accepts_complete_settings(tmp_path: Path) -> None:
+    settings = tmp_path / ".vscode" / "settings.json"
+    settings.parent.mkdir(parents=True)
+    settings.write_text(
+        """{
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false,
+  "files.eol": "\\n",
+  "terminal.integrated.env.windows": {
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "AIWF_TEXT_ENCODING": "utf-8"
+  },
+  "terminal.integrated.profiles.windows": {
+    "Dispatcher PowerShell": {
+      "source": "PowerShell",
+      "args": [
+        "-NoLogo",
+        "-NoExit",
+        "-Command",
+        "[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false); [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); $OutputEncoding = [System.Text.UTF8Encoding]::new($false); chcp 65001 > $null"
+      ]
+    }
+  }
+}
+""",
+        encoding="utf-8",
+    )
+    (tmp_path / ".editorconfig").write_text(
+        """root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+
+[*.{bat,cmd}]
+charset = unset
+end_of_line = crlf
+""",
+        encoding="utf-8",
+    )
+
+    assert workflow_doctor.vscode_utf8_first_findings(tmp_path) == []
+
+
+def test_vscode_utf8_first_findings_reports_missing_contract_parts(tmp_path: Path) -> None:
+    settings = tmp_path / ".vscode" / "settings.json"
+    settings.parent.mkdir(parents=True)
+    settings.write_text(
+        """{
+  "files.encoding": "shiftjis",
+  "terminal.integrated.env.windows": {
+    "PYTHONUTF8": "0"
+  },
+  "terminal.integrated.profiles.windows": {
+    "Dispatcher PowerShell": {
+      "source": "PowerShell",
+      "args": ["-NoLogo"]
+    }
+  }
+}
+""",
+        encoding="utf-8",
+    )
+
+    findings = workflow_doctor.vscode_utf8_first_findings(tmp_path)
+
+    assert ".vscode/settings.json:files.encoding" in findings
+    assert ".vscode/settings.json:files.autoGuessEncoding" in findings
+    assert ".vscode/settings.json:terminal.integrated.env.windows.PYTHONUTF8" in findings
+    assert ".vscode/settings.json:terminal profile Dispatcher PowerShell missing InputEncoding" in findings
+    assert ".editorconfig" in findings
+
+
 def test_workflow_doctor_fail_on_warning_turns_warning_into_fail(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: ["work/issue-1/tmp.txt"])
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=True)
 
@@ -144,18 +219,20 @@ def test_workflow_doctor_run_reports_all_warning_types(monkeypatch, tmp_path: Pa
         lambda repo_root: ["runtime/registries/human_gates.json contains $schema"],
     )
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: ["work/close/improvement/issue-1"])
+    monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [".vscode/settings.json:files.encoding"])
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: ["missing: runtime/tests/test_new.py::test_new"])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=False)
 
     result = workflow_doctor.run(args)
 
     assert result["status"] == "warning"
-    assert result["warning_count"] == 5
+    assert result["warning_count"] == 6
     assert [warning["id"] for warning in result["warnings"]] == [
         "tracked-local-workspace-files",
         "missing-required-files",
         "human-gate-registry-responsibility-boundary",
         "incomplete-close-archive",
+        "vscode-utf8-first",
         "pytest-ut-spec-sync",
     ]
 
@@ -165,6 +242,7 @@ def test_workflow_doctor_run_passes_without_warnings(monkeypatch, tmp_path: Path
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=True)
 
@@ -178,6 +256,7 @@ def test_workflow_doctor_main_prints_pass_json(monkeypatch, tmp_path: Path, caps
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
 
     code = workflow_doctor.main(["--repo-root", str(tmp_path)])
@@ -192,6 +271,7 @@ def test_workflow_doctor_main_returns_one_on_fail_on_warning(monkeypatch, tmp_pa
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
 
     code = workflow_doctor.main(["--repo-root", str(tmp_path), "--fail-on-warning"])
@@ -232,6 +312,7 @@ def test_workflow_doctor_ut_spec_sync_findings_and_skip(monkeypatch, tmp_path: P
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=True, skip_ut_spec_sync=True)
     assert workflow_doctor.run(args)["status"] == "pass"
 

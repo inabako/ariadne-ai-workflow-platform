@@ -185,12 +185,45 @@ Example for this workflow repository:
 ```json
 {
   "terminal.integrated.env.windows": {
-    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}"
+    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "AIWF_TEXT_ENCODING": "utf-8"
   }
 }
 ```
 
 This allows commands such as `aiwfctl help list` to work in VSCode terminals without relying on personal user settings.
+
+### UTF-8 First Policy
+
+When provisioning a Windows VSCode workspace that contains Japanese Markdown, prompts, JSON, or workflow docs, declare UTF-8 at the start of the workspace environment instead of relying on auto-detection.
+
+Add or preserve these settings in `.vscode/settings.json` unless the target repository has an explicit, documented encoding exception:
+
+```json
+{
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false,
+  "files.eol": "\n",
+  "terminal.integrated.env.windows": {
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "AIWF_TEXT_ENCODING": "utf-8"
+  }
+}
+```
+
+For PowerShell terminal profiles, initialize UTF-8 before the user or agent starts editing or validating text:
+
+```powershell
+[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false)
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+chcp 65001 > $null
+```
+
+Keep `.bat` and `.cmd` encoding boundaries intact. If a repository intentionally keeps Windows batch files in Shift_JIS / CP932, preserve that exception with `.editorconfig` rather than forcing all files to UTF-8.
 
 For this workflow repository, include an explicit provisioning task or step that runs:
 
@@ -370,6 +403,8 @@ Stop for human approval before:
 - Keep machine-specific values as placeholders when the workflow output is meant for a repository.
 - If repo-local `.cmd`, `.bat`, or executable helper tools are part of the workflow entrypoint, expose their directory through `terminal.integrated.env.windows.Path` instead of requiring each user to edit their personal Windows Path.
 - If the workflow needs a command available outside VSCode integrated terminals, include a provisioning task that runs the repo-local PATH registration helper, such as `runtime/tools/register-aiwfctl-path.cmd --shell`.
+- Declare UTF-8 early for VSCode files, Python process I/O, and PowerShell terminal I/O when the workspace contains Japanese docs or prompts.
+- Do not enable encoding auto-guessing for AI workflow repositories unless the repository explicitly documents mixed encodings.
 - Keep generated evidence under `work/<work-id>/test-evidence/`; put durable target-repository docs in the target workspace only when approved.
 - Avoid long inline PowerShell / `python -c` in VSCode tasks. Use process tasks that call committed helper scripts such as `runtime/workflow/vscode_task_runner.py`.
 - Do not recommend or generate `ExecutionPolicy Bypass` in workspace tasks or install-plan evidence.

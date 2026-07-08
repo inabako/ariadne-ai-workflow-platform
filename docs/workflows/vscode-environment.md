@@ -139,12 +139,47 @@ target workspace に `runtime/tools/*.cmd` などのrepo-local command toolが�
 ```json
 {
   "terminal.integrated.env.windows": {
-    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}"
+    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "AIWF_TEXT_ENCODING": "utf-8"
   }
 }
 ```
 
 これにより、VSCode統合ターミナルでは `aiwfctl help list` のように呼び出せます。
+
+## UTF-8 First
+
+Windows上の日本語Markdown、prompt、JSON、workflow docsを扱うworkspaceでは、VSCode provisioningの最初に「このworkspaceはUTF-8で扱う」と宣言します。
+
+`.vscode/settings.json` では、文字コードの自動推測に頼らずUTF-8を明示します。
+
+```json
+{
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false,
+  "files.eol": "\n",
+  "terminal.integrated.env.windows": {
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "AIWF_TEXT_ENCODING": "utf-8"
+  }
+}
+```
+
+PowerShell terminal profileでは、起動時に入出力をUTF-8へ寄せます。
+
+```powershell
+[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false)
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+chcp 65001 > $null
+```
+
+これにより、AIさんが日本語行を読み間違えたり、PowerShell表示だけを根拠に文字化けと誤判定したりするリスクを下げます。
+
+ただし、`.bat` / `.cmd` をShift_JISやCP932で保持するrepositoryでは、その境界を `.editorconfig` で例外化し、無理にUTF-8へ変換しません。
 
 通常のPowerShellやWindows Terminalからも `aiwfctl` を使う必要がある場合、VSCode provisioning taskとして次を実行します。
 

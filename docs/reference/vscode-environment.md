@@ -49,7 +49,10 @@ Default terminalは `Dispatcher PowerShell` です。
 ```json
 {
   "terminal.integrated.env.windows": {
-    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}"
+    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "AIWF_TEXT_ENCODING": "utf-8"
   }
 }
 ```
@@ -65,6 +68,38 @@ aiwfctl help list
 ```powershell
 $env:Path = "$PWD\runtime\tools;$env:Path"
 ```
+
+## UTF-8 First
+
+このrepositoryは、日本語Markdown、prompt、workflow docsを多く扱います。VSCode workspaceを開いた時点で、ファイルとterminalの両方にUTF-8を先に宣言します。
+
+推奨設定:
+
+```json
+{
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false,
+  "files.eol": "\n",
+  "terminal.integrated.env.windows": {
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "AIWF_TEXT_ENCODING": "utf-8"
+  }
+}
+```
+
+PowerShell profileの起動時設定:
+
+```powershell
+[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false)
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+chcp 65001 > $null
+```
+
+`files.autoGuessEncoding` は `false` を推奨します。Windows環境では、日本語MarkdownをShift_JIS / CP932として誤推測すると、AIさんのpatch anchorやMarkdown preview確認が迷いやすくなるためです。
+
+`.bat` / `.cmd` は例外です。Windows batch fileをShift_JIS / CP932で保持する必要がある場合は、`.editorconfig` の `[*.{bat,cmd}]` で境界を明示し、無理にUTF-8へ変換しません。
 
 通常のPowerShellやWindows Terminalにも恒久的に反映する場合は、User Path登録用helperを実行します。
 

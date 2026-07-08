@@ -15,8 +15,8 @@
 | pytest対象ディレクトリ | `runtime/tests` |
 | pytest files | 30 |
 | pytest test functions | 499 |
-| pytest collected tests | 523 |
-| pytest result | `523 passed` |
+| pytest collected tests | 525 |
+| pytest result | `525 passed` |
 | statement coverage | 100.00% |
 | total coverage | 99.73% |
 | missing lines | 0 |

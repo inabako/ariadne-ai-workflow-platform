@@ -119,6 +119,70 @@ def close_archive_findings(repo_root: Path) -> list[str]:
     return findings
 
 
+def vscode_utf8_first_findings(repo_root: Path) -> list[str]:
+    findings: list[str] = []
+    settings_path = repo_root / ".vscode" / "settings.json"
+    if not settings_path.exists():
+        return [".vscode/settings.json"]
+    try:
+        settings = json.loads(settings_path.read_text(encoding="utf-8-sig"))
+    except json.JSONDecodeError as exc:
+        return [f".vscode/settings.json invalid JSON: {exc.msg}"]
+    if not isinstance(settings, dict):
+        return [".vscode/settings.json is not a JSON object"]
+
+    expected_root = {
+        "files.encoding": "utf8",
+        "files.autoGuessEncoding": False,
+        "files.eol": "\n",
+    }
+    for key, expected in expected_root.items():
+        if settings.get(key) != expected:
+            findings.append(f".vscode/settings.json:{key}")
+
+    terminal_env = settings.get("terminal.integrated.env.windows")
+    if not isinstance(terminal_env, dict):
+        findings.append(".vscode/settings.json:terminal.integrated.env.windows")
+    else:
+        expected_env = {
+            "PYTHONUTF8": "1",
+            "PYTHONIOENCODING": "utf-8",
+            "AIWF_TEXT_ENCODING": "utf-8",
+        }
+        for key, expected in expected_env.items():
+            if terminal_env.get(key) != expected:
+                findings.append(f".vscode/settings.json:terminal.integrated.env.windows.{key}")
+
+    profiles = settings.get("terminal.integrated.profiles.windows")
+    if isinstance(profiles, dict):
+        for name, profile in profiles.items():
+            if not isinstance(profile, dict) or profile.get("source") != "PowerShell":
+                continue
+            args = " ".join(str(item) for item in profile.get("args", []))
+            for token in ["InputEncoding", "OutputEncoding", "$OutputEncoding", "chcp 65001"]:
+                if token not in args:
+                    findings.append(f".vscode/settings.json:terminal profile {name} missing {token}")
+    else:
+        findings.append(".vscode/settings.json:terminal.integrated.profiles.windows")
+
+    editorconfig = repo_root / ".editorconfig"
+    if not editorconfig.exists():
+        findings.append(".editorconfig")
+    else:
+        editorconfig_text = editorconfig.read_text(encoding="utf-8-sig")
+        required_snippets = [
+            "charset = utf-8",
+            "end_of_line = lf",
+            "[*.{bat,cmd}]",
+            "charset = unset",
+            "end_of_line = crlf",
+        ]
+        for snippet in required_snippets:
+            if snippet not in editorconfig_text:
+                findings.append(f".editorconfig:{snippet}")
+    return findings
+
+
 def ut_spec_sync_findings(repo_root: Path) -> list[str]:
     spec_path = repo_root / "docs" / "reference" / "runtime-pytest-ut-case-specification.md"
     runtime_root = repo_root / "runtime"
@@ -176,6 +240,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     close_findings = close_archive_findings(repo_root)
     if close_findings:
         warnings.append({"id": "incomplete-close-archive", "message": "標準8ファイルが揃っていないclose archiveがあります。", "paths": close_findings})
+    utf8_findings = vscode_utf8_first_findings(repo_root)
+    if utf8_findings:
+        warnings.append(
+            {
+                "id": "vscode-utf8-first",
+                "message": "VSCode workspace UTF-8 first settings are incomplete.",
+                "paths": utf8_findings,
+            }
+        )
     if not getattr(args, "skip_ut_spec_sync", False):
         sync_findings = ut_spec_sync_findings(repo_root)
         if sync_findings:

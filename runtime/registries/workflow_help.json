@@ -294,7 +294,8 @@
         "既存 .vscode 設定を無条件に上書きしない。",
         "repo-local command toolがある場合は、tools directoryをVSCode統合ターミナルのPATHへ追加する。",
         "runtime-context.json でterminal、tool path、検証コマンド、Human Check条件を確認する。",
-        "不足toolのinstallは人間承認後に行う。"
+        "不足toolのinstallは人間承認後に行う。",
+        "日本語Markdown、prompt、workflow docsを扱う場合は、VSCode provisioningでUTF-8 firstを宣言する。"
       ],
       "arguments": [
         {
@@ -313,7 +314,8 @@
         "runtime/tools/*.cmd などのrepo-local command toolがある場合、terminal.integrated.env.windows.Pathへ追加する。",
         "work/<work-id>/context/runtime-context.json にterminal scope、tool path、verification commandを記録する。",
         "長いinline PowerShellではなくrepo-local helperを優先する。",
-        "検証結果とevidenceを保存する。"
+        "検証結果とevidenceを保存する。",
+        "UTF-8 first: files.encoding=utf8、files.autoGuessEncoding=false、PYTHONUTF8=1、PYTHONIOENCODING=utf-8、PowerShell Input/OutputEncoding、chcp 65001を標準設計に含める。"
       ],
       "examples": ["/vscode-environment", "/vscode-environment C:/github/localty-system-gui", "/vscode-environment --custom-design"],
       "related_runtime": ["runtime/workflow/vscode_environment.py", "runtime/workflow/context_first.py", "runtime/workflow/validate_vscode_workspace.py"],
