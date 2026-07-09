@@ -1,4 +1,4 @@
----
+﻿---
 name: knowledge-capture
 description: Finalize a completed corrective action issue by generating PR material, checking docs evidence placement, extracting RAG/docs candidates, and preparing archive readiness without changing implementation. Use when the user selects /knowledge-capture or asks to run finalization and knowledge recovery for work/issue-XXX.
 ---
@@ -276,6 +276,25 @@ Human Action
   Prepare report-only close archive
   Optionally prune source/cache with approval
 ```
+
+## Workflow Feedback Output
+
+During every AI workflow run, capture actionable workflow friction or improvement candidates in `work/feedback/`.
+Create or update a Feedback report when you observe ambiguity, repeated checks, missing context/docs, runtime observation gaps, noisy handoffs, encoding issues, or a reusable workflow improvement.
+
+Use the existing helper when creating a new report:
+
+```powershell
+python runtime/workflow/self_improvement.py create-feedback `
+  --target-workflow "<slash-command>" `
+  --reporter "AI workflow" `
+  --situation "<what was happening>" `
+  --friction "<observed friction>" `
+  --impact "<impact on quality, speed, or safety>" `
+  --proposed-improvement "<candidate improvement>"
+```
+
+Keep the initial `Review Status` as `Proposed`. Do not run `/self-improvement` automatically inside this workflow; `/self-improvement` is executed later when feedback has accumulated and a human is ready to review Accepted / Rejected / Deferred decisions.
 
 ## Guardrails
 

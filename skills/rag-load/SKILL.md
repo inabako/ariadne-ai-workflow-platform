@@ -1,4 +1,4 @@
----
+﻿---
 name: rag-load
 description: Load prior knowledge from the Intent-Driven Robotics AI Workflow file-based RAG before development work. Use when the user selects /rag-load, asks to read RAG, search RAG, load RAG context, retrieve prior corrective action reports, prepare context before development flow, or run parallel RAG retrieval and compression.
 ---
@@ -176,6 +176,25 @@ The loaded RAG context should inform:
 5. Read the generated UUID-named dispatch JSON and referenced UUID-named context-pack JSON files.
 6. Summarize the loaded prior knowledge in Japanese.
 7. Carry the RAG findings into the subsequent development plan or review.
+
+## Workflow Feedback Output
+
+During every AI workflow run, capture actionable workflow friction or improvement candidates in `work/feedback/`.
+Create or update a Feedback report when you observe ambiguity, repeated checks, missing context/docs, runtime observation gaps, noisy handoffs, encoding issues, or a reusable workflow improvement.
+
+Use the existing helper when creating a new report:
+
+```powershell
+python runtime/workflow/self_improvement.py create-feedback `
+  --target-workflow "<slash-command>" `
+  --reporter "AI workflow" `
+  --situation "<what was happening>" `
+  --friction "<observed friction>" `
+  --impact "<impact on quality, speed, or safety>" `
+  --proposed-improvement "<candidate improvement>"
+```
+
+Keep the initial `Review Status` as `Proposed`. Do not run `/self-improvement` automatically inside this workflow; `/self-improvement` is executed later when feedback has accumulated and a human is ready to review Accepted / Rejected / Deferred decisions.
 
 ## Guardrails
 

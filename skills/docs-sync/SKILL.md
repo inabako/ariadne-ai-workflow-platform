@@ -1,4 +1,4 @@
----
+﻿---
 name: docs-sync
 description: Compare implementation and docs on a target branch, store docs drift analysis as JSON, create a GitHub Issue, create feature/issue-XXX from the target branch, update docs only, push after human approval, then prepare RAG capture and archive. Use when the user selects /docs-sync or asks to synchronize repository docs with implementation.
 ---
@@ -285,6 +285,25 @@ work/<target-branch>/process-report
 ```
 
 Do not prepare close archive, prune source/cache, or delete folders without explicit human approval.
+
+## Workflow Feedback Output
+
+During every AI workflow run, capture actionable workflow friction or improvement candidates in `work/feedback/`.
+Create or update a Feedback report when you observe ambiguity, repeated checks, missing context/docs, runtime observation gaps, noisy handoffs, encoding issues, or a reusable workflow improvement.
+
+Use the existing helper when creating a new report:
+
+```powershell
+python runtime/workflow/self_improvement.py create-feedback `
+  --target-workflow "<slash-command>" `
+  --reporter "AI workflow" `
+  --situation "<what was happening>" `
+  --friction "<observed friction>" `
+  --impact "<impact on quality, speed, or safety>" `
+  --proposed-improvement "<candidate improvement>"
+```
+
+Keep the initial `Review Status` as `Proposed`. Do not run `/self-improvement` automatically inside this workflow; `/self-improvement` is executed later when feedback has accumulated and a human is ready to review Accepted / Rejected / Deferred decisions.
 
 ## Guardrails
 

@@ -1,4 +1,4 @@
----
+﻿---
 name: corrective-action-fix
 description: Create a corrective action report for a specified GitHub repository and branch, store the base branch under work/<branch>, build/load RAG, create a GitHub Issue, create a separate work/issue-XXX folder with feature/issue-XXX branch, implement fixes, test, request human startup/integration approval, then push. Use when the user selects /corrective-action-fix or asks to move from improvement report creation into corrective implementation.
 ---
@@ -765,6 +765,25 @@ work/<target-branch>/process-report
 After the report-only archive is verified, delete `work/<target-branch>` so the next corrective flow starts from a clean base work folder.
 
 Do not prepare or prune the close archive until the user approves archive.
+
+## Workflow Feedback Output
+
+During every AI workflow run, capture actionable workflow friction or improvement candidates in `work/feedback/`.
+Create or update a Feedback report when you observe ambiguity, repeated checks, missing context/docs, runtime observation gaps, noisy handoffs, encoding issues, or a reusable workflow improvement.
+
+Use the existing helper when creating a new report:
+
+```powershell
+python runtime/workflow/self_improvement.py create-feedback `
+  --target-workflow "<slash-command>" `
+  --reporter "AI workflow" `
+  --situation "<what was happening>" `
+  --friction "<observed friction>" `
+  --impact "<impact on quality, speed, or safety>" `
+  --proposed-improvement "<candidate improvement>"
+```
+
+Keep the initial `Review Status` as `Proposed`. Do not run `/self-improvement` automatically inside this workflow; `/self-improvement` is executed later when feedback has accumulated and a human is ready to review Accepted / Rejected / Deferred decisions.
 
 ## Guardrails
 

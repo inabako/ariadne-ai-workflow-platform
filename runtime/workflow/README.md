@@ -42,6 +42,21 @@ docs-sync用の作業フォルダ初期化、ドキュメント差分JSONのひ�
 
 このCLI単体では、GitHub Issue作成、docs変更、branch push、RAG登録、close archive準備は行いません。
 
+## `self_improvement.py`
+
+Self-Improvement Workflow用に、`work/feedback/` の初期化、Feedback report作成、Human Review結果追記、Accepted feedbackからのIssue body生成、標準branch名生成、evidence scaffold作成を行います。
+
+```powershell
+python runtime/workflow/self_improvement.py init-feedback
+python runtime/workflow/self_improvement.py create-feedback --target-workflow "/docs-sync" --situation "docs整備中" --friction "参照docsが不明"
+python runtime/workflow/self_improvement.py review-feedback --feedback work/feedback/<feedback>.md --decision accepted --reviewer Human --reason "改善価値がある"
+python runtime/workflow/self_improvement.py issue-body --feedback work/feedback/<feedback>.md
+python runtime/workflow/self_improvement.py branch-name --issue-number 42
+python runtime/workflow/self_improvement.py evidence-scaffold --work-id issue-42
+```
+
+このCLI単体では、GitHub Issue作成、branch作成、source変更、push、RAG登録、close archive準備は行いません。
+
 ## `github_knowledge_maintenance.py`
 
 GitHub Repository Knowledge Maintenance用の作業フォルダ初期化、分析JSONひな形、修復案、GitHub同期案、RAG候補を生成します。

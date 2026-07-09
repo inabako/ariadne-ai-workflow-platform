@@ -17,8 +17,9 @@ Web system の workflow をそのまま流用せず、robotics system に必要�
 まず読む場所:
 
 1. [docs/README.md](docs/README.md)
-2. [docs/workflows/README.md](docs/workflows/README.md)
-3. [docs/reference/repository-structure.md](docs/reference/repository-structure.md)
+2. [docs/governance/README.md](docs/governance/README.md)
+3. [docs/workflows/README.md](docs/workflows/README.md)
+4. [docs/reference/repository-structure.md](docs/reference/repository-structure.md)
 
 Workflow を選ぶ場合:
 
@@ -36,6 +37,7 @@ Workflow を選ぶ場合:
 | repository / branchをread-onlyで調査し、改善reportを作る | `/corrective-action-report` | [Corrective Action Report](docs/workflows/corrective-action-report.md) |
 | 改善reportからIssue、branch、修正、test、pushまで進める | `/corrective-action-fix` | [Corrective Action Fix](docs/workflows/corrective-action-fix.md) |
 | 実装とdocsのズレを検出し、docsだけ修正する | `/docs-sync` | [Docs Sync](docs/workflows/docs-sync.md) |
+| Workflow実行中の摩擦を採用判断し、改善Issueへつなげる | `/self-improvement` | [Self-Improvement](docs/workflows/self-improvement.md) |
 | GitHub Issue / PR / docs / CARを知識資産として保守する | `/github-knowledge-maintenance` | [GitHub Knowledge Maintenance](docs/workflows/github-knowledge-maintenance.md) |
 | VSCode workspace as codeを整備する | `/vscode-environment` | [VSCode Environment](docs/workflows/vscode-environment.md) |
 | 完了IssueからPR材料、RAG候補、docs候補、archive準備を作る | `/knowledge-capture` | [Knowledge Capture](docs/workflows/knowledge-capture.md) |
@@ -76,6 +78,7 @@ work/       per-workflow artifacts and cloned sources
 | Area | Document |
 | --- | --- |
 | Docs index | [docs/README.md](docs/README.md) |
+| Platform Governance | [docs/governance/README.md](docs/governance/README.md) |
 | Workflow index | [docs/workflows/README.md](docs/workflows/README.md) |
 | Runtime CLI | [docs/reference/runtime.md](docs/reference/runtime.md) |
 | Templates | [docs/reference/templates.md](docs/reference/templates.md) |
@@ -190,6 +193,7 @@ GITHUB_TOKEN=
 - リアルタイムシステム向けIaC workflow
 - corrective action report / fix workflow
 - docs-sync workflow
+- self-improvement workflow
 - GitHub repository knowledge maintenance workflow
 - VSCode environment workflow
 - knowledge capture workflow

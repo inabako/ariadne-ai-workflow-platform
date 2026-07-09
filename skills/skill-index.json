@@ -20,6 +20,15 @@
       "description": "Compare implementation and docs on a target branch, store docs drift analysis as JSON, create an Issue, update docs only on feature/issue-XXX, push after approval, and prepare RAG/archive."
     },
     {
+      "slash_command": "/self-improvement",
+      "skill": "self-improvement",
+      "skill_path": "skills/self-improvement/SKILL.md",
+      "delegated_prompt": "/self-improvement",
+      "prompt_path": ".github/prompts/self-improvement.prompt.md",
+      "workflow": "self-improvement",
+      "description": "Ariadne workflow実行中の摩擦や改善候補をwork/feedback/へ保存し、Human Reviewで採用判断し、Accepted feedbackからIssue body、標準branch名、evidence scaffoldを作成する。"
+    },
+    {
       "slash_command": "/github-knowledge-maintenance",
       "skill": "github-knowledge-maintenance",
       "skill_path": "skills/github-knowledge-maintenance/SKILL.md",
@@ -195,6 +204,7 @@
   "report_outputs": {
     "corrective_action_report": "rag/corrective-action-report",
     "github_knowledge": "rag/github-knowledge",
-    "workspace_environment": "rag/workspace-environment"
+    "workspace_environment": "rag/workspace-environment",
+    "self_improvement_feedback": "work/feedback"
   }
 }

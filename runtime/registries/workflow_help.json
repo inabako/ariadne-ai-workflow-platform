@@ -20,22 +20,34 @@
           "name": "draft",
           "required": false,
           "description": "通常は引数なし。草案は work/requirements/draft/ に置く。対象を明示する場合は草案ファイル名またはpathを指定する。",
-          "examples": ["work/requirements/draft/robot-ui.txt"]
+          "examples": [
+            "work/requirements/draft/robot-ui.txt"
+          ]
         }
       ],
       "details": [
         "work/requirements/draft/ の人間作成草案を読む。",
         "Noise Reductionで不明ワード、曖昧表現、Critical項目不足を抽出する。",
         "必要な質問を作成し、人間回答なしで完成版を確定しない。",
-        "レビュー草案を作成し、人間OK後に work/requirements/ へ完成版を保存する。"
+        "レビュー草案を作成し、人間OK後に work/requirements/ へ完成版を保存する。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
-      "examples": ["/requirement-discovery"],
-      "related_runtime": ["runtime/workflow/noise_reduction.py"],
-      "docs": ["docs/workflows/requirement-discovery.md", "docs/workflows/noise-reduction-phase.md"]
+      "examples": [
+        "/requirement-discovery"
+      ],
+      "related_runtime": [
+        "runtime/workflow/noise_reduction.py"
+      ],
+      "docs": [
+        "docs/workflows/requirement-discovery.md",
+        "docs/workflows/noise-reduction-phase.md"
+      ]
     },
     {
       "command": "/robotics-new-system",
-      "aliases": ["/new-robotics-system-development"],
+      "aliases": [
+        "/new-robotics-system-development"
+      ],
       "workflow": "new-robotics-system-development",
       "skill": "robotics-new-system",
       "skill_path": "skills/robotics-new-system/SKILL.md",
@@ -51,18 +63,30 @@
           "name": "requirement",
           "required": false,
           "description": "通常は work/requirements/ の完成版要件定義書を1件だけ置く。明示する場合は要件定義書pathを指定する。",
-          "examples": ["work/requirements/localty-new-runtime.md"]
+          "examples": [
+            "work/requirements/localty-new-runtime.md"
+          ]
         }
       ],
       "details": [
         "完成版要件定義書が1件だけ存在することを確認する。",
         "intakeで work/<receipt-id>/ を作成する。",
         "必要に応じて SYS_*.svg をGUI modeへdispatchする。",
-        "RAG loadで過去知見を読み、設計、実装、test、docsへ進む。"
+        "RAG loadで過去知見を読み、設計、実装、test、docsへ進む。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
-      "examples": ["/robotics-new-system"],
-      "related_runtime": ["runtime/intake/intake_requirements.py", "runtime/workflow/gui_mode.py", "runtime/rag/rag_dispatcher.py"],
-      "docs": ["docs/workflows/robotics-new-system.md", "docs/workflows/gui-mode.md"]
+      "examples": [
+        "/robotics-new-system"
+      ],
+      "related_runtime": [
+        "runtime/intake/intake_requirements.py",
+        "runtime/workflow/gui_mode.py",
+        "runtime/rag/rag_dispatcher.py"
+      ],
+      "docs": [
+        "docs/workflows/robotics-new-system.md",
+        "docs/workflows/gui-mode.md"
+      ]
     },
     {
       "command": "/robotics-new-system-iac",
@@ -83,7 +107,9 @@
           "name": "requirement",
           "required": false,
           "description": "通常は work/requirements/ の完成版要件定義書を1件だけ置く。IaC連携に必要な通信、port、network、safety情報を含める。",
-          "examples": ["work/requirements/remote-gateway-system.md"]
+          "examples": [
+            "work/requirements/remote-gateway-system.md"
+          ]
         }
       ],
       "details": [
@@ -91,15 +117,28 @@
         "Shared Artifactsを作成し、IaC readinessを検証する。",
         "realtime-iac workflowへ渡す前に不足QAを止める。",
         "runtime/workflow/iac_handoff_context.py で execution-plan と realtime-iac-handoff をContext Manifestへ登録する。",
-        "Docker、systemd、network、security、observabilityの設計へ接続する。"
+        "Docker、systemd、network、security、observabilityの設計へ接続する。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
-      "examples": ["/robotics-new-system-iac"],
-      "related_runtime": ["runtime/intake/intake_requirements.py", "runtime/workflow/workflow_state.py", "runtime/workflow/iac_handoff_context.py", "runtime/workflow/context_first.py"],
-      "docs": ["docs/workflows/robotics-new-system-iac.md", "docs/workflows/realtime-iac.md"]
+      "examples": [
+        "/robotics-new-system-iac"
+      ],
+      "related_runtime": [
+        "runtime/intake/intake_requirements.py",
+        "runtime/workflow/workflow_state.py",
+        "runtime/workflow/iac_handoff_context.py",
+        "runtime/workflow/context_first.py"
+      ],
+      "docs": [
+        "docs/workflows/robotics-new-system-iac.md",
+        "docs/workflows/realtime-iac.md"
+      ]
     },
     {
       "command": "/robotics-feature-maintenance",
-      "aliases": ["/robotics-maintenance-development"],
+      "aliases": [
+        "/robotics-maintenance-development"
+      ],
       "workflow": "robotics-maintenance-development",
       "skill": "robotics-feature-maintenance",
       "skill_path": "skills/robotics-feature-maintenance/SKILL.md",
@@ -115,18 +154,29 @@
           "name": "requirement",
           "required": false,
           "description": "通常は work/requirements/ に完成版要件定義書を1件置く。対象repository、branch、変更目的、受け入れ条件を含める。",
-          "examples": ["work/requirements/gui-maintenance.md"]
+          "examples": [
+            "work/requirements/gui-maintenance.md"
+          ]
         }
       ],
       "details": [
         "既存repositoryへの変更意図を確認する。",
         "intake、repository準備、Issue作成、branch作成へ進む。",
         "FEAT_*.svg があればGUI modeへdispatchする。",
-        "RAG loadで過去のtest gap、risk、architecture concernを読む。"
+        "RAG loadで過去のtest gap、risk、architecture concernを読む。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
-      "examples": ["/robotics-feature-maintenance"],
-      "related_runtime": ["runtime/intake/intake_requirements.py", "runtime/scm/prepare_repository.py", "runtime/workflow/gui_mode.py"],
-      "docs": ["docs/workflows/robotics-feature-maintenance.md"]
+      "examples": [
+        "/robotics-feature-maintenance"
+      ],
+      "related_runtime": [
+        "runtime/intake/intake_requirements.py",
+        "runtime/scm/prepare_repository.py",
+        "runtime/workflow/gui_mode.py"
+      ],
+      "docs": [
+        "docs/workflows/robotics-feature-maintenance.md"
+      ]
     },
     {
       "command": "/corrective-action-report",
@@ -146,24 +196,39 @@
           "name": "repository",
           "required": true,
           "description": "調査対象repository。owner/repo、repository名、またはlocal pathを指定する。",
-          "examples": ["localty-system-gui", "owner/localty-system-gui", "C:/github/localty-system-gui"]
+          "examples": [
+            "localty-system-gui",
+            "owner/localty-system-gui",
+            "C:/github/localty-system-gui"
+          ]
         },
         {
           "name": "branch",
           "required": true,
           "description": "調査対象branch。現状確認したいbase branchを指定する。",
-          "examples": ["develop", "main"]
+          "examples": [
+            "develop",
+            "main"
+          ]
         }
       ],
       "details": [
         "現状をread-onlyで確認し、実装修正は行わない。",
         "改善点、risk、missing docs、test gap、architecture concernを抽出する。",
         "レポートはRAG候補として保存する。",
-        "不明領域がある場合は外部Web RAGや専門reviewを補助参照する。"
+        "不明領域がある場合は外部Web RAGや専門reviewを補助参照する。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
-      "examples": ["/corrective-action-report localty-system-gui develop"],
-      "related_runtime": ["runtime/rag/rag_dispatcher.py", "runtime/workflow/corrective_action_report.py"],
-      "docs": ["docs/workflows/corrective-action-report.md"]
+      "examples": [
+        "/corrective-action-report localty-system-gui develop"
+      ],
+      "related_runtime": [
+        "runtime/rag/rag_dispatcher.py",
+        "runtime/workflow/corrective_action_report.py"
+      ],
+      "docs": [
+        "docs/workflows/corrective-action-report.md"
+      ]
     },
     {
       "command": "/corrective-action-fix",
@@ -184,19 +249,25 @@
           "name": "repository",
           "required": true,
           "description": "改善対象repository。owner/repo、repository名、またはlocal pathを指定する。",
-          "examples": ["localty-system-gui"]
+          "examples": [
+            "localty-system-gui"
+          ]
         },
         {
           "name": "branch",
           "required": true,
           "description": "改善元branch。通常は develop または main。",
-          "examples": ["develop"]
+          "examples": [
+            "develop"
+          ]
         },
         {
           "name": "report",
           "required": false,
           "description": "/corrective-action-report で作成済みのMarkdownレポートを使う場合に指定する。未指定の場合、このflow内でCorrective Action Reportを作成する。",
-          "examples": ["rag/corrective-action-report/260704120000_ABC12345_localty-system-gui.md"]
+          "examples": [
+            "rag/corrective-action-report/260704120000_ABC12345_localty-system-gui.md"
+          ]
         }
       ],
       "details": [
@@ -205,11 +276,21 @@
         "RAG build/loadを行い、過去知見を取り込む。",
         "GitHub Issue作成、feature/issue-XXX branch作成を人間承認境界で進める。",
         "FIX_*.svg があればGUI modeへdispatchする。",
-        "修正後にtest、docs、PR材料、knowledge captureを作成する。"
+        "修正後にtest、docs、PR材料、knowledge captureを作成する。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
-      "examples": ["/corrective-action-fix localty-system-gui develop"],
-      "related_runtime": ["runtime/workflow/init_corrective_action_fix.py", "runtime/github/issue_manager.py", "runtime/scm/create_issue_branch.py", "runtime/workflow/knowledge_capture.py"],
-      "docs": ["docs/workflows/corrective-action-fix.md"]
+      "examples": [
+        "/corrective-action-fix localty-system-gui develop"
+      ],
+      "related_runtime": [
+        "runtime/workflow/init_corrective_action_fix.py",
+        "runtime/github/issue_manager.py",
+        "runtime/scm/create_issue_branch.py",
+        "runtime/workflow/knowledge_capture.py"
+      ],
+      "docs": [
+        "docs/workflows/corrective-action-fix.md"
+      ]
     },
     {
       "command": "/docs-sync",
@@ -229,24 +310,83 @@
           "name": "repository",
           "required": true,
           "description": "docs同期対象repository。owner/repo、repository名、またはlocal path。",
-          "examples": ["localty-system-gui"]
+          "examples": [
+            "localty-system-gui"
+          ]
         },
         {
           "name": "branch",
           "required": true,
           "description": "比較対象branch。通常は develop または main。",
-          "examples": ["develop"]
+          "examples": [
+            "develop"
+          ]
         }
       ],
       "details": [
         "実装とdocsの差分を分析する。",
         "docs drift analysis JSONを作成する。",
         "Issue作成、feature/issue-XXX branch作成、docs修正、pushを人間承認境界で進める。",
-        "実装コードは変更しない。"
+        "実装コードは変更しない。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
-      "examples": ["/docs-sync localty-system-gui develop"],
-      "related_runtime": ["runtime/workflow/docs_sync.py"],
-      "docs": ["docs/workflows/docs-sync.md"]
+      "examples": [
+        "/docs-sync localty-system-gui develop"
+      ],
+      "related_runtime": [
+        "runtime/workflow/docs_sync.py"
+      ],
+      "docs": [
+        "docs/workflows/docs-sync.md"
+      ]
+    },
+    {
+      "command": "/self-improvement",
+      "aliases": [],
+      "workflow": "self-improvement",
+      "skill": "self-improvement",
+      "skill_path": "skills/self-improvement/SKILL.md",
+      "prompt_path": ".github/prompts/self-improvement.prompt.md",
+      "overview": "workflow実行中の摩擦をFeedback reportへ保存し、人間レビューで採用判断して改善Issueへつなぐ。",
+      "prerequisites": [
+        "Ariadne AI Workflow Platform repository上で実行する。",
+        "Feedback reportは work/feedback/ 直下に保存し、細かいinbox/processed等のサブディレクトリは作らない。",
+        "Issue化する前にFeedback reportへAcceptedのHuman Review結果が追記されている。",
+        "GitHub Issue作成、branch作成、push、PR作成、RAG登録、close archive準備は個別Human Checkに従う。"
+      ],
+      "arguments": [
+        {
+          "name": "feedback",
+          "required": false,
+          "description": "既存Feedback reportを扱う場合に path を指定する。新規作成時はruntime helperで work/feedback/ に保存する。",
+          "examples": [
+            "work/feedback/20260710_120000-docs-sync-feedback.md"
+          ]
+        }
+      ],
+      "details": [
+        "workflow実行中に見つけた摩擦、ノイズ、改善候補をFeedback reportとして作成する。",
+        "Human ReviewでAccepted、Rejected、Deferredを同じFeedback reportへ追記する。",
+        "AcceptedのFeedbackだけIssue bodyへ変換する。",
+        "Issue titleは[改善フロー] prefixを使い、branch名は feature/issue-<issue-number> に統一する。",
+        "work/<work-id>/process-report/self-improvement/ と test-evidence/self-improvement/ を作り、artifact-index.jsonへ登録する。",
+        "GitHub / SCM mutationは既存runtime helperへ委譲する。",
+        "Review Proposed Feedback reports accumulated under work/feedback/; normal workflows should not auto-run /self-improvement."
+      ],
+      "examples": [
+        "/self-improvement",
+        "python runtime/workflow/self_improvement.py create-feedback --target-workflow \"/docs-sync\" --situation \"docs整備中\" --friction \"参照docsが不明\"",
+        "python runtime/workflow/self_improvement.py review-feedback --feedback work/feedback/<feedback>.md --decision accepted --reviewer Human --reason \"改善価値がある\"",
+        "python runtime/workflow/self_improvement.py issue-body --feedback work/feedback/<feedback>.md"
+      ],
+      "related_runtime": [
+        "runtime/workflow/self_improvement.py"
+      ],
+      "docs": [
+        "docs/workflows/self-improvement.md",
+        "docs/governance/platform-fit-check.md",
+        "docs/reference/workflow-feedback.md"
+      ]
     },
     {
       "command": "/github-knowledge-maintenance",
@@ -266,18 +406,27 @@
           "name": "repository",
           "required": true,
           "description": "知識保守対象のGitHub repository。owner/repoを推奨する。",
-          "examples": ["owner/localty-system-gui"]
+          "examples": [
+            "owner/localty-system-gui"
+          ]
         }
       ],
       "details": [
         "GitHub metadataをread-only中心に収集する。",
         "Issue、PR、docs、CAR間の知識gapやnarrative gapを検出する。",
         "repair proposal、documentation sync plan、RAG candidateを作る。",
-        "GitHub mutationやhistory rewriteは個別承認なしで実行しない。"
+        "GitHub mutationやhistory rewriteは個別承認なしで実行しない。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
-      "examples": ["/github-knowledge-maintenance owner/localty-system-gui"],
-      "related_runtime": ["runtime/workflow/github_knowledge_maintenance.py"],
-      "docs": ["docs/workflows/github-knowledge-maintenance.md"]
+      "examples": [
+        "/github-knowledge-maintenance owner/localty-system-gui"
+      ],
+      "related_runtime": [
+        "runtime/workflow/github_knowledge_maintenance.py"
+      ],
+      "docs": [
+        "docs/workflows/github-knowledge-maintenance.md"
+      ]
     },
     {
       "command": "/vscode-environment",
@@ -302,7 +451,9 @@
           "name": "target_workspace",
           "required": false,
           "description": "対象workspace path。省略時はself-provision modeとしてcurrent repositoryを対象にする。特殊設計はcustom-design modeとして草案またはHuman質問で補う。",
-          "examples": ["C:/github/localty-system-gui"]
+          "examples": [
+            "C:/github/localty-system-gui"
+          ]
         }
       ],
       "details": [
@@ -315,11 +466,24 @@
         "work/<work-id>/context/runtime-context.json にterminal scope、tool path、verification commandを記録する。",
         "長いinline PowerShellではなくrepo-local helperを優先する。",
         "検証結果とevidenceを保存する。",
-        "UTF-8 first: files.encoding=utf8、files.autoGuessEncoding=false、PYTHONUTF8=1、PYTHONIOENCODING=utf-8、PowerShell Input/OutputEncoding、chcp 65001を標準設計に含める。"
+        "UTF-8 first: files.encoding=utf8、files.autoGuessEncoding=false、PYTHONUTF8=1、PYTHONIOENCODING=utf-8、PowerShell Input/OutputEncoding、chcp 65001を標準設計に含める。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
-      "examples": ["/vscode-environment", "/vscode-environment C:/github/localty-system-gui", "/vscode-environment --custom-design"],
-      "related_runtime": ["runtime/workflow/vscode_environment.py", "runtime/workflow/context_first.py", "runtime/workflow/validate_vscode_workspace.py"],
-      "docs": ["docs/workflows/vscode-environment.md", "docs/reference/vscode-environment.md", "docs/reference/environment-selection.md"]
+      "examples": [
+        "/vscode-environment",
+        "/vscode-environment C:/github/localty-system-gui",
+        "/vscode-environment --custom-design"
+      ],
+      "related_runtime": [
+        "runtime/workflow/vscode_environment.py",
+        "runtime/workflow/context_first.py",
+        "runtime/workflow/validate_vscode_workspace.py"
+      ],
+      "docs": [
+        "docs/workflows/vscode-environment.md",
+        "docs/reference/vscode-environment.md",
+        "docs/reference/environment-selection.md"
+      ]
     },
     {
       "command": "/realtime-iac",
@@ -340,7 +504,9 @@
           "name": "shared_artifacts",
           "required": false,
           "description": "通信仕様、port定義、network boundary、ADR、安全traceabilityなどのShared Artifactsが入ったwork directory。",
-          "examples": ["work/issue-12/shared-artifacts/"]
+          "examples": [
+            "work/issue-12/shared-artifacts/"
+          ]
         }
       ],
       "details": [
@@ -348,11 +514,19 @@
         "requirements、network/security、runtime、observabilityを設計する。",
         "Docker Compose、systemd、firewall、reverse proxy、logrotateなどを生成する。",
         "Docker Desktop、Linux runtime、integration testを検証する。",
-        "secretや.env実値は生成しない。"
+        "secretや.env実値は生成しない。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
-      "examples": ["/realtime-iac work/issue-12/shared-artifacts/"],
-      "related_runtime": ["runtime/workflow/context_first.py", "runtime/workflow/workflow_state.py"],
-      "docs": ["docs/workflows/realtime-iac.md"]
+      "examples": [
+        "/realtime-iac work/issue-12/shared-artifacts/"
+      ],
+      "related_runtime": [
+        "runtime/workflow/context_first.py",
+        "runtime/workflow/workflow_state.py"
+      ],
+      "docs": [
+        "docs/workflows/realtime-iac.md"
+      ]
     },
     {
       "command": "/knowledge-capture",
@@ -372,30 +546,45 @@
           "name": "issue",
           "required": true,
           "description": "完了対象のissue work id。issue-11 の形式を推奨する。",
-          "examples": ["issue-11"]
+          "examples": [
+            "issue-11"
+          ]
         },
         {
           "name": "repository",
           "required": false,
           "description": "対象repository。work contextから解決できない場合に指定する。",
-          "examples": ["localty-system-gui"]
+          "examples": [
+            "localty-system-gui"
+          ]
         },
         {
           "name": "branch",
           "required": false,
           "description": "対象branch。work contextから解決できない場合に指定する。",
-          "examples": ["feature/issue-11"]
+          "examples": [
+            "feature/issue-11"
+          ]
         }
       ],
       "details": [
         "PR title、PR description、merge commentを作成する。",
         "docs evidence配置を確認する。",
         "RAG/docs candidateを抽出する。",
-        "archive readinessを確認するが、実装変更は行わない。"
+        "archive readinessを確認するが、実装変更は行わない。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
-      "examples": ["/knowledge-capture issue-11", "/knowledge-capture --issue issue-11 --repository localty-system-gui --branch feature/issue-11"],
-      "related_runtime": ["runtime/workflow/knowledge_capture.py", "runtime/workflow/close_archive.py"],
-      "docs": ["docs/workflows/knowledge-capture.md"]
+      "examples": [
+        "/knowledge-capture issue-11",
+        "/knowledge-capture --issue issue-11 --repository localty-system-gui --branch feature/issue-11"
+      ],
+      "related_runtime": [
+        "runtime/workflow/knowledge_capture.py",
+        "runtime/workflow/close_archive.py"
+      ],
+      "docs": [
+        "docs/workflows/knowledge-capture.md"
+      ]
     },
     {
       "command": "/rag-build",
@@ -415,18 +604,32 @@
           "name": "source",
           "required": false,
           "description": "通常は rag/corrective-action-report/ など既定sourceを使う。対象source dirを明示したい場合に指定する。",
-          "examples": ["rag/corrective-action-report"]
+          "examples": [
+            "rag/corrective-action-report"
+          ]
         }
       ],
       "details": [
         "source MarkdownをUUID JSON documentへ正規化する。",
         "chunk、index、local sparse embeddingを生成する。",
         "corrective action report名を標準化する。",
-        "RAG生成物はgit追跡対象にしない。"
+        "RAG生成物はgit追跡対象にしない。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
-      "examples": ["/rag-build"],
-      "related_runtime": ["runtime/rag/rag_build.py", "runtime/rag/normalize_documents.py", "runtime/rag/chunk_documents.py", "runtime/rag/build_index.py", "runtime/rag/embed_chunks.py"],
-      "docs": ["docs/workflows/rag-build-load.md", "docs/reference/rag.md"]
+      "examples": [
+        "/rag-build"
+      ],
+      "related_runtime": [
+        "runtime/rag/rag_build.py",
+        "runtime/rag/normalize_documents.py",
+        "runtime/rag/chunk_documents.py",
+        "runtime/rag/build_index.py",
+        "runtime/rag/embed_chunks.py"
+      ],
+      "docs": [
+        "docs/workflows/rag-build-load.md",
+        "docs/reference/rag.md"
+      ]
     },
     {
       "command": "/rag-load",
@@ -446,34 +649,54 @@
           "name": "query",
           "required": false,
           "description": "明示query。省略時はtask、repository、branch、work contextからdispatch planを生成する。",
-          "examples": ["workflow doctor human gate registry"]
+          "examples": [
+            "workflow doctor human gate registry"
+          ]
         },
         {
           "name": "repository",
           "required": false,
           "description": "検索を特定repositoryに絞るfilter。",
-          "examples": ["ariadne-ai-workflow-platform"]
+          "examples": [
+            "ariadne-ai-workflow-platform"
+          ]
         },
         {
           "name": "branch",
           "required": false,
           "description": "検索を特定branchに絞るfilter。",
-          "examples": ["develop"]
+          "examples": [
+            "develop"
+          ]
         }
       ],
       "details": [
         "rag-dispatch-planを生成または再利用する。",
         "retrieve_context.pyをqueryごとに並列実行する。",
         "rag-context-packを集約してrag-load-dispatchを作る。",
-        "後続Agentはdispatch planを読み、なぜ検索したかを確認する。"
+        "後続Agentはdispatch planを読み、なぜ検索したかを確認する。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
-      "examples": ["/rag-load", "/rag-load --query \"workflow doctor human gate registry\""],
-      "related_runtime": ["runtime/rag/rag_dispatcher.py", "runtime/rag/retrieve_context.py"],
-      "docs": ["docs/workflows/rag-build-load.md", "docs/reference/rag.md", "docs/reference/rag-dispatcher.md"]
+      "examples": [
+        "/rag-load",
+        "/rag-load --query \"workflow doctor human gate registry\""
+      ],
+      "related_runtime": [
+        "runtime/rag/rag_dispatcher.py",
+        "runtime/rag/retrieve_context.py"
+      ],
+      "docs": [
+        "docs/workflows/rag-build-load.md",
+        "docs/reference/rag.md",
+        "docs/reference/rag-dispatcher.md"
+      ]
     },
     {
       "command": "/runtime-health-check",
-      "aliases": ["/self-health-check", "/runtime-quality-gate"],
+      "aliases": [
+        "/self-health-check",
+        "/runtime-quality-gate"
+      ],
       "workflow": "runtime-health-check",
       "skill": "runtime-health-check",
       "skill_path": "skills/runtime-health-check/SKILL.md",
@@ -490,13 +713,18 @@
           "name": "work_id",
           "required": false,
           "description": "Context First test-evidence登録用work id。未指定時は runtime-health-check 相当の一時work idを使う。",
-          "examples": ["runtime-health-check", "context-first-agent-quality-gate"]
+          "examples": [
+            "runtime-health-check",
+            "context-first-agent-quality-gate"
+          ]
         },
         {
           "name": "report_dir",
           "required": false,
           "description": "JSON / Markdown report出力先。通常は runtime/.pytest_cache/ を使う。",
-          "examples": ["runtime/.pytest_cache"]
+          "examples": [
+            "runtime/.pytest_cache"
+          ]
         }
       ],
       "details": [
@@ -506,9 +734,13 @@
         "Context First manifestへ test-evidence として登録する。",
         "workflow_doctor.py と aiwfctl doctor を実行する。",
         "日本語Markdown品質ガードを実行する。",
-        "GitHub Actions workflowは作成しない。"
+        "GitHub Actions workflowは作成しない。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
-      "examples": ["/runtime-health-check", "/runtime-health-check --work-id runtime-health-check"],
+      "examples": [
+        "/runtime-health-check",
+        "/runtime-health-check --work-id runtime-health-check"
+      ],
       "related_runtime": [
         "runtime/tools/pytest_ut_spec_sync.py",
         "runtime/workflow/workflow_doctor.py",
@@ -526,7 +758,11 @@
   "extensions": [
     {
       "name": "gac-uac-gui-mode",
-      "aliases": ["gui-mode", "svg-gui", "pyqt-svg-layout"],
+      "aliases": [
+        "gui-mode",
+        "svg-gui",
+        "pyqt-svg-layout"
+      ],
       "standalone_command": false,
       "overview": "SVGをSemantic Layout、PyQt6候補、QTest候補へ変換する親workflow内のGUI拡張。",
       "prerequisites": [
@@ -537,8 +773,16 @@
       "trigger": "work/requirements/svg-input/{SYS,FEAT,FIX}_*.svg",
       "input_directory": "work/requirements/svg-input",
       "output": "work/<issue-id>/gac-uac/",
-      "prefixes": ["SYS_", "FEAT_", "FIX_"],
-      "parent_workflows": ["robotics-new-system", "robotics-feature-maintenance", "corrective-action-fix"],
+      "prefixes": [
+        "SYS_",
+        "FEAT_",
+        "FIX_"
+      ],
+      "parent_workflows": [
+        "robotics-new-system",
+        "robotics-feature-maintenance",
+        "corrective-action-fix"
+      ],
       "details": [
         "Issue作業領域作成後に、対象prefixのSVGをclaimする。",
         "SVG構造を解析し、Semantic Layout Graph、Widget Mapping、Layout Specを作る。",
@@ -553,12 +797,21 @@
         "work/requirements/svg-input/FIX_status_dialog.svg",
         "aiwfctl help show gui-mode"
       ],
-      "related_runtime": ["runtime/workflow/gui_mode.py"],
-      "docs": ["docs/workflows/gui-mode.md", "docs/reference/environment-selection.md"]
+      "related_runtime": [
+        "runtime/workflow/gui_mode.py"
+      ],
+      "docs": [
+        "docs/workflows/gui-mode.md",
+        "docs/reference/environment-selection.md"
+      ]
     },
     {
       "name": "web-svg-layout-mode",
-      "aliases": ["web-svg", "svg-web", "web-ui-svg-layout"],
+      "aliases": [
+        "web-svg",
+        "svg-web",
+        "web-ui-svg-layout"
+      ],
       "standalone_command": false,
       "overview": "Web画面向けSVGをlayout map、React候補、Playwright候補へ変換する親workflow内のWeb UI拡張。",
       "prerequisites": [
@@ -569,8 +822,16 @@
       "trigger": "work/requirements/svg-input/{WEB_SYS,WEB_FEAT,WEB_FIX}_*.svg",
       "input_directory": "work/requirements/svg-input",
       "output": "work/<issue-id>/web-ui/",
-      "prefixes": ["WEB_SYS_", "WEB_FEAT_", "WEB_FIX_"],
-      "parent_workflows": ["robotics-new-system", "robotics-feature-maintenance", "corrective-action-fix"],
+      "prefixes": [
+        "WEB_SYS_",
+        "WEB_FEAT_",
+        "WEB_FIX_"
+      ],
+      "parent_workflows": [
+        "robotics-new-system",
+        "robotics-feature-maintenance",
+        "corrective-action-fix"
+      ],
       "details": [
         "Issue作業領域作成後に、WEB_* prefixのSVGをclaimする。",
         "SVGからroute layout map、component mapping、responsive layout specを作る。",
@@ -585,8 +846,13 @@
         "work/requirements/svg-input/WEB_FIX_login_layout.svg",
         "aiwfctl help show web-svg"
       ],
-      "related_runtime": ["runtime/workflow/web_svg_layout_mode.py"],
-      "docs": ["docs/workflows/web-svg-layout-mode.md", "docs/reference/environment-selection.md"]
+      "related_runtime": [
+        "runtime/workflow/web_svg_layout_mode.py"
+      ],
+      "docs": [
+        "docs/workflows/web-svg-layout-mode.md",
+        "docs/reference/environment-selection.md"
+      ]
     }
   ]
 }

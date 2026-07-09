@@ -325,6 +325,25 @@ uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py
 
 Then normalize the approved published report to UUID JSON with `runtime/rag/normalize_documents.py`, and rebuild chunks, indexes, and embeddings.
 
+## Workflow Feedback Output
+
+During every AI workflow run, capture actionable workflow friction or improvement candidates in `work/feedback/`.
+Create or update a Feedback report when you observe ambiguity, repeated checks, missing context/docs, runtime observation gaps, noisy handoffs, encoding issues, or a reusable workflow improvement.
+
+Use the existing helper when creating a new report:
+
+```powershell
+python runtime/workflow/self_improvement.py create-feedback `
+  --target-workflow "<slash-command>" `
+  --reporter "AI workflow" `
+  --situation "<what was happening>" `
+  --friction "<observed friction>" `
+  --impact "<impact on quality, speed, or safety>" `
+  --proposed-improvement "<candidate improvement>"
+```
+
+Keep the initial `Review Status` as `Proposed`. Do not run `/self-improvement` automatically inside this workflow; `/self-improvement` is executed later when feedback has accumulated and a human is ready to review Accepted / Rejected / Deferred decisions.
+
 ## Guardrails
 
 - Do not erase Git history or hide historical evidence.

@@ -14,6 +14,7 @@
 | `/corrective-action-report` | repository / branchをread-onlyで調査し、改善reportだけ作る | target repository, target branch | `rag/corrective-action-report/*.md` |
 | `/corrective-action-fix` | 改善reportからIssue、branch、修正、test、pushまで進める | target repository, target branch | `work/<branch>/`, `work/issue-<number>/` |
 | `/docs-sync` | 実装とdocsのズレを検出し、docsだけ修正する | target repository, target branch | `docs-drift-analysis.json`, issue branch |
+| `/self-improvement` | workflow実行中の摩擦を採用判断し、改善Issueへつなぐ | workflow feedback | `work/feedback/*.md`, issue body, evidence scaffold |
 | `/github-knowledge-maintenance` | GitHub Issue / PR / docs / CARを知識資産として保守する | target repository, scan mode, repair mode | `github-knowledge-analysis.json`, repair plan, RAG candidates |
 | `/vscode-environment` | VSCode workspace as code、task、terminal、AI workflow、evidenceを整備する | なし、target workspace path、またはcustom-design draft | `.vscode/*`, `workspace-test.md` |
 | `/knowledge-capture` | 完了IssueのPR材料、RAG候補、docs候補、archive準備を作る | `work/issue-<number>` | `knowledge-capture-report.md` |
@@ -41,6 +42,7 @@
 | まず改善点を洗い出したいが、sourceは変更しない | [Corrective Action Report](corrective-action-report.md) |
 | 改善点の修正まで進めたい | [Corrective Action Fix](corrective-action-fix.md) |
 | codeは変えず、docsだけ実装に合わせたい | [Docs Sync](docs-sync.md) |
+| workflowの摩擦や改善候補をIssue化したい | [Self-Improvement](self-improvement.md) |
 | Git履歴を変えずにIssue / PR / docs / CARの説明資産を育てたい | [GitHub Knowledge Maintenance](github-knowledge-maintenance.md) |
 | VSCode workspace as code、terminal、task、AI workflow起動を整えたい | [VSCode Environment](vscode-environment.md) |
 | 作業完了後にPR文面と知識回収を整えたい | [Knowledge Capture](knowledge-capture.md) |
@@ -61,6 +63,9 @@
 - GitHub Issue 作成、branch作成、push、install、report-only close archive準備 / pruneなどの副作用は、人間承認gateを通します。
 - GitHub Issue title は workflow label をprefixにします: `[新規機能フロー]`、`[改善フロー]`、`[初期開発]`、`[IaC]`。
 - `work/<branch>/` はbase調査用、`work/issue-<number>/` は実装修正用に分けます。
+- 各AI workflow実行中に摩擦、迷い、手戻り、docs不足、runtime観測不足、重複確認などの改善候補を見つけた場合は、`work/feedback/` 直下へFeedback reportを保存します。
+- 通常workflowではFeedback reportを `Proposed` として残し、`/self-improvement` は自動実行しません。Feedbackがたまった後に `/self-improvement` を実行して採用 / 不採用 / 保留を判断します。
+- `/self-improvement` のFeedbackは `work/feedback/` 直下のreportに保存し、採用 / 不採用 / 保留は同じreportへ追記します。詳細は [Workflow Feedback](../reference/workflow-feedback.md) を確認します。
 - 成果物は `work/<id>/context/artifact-index.json` に登録できる形で残します。
 - `/robotics-new-system-iac` では、新システム設計後に Shared Artifacts を生成し、Shared Artifact Validator の `pass` または human-approved `conditional-pass` を得るまで IaC に進みません。
 - RAG化する成果物は、metadata、evidence、open questions、stable section order を保ちます。

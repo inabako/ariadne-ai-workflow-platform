@@ -20,6 +20,7 @@ templates/
   boilerplates/
   gui-mode/
   web-svg-layout/
+  self-improvement/
 ```
 
 ## Current Templates
@@ -39,6 +40,7 @@ templates/
 | `templates/boilerplates/` | `gateway-template/`, `nextjs-webapp-template/`, `pyqt-template/`, `realtime-gateway-infra-template/` | 新規Go gateway / Next.js webapp / PyQt GUI / realtime gateway IaCをtemplateから生成するためのboilerplate置き場 |
 | `templates/gui-mode/` | `README.md` | SVG入力、GaC / UaC生成、親workflowへの安全な返却方法 |
 | `templates/web-svg-layout/` | `README.md` | Web画面向けSVG入力、layout / React / Playwright候補、親workflowへの安全な返却方法 |
+| `templates/self-improvement/` | `workflow-feedback-template.md`, `self-improvement-issue-template.md`, `self-improvement-checklist.md` | workflow摩擦のFeedback report、Issue body、採用判断checklist |
 
 ## Quality Rules
 
@@ -55,6 +57,7 @@ templates/
 - 要件定義前のNoise Reduction Phaseでは、`templates/noise-reduction/` を使い、Readinessが`BLOCK`の場合は完成版要件定義書へ進めない。
 - 新システム実装では、`templates/boilerplates/` に一致するboilerplateがあるか確認し、採用または不採用の理由をprocess reportに残す。
 - Next.js画面機能を実装する場合、Implementation前に `templates/process-report/nextjs-webapp-implementation-prep-template.md` を使い、新規/既存分類、画面契約、API契約、auth、env、test evidenceを確認する。
+- Self-Improvement Workflowでは、Feedback reportを `work/feedback/` 直下に保存し、テンプレートは `templates/self-improvement/` を使う。
 - IaC工程では、realtime gateway infrastructure が対象に含まれる場合 `realtime-gateway-infra-template/` を候補にし、shared artifacts、software inventory、secret source、firewall policy、rollbackを確認してからコピーする。
 - テスト成果物の保存先は [Test Artifact Storage](test-artifact-storage.md) に従う。
 - 出力先は `work/<work-id>/` 配下の対応directoryにする。
