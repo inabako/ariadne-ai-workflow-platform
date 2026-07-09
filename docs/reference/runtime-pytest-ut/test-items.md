@@ -4,7 +4,7 @@
 
 この文書は、Ariadne AI Workflow Platform の `runtime/tests` 配下にある全pytestを、UTのテスト項目表として整理したものです。
 
-512ケースをpytest node id単位で列挙した単体試験仕様書は [Runtime pytest 単体試験仕様書（512ケース）](runtime-pytest-ut-case-specification.md) を参照します。
+533ケースをpytest node id単位で列挙した単体試験仕様書は [Runtime pytest 単体試験仕様書（533ケース）](case-specification.md) を参照します。
 
 詳細なcoverage推移と監査結果は、repository root の `Runtime pytest 分岐・CLI・coverage監査レポート.md` を参照します。
 
@@ -13,10 +13,10 @@
 | 項目 | 値 |
 | --- | ---: |
 | pytest対象ディレクトリ | `runtime/tests` |
-| pytest files | 30 |
-| pytest test functions | 499 |
-| pytest collected tests | 525 |
-| pytest result | `525 passed` |
+| pytest files | 31 |
+| pytest test functions | 520 |
+| pytest collected tests | 533 |
+| pytest result | `533 passed` |
 | statement coverage | 100.00% |
 | total coverage | 99.73% |
 | missing lines | 0 |
@@ -75,23 +75,24 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | RT-UT-023 | `runtime/tests/test_remaining_rag_scm_runtime.py` | 10 | 10 | `runtime/rag/jsonize_rag_tree.py`、`runtime/scm/compare_requirements.py` | RAG tree jsonize、source削除、requirements比較、git diff、artifact出力 | RAG/SCMの残存重要moduleを横断的に守る |
 | RT-UT-024 | `runtime/tests/test_retrieval_runtime.py` | 16 | 23 | `runtime/retrieval/task_runner.py` | task plan検証、dependency、dry-run、parallel/sequential、logs、reports、CLI | agent task実行計画を依存関係つきで安全に動かす |
 | RT-UT-025 | `runtime/tests/test_scm_runtime.py` | 52 | 52 | `runtime/scm/*` | prepare repository、issue branch、push、commit、bootstrap、token askpass、dry-run/non-dry-run | Git操作をremote mutation前提でも安全にmock・dry-run検証する |
-| RT-UT-026 | `runtime/tests/test_svg_layout_modes.py` | 19 | 19 | `runtime/workflow/gui_mode.py`、`web_svg_layout_mode.py` | SVG解析、input claim、PyQt/QTest候補、React/Playwright候補、validation、self-test | GUI/Web SVG入力から画面候補生成までをworkflow拡張として守る |
-| RT-UT-027 | `runtime/tests/test_vscode_environment_workflow.py` | 10 | 10 | `runtime/workflow/vscode_environment.py` | self-provision、draft/open questions、RAG template、requirements、validation、CLI | AI workflow実行環境をVSCode workspace as codeとして整える |
-| RT-UT-028 | `runtime/tests/test_vscode_workspace.py` | 2 | 2 | `.vscode/*`、`runtime/tools/aiwfctl.cmd` | aiwfctl PATH task、cmd usage | VSCodeから`aiwfctl`を迷わず呼べる導線を守る |
-| RT-UT-029 | `runtime/tests/test_workflow_doctor.py` | 17 | 17 | `runtime/workflow/workflow_doctor.py` | tracked policy、required files、human gate registry、close archive completeness、UT仕様書同期チェック、fail-on-warning | workflow repository自身の健康診断を自動化する |
-| RT-UT-030 | `runtime/tests/test_workflow_state_noise_validation.py` | 20 | 20 | `runtime/workflow/workflow_state.py`、`noise_reduction.py`、`validate_output_language.py`、`validate_vscode_workspace.py` | workflow state、noise reduction、Japanese output guard、VSCode workspace JSON検証 | 要件定義前処理・状態管理・出力言語品質を守る |
+| RT-UT-026 | `runtime/tests/test_self_improvement_workflow.py` | 8 | 8 | `runtime/workflow/self_improvement.py`、`skills/*/SKILL.md`、`runtime/registries/workflow_help.json` | feedback report作成、Human Review追記、Issue body生成、evidence scaffold、feedback出力契約、help registry契約 | Ariadne自身のworkflow改善候補を安全に保存し、採用判断から改善Issueへつなぐ |
+| RT-UT-027 | `runtime/tests/test_svg_layout_modes.py` | 19 | 19 | `runtime/workflow/gui_mode.py`、`web_svg_layout_mode.py` | SVG解析、input claim、PyQt/QTest候補、React/Playwright候補、validation、self-test | GUI/Web SVG入力から画面候補生成までをworkflow拡張として守る |
+| RT-UT-028 | `runtime/tests/test_vscode_environment_workflow.py` | 10 | 10 | `runtime/workflow/vscode_environment.py` | self-provision、draft/open questions、RAG template、requirements、validation、CLI | AI workflow実行環境をVSCode workspace as codeとして整える |
+| RT-UT-029 | `runtime/tests/test_vscode_workspace.py` | 2 | 2 | `.vscode/*`、`runtime/tools/aiwfctl.cmd` | aiwfctl PATH task、cmd usage | VSCodeから`aiwfctl`を迷わず呼べる導線を守る |
+| RT-UT-030 | `runtime/tests/test_workflow_doctor.py` | 17 | 17 | `runtime/workflow/workflow_doctor.py` | tracked policy、required files、human gate registry、close archive completeness、UT仕様書同期チェック、fail-on-warning | workflow repository自身の健康診断を自動化する |
+| RT-UT-031 | `runtime/tests/test_workflow_state_noise_validation.py` | 20 | 20 | `runtime/workflow/workflow_state.py`、`noise_reduction.py`、`validate_output_language.py`、`validate_vscode_workspace.py` | workflow state、noise reduction、Japanese output guard、VSCode workspace JSON検証 | 要件定義前処理・状態管理・出力言語品質を守る |
 
 ## 観点別の対応範囲
 
 | 観点 | 主なpytest file |
 | --- | --- |
 | Context First / dispatcher | `test_context_first.py`, `test_dispatcher_context.py`, `test_ctl_help.py` |
-| Workflow lifecycle | `test_intake_requirements.py`, `test_corrective_action_report.py`, `test_init_corrective_action_fix.py`, `test_knowledge_capture.py`, `test_docs_sync_workflow.py` |
+| Workflow lifecycle | `test_intake_requirements.py`, `test_corrective_action_report.py`, `test_init_corrective_action_fix.py`, `test_knowledge_capture.py`, `test_docs_sync_workflow.py`, `test_self_improvement_workflow.py` |
 | RAG pipeline / retrieval | `test_rag_pipeline_units.py`, `test_rag_build.py`, `test_rag_retrieve_context.py`, `test_rag_dispatcher.py`, `test_rag_artifact_migration.py`, `test_remaining_rag_scm_runtime.py` |
 | SCM / GitHub mutation boundary | `test_scm_runtime.py`, `test_github_runtime.py`, `test_github_knowledge_maintenance.py` |
 | Environment / VSCode / preflight | `test_preflight.py`, `test_remaining_policy_vscode_runtime.py`, `test_vscode_environment_workflow.py`, `test_vscode_workspace.py` |
 | GUI / Web SVG workflow extension | `test_svg_layout_modes.py` |
-| Runtime quality guard | `test_coverage_audit.py`, `test_pytest_ut_spec_sync.py`, `test_workflow_doctor.py`, `test_workflow_state_noise_validation.py` |
+| Runtime quality guard | `test_coverage_audit.py`, `test_pytest_ut_spec_sync.py`, `test_self_improvement_workflow.py`, `test_workflow_doctor.py`, `test_workflow_state_noise_validation.py` |
 
 ## 運用ルール
 

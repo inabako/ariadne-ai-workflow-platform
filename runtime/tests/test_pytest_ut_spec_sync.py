@@ -358,7 +358,7 @@ runtime/tests/test_sample.py::test_example
 
 
 def test_defensive_specimen_default_paths_and_register_context_requires_work_dir(monkeypatch, tmp_path: Path) -> None:
-    spec_path = tmp_path / "docs" / "reference" / "runtime-pytest-ut-case-specification.md"
+    spec_path = tmp_path / "docs" / "reference" / "runtime-pytest-ut" / "case-specification.md"
     spec_path.parent.mkdir(parents=True)
     spec_path.write_text("# spec\n", encoding="utf-8")
     assert sync.runtime_dir_from_spec(spec_path) == tmp_path / "runtime"
@@ -378,7 +378,7 @@ def test_defensive_specimen_default_paths_and_register_context_requires_work_dir
 def test_report_payload_and_context_first_registration(tmp_path: Path) -> None:
     repo_root = tmp_path
     runtime_root = repo_root / "runtime"
-    spec_path = repo_root / "docs" / "reference" / "runtime-pytest-ut-case-specification.md"
+    spec_path = repo_root / "docs" / "reference" / "runtime-pytest-ut" / "case-specification.md"
     work_dir = repo_root / "runtime" / ".pytest_cache" / "context-first-ci"
     report_path = work_dir / "context" / "pytest-ut-spec-sync-report.json"
     check_result = {

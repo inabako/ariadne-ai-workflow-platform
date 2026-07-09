@@ -48,7 +48,11 @@ class FunctionInfo:
 
 
 def runtime_dir_from_spec(spec_path: Path) -> Path:
-    return spec_path.resolve().parents[2] / "runtime"
+    resolved = spec_path.resolve()
+    for parent in resolved.parents:
+        if parent.name == "docs":
+            return parent.parent / "runtime"
+    return resolved.parents[2] / "runtime"
 
 
 def normalize_collected_node(node_id: str) -> str:
@@ -455,7 +459,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--spec",
         type=Path,
-        default=Path("../docs/reference/runtime-pytest-ut-case-specification.md"),
+        default=Path("../docs/reference/runtime-pytest-ut/case-specification.md"),
         help="Path to runtime pytest UT case specification.",
     )
     parser.add_argument("--runtime-root", type=Path, default=Path("."), help="Path to runtime directory.")

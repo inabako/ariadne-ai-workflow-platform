@@ -1,9 +1,9 @@
-# Runtime pytest 単体試験仕様書（481ケース）
+# Runtime pytest 単体試験仕様書（533ケース）
 
 作成日: 2026-07-07
 
 この文書は、`runtime/tests` 配下で収集されるpytest nodeを、単体試験仕様として1ケースずつ列挙したものです。
-上位のUT項目表は [Runtime pytest UT Test Items](runtime-pytest-ut-test-items.md) を参照します。
+上位のUT項目表は [Runtime pytest UT Test Items](test-items.md) を参照します。
 coverage推移と監査履歴は repository root の `Runtime pytest 分岐・CLI・coverage監査レポート.md` を参照します。
 
 この仕様書では、長い `pytest node id` でMarkdownプレビューが横に広がらないよう、ケース一覧を表ではなくブロック形式で記載します。
@@ -12,10 +12,10 @@ coverage推移と監査履歴は repository root の `Runtime pytest 分岐・CL
 
 | 項目 | 値 |
 | --- | ---: |
-| pytest files | 29 |
-| pytest test functions | 468 |
-| pytest collected cases | 525 |
-| pytest result | `525 passed` |
+| pytest files | 31 |
+| pytest test functions | 520 |
+| pytest collected cases | 533 |
+| pytest result | `533 passed` |
 | statement coverage | 100.00% |
 | total coverage | 99.73% |
 
@@ -7810,9 +7810,148 @@ runtime/tests/test_scm_runtime.py::test_bootstrap_repository_non_dry_run_require
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-### GUI / Web SVG Layout Modes
+
+### Self-Improvement Workflow
 
 #### RT-UT-CASE-454
+
+- pytest node id:
+
+```text
+runtime/tests/test_self_improvement_workflow.py::test_parser_and_branch_name
+```
+
+- 確認内容: pytest case `parser and branch name` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_self_improvement_workflow.py:13`
+  - fixture/arg: なし
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
+
+#### RT-UT-CASE-455
+
+- pytest node id:
+
+```text
+runtime/tests/test_self_improvement_workflow.py::test_init_and_create_feedback
+```
+
+- 確認内容: pytest case `init and create feedback` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_self_improvement_workflow.py:24`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `args`, `text`
+- 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
+
+#### RT-UT-CASE-456
+
+- pytest node id:
+
+```text
+runtime/tests/test_self_improvement_workflow.py::test_review_feedback_updates_status_and_human_check
+```
+
+- 確認内容: pytest case `review feedback updates status and human check` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_self_improvement_workflow.py:51`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `text`
+- 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
+
+#### RT-UT-CASE-457
+
+- pytest node id:
+
+```text
+runtime/tests/test_self_improvement_workflow.py::test_issue_body_requires_accepted_feedback_and_renders_fit_check
+```
+
+- 確認内容: pytest case `issue body requires accepted feedback and renders fit check` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_self_improvement_workflow.py:77`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `text`
+- 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
+
+#### RT-UT-CASE-458
+
+- pytest node id:
+
+```text
+runtime/tests/test_self_improvement_workflow.py::test_evidence_scaffold_registers_artifact_index
+```
+
+- 確認内容: pytest case `evidence scaffold registers artifact index` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_self_improvement_workflow.py:148`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `data`, `manifest_data`
+- 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
+
+#### RT-UT-CASE-459
+
+- pytest node id:
+
+```text
+runtime/tests/test_self_improvement_workflow.py::test_main_prints_json
+```
+
+- 確認内容: pytest case `main prints json` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_self_improvement_workflow.py:160`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
+
+#### RT-UT-CASE-460
+
+- pytest node id:
+
+```text
+runtime/tests/test_self_improvement_workflow.py::test_workflow_skills_declare_feedback_output_contract
+```
+
+- 確認内容: pytest case `workflow skills declare feedback output contract` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_self_improvement_workflow.py:172`
+  - fixture/arg: なし
+  - parameter: names=なし, case=なし
+  - inline input: `missing`, `text`, `required`
+- 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
+
+#### RT-UT-CASE-461
+
+- pytest node id:
+
+```text
+runtime/tests/test_self_improvement_workflow.py::test_workflow_help_declares_feedback_capture_for_all_commands
+```
+
+- 確認内容: pytest case `workflow help declares feedback capture for all commands` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_self_improvement_workflow.py:201`
+  - fixture/arg: なし
+  - parameter: names=なし, case=なし
+  - inline input: `registry`, `missing`
+- 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
+
+### GUI / Web SVG Layout Modes
+
+#### RT-UT-CASE-462
 
 - pytest node id:
 
@@ -7829,7 +7968,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_parse_model_render_and_val
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-455
+#### RT-UT-CASE-463
 
 - pytest node id:
 
@@ -7846,7 +7985,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_helpers_cover_prefix_disco
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-456
+#### RT-UT-CASE-464
 
 - pytest node id:
 
@@ -7863,7 +8002,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_renderers_and_failure_path
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-457
+#### RT-UT-CASE-465
 
 - pytest node id:
 
@@ -7880,7 +8019,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_model_fallbacks_duplicate_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-458
+#### RT-UT-CASE-466
 
 - pytest node id:
 
@@ -7897,7 +8036,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_input_init_inspect_and_cla
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-459
+#### RT-UT-CASE-467
 
 - pytest node id:
 
@@ -7914,7 +8053,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_validate_detects_policy_sy
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-460
+#### RT-UT-CASE-468
 
 - pytest node id:
 
@@ -7931,7 +8070,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_run_generate_complete_forc
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-461
+#### RT-UT-CASE-469
 
 - pytest node id:
 
@@ -7948,7 +8087,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_main_run_and_self_test_err
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-462
+#### RT-UT-CASE-470
 
 - pytest node id:
 
@@ -7965,7 +8104,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_self_test_fails_if_existin
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-463
+#### RT-UT-CASE-471
 
 - pytest node id:
 
@@ -7982,7 +8121,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_run_generate_skips_when_no
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-464
+#### RT-UT-CASE-472
 
 - pytest node id:
 
@@ -7999,7 +8138,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_mode_parse_model_render_and
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-465
+#### RT-UT-CASE-473
 
 - pytest node id:
 
@@ -8016,7 +8155,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_mode_helpers_cover_prefix_d
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-466
+#### RT-UT-CASE-474
 
 - pytest node id:
 
@@ -8033,7 +8172,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_mode_renderers_and_failure_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-467
+#### RT-UT-CASE-475
 
 - pytest node id:
 
@@ -8050,7 +8189,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_mode_model_fallbacks_duplic
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-468
+#### RT-UT-CASE-476
 
 - pytest node id:
 
@@ -8067,7 +8206,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_validate_detects_policy_rea
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-469
+#### RT-UT-CASE-477
 
 - pytest node id:
 
@@ -8084,7 +8223,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_init_input_and_resolvers
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-470
+#### RT-UT-CASE-478
 
 - pytest node id:
 
@@ -8101,7 +8240,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_run_generate_complete_force
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-471
+#### RT-UT-CASE-479
 
 - pytest node id:
 
@@ -8118,7 +8257,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_main_run_and_error_boundary
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-472
+#### RT-UT-CASE-480
 
 - pytest node id:
 
@@ -8137,7 +8276,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_run_generate_skips_when_no_
 
 ### VSCode Environment Workflow
 
-#### RT-UT-CASE-473
+#### RT-UT-CASE-481
 
 - pytest node id:
 
@@ -8154,7 +8293,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_build
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-474
+#### RT-UT-CASE-482
 
 - pytest node id:
 
@@ -8171,7 +8310,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_init_
   - inline input: `state`, `runtime_context`, `manifest`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-475
+#### RT-UT-CASE-483
 
 - pytest node id:
 
@@ -8188,7 +8327,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_draft
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-476
+#### RT-UT-CASE-484
 
 - pytest node id:
 
@@ -8205,7 +8344,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_open_
   - inline input: `open_questions`, `state`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-477
+#### RT-UT-CASE-485
 
 - pytest node id:
 
@@ -8222,7 +8361,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_rag_f
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-478
+#### RT-UT-CASE-486
 
 - pytest node id:
 
@@ -8239,7 +8378,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_write
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-479
+#### RT-UT-CASE-487
 
 - pytest node id:
 
@@ -8256,7 +8395,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_requi
   - inline input: `requirements`, `validation_json`, `validation_md`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-480
+#### RT-UT-CASE-488
 
 - pytest node id:
 
@@ -8273,7 +8412,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_valid
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-481
+#### RT-UT-CASE-489
 
 - pytest node id:
 
@@ -8290,7 +8429,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_main_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-482
+#### RT-UT-CASE-490
 
 - pytest node id:
 
@@ -8309,7 +8448,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_main_
 
 ### VSCode Workspace
 
-#### RT-UT-CASE-483
+#### RT-UT-CASE-491
 
 - pytest node id:
 
@@ -8326,7 +8465,7 @@ runtime/tests/test_vscode_workspace.py::test_aiwfctl_path_shell_task_is_provisio
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-484
+#### RT-UT-CASE-492
 
 - pytest node id:
 
@@ -8345,7 +8484,7 @@ runtime/tests/test_vscode_workspace.py::test_aiwfctl_cmd_exposes_path_usage
 
 ### Workflow Doctor
 
-#### RT-UT-CASE-485
+#### RT-UT-CASE-493
 
 - pytest node id:
 
@@ -8362,7 +8501,7 @@ runtime/tests/test_workflow_doctor.py::test_run_git_allows_returncode_one_and_fi
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-486
+#### RT-UT-CASE-494
 
 - pytest node id:
 
@@ -8379,7 +8518,7 @@ runtime/tests/test_workflow_doctor.py::test_run_git_raises_for_unexpected_return
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-487
+#### RT-UT-CASE-495
 
 - pytest node id:
 
@@ -8396,7 +8535,7 @@ runtime/tests/test_workflow_doctor.py::test_tracked_policy_violations_allows_onl
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-488
+#### RT-UT-CASE-496
 
 - pytest node id:
 
@@ -8413,7 +8552,7 @@ runtime/tests/test_workflow_doctor.py::test_missing_required_files_reports_core_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-489
+#### RT-UT-CASE-497
 
 - pytest node id:
 
@@ -8430,7 +8569,7 @@ runtime/tests/test_workflow_doctor.py::test_human_gate_registry_flags_schema_res
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-490
+#### RT-UT-CASE-498
 
 - pytest node id:
 
@@ -8447,7 +8586,7 @@ runtime/tests/test_workflow_doctor.py::test_human_gate_registry_findings_accepts
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-491
+#### RT-UT-CASE-499
 
 - pytest node id:
 
@@ -8464,7 +8603,7 @@ runtime/tests/test_workflow_doctor.py::test_close_archive_findings_reports_parti
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-492
+#### RT-UT-CASE-500
 
 - pytest node id:
 
@@ -8481,7 +8620,7 @@ runtime/tests/test_workflow_doctor.py::test_close_archive_findings_accepts_missi
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-493
+#### RT-UT-CASE-501
 
 - pytest node id:
 
@@ -8498,7 +8637,7 @@ runtime/tests/test_workflow_doctor.py::test_vscode_utf8_first_findings_accepts_c
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-494
+#### RT-UT-CASE-502
 
 - pytest node id:
 
@@ -8515,7 +8654,7 @@ runtime/tests/test_workflow_doctor.py::test_vscode_utf8_first_findings_reports_m
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-495
+#### RT-UT-CASE-503
 
 - pytest node id:
 
@@ -8532,7 +8671,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_fail_on_warning_turn
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-496
+#### RT-UT-CASE-504
 
 - pytest node id:
 
@@ -8549,7 +8688,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_run_reports_all_warn
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-497
+#### RT-UT-CASE-505
 
 - pytest node id:
 
@@ -8566,7 +8705,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_run_passes_without_w
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-498
+#### RT-UT-CASE-506
 
 - pytest node id:
 
@@ -8583,7 +8722,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_main_prints_pass_jso
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-499
+#### RT-UT-CASE-507
 
 - pytest node id:
 
@@ -8602,7 +8741,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_main_returns_one_on_
 
 ### Uncategorized
 
-#### RT-UT-CASE-500
+#### RT-UT-CASE-508
 
 - pytest node id:
 
@@ -8621,7 +8760,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_ut_spec_sync_finding
 
 ### Workflow State / Noise / Validation
 
-#### RT-UT-CASE-501
+#### RT-UT-CASE-509
 
 - pytest node id:
 
@@ -8638,7 +8777,7 @@ runtime/tests/test_workflow_doctor.py::test_defensive_specimen_workflow_doctor_r
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and the unusual or defensive runtime path remains documented as an intentional specimen.
 
-#### RT-UT-CASE-502
+#### RT-UT-CASE-510
 
 - pytest node id:
 
@@ -8655,7 +8794,7 @@ runtime/tests/test_workflow_doctor.py::test_defensive_specimen_workflow_doctor_r
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and the unusual or defensive runtime path remains documented as an intentional specimen.
 
-#### RT-UT-CASE-503
+#### RT-UT-CASE-511
 
 - pytest node id:
 
@@ -8673,7 +8812,7 @@ runtime/tests/test_workflow_doctor.py::test_defensive_specimen_workflow_doctor_r
   - specimen signals: defensive_specimen
 - 期待結果: 対象分岐が期待どおり処理され、pytest が成功する。
 
-#### RT-UT-CASE-504
+#### RT-UT-CASE-512
 
 - pytest node id:
 
@@ -8690,7 +8829,7 @@ runtime/tests/test_workflow_doctor.py::test_defensive_specimen_workflow_doctor_a
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and the unusual or defensive runtime path remains documented as an intentional specimen.
 
-#### RT-UT-CASE-505
+#### RT-UT-CASE-513
 
 - pytest node id:
 
@@ -8707,7 +8846,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_workflow_state_updat
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-506
+#### RT-UT-CASE-514
 
 - pytest node id:
 
@@ -8725,7 +8864,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_defensive_specimen_w
   - specimen signals: defensive_specimen
 - 期待結果: 対象分岐が期待どおり処理され、pytest が成功する。
 
-#### RT-UT-CASE-507
+#### RT-UT-CASE-515
 
 - pytest node id:
 
@@ -8742,7 +8881,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_workflow_state_rejec
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-508
+#### RT-UT-CASE-516
 
 - pytest node id:
 
@@ -8759,7 +8898,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_workflow_state_run_s
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-509
+#### RT-UT-CASE-517
 
 - pytest node id:
 
@@ -8776,7 +8915,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_workflow_state_run_s
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-510
+#### RT-UT-CASE-518
 
 - pytest node id:
 
@@ -8793,7 +8932,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_workflow_state_main_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-511
+#### RT-UT-CASE-519
 
 - pytest node id:
 
@@ -8810,7 +8949,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_noise_reduction_bloc
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-512
+#### RT-UT-CASE-520
 
 - pytest node id:
 
@@ -8827,7 +8966,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_noise_reduction_can_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-513
+#### RT-UT-CASE-521
 
 - pytest node id:
 
@@ -8844,7 +8983,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_noise_reduction_pass
   - inline input: `args`, `readiness`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-514
+#### RT-UT-CASE-522
 
 - pytest node id:
 
@@ -8861,7 +9000,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_noise_reduction_help
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-515
+#### RT-UT-CASE-523
 
 - pytest node id:
 
@@ -8878,7 +9017,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_noise_reduction_pars
   - inline input: `parsed`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-516
+#### RT-UT-CASE-524
 
 - pytest node id:
 
@@ -8895,7 +9034,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_validate_output_lang
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-517
+#### RT-UT-CASE-525
 
 - pytest node id:
 
@@ -8912,7 +9051,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_validate_output_lang
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-518
+#### RT-UT-CASE-526
 
 - pytest node id:
 
@@ -8929,7 +9068,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_validate_output_lang
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-519
+#### RT-UT-CASE-527
 
 - pytest node id:
 
@@ -8946,7 +9085,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_validate_output_lang
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-520
+#### RT-UT-CASE-528
 
 - pytest node id:
 
@@ -8963,7 +9102,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_validate_output_lang
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-521
+#### RT-UT-CASE-529
 
 - pytest node id:
 
@@ -8980,7 +9119,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_validate_output_lang
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-522
+#### RT-UT-CASE-530
 
 - pytest node id:
 
@@ -8997,7 +9136,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_validate_output_lang
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-523
+#### RT-UT-CASE-531
 
 - pytest node id:
 
@@ -9014,7 +9153,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_validate_output_lang
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-524
+#### RT-UT-CASE-532
 
 - pytest node id:
 
@@ -9031,7 +9170,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_validate_vscode_work
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-525
+#### RT-UT-CASE-533
 
 - pytest node id:
 
@@ -9051,8 +9190,8 @@ runtime/tests/test_workflow_state_noise_validation.py::test_validate_vscode_work
 ## 更新ルール
 
 - この文書は `pytest --collect-only -q tests` の収集結果を正として更新します。
-- 同期確認は `cd runtime && .\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py --spec ..\docs\reference\runtime-pytest-ut-case-specification.md --runtime-root . check` で実行します。
-- 入力値欄の再生成は `cd runtime && .\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py --spec ..\docs\reference\runtime-pytest-ut-case-specification.md --runtime-root . fix-inputs` で実行します。
-- テスト関数を追加、削除、renameした場合は、この481ケース仕様書も更新します。
+- 同期確認は `cd runtime && .\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py --spec ..\docs\reference\runtime-pytest-ut\case-specification.md --runtime-root . check` で実行します。
+- 入力値欄の再生成は `cd runtime && .\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py --spec ..\docs\reference\runtime-pytest-ut\case-specification.md --runtime-root . fix-inputs` で実行します。
+- テスト関数を追加、削除、renameした場合は、この533ケース仕様書も更新します。
 - `pytest.mark.parametrize` によって1つのtest functionから複数caseが収集される場合は、pytest node idのparameter表記まで仕様として残します。
 - 個別caseの詳細な入力値やfixtureは、該当pytest sourceを正とします。

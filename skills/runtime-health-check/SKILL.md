@@ -1,4 +1,4 @@
-﻿# Runtime Health Check Skill
+# Runtime Health Check Skill
 
 ## Purpose
 
@@ -47,7 +47,7 @@ Run UT specification synchronization and register Context First test evidence:
 
 ```powershell
 .\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py `
-  --spec ..\docs\reference\runtime-pytest-ut-case-specification.md `
+  --spec ..\docs\reference\runtime-pytest-ut\case-specification.md `
   --runtime-root . `
   check `
   --repo-root .. `
@@ -80,7 +80,7 @@ Run Japanese Markdown guard:
 
 ```powershell
 .\tools\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
-  --paths ..\docs\reference\runtime-pytest-ut-test-items.md ..\docs\reference\runtime-pytest-ut-case-specification.md ..\.github\schemas\README.md ..\.github\agents\runtime-quality-gate-agent.prompt.md `
+  --paths ..\docs\reference\runtime-pytest-ut\test-items.md ..\docs\reference\runtime-pytest-ut\case-specification.md ..\.github\schemas\README.md ..\.github\agents\runtime-quality-gate-agent.prompt.md `
   --fail-on-violation
 ```
 

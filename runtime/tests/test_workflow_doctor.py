@@ -285,7 +285,7 @@ def test_workflow_doctor_main_returns_one_on_fail_on_warning(monkeypatch, tmp_pa
 
 
 def test_workflow_doctor_ut_spec_sync_findings_and_skip(monkeypatch, tmp_path: Path) -> None:
-    spec = tmp_path / "docs" / "reference" / "runtime-pytest-ut-case-specification.md"
+    spec = tmp_path / "docs" / "reference" / "runtime-pytest-ut" / "case-specification.md"
     runtime_root = tmp_path / "runtime"
     spec.parent.mkdir(parents=True)
     runtime_root.mkdir(parents=True)
@@ -319,9 +319,9 @@ def test_workflow_doctor_ut_spec_sync_findings_and_skip(monkeypatch, tmp_path: P
 
 def test_defensive_specimen_workflow_doctor_reports_missing_ut_spec_inputs(tmp_path: Path) -> None:
     missing_spec = workflow_doctor.ut_spec_sync_findings(tmp_path)
-    assert missing_spec == ["docs/reference/runtime-pytest-ut-case-specification.md"]
+    assert missing_spec == ["docs/reference/runtime-pytest-ut/case-specification.md"]
 
-    spec = tmp_path / "docs" / "reference" / "runtime-pytest-ut-case-specification.md"
+    spec = tmp_path / "docs" / "reference" / "runtime-pytest-ut" / "case-specification.md"
     spec.parent.mkdir(parents=True)
     spec.write_text("# spec\n", encoding="utf-8")
 
@@ -330,7 +330,7 @@ def test_defensive_specimen_workflow_doctor_reports_missing_ut_spec_inputs(tmp_p
 
 
 def test_defensive_specimen_workflow_doctor_reports_stale_and_bad_position_only(monkeypatch, tmp_path: Path) -> None:
-    spec = tmp_path / "docs" / "reference" / "runtime-pytest-ut-case-specification.md"
+    spec = tmp_path / "docs" / "reference" / "runtime-pytest-ut" / "case-specification.md"
     runtime_root = tmp_path / "runtime"
     spec.parent.mkdir(parents=True)
     runtime_root.mkdir(parents=True)
@@ -356,7 +356,7 @@ def test_defensive_specimen_workflow_doctor_reports_stale_and_bad_position_only(
 
 
 def test_defensive_specimen_workflow_doctor_reports_stale_without_bad_position(monkeypatch, tmp_path: Path) -> None:
-    spec = tmp_path / "docs" / "reference" / "runtime-pytest-ut-case-specification.md"
+    spec = tmp_path / "docs" / "reference" / "runtime-pytest-ut" / "case-specification.md"
     runtime_root = tmp_path / "runtime"
     spec.parent.mkdir(parents=True)
     runtime_root.mkdir(parents=True)
@@ -377,7 +377,7 @@ def test_defensive_specimen_workflow_doctor_reports_stale_without_bad_position(m
 
 
 def test_defensive_specimen_workflow_doctor_accepts_clean_ut_spec_sync(monkeypatch, tmp_path: Path) -> None:
-    spec = tmp_path / "docs" / "reference" / "runtime-pytest-ut-case-specification.md"
+    spec = tmp_path / "docs" / "reference" / "runtime-pytest-ut" / "case-specification.md"
     runtime_root = tmp_path / "runtime"
     spec.parent.mkdir(parents=True)
     runtime_root.mkdir(parents=True)

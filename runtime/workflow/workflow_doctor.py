@@ -184,7 +184,7 @@ def vscode_utf8_first_findings(repo_root: Path) -> list[str]:
 
 
 def ut_spec_sync_findings(repo_root: Path) -> list[str]:
-    spec_path = repo_root / "docs" / "reference" / "runtime-pytest-ut-case-specification.md"
+    spec_path = repo_root / "docs" / "reference" / "runtime-pytest-ut" / "case-specification.md"
     runtime_root = repo_root / "runtime"
     if not spec_path.exists():
         return [relative_to_repo(repo_root, spec_path)]

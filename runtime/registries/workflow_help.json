@@ -1,4 +1,4 @@
-{
+﻿{
   "registry_version": "1.0",
   "description": "AI workflow prompt command help registry. aiwfctl help reads this file to show searchable terminal help.",
   "commands": [
@@ -729,7 +729,7 @@
       ],
       "details": [
         "runtime pytestを実行する。",
-        "pytest収集結果と docs/reference/runtime-pytest-ut-case-specification.md を同期チェックする。",
+        "pytest収集結果と docs/reference/runtime-pytest-ut/case-specification.md を同期チェックする。",
         "pytest-ut-spec-sync-report.json と pytest-ut-spec-sync-report.md を生成する。",
         "Context First manifestへ test-evidence として登録する。",
         "workflow_doctor.py と aiwfctl doctor を実行する。",
@@ -750,8 +750,8 @@
       ],
       "docs": [
         "docs/workflows/runtime-health-check.md",
-        "docs/reference/runtime-pytest-ut-test-items.md",
-        "docs/reference/runtime-pytest-ut-case-specification.md"
+        "docs/reference/runtime-pytest-ut/test-items.md",
+        "docs/reference/runtime-pytest-ut/case-specification.md"
       ]
     }
   ],
