@@ -45,6 +45,7 @@
 | `web-svg-layout-state.schema.json` | Web画面向けSVG検出、WEB_* mode、生成成果物、親workflow返却状態 |
 | `rag-document.schema.json` | RAG投入用に正規化した document |
 | `rag-chunk.schema.json` | retrieval / embeddings 用の chunk |
+| `rag-ingestion-evidence.schema.json` | RAG吸収前のchunk候補評価、ACCEPT / REWRITE / HUMAN_CHECK / REJECT、Evidence summary |
 | `rag-embedding.schema.json` | local embedding index のchunk vector |
 | `rag-build-run.schema.json` | RAG build pipelineの入力、stage結果、index、embedding出力、Context登録記録 |
 | `rag-dispatch-plan.schema.json` | RAG検索前のintent、metadata、semantic hint、query計画 |

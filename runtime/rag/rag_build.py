@@ -10,7 +10,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
-from runtime.rag import build_index, chunk_documents, embed_chunks, normalize_documents  # noqa: E402
+from runtime.rag import build_index, chunk_documents, embed_chunks, ingestion_optimizer, normalize_documents  # noqa: E402
 from runtime.rag import standardize_corrective_report_names  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
@@ -52,11 +52,13 @@ def build_run_artifact(
 ) -> dict[str, Any]:
     normalize_result = next((item["result"] for item in stages if item["name"] == "normalize-documents"), {})
     chunk_result = next((item["result"] for item in stages if item["name"] == "chunk-documents"), {})
+    optimization_result = next((item["result"] for item in stages if item["name"] == "optimize-ingestion"), {})
     index_result = next((item["result"] for item in stages if item["name"] == "build-index"), {})
     embedding_result = next((item["result"] for item in stages if item["name"] == "embed-chunks"), {})
     source_dir = resolve_repo_path(repo_root, args.source_dir).resolve()
     normalized_dir = resolve_repo_path(repo_root, args.normalized_dir).resolve()
     chunks_dir = resolve_repo_path(repo_root, args.chunks_dir).resolve()
+    optimized_chunks_dir = resolve_repo_path(repo_root, getattr(args, "optimized_chunks_dir", "rag/optimized-chunks")).resolve()
     indexes_dir = resolve_repo_path(repo_root, args.indexes_dir).resolve()
     embeddings_output = resolve_repo_path(repo_root, args.embeddings_output).resolve()
     human_check_reasons: list[str] = []
@@ -81,10 +83,23 @@ def build_run_artifact(
         "outputs": {
             "normalized_dir": relative_to_repo(repo_root, normalized_dir),
             "chunks_dir": relative_to_repo(repo_root, chunks_dir),
+            "optimized_chunks_dir": relative_to_repo(repo_root, optimized_chunks_dir),
             "indexes_dir": relative_to_repo(repo_root, indexes_dir),
             "embeddings_output": relative_to_repo(repo_root, embeddings_output),
             "document_count": normalize_result.get("document_count", 0),
-            "chunk_count": chunk_result.get("chunk_count", 0),
+            "raw_chunk_count": chunk_result.get("chunk_count", 0),
+            "chunk_count": index_result.get(
+                "chunk_count",
+                optimization_result.get("accepted_chunk_count", chunk_result.get("chunk_count", 0)),
+            ),
+            "candidate_chunk_count": optimization_result.get("candidate_chunk_count", 0),
+            "accepted_chunk_count": optimization_result.get("accepted_chunk_count", 0),
+            "rewritten_chunk_count": optimization_result.get("rewritten_chunk_count", 0),
+            "human_check_required_count": optimization_result.get("human_check_required_count", 0),
+            "rejected_chunk_count": optimization_result.get("rejected_chunk_count", 0),
+            "average_optimization_score": optimization_result.get("average_optimization_score", 0.0),
+            "ingestion_evidence_dir": optimization_result.get("evidence_dir", ""),
+            "ingestion_summary": optimization_result.get("ingestion_summary", ""),
             "embedding_count": embedding_result.get("embedding_count", 0),
             "documents_index": index_result.get("documents_index", ""),
             "chunks_index": index_result.get("chunks_index", ""),
@@ -160,10 +175,25 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     )
     stages.append(stage_record("chunk-documents", chunk_result))
 
+    index_chunks_dir = args.chunks_dir
+    if not getattr(args, "skip_optimization", False):
+        optimization_result = ingestion_optimizer.run(
+            argparse.Namespace(
+                chunks_dir=args.chunks_dir,
+                output_dir=getattr(args, "optimized_chunks_dir", "rag/optimized-chunks"),
+                evidence_dir=getattr(args, "ingestion_evidence_dir", "rag/evidence/ingestion"),
+                policy=getattr(args, "ingestion_policy", "runtime/rag/policies/knowledge-ingestion-policy.json"),
+                repo_root=str(repo_root),
+                clean_output=args.clean_output,
+            )
+        )
+        stages.append(stage_record("optimize-ingestion", optimization_result))
+        index_chunks_dir = getattr(args, "optimized_chunks_dir", "rag/optimized-chunks")
+
     index_result = build_index.run(
         argparse.Namespace(
             normalized_dir=args.normalized_dir,
-            chunks_dir=args.chunks_dir,
+            chunks_dir=index_chunks_dir,
             output_dir=args.indexes_dir,
             repo_root=str(repo_root),
         )
@@ -203,9 +233,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--document-type", default="corrective-action-report")
     parser.add_argument("--normalized-dir", default="rag/normalized")
     parser.add_argument("--chunks-dir", default="rag/chunks")
+    parser.add_argument("--optimized-chunks-dir", default="rag/optimized-chunks")
     parser.add_argument("--indexes-dir", default="rag/indexes")
     parser.add_argument("--embeddings-output", default="rag/embeddings/chunks-embeddings.jsonl")
     parser.add_argument("--output", default="rag/retrieval/rag-build-run-latest.json")
+    parser.add_argument("--ingestion-evidence-dir", default="rag/evidence/ingestion")
+    parser.add_argument("--ingestion-policy", default="runtime/rag/policies/knowledge-ingestion-policy.json")
+    parser.add_argument("--skip-optimization", action="store_true")
     parser.add_argument("--project", default="")
     parser.add_argument("--repository", default="")
     parser.add_argument("--branch", default="")

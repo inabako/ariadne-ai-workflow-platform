@@ -317,6 +317,36 @@ runtime/tests/test_old.py::test_old
     assert result["bad_input_position"] == ["RT-UT-CASE-001"]
 
 
+def test_check_spec_reads_split_case_files(monkeypatch, tmp_path: Path) -> None:
+    spec_path = tmp_path / "docs" / "reference" / "runtime-pytest-ut" / "case-specification.md"
+    case_dir = spec_path.with_name("cases")
+    case_dir.mkdir(parents=True)
+    spec_path.write_text("# Spec index\n", encoding="utf-8")
+    (case_dir / "test_sample.md").write_text(
+        """# test_sample.py
+#### RT-UT-CASE-001
+
+- pytest node id:
+
+```text
+runtime/tests/test_sample.py::test_example
+```
+
+- 確認内容: sample
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+- 期待結果: pass
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(sync, "collect_pytest_nodes", lambda runtime_root: ["runtime/tests/test_sample.py::test_example"])
+
+    assert sync.spec_case_dir(spec_path) == case_dir
+    assert sync.spec_part_paths(spec_path) == [spec_path, case_dir / "test_sample.md"]
+    assert "runtime/tests/test_sample.py::test_example" in sync.read_spec_text(spec_path)
+    assert sync.check_spec(spec_path, tmp_path / "runtime")["status"] == "ok"
+
+
 def test_main_fix_inputs_and_check_json_output(monkeypatch, tmp_path: Path, capsys) -> None:
     runtime_root = tmp_path / "runtime"
     test_dir = runtime_root / "tests"
@@ -355,6 +385,49 @@ runtime/tests/test_sample.py::test_example
     assert sync.main(["--spec", str(spec_path), "--runtime-root", str(runtime_root), "check"]) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["status"] == "ok"
+
+
+def test_main_fix_inputs_updates_split_case_files(monkeypatch, tmp_path: Path, capsys) -> None:
+    runtime_root = tmp_path / "runtime"
+    test_dir = runtime_root / "tests"
+    test_dir.mkdir(parents=True)
+    (test_dir / "test_sample.py").write_text(
+        """
+def test_example(tmp_path):
+    value = "x"
+    assert value
+""",
+        encoding="utf-8",
+    )
+    spec_path = tmp_path / "docs" / "reference" / "runtime-pytest-ut" / "case-specification.md"
+    case_dir = spec_path.with_name("cases")
+    case_dir.mkdir(parents=True)
+    spec_path.write_text("# Spec index\n", encoding="utf-8")
+    case_path = case_dir / "test_sample.md"
+    case_path.write_text(
+        """# test_sample.py
+#### RT-UT-CASE-001
+
+- pytest node id:
+
+```text
+runtime/tests/test_sample.py::test_example
+```
+
+- 確認内容: sample
+- 入力値: old
+- 期待結果: pass
+""",
+        encoding="utf-8",
+    )
+
+    assert sync.main(["--spec", str(spec_path), "--runtime-root", str(runtime_root), "fix-inputs"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    updated = case_path.read_text(encoding="utf-8-sig")
+
+    assert payload["updated_input_sections"] == 1
+    assert "- 入力値: old" not in updated
+    assert "runtime/tests/test_sample.py:2" in updated
 
 
 def test_defensive_specimen_default_paths_and_register_context_requires_work_dir(monkeypatch, tmp_path: Path) -> None:

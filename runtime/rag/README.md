@@ -7,7 +7,9 @@
 ```text
 source markdown
   -> normalized UUID JSON document
-  -> chunk JSON
+  -> raw chunk JSON
+  -> ingestion optimization
+  -> accepted optimized chunk JSON
   -> JSONL indexes
   -> local embeddings
   -> compressed context pack
@@ -23,7 +25,9 @@ rag/
   external-web/              external-web source index and category Markdown
   specialist-review/         specialist review Markdown after approval
   normalized/                normalized RAG documents
-  chunks/                    chunk JSON files
+  chunks/                    raw chunk JSON files
+  optimized-chunks/          accepted chunk JSON files after ingestion optimization
+  evidence/ingestion/        ingestion optimization evidence
   indexes/                   documents.jsonl / chunks.jsonl
   embeddings/                local embedding index
   retrieval/                 temporary retrieval results and prompts
@@ -63,16 +67,28 @@ python runtime/rag/normalize_documents.py `
   --document-type external-web-knowledge
 ```
 
-### 3. Build Index
+### 3. Optimize Ingestion
+
+```powershell
+python runtime/rag/ingestion_optimizer.py `
+  --chunks-dir rag/chunks `
+  --output-dir rag/optimized-chunks `
+  --evidence-dir rag/evidence/ingestion `
+  --clean-output
+```
+
+This stage evaluates chunk candidates before indexing and embedding. It writes `ACCEPT / REWRITE / HUMAN_CHECK / REJECT` evidence under `rag/evidence/ingestion`.
+
+### 4. Build Index
 
 ```powershell
 python runtime/rag/build_index.py `
   --normalized-dir rag/normalized `
-  --chunks-dir rag/chunks `
+  --chunks-dir rag/optimized-chunks `
   --output-dir rag/indexes
 ```
 
-### 4. Retrieve And Compress Context
+### 5. Retrieve And Compress Context
 
 Optional local embeddings:
 
@@ -115,7 +131,7 @@ RAG artifact のファイル名は UUID にします。検索はファイル名�
 
 Corrective action report Markdown は、RAG build前に `runtime/rag/standardize_corrective_report_names.py` で `YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md` へ統一します。標準は8桁です。
 
-### 5. Dispatch Parallel RAG Load
+### 6. Dispatch Parallel RAG Load
 
 開発前の RAG 読み込みでは、dispatcher を使って `rag-dispatch-plan` を作成し、複数queryを計画・並列検索し、`retrieve_context.py` の圧縮済みcontext packを集約します。
 
@@ -140,7 +156,7 @@ python runtime/rag/rag_dispatcher.py `
   --max-chars 4000
 ```
 
-### 6. JSONize Existing Markdown Artifacts
+### 7. JSONize Existing Markdown Artifacts
 
 ```powershell
 python runtime/rag/jsonize_rag_tree.py `
@@ -156,7 +172,9 @@ python runtime/rag/jsonize_rag_tree.py `
 | Path | Purpose |
 | --- | --- |
 | `rag/normalized/*.json` | source report を metadata 付きのUUID名 RAG document として保存する最終knowledge record |
-| `rag/chunks/*.json` | retrieval しやすい単位に分割した chunk |
+| `rag/chunks/*.json` | retrieval しやすい単位に分割した raw chunk |
+| `rag/optimized-chunks/*.json` | RAG吸収最適化で `ACCEPT` された embedding 対象chunk |
+| `rag/evidence/ingestion/*.json*` | chunk候補、評価、判定、Human Check、reject、summary |
 | `rag/indexes/documents.jsonl` | document-level index |
 | `rag/indexes/chunks.jsonl` | chunk-level index |
 | `rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |

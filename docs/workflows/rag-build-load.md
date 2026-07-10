@@ -16,7 +16,9 @@ Corrective Action Report などのMarkdown reportを file-based RAG artifactへ�
 ```text
 source markdown
   -> normalized UUID JSON document
-  -> chunk JSON
+  -> raw chunk JSON
+  -> ingestion optimization
+  -> accepted optimized chunk JSON
   -> JSONL indexes
   -> local embeddings
   -> compressed JSON context pack
@@ -36,7 +38,9 @@ python runtime/rag/rag_build.py `
   --clean-output
 ```
 
-このCLIは `normalize`、`chunk`、`index`、`embedding` のstage結果を `rag/retrieval/rag-build-run-latest.json` に保存します。
+このCLIは `normalize`、`chunk`、`ingestion optimization`、`index`、`embedding` のstage結果を `rag/retrieval/rag-build-run-latest.json` に保存します。
+
+RAG吸収最適化を一時的に外す場合だけ `--skip-optimization` を指定します。通常は、`rag/optimized-chunks` に出力された `ACCEPT` 済みchunkだけがindex / embedding対象になります。
 
 `--work-id` を指定した場合は、`work/<work-id>/context/context-manifest.json` に `rag-build-run` を登録します。
 
@@ -58,9 +62,15 @@ python runtime/rag/chunk_documents.py `
   --output-dir rag/chunks `
   --clean-output
 
+python runtime/rag/ingestion_optimizer.py `
+  --chunks-dir rag/chunks `
+  --output-dir rag/optimized-chunks `
+  --evidence-dir rag/evidence/ingestion `
+  --clean-output
+
 python runtime/rag/build_index.py `
   --normalized-dir rag/normalized `
-  --chunks-dir rag/chunks `
+  --chunks-dir rag/optimized-chunks `
   --output-dir rag/indexes
 
 python runtime/rag/embed_chunks.py `

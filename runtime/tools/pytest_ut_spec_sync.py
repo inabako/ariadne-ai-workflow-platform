@@ -110,6 +110,22 @@ def parse_spec_cases(spec_text: str) -> list[SpecCase]:
     return cases
 
 
+def spec_case_dir(spec_path: Path) -> Path:
+    return spec_path.with_name("cases")
+
+
+def spec_part_paths(spec_path: Path) -> list[Path]:
+    paths = [spec_path]
+    case_dir = spec_case_dir(spec_path)
+    if case_dir.exists():
+        paths.extend(sorted(path for path in case_dir.glob("*.md") if path.is_file()))
+    return paths
+
+
+def read_spec_text(spec_path: Path) -> str:
+    return "\n".join(path.read_text(encoding="utf-8-sig") for path in spec_part_paths(spec_path))
+
+
 def split_node(node_id: str) -> tuple[Path, str, str]:
     path_part, _, rest = node_id.partition("::")
     function_part = rest.split("::")[-1]
@@ -288,7 +304,7 @@ def replace_input_sections(spec_text: str, runtime_root: Path) -> tuple[str, int
 
 
 def check_spec(spec_path: Path, runtime_root: Path) -> dict[str, object]:
-    spec_text = spec_path.read_text(encoding="utf-8-sig")
+    spec_text = read_spec_text(spec_path)
     spec_cases = parse_spec_cases(spec_text)
     spec_nodes = [case.node_id for case in spec_cases]
     pytest_nodes = collect_pytest_nodes(runtime_root)
@@ -480,9 +496,12 @@ def main(argv: list[str] | None = None) -> int:
     spec_path = args.spec.resolve()
     runtime_root = args.runtime_root.resolve()
     if args.command == "fix-inputs":
-        spec_text = spec_path.read_text(encoding="utf-8-sig")
-        new_text, replaced = replace_input_sections(spec_text, runtime_root)
-        spec_path.write_text(new_text, encoding="utf-8-sig", newline="\n")
+        replaced = 0
+        for part_path in spec_part_paths(spec_path):
+            spec_text = part_path.read_text(encoding="utf-8-sig")
+            new_text, part_replaced = replace_input_sections(spec_text, runtime_root)
+            part_path.write_text(new_text, encoding="utf-8-sig", newline="\n")
+            replaced += part_replaced
         print(json.dumps({"status": "ok", "updated_input_sections": replaced}, ensure_ascii=False, indent=2))
         return 0
     result = check_spec(spec_path, runtime_root)

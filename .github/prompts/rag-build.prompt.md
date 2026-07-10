@@ -12,9 +12,12 @@ RAG Build Skill を使って、Intent-Driven Robotics AI Workflow の Markdown r
 
 1. `runtime/rag/normalize_documents.py`
 2. `runtime/rag/chunk_documents.py`
-3. `runtime/rag/build_index.py`
-4. `runtime/rag/embed_chunks.py`
-5. 必要に応じて `runtime/rag/jsonize_rag_tree.py`
+3. `runtime/rag/ingestion_optimizer.py`
+4. `runtime/rag/build_index.py`
+5. `runtime/rag/embed_chunks.py`
+6. 必要に応じて `runtime/rag/jsonize_rag_tree.py`
+
+`ingestion_optimizer.py` は、RAG吸収前のchunk候補を `ACCEPT / REWRITE / HUMAN_CHECK / REJECT` に分類し、`rag/evidence/ingestion` にEvidenceを保存します。通常は `ACCEPT` 済みの `rag/optimized-chunks/*.json` だけをindex / embedding対象にしてください。
 
 `rag/corrective-action-report` 配下の Markdown report は、build前に `runtime/rag/standardize_corrective_report_names.py --source-dir rag/corrective-action-report --replace-references` で `YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md` に統一してください。標準は8桁です。
 

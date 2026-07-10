@@ -17,9 +17,13 @@ def make_args(tmp_path: Path, **overrides: object) -> argparse.Namespace:
         "document_type": "corrective-action-report",
         "normalized_dir": "rag/normalized",
         "chunks_dir": "rag/chunks",
+        "optimized_chunks_dir": "rag/optimized-chunks",
         "indexes_dir": "rag/indexes",
         "embeddings_output": "rag/embeddings/chunks-embeddings.jsonl",
         "output": "rag/retrieval/rag-build-run-latest.json",
+        "ingestion_evidence_dir": "rag/evidence/ingestion",
+        "ingestion_policy": "runtime/rag/policies/knowledge-ingestion-policy.json",
+        "skip_optimization": False,
         "project": "ariadne",
         "repository": "ariadne-ai-workflow-platform",
         "branch": "main",
@@ -79,8 +83,21 @@ def test_rag_build_artifact_defaults_and_human_check_reasons(tmp_path: Path) -> 
         rag_build.stage_record("normalize-documents", {"document_count": 2}),
         rag_build.stage_record("chunk-documents", {"chunk_count": 5}),
         rag_build.stage_record(
+            "optimize-ingestion",
+            {
+                "candidate_chunk_count": 5,
+                "accepted_chunk_count": 4,
+                "rewritten_chunk_count": 1,
+                "human_check_required_count": 1,
+                "rejected_chunk_count": 0,
+                "average_optimization_score": 0.86,
+                "evidence_dir": "rag/evidence/ingestion",
+                "ingestion_summary": "rag/evidence/ingestion/ingestion-summary.json",
+            },
+        ),
+        rag_build.stage_record(
             "build-index",
-            {"documents_index": "rag/indexes/documents.jsonl", "chunks_index": "rag/indexes/chunks.jsonl"},
+            {"documents_index": "rag/indexes/documents.jsonl", "chunks_index": "rag/indexes/chunks.jsonl", "chunk_count": 4},
         ),
         rag_build.stage_record("embed-chunks", {"embedding_count": 5}),
     ]
@@ -92,7 +109,12 @@ def test_rag_build_artifact_defaults_and_human_check_reasons(tmp_path: Path) -> 
     assert artifact["inputs"]["standardize_filenames"] is True
     assert artifact["inputs"]["clean_output"] is True
     assert artifact["outputs"]["document_count"] == 2
-    assert artifact["outputs"]["chunk_count"] == 5
+    assert artifact["outputs"]["raw_chunk_count"] == 5
+    assert artifact["outputs"]["chunk_count"] == 4
+    assert artifact["outputs"]["candidate_chunk_count"] == 5
+    assert artifact["outputs"]["accepted_chunk_count"] == 4
+    assert artifact["outputs"]["human_check_required_count"] == 1
+    assert artifact["outputs"]["ingestion_summary"] == "rag/evidence/ingestion/ingestion-summary.json"
     assert artifact["outputs"]["embedding_count"] == 5
     assert artifact["human_check_required"] is True
     assert "clean-output was used" in artifact["human_check_reasons"][0]
@@ -160,9 +182,17 @@ def test_rag_build_run_with_standardize_and_context_registration(monkeypatch, tm
         record_stage("chunk", {"chunk_count": 9}),
     )
     monkeypatch.setattr(
+        rag_build.ingestion_optimizer,
+        "run",
+        record_stage("optimize", {"candidate_chunk_count": 9, "accepted_chunk_count": 8}),
+    )
+    monkeypatch.setattr(
         rag_build.build_index,
         "run",
-        record_stage("index", {"documents_index": "rag/indexes/documents.jsonl", "chunks_index": "rag/indexes/chunks.jsonl"}),
+        record_stage(
+            "index",
+            {"documents_index": "rag/indexes/documents.jsonl", "chunks_index": "rag/indexes/chunks.jsonl", "chunk_count": 8},
+        ),
     )
     monkeypatch.setattr(
         rag_build.embed_chunks,
@@ -182,22 +212,25 @@ def test_rag_build_run_with_standardize_and_context_registration(monkeypatch, tm
 
     assert result["status"] == "completed"
     assert result["document_count"] == 3
-    assert result["chunk_count"] == 9
+    assert result["chunk_count"] == 8
     assert result["embedding_count"] == 9
     assert result["stages"] == [
         "standardize-corrective-report-filenames",
         "normalize-documents",
         "chunk-documents",
+        "optimize-ingestion",
         "build-index",
         "embed-chunks",
     ]
-    assert [name for name, _ in stage_calls] == ["standardize", "normalize", "chunk", "index", "embed"]
+    assert [name for name, _ in stage_calls] == ["standardize", "normalize", "chunk", "optimize", "index", "embed"]
     assert stage_calls[0][1].replace_references is True
     assert stage_calls[0][1].random_length == 7
     assert stage_calls[1][1].clean_output is True
     assert stage_calls[2][1].chunk_size == 500
-    assert stage_calls[4][1].chunks_index.endswith(str(Path("rag/indexes/chunks.jsonl")))
-    assert stage_calls[4][1].dimensions == 64
+    assert stage_calls[3][1].output_dir == "rag/optimized-chunks"
+    assert stage_calls[4][1].chunks_dir == "rag/optimized-chunks"
+    assert stage_calls[5][1].chunks_index.endswith(str(Path("rag/indexes/chunks.jsonl")))
+    assert stage_calls[5][1].dimensions == 64
 
     artifact_path = tmp_path / result["rag_build_run"]
     artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
@@ -225,6 +258,11 @@ def test_rag_build_run_skip_standardize_and_explicit_work_dir(monkeypatch, tmp_p
         lambda args: stage_names.append("chunk") or {"chunk_count": 2},
     )
     monkeypatch.setattr(
+        rag_build.ingestion_optimizer,
+        "run",
+        lambda args: stage_names.append("optimize") or {"candidate_chunk_count": 2, "accepted_chunk_count": 2},
+    )
+    monkeypatch.setattr(
         rag_build.build_index,
         "run",
         lambda args: stage_names.append("index") or {"documents_index": "", "chunks_index": ""},
@@ -247,10 +285,56 @@ def test_rag_build_run_skip_standardize_and_explicit_work_dir(monkeypatch, tmp_p
 
     result = rag_build.run(args)
 
-    assert result["stages"] == ["normalize-documents", "chunk-documents", "build-index", "embed-chunks"]
-    assert stage_names == ["normalize", "chunk", "index", "embed"]
+    assert result["stages"] == ["normalize-documents", "chunk-documents", "optimize-ingestion", "build-index", "embed-chunks"]
+    assert stage_names == ["normalize", "chunk", "optimize", "index", "embed"]
     manifest = json.loads((work_dir / "context" / "context-manifest.json").read_text(encoding="utf-8"))
     assert manifest["work_id"] == "external-work"
+
+
+def test_rag_build_run_can_skip_ingestion_optimization(monkeypatch, tmp_path: Path) -> None:
+    stage_names: list[str] = []
+
+    monkeypatch.setattr(
+        rag_build.normalize_documents,
+        "run",
+        lambda args: stage_names.append("normalize") or {"document_count": 1},
+    )
+    monkeypatch.setattr(
+        rag_build.chunk_documents,
+        "run",
+        lambda args: stage_names.append("chunk") or {"chunk_count": 2},
+    )
+    monkeypatch.setattr(
+        rag_build.ingestion_optimizer,
+        "run",
+        lambda args: (_ for _ in ()).throw(AssertionError("optimization should be skipped")),
+    )
+    monkeypatch.setattr(
+        rag_build.build_index,
+        "run",
+        lambda args: stage_names.append(f"index:{args.chunks_dir}") or {"documents_index": "", "chunks_index": "", "chunk_count": 2},
+    )
+    monkeypatch.setattr(
+        rag_build.embed_chunks,
+        "run",
+        lambda args: stage_names.append("embed") or {"embedding_count": 2},
+    )
+
+    result = rag_build.run(
+        make_args(
+            tmp_path,
+            source_dir="docs",
+            document_type="design-note",
+            skip_standardize=True,
+            skip_optimization=True,
+        )
+    )
+
+    assert result["stages"] == ["normalize-documents", "chunk-documents", "build-index", "embed-chunks"]
+    assert stage_names == ["normalize", "chunk", "index:rag/chunks", "embed"]
+    artifact = json.loads((tmp_path / result["rag_build_run"]).read_text(encoding="utf-8"))
+    assert artifact["outputs"]["chunk_count"] == 2
+    assert artifact["outputs"]["accepted_chunk_count"] == 0
 
 
 def test_rag_build_parser_and_main_paths(monkeypatch, tmp_path: Path, capsys) -> None:

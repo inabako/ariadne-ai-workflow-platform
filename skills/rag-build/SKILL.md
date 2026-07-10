@@ -51,7 +51,10 @@ rag/external-web/architecture
 - `document-type`: default `corrective-action-report`
 - `normalized-dir`: default `rag/normalized`
 - `chunks-dir`: default `rag/chunks`
+- `optimized-chunks-dir`: default `rag/optimized-chunks`
 - `indexes-dir`: default `rag/indexes`
+- `ingestion-evidence-dir`: default `rag/evidence/ingestion`
+- `ingestion-policy`: default `runtime/rag/policies/knowledge-ingestion-policy.json`
 - `embeddings-output`: default `rag/embeddings/chunks-embeddings.jsonl`
 - `jsonized-dir`: default `rag/jsonized`
 
@@ -125,16 +128,29 @@ python runtime/rag/chunk_documents.py `
   --clean-output
 ```
 
-### 3. Build Index
+### 3. Optimize Ingestion
+
+```powershell
+python runtime/rag/ingestion_optimizer.py `
+  --chunks-dir rag/chunks `
+  --output-dir rag/optimized-chunks `
+  --evidence-dir rag/evidence/ingestion `
+  --clean-output
+```
+
+The optimizer evaluates chunk candidates before indexing and embedding.
+It writes `ACCEPT / REWRITE / HUMAN_CHECK / REJECT` evidence and only `ACCEPT` chunks flow into normal index / embedding generation.
+
+### 4. Build Index
 
 ```powershell
 python runtime/rag/build_index.py `
   --normalized-dir rag/normalized `
-  --chunks-dir rag/chunks `
+  --chunks-dir rag/optimized-chunks `
   --output-dir rag/indexes
 ```
 
-### 4. Build Local Embeddings
+### 5. Build Local Embeddings
 
 ```powershell
 python runtime/rag/embed_chunks.py `
@@ -162,6 +178,15 @@ Expected outputs:
 ```text
 rag/normalized/*.json
 rag/chunks/*.json
+rag/optimized-chunks/*.json
+rag/evidence/ingestion/source-manifest.json
+rag/evidence/ingestion/chunk-candidates.jsonl
+rag/evidence/ingestion/optimization-evaluations.jsonl
+rag/evidence/ingestion/accepted-chunks.jsonl
+rag/evidence/ingestion/rewritten-chunks.jsonl
+rag/evidence/ingestion/human-check-required.jsonl
+rag/evidence/ingestion/rejected-chunks.jsonl
+rag/evidence/ingestion/ingestion-summary.json
 rag/indexes/documents.jsonl
 rag/indexes/chunks.jsonl
 rag/embeddings/chunks-embeddings.jsonl
@@ -171,7 +196,7 @@ rag/jsonized/*.json
 ## Workflow
 
 1. Inspect the source report directory.
-2. Run normalize, chunk, build index, and local embeddings in order.
+2. Run normalize, chunk, ingestion optimization, build index, and local embeddings in order.
 3. Stop on the first failed stage and report the failed command.
 4. Summarize document count, chunk count, embedding count, and output paths in Japanese.
 
