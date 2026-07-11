@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-200
+#### RT-UT-CASE-201
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_knowledge_capture.py::test_parser_and_small_helpers
   - inline input: `parsed`, `files`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-201
+#### RT-UT-CASE-202
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_knowledge_capture.py::test_path_file_docs_candidate_and_scaff
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-202
+#### RT-UT-CASE-203
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_knowledge_capture.py::test_latest_issue_title_and_pr_text_hel
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-203
+#### RT-UT-CASE-204
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_knowledge_capture.py::test_context_fallback_modes_and_errors
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-204
+#### RT-UT-CASE-205
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_knowledge_capture.py::test_knowledge_capture_generates_report
   - inline input: `issue`, `manifest`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-205
+#### RT-UT-CASE-206
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_knowledge_capture.py::test_knowledge_capture_dry_run_close_ar
   - inline input: `issue`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-206
+#### RT-UT-CASE-207
 
 - pytest node id:
 

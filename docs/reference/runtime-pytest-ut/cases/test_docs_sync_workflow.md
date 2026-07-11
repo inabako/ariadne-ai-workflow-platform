@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-118
+#### RT-UT-CASE-119
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_docs_sync_workflow.py::test_docs_sync_build_parser_and_name_h
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-119
+#### RT-UT-CASE-120
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_docs_sync_workflow.py::test_register_docs_sync_contexts_regis
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-120
+#### RT-UT-CASE-121
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_docs_sync_workflow.py::test_init_work_creates_contexts_and_re
   - inline input: `agent_context`, `manifest`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-121
+#### RT-UT-CASE-122
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_docs_sync_workflow.py::test_default_analysis_uses_scm_state_a
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-122
+#### RT-UT-CASE-123
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_docs_sync_workflow.py::test_require_docs_sync_scm_state_cover
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-123
+#### RT-UT-CASE-124
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_docs_sync_workflow.py::test_create_analysis_template_with_all
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-124
+#### RT-UT-CASE-125
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_docs_sync_workflow.py::test_create_analysis_template_reports_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-125
+#### RT-UT-CASE-126
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_docs_sync_workflow.py::test_markdown_helpers_and_issue_body_r
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-126
+#### RT-UT-CASE-127
 
 - pytest node id:
 
@@ -161,7 +161,7 @@ runtime/tests/test_docs_sync_workflow.py::test_create_issue_body_writes_markdown
   - inline input: `manifest`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-127
+#### RT-UT-CASE-128
 
 - pytest node id:
 
@@ -178,7 +178,7 @@ runtime/tests/test_docs_sync_workflow.py::test_create_issue_body_reports_missing
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-128
+#### RT-UT-CASE-129
 
 - pytest node id:
 

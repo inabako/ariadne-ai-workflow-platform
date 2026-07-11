@@ -12,6 +12,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.rag import duckdb_store  # noqa: E402
 from runtime.workflow import workflow_doctor  # noqa: E402
 from runtime.workflow import dispatcher_context  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
@@ -929,6 +930,65 @@ def build_parser() -> argparse.ArgumentParser:
     dispatcher_context.add_init_arguments(context_init)
     context_init.add_argument("--json", action="store_true", help="Print result as JSON.")
 
+    knowledge_cmd = sub.add_parser("knowledge", help="Manage generated DuckDB RAG read model.")
+    knowledge_cmd.add_argument("--db", default=str(duckdb_store.DEFAULT_DB_PATH), help="Generated DuckDB file path.")
+    knowledge_sub = knowledge_cmd.add_subparsers(dest="knowledge_command")
+
+    knowledge_init = knowledge_sub.add_parser("init", help="Create generated DuckDB RAG schema.")
+    knowledge_init.add_argument("--json", action="store_true")
+
+    knowledge_migrate = knowledge_sub.add_parser("migrate", help="Register JSON RAG records from a directory.")
+    knowledge_migrate.add_argument("--source", required=True)
+    knowledge_migrate.add_argument("--policy", default=str(duckdb_store.ingestion_optimizer.DEFAULT_POLICY_PATH))
+    knowledge_migrate.add_argument("--error-log", default=str(duckdb_store.DEFAULT_ERROR_LOG))
+    knowledge_migrate.add_argument("--json", action="store_true")
+
+    knowledge_source = knowledge_sub.add_parser("source", help="Manage external RAG source repository clone.")
+    knowledge_source.add_argument("--path", default=str(duckdb_store.DEFAULT_SOURCE_REPO_PATH))
+    knowledge_source.add_argument("--url", default=duckdb_store.DEFAULT_SOURCE_REPO_URL)
+    knowledge_source_sub = knowledge_source.add_subparsers(dest="source_command", required=True)
+    knowledge_source_sub.add_parser("status", help="Inspect local source repository clone.")
+    knowledge_source_clone = knowledge_source_sub.add_parser("clone", help="Clone source repository when missing.")
+    knowledge_source_clone.add_argument("--pull-if-exists", action="store_true")
+    knowledge_source_sub.add_parser("pull", help="Pull source repository clone.")
+    knowledge_source_import = knowledge_source_sub.add_parser("import-local", help="Copy local RAG JSON sources into source repository.")
+    knowledge_source_import.add_argument("--clean", action="store_true")
+    knowledge_source.add_argument("--json", action="store_true")
+
+    knowledge_rebuild = knowledge_sub.add_parser("rebuild", help="Rebuild DuckDB read model from standard RAG JSON sources.")
+    knowledge_rebuild.add_argument("--source", action="append", default=[])
+    knowledge_rebuild.add_argument("--source-repo", default="")
+    knowledge_rebuild.add_argument("--source-repo-url", default=duckdb_store.DEFAULT_SOURCE_REPO_URL)
+    knowledge_rebuild.add_argument("--policy", default=str(duckdb_store.ingestion_optimizer.DEFAULT_POLICY_PATH))
+    knowledge_rebuild.add_argument("--error-log", default=str(duckdb_store.DEFAULT_ERROR_LOG))
+    knowledge_rebuild.add_argument("--reset", action="store_true")
+    knowledge_rebuild.add_argument("--json", action="store_true")
+
+    knowledge_ingest = knowledge_sub.add_parser("ingest", help="Register one JSON RAG record.")
+    knowledge_ingest.add_argument("--file", required=True)
+    knowledge_ingest.add_argument("--policy", default=str(duckdb_store.ingestion_optimizer.DEFAULT_POLICY_PATH))
+    knowledge_ingest.add_argument("--json", action="store_true")
+
+    knowledge_search = knowledge_sub.add_parser("search", help="Search generated DuckDB RAG read model.")
+    duckdb_store.add_search_arguments(knowledge_search)
+    knowledge_search.add_argument("--json", action="store_true")
+
+    knowledge_export = knowledge_sub.add_parser("export-context", help="Export DuckDB RAG search results as context JSON.")
+    duckdb_store.add_search_arguments(knowledge_export)
+    knowledge_export.add_argument("--output", required=True)
+    knowledge_export.add_argument("--max-chars", type=int, default=4000)
+    knowledge_export.add_argument("--json", action="store_true")
+
+    knowledge_verify = knowledge_sub.add_parser("verify", help="Verify DuckDB reference searches and write evidence.")
+    knowledge_verify.add_argument("--query", action="append", default=[])
+    knowledge_verify.add_argument("--min-results", type=int, default=1)
+    knowledge_verify.add_argument("--limit", type=int, default=5)
+    knowledge_verify.add_argument("--output", default=str(duckdb_store.DEFAULT_REFERENCE_CHECK_OUTPUT))
+    knowledge_verify.add_argument("--work-id", default="")
+    knowledge_verify.add_argument("--work-dir", default="")
+    knowledge_verify.add_argument("--source-repo", default="")
+    knowledge_verify.add_argument("--json", action="store_true")
+
     doctor_cmd = sub.add_parser("doctor", help="Run workflow repository health checks.")
     doctor_cmd.add_argument("--json", action="store_true", help="Print doctor result as JSON.")
     doctor_cmd.add_argument("--fail-on-warning", action="store_true", help="Return non-zero when warnings are found.")
@@ -972,6 +1032,7 @@ def format_root_usage_warning(color: bool = False) -> str:
             "  aiwfctl env select web-svg",
             "  aiwfctl env select gui-mode",
             "  aiwfctl context init --work-id issue-123 --workflow /docs-sync",
+            "  aiwfctl knowledge search --query \"PyQt GUI smoke test\"",
             "  aiwfctl doctor",
             "  aiwfctl path check",
             "  aiwfctl path register",
@@ -1006,9 +1067,136 @@ def format_help_usage_warning(color: bool = False) -> str:
             "実行環境を選択する場合:",
             "  aiwfctl env select web-svg",
             "  aiwfctl context init --work-id issue-123 --workflow /docs-sync",
+            "  aiwfctl knowledge search --query \"PyQt GUI smoke test\"",
             "  aiwfctl doctor",
         ]
     ) + "\n"
+
+
+def knowledge_namespace(args: argparse.Namespace, repo_root: Path) -> argparse.Namespace:
+    values = vars(args).copy()
+    values["repo_root"] = str(repo_root)
+    values["command"] = values.pop("knowledge_command", "")
+    return argparse.Namespace(**values)
+
+
+def format_knowledge_usage() -> str:
+    return "\n".join(
+        [
+            "Knowledge Management",
+            "",
+            "Usage:",
+            "  aiwfctl knowledge init",
+            "  aiwfctl knowledge source status",
+            "  aiwfctl knowledge source clone",
+            "  aiwfctl knowledge source pull",
+            "  aiwfctl knowledge source import-local --clean",
+            "  aiwfctl knowledge migrate --source rag/optimized-chunks",
+            "  aiwfctl knowledge rebuild --source-repo work/db/ariadne-knowledge-platform --reset",
+            "  aiwfctl knowledge ingest --file rag/optimized-chunks/<id>.json",
+            "  aiwfctl knowledge search --query \"PyQt GUI smoke test\" --limit 10",
+            "  aiwfctl knowledge export-context --query \"PyQt GUI smoke test\" --output work/<work-id>/context/knowledge.json",
+            "  aiwfctl knowledge verify --query workflow --query runtime --work-dir rag/evidence/duckdb --work-id duckdb-reference-check",
+            "",
+            "DuckDBファイルは生成read modelです。source of truthはfile-based RAG artifactです。",
+            "外部Knowledge正本は ariadne-knowledge-platform を work/db/ariadne-knowledge-platform にcloneして使います。",
+        ]
+    ) + "\n"
+
+
+def format_knowledge_result(result: dict[str, Any]) -> str:
+    artifact_type = result.get("artifact_type", "")
+    if artifact_type == "rag-knowledge-source":
+        source = result.get("source_repository", {}) if isinstance(result.get("source_repository"), dict) else {}
+        return "\n".join(
+            [
+                "Knowledge Source Repository",
+                "",
+                f"Status : {result.get('status', '')}",
+                f"Action : {result.get('action', '')}",
+                f"Path   : {source.get('path', '')}",
+                f"URL    : {source.get('url', '')}",
+                f"Git    : {source.get('is_git_repo', False)}",
+                f"Branch : {source.get('branch', '')}",
+                f"Commit : {source.get('commit', '')}",
+                f"Dirty  : {source.get('dirty', False)}",
+                f"Imported Files : {result.get('imported_file_count', '')}",
+            ]
+        ).rstrip() + "\n"
+    if artifact_type == "rag-duckdb-search-result":
+        lines = [
+            "Knowledge Search",
+            "",
+            f"Status          : {result.get('status', '')}",
+            f"Query           : {result.get('query', '')}",
+            f"Candidate Count : {result.get('candidate_count', 0)}",
+            f"Result Count    : {result.get('result_count', 0)}",
+            "",
+            "Results",
+        ]
+        results = result.get("results", [])
+        if not results:
+            lines.append("  - なし")
+        for item in results:
+            lines.extend(
+                [
+                    f"  - {item.get('knowledge_id', '')}",
+                    f"    title: {item.get('title', '')}",
+                    f"    score: {item.get('final_score', 0)}",
+                    f"    source_path: {item.get('source_path', '')}",
+                ]
+            )
+        return "\n".join(lines).rstrip() + "\n"
+    if artifact_type == "rag-duckdb-context-export":
+        return "\n".join(
+            [
+                "Knowledge Context Export",
+                "",
+                f"Status          : {result.get('status', '')}",
+                f"Output          : {result.get('output', '')}",
+                f"Candidate Count : {result.get('candidate_count', 0)}",
+                f"Result Count    : {result.get('result_count', 0)}",
+            ]
+        ).rstrip() + "\n"
+    if artifact_type in {"rag-duckdb-migration-summary", "rag-duckdb-rebuild-summary"}:
+        return "\n".join(
+            [
+                "Knowledge Rebuild" if artifact_type == "rag-duckdb-rebuild-summary" else "Knowledge Migration",
+                "",
+                f"Status          : {result.get('status', '')}",
+                f"Source          : {result.get('source', '')}",
+                f"Source Repo     : {(result.get('source_repository') or {}).get('path', '') if isinstance(result.get('source_repository'), dict) else ''}",
+                f"Target Files    : {result.get('target_file_count', 0)}",
+                f"Registered      : {result.get('registered_count', 0)}",
+                f"Updated         : {result.get('updated_count', 0)}",
+                f"Skipped         : {result.get('skipped_count', 0)}",
+                f"Failed          : {result.get('failed_count', 0)}",
+                f"Error Log       : {result.get('error_log', '') or 'なし'}",
+            ]
+        ).rstrip() + "\n"
+    if artifact_type == "rag-duckdb-reference-check":
+        lines = [
+            "Knowledge Reference Check",
+            "",
+            f"Status       : {result.get('status', '')}",
+            f"Output       : {result.get('output', '')}",
+            f"Manifest     : {result.get('context_manifest', '') or '未登録'}",
+            f"Query Count  : {result.get('query_count', 0)}",
+            f"Passed       : {result.get('passed_count', 0)}",
+            f"Failed       : {result.get('failed_count', 0)}",
+            "",
+            "Checks",
+        ]
+        for check in result.get("checks", []):
+            lines.extend(
+                [
+                    f"  - {check.get('query', '')}",
+                    f"    status: {check.get('status', '')}",
+                    f"    results: {check.get('result_count', 0)}",
+                ]
+            )
+        return "\n".join(lines).rstrip() + "\n"
+    return json.dumps(result, ensure_ascii=False, indent=2) + "\n"
 
 
 def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
@@ -1085,6 +1273,18 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 lines.extend(f"  - {item}" for item in written)
             return (0 if result.get("status") != "human-check-required" else 2), "\n".join(lines).rstrip() + "\n"
         return 1, f"Unknown context command: {context_command}\n"
+
+    if command == "knowledge":
+        knowledge_command = getattr(args, "knowledge_command", None)
+        if knowledge_command is None:
+            return 1, format_knowledge_usage()
+        try:
+            result = duckdb_store.run(knowledge_namespace(args, repo_root))
+        except Exception as exc:
+            return 1, f"Knowledge command failed: {exc}\n"
+        if getattr(args, "json", False):
+            return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        return 0, format_knowledge_result(result)
 
     if command == "doctor":
         result = workflow_doctor.run(

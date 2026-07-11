@@ -199,14 +199,16 @@ python runtime/workflow/human_gate_policy.py check --gate close-prune --human-ch
 
 詳細は [Human Gate Registry](human-gates.md) を参照します。
 
-## README-only Local Workspace Policy
+## Local Workspace Tracking Policy
 
-GitHubにはworkflow本体と構成説明READMEのみを上げます。
+GitHubにはworkflow本体と、再現に必要なdocs / schema / prompt / testを上げます。
 
 - `work/**/README.md` は追跡対象
 - `work/**` の作業実体は追跡しない
-- `rag/**/README.md` は追跡対象
-- `rag/**` のRAG蓄積物・生成物は追跡しない
+- `work/db/**` はknowledge source cloneなのでAriadne本体では追跡しない
+- `rag/**` はREADMEも含めてAriadne本体では追跡しない
+
+RAG source of truthは、標準では `work/db/ariadne-knowledge-platform` にcloneした `ariadne-knowledge-platform` repository側へ置きます。Ariadne本体側の `rag/` はDuckDB、evidence、retrieval resultなどのlocal生成workspaceです。
 
 確認は次で行います。
 

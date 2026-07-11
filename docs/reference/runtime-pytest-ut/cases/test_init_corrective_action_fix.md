@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-183
+#### RT-UT-CASE-184
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fi
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-184
+#### RT-UT-CASE-185
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fi
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-185
+#### RT-UT-CASE-186
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fi
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-186
+#### RT-UT-CASE-187
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fi
   - inline input: `context`, `manifest`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-187
+#### RT-UT-CASE-188
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_init_corrective_action_fix.py::test_defensive_specimen_init_c
   - inline input: `context`
 - 期待結果: 対象分岐が期待どおり処理され、pytest が成功する。
 
-#### RT-UT-CASE-188
+#### RT-UT-CASE-189
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_init_corrective_action_fix.py::test_defensive_specimen_report
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 対象分岐が期待どおり処理され、pytest が成功する。
 
-#### RT-UT-CASE-189
+#### RT-UT-CASE-190
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fi
   - inline input: `agent`, `artifact_index`, `report_context`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-190
+#### RT-UT-CASE-191
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fi
   - inline input: `artifact_index`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-191
+#### RT-UT-CASE-192
 
 - pytest node id:
 

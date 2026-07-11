@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from runtime.rag import duckdb_store
 from runtime.rag import retrieve_context
 
 
@@ -26,6 +27,14 @@ def make_args(**overrides):
         "source_type": "",
         "category": "",
         "trust_level": "",
+        "backend": "file",
+        "duckdb_path": "rag/duckdb/ariadne-knowledge.duckdb",
+        "semantic_hint": "",
+        "document_type": "",
+        "environment": "",
+        "workflow": "",
+        "min_reliability": None,
+        "min_freshness": None,
         "repo_root": "",
         "write_markdown": False,
     }
@@ -375,6 +384,63 @@ def test_run_hybrid_retrieval_uses_embeddings_and_absolute_output_dir(tmp_path: 
     assert retrieval["embeddings_index_path"] == "rag/embeddings/chunks-embeddings.jsonl"
     assert context_pack["compression"]["embedding_model"] == "local-hash-embedding-v1"
     assert output_dir.exists()
+
+
+def test_run_can_retrieve_from_duckdb_backend(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / ".git").mkdir(parents=True)
+    source = repo / "rag" / "optimized-chunks" / "duckdb.json"
+    source.parent.mkdir(parents=True)
+    source.write_text(
+        json.dumps(
+            {
+                "knowledge_id": "duckdb-knowledge",
+                "title": "DuckDB Knowledge",
+                "content": "DuckDB backend retrieval returns context packs for dispatcher handoff.",
+                "semantic_hint": "duckdb dispatcher context",
+                "category": "runtime",
+                "document_type": "rag-knowledge",
+                "environment": "windows",
+                "workflow": "/rag-build",
+                "metadata": {"status": "approved", "trust_level": "high", "tags": ["duckdb"]},
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    db = repo / "rag" / "duckdb" / "knowledge.duckdb"
+    policy = duckdb_store.ingestion_optimizer.load_policy(
+        Path(__file__).resolve().parents[2],
+        "runtime/rag/policies/knowledge-ingestion-policy.json",
+    )
+    duckdb_store.ingest_file(repo, db, source, policy)
+
+    result = retrieve_context.run(
+        make_args(
+            repo_root=str(repo),
+            backend="duckdb",
+            duckdb_path=str(db),
+            query="DuckDB dispatcher",
+            tag=["duckdb"],
+            category="runtime",
+            document_type="rag-knowledge",
+            environment="windows",
+            workflow="/rag-build",
+            output_dir="rag/retrieval",
+            max_chars=1000,
+            top_k=3,
+        )
+    )
+
+    retrieval_result = json.loads((repo / result["retrieval_result"]).read_text(encoding="utf-8"))
+    context_pack = json.loads((repo / result["context_pack"]).read_text(encoding="utf-8"))
+    assert result["candidate_count"] == 1
+    assert result["selected_chunk_count"] == 1
+    assert retrieval_result["backend"] == "duckdb"
+    assert retrieval_result["duckdb_path"] == "rag/duckdb/knowledge.duckdb"
+    assert retrieval_result["selected_chunks"][0]["chunk_id"] == "duckdb-knowledge"
+    assert context_pack["compression"]["backend"] == "duckdb"
+    assert "DuckDB backend retrieval" in context_pack["context"]
 
 
 def test_run_rejects_non_positive_max_chars(tmp_path: Path) -> None:

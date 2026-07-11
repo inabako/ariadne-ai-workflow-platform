@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-106
+#### RT-UT-CASE-107
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_dispatcher_context.py::test_registry_loaders_and_text_helpers
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-107
+#### RT-UT-CASE-108
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_dispatcher_context.py::test_select_workflow_record_requires_h
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-108
+#### RT-UT-CASE-109
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_dispatcher_context.py::test_select_workflow_record_requires_h
   - inline input: `registry`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-109
+#### RT-UT-CASE-110
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_dispatcher_context.py::test_select_workflow_record_requires_h
   - inline input: `registry`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-110
+#### RT-UT-CASE-111
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_dispatcher_context.py::test_workflow_candidate_boundary_paths
   - inline input: `registry`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-111
+#### RT-UT-CASE-112
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_dispatcher_context.py::test_candidate_branch_edges_cover_no_c
   - inline input: `registry`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-112
+#### RT-UT-CASE-113
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_dispatcher_context.py::test_tool_selection_edges_cover_manual
   - inline input: `registry`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-113
+#### RT-UT-CASE-114
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_dispatcher_context.py::test_tool_candidate_boundary_paths_cov
   - inline input: `registry`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-114
+#### RT-UT-CASE-115
 
 - pytest node id:
 
@@ -161,7 +161,7 @@ runtime/tests/test_dispatcher_context.py::test_context_builders_preserve_existin
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-115
+#### RT-UT-CASE-116
 
 - pytest node id:
 
@@ -178,7 +178,7 @@ runtime/tests/test_dispatcher_context.py::test_run_init_marks_human_check_and_fo
   - inline input: `rewritten`, `plan`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-116
+#### RT-UT-CASE-117
 
 - pytest node id:
 
@@ -195,7 +195,7 @@ runtime/tests/test_dispatcher_context.py::test_parser_and_main_status_paths
   - inline input: `parsed`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-117
+#### RT-UT-CASE-118
 
 - pytest node id:
 

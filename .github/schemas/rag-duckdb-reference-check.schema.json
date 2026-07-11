@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/inabako/ariadne-ai-workflow-platform/schemas/rag-duckdb-reference-check.schema.json",
+  "title": "RAG DuckDB Reference Check",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "status",
+    "generated_at",
+    "db",
+    "output",
+    "query_count",
+    "passed_count",
+    "failed_count",
+    "checks"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "artifact_type": {
+      "const": "rag-duckdb-reference-check"
+    },
+    "status": {
+      "enum": ["completed", "human-check-required"]
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "db": {
+      "type": "string"
+    },
+    "output": {
+      "type": "string"
+    },
+    "query_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "passed_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "failed_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["query", "status", "candidate_count", "result_count", "min_results", "top_results"],
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "enum": ["passed", "failed"]
+          },
+          "candidate_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "result_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "min_results": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "top_results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["knowledge_id", "title", "source_path", "score"],
+              "properties": {
+                "knowledge_id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "source_path": {
+                  "type": "string"
+                },
+                "document_type": {
+                  "type": "string"
+                },
+                "category": {
+                  "type": "string"
+                },
+                "score": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

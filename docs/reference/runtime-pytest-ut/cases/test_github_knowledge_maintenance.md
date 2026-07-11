@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-129
+#### RT-UT-CASE-130
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_build_parser_parses_eve
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-130
+#### RT-UT-CASE-131
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_repository_name_and_def
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-131
+#### RT-UT-CASE-132
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_init_work_rejects_exist
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-132
+#### RT-UT-CASE-133
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_gate_and_tool_selection
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-133
+#### RT-UT-CASE-134
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_register_github_knowled
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-134
+#### RT-UT-CASE-135
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_markdown_helpers_render
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-135
+#### RT-UT-CASE-136
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_load_analysis_reports_m
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-136
+#### RT-UT-CASE-137
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_default_analysis_ignore
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-137
+#### RT-UT-CASE-138
 
 - pytest node id:
 
@@ -161,7 +161,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_require_github_operatio
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-138
+#### RT-UT-CASE-139
 
 - pytest node id:
 
@@ -178,7 +178,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_require_github_operatio
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-139
+#### RT-UT-CASE-140
 
 - pytest node id:
 
@@ -195,7 +195,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_build_repair_sync_and_r
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-140
+#### RT-UT-CASE-141
 
 - pytest node id:
 
@@ -212,7 +212,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_build_sync_plan_renders
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-141
+#### RT-UT-CASE-142
 
 - pytest node id:
 
@@ -229,7 +229,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_repair_plan_writ
   - inline input: `artifact_index`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-142
+#### RT-UT-CASE-143
 
 - pytest node id:
 
@@ -246,7 +246,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_rag_candidate_re
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-143
+#### RT-UT-CASE-144
 
 - pytest node id:
 
@@ -263,7 +263,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_rag_candidate_wr
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-144
+#### RT-UT-CASE-145
 
 - pytest node id:
 
@@ -280,7 +280,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_rag_candidate_de
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-145
+#### RT-UT-CASE-146
 
 - pytest node id:
 
@@ -297,7 +297,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_run_dispatches_commands
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-146
+#### RT-UT-CASE-147
 
 - pytest node id:
 

@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-413
+#### RT-UT-CASE-430
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_scm_runtime.py::test_require_success_raises_with_stderr_detai
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-414
+#### RT-UT-CASE-431
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_scm_runtime.py::test_github_token_git_env_sets_non_interactiv
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-415
+#### RT-UT-CASE-432
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_scm_runtime.py::test_scm_utils_dry_run_posix_askpass_and_git_
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-416
+#### RT-UT-CASE-433
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_scm_runtime.py::test_scm_utils_posix_askpass_branch
   - inline input: `writes`, `chmods`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-417
+#### RT-UT-CASE-434
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_scm_runtime.py::test_prepare_repository_dry_run_writes_scm_st
   - inline input: `args`, `manifest`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-418
+#### RT-UT-CASE-435
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_scm_runtime.py::test_prepare_repository_parser_main_script_an
   - inline input: `parsed`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-419
+#### RT-UT-CASE-436
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_scm_runtime.py::test_prepare_repository_uses_requirement_conf
   - inline input: `args`, `artifact_index`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-420
+#### RT-UT-CASE-437
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_scm_runtime.py::test_prepare_repository_requires_repository_w
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-421
+#### RT-UT-CASE-438
 
 - pytest node id:
 
@@ -161,7 +161,7 @@ runtime/tests/test_scm_runtime.py::test_prepare_repository_rejects_existing_non_
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-422
+#### RT-UT-CASE-439
 
 - pytest node id:
 
@@ -178,7 +178,7 @@ runtime/tests/test_scm_runtime.py::test_prepare_repository_existing_git_repo_fet
   - inline input: `calls`, `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-423
+#### RT-UT-CASE-440
 
 - pytest node id:
 
@@ -195,7 +195,7 @@ runtime/tests/test_scm_runtime.py::test_prepare_repository_clone_repository_invo
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-424
+#### RT-UT-CASE-441
 
 - pytest node id:
 
@@ -212,7 +212,7 @@ runtime/tests/test_scm_runtime.py::test_prepare_repository_clone_dry_run_and_no_
   - inline input: `calls`, `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-425
+#### RT-UT-CASE-442
 
 - pytest node id:
 
@@ -229,7 +229,7 @@ runtime/tests/test_scm_runtime.py::test_prepare_support_repository_dry_run_write
   - inline input: `args`, `support_state`, `artifact_index`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-426
+#### RT-UT-CASE-443
 
 - pytest node id:
 
@@ -246,7 +246,7 @@ runtime/tests/test_scm_runtime.py::test_prepare_support_repository_replaces_exis
   - inline input: `args`, `support_state`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-427
+#### RT-UT-CASE-444
 
 - pytest node id:
 
@@ -263,7 +263,7 @@ runtime/tests/test_scm_runtime.py::test_prepare_support_repository_rejects_exist
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-428
+#### RT-UT-CASE-445
 
 - pytest node id:
 
@@ -280,7 +280,7 @@ runtime/tests/test_scm_runtime.py::test_prepare_support_repository_updates_exist
   - inline input: `calls`, `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-429
+#### RT-UT-CASE-446
 
 - pytest node id:
 
@@ -297,7 +297,7 @@ runtime/tests/test_scm_runtime.py::test_prepare_support_repository_parser_clone_
   - inline input: `parsed`, `clone_calls`, `update_calls`, `update_args`, `dry_existing_args`, `missing_args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-430
+#### RT-UT-CASE-447
 
 - pytest node id:
 
@@ -314,7 +314,7 @@ runtime/tests/test_scm_runtime.py::test_create_issue_branch_dry_run_records_remo
   - inline input: `args`, `state`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-431
+#### RT-UT-CASE-448
 
 - pytest node id:
 
@@ -331,7 +331,7 @@ runtime/tests/test_scm_runtime.py::test_create_issue_branch_clone_issue_branch_u
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-432
+#### RT-UT-CASE-449
 
 - pytest node id:
 
@@ -348,7 +348,7 @@ runtime/tests/test_scm_runtime.py::test_create_issue_branch_checkout_existing_re
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-433
+#### RT-UT-CASE-450
 
 - pytest node id:
 
@@ -365,7 +365,7 @@ runtime/tests/test_scm_runtime.py::test_create_issue_branch_local_only_requires_
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-434
+#### RT-UT-CASE-451
 
 - pytest node id:
 
@@ -382,7 +382,7 @@ runtime/tests/test_scm_runtime.py::test_create_issue_branch_local_only_switches_
   - inline input: `calls`, `args`, `state`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-435
+#### RT-UT-CASE-452
 
 - pytest node id:
 
@@ -399,7 +399,7 @@ runtime/tests/test_scm_runtime.py::test_defensive_specimen_create_issue_branch_l
   - inline input: `calls`
 - 期待結果: 対象分岐が期待どおり処理され、pytest が成功する。
 
-#### RT-UT-CASE-436
+#### RT-UT-CASE-453
 
 - pytest node id:
 
@@ -416,7 +416,7 @@ runtime/tests/test_scm_runtime.py::test_create_issue_branch_local_only_creates_m
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-437
+#### RT-UT-CASE-454
 
 - pytest node id:
 
@@ -433,7 +433,7 @@ runtime/tests/test_scm_runtime.py::test_create_issue_branch_remote_branch_ref_th
   - inline input: `clone_calls`, `args`, `state`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-438
+#### RT-UT-CASE-455
 
 - pytest node id:
 
@@ -450,7 +450,7 @@ runtime/tests/test_scm_runtime.py::test_create_issue_branch_remote_dry_run_fills
   - inline input: `state`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-439
+#### RT-UT-CASE-456
 
 - pytest node id:
 
@@ -467,7 +467,7 @@ runtime/tests/test_scm_runtime.py::test_create_issue_branch_remote_linked_branch
   - inline input: `checkout_calls`, `args`, `state`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-440
+#### RT-UT-CASE-457
 
 - pytest node id:
 
@@ -484,7 +484,7 @@ runtime/tests/test_scm_runtime.py::test_create_issue_branch_requires_github_repo
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-441
+#### RT-UT-CASE-458
 
 - pytest node id:
 
@@ -501,7 +501,7 @@ runtime/tests/test_scm_runtime.py::test_create_issue_branch_main_prints_json
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-442
+#### RT-UT-CASE-459
 
 - pytest node id:
 
@@ -518,7 +518,7 @@ runtime/tests/test_scm_runtime.py::test_push_branch_dry_run_refuses_non_issue_br
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-443
+#### RT-UT-CASE-460
 
 - pytest node id:
 
@@ -535,7 +535,7 @@ runtime/tests/test_scm_runtime.py::test_push_branch_requires_existing_source_rep
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-444
+#### RT-UT-CASE-461
 
 - pytest node id:
 
@@ -552,7 +552,7 @@ runtime/tests/test_scm_runtime.py::test_push_branch_refuses_workflow_repository_
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-445
+#### RT-UT-CASE-462
 
 - pytest node id:
 
@@ -569,7 +569,7 @@ runtime/tests/test_scm_runtime.py::test_push_branch_dry_run_writes_push_record_f
   - inline input: `args`, `state`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-446
+#### RT-UT-CASE-463
 
 - pytest node id:
 
@@ -586,7 +586,7 @@ runtime/tests/test_scm_runtime.py::test_push_branch_uses_current_branch_when_sta
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-447
+#### RT-UT-CASE-464
 
 - pytest node id:
 
@@ -603,7 +603,7 @@ runtime/tests/test_scm_runtime.py::test_push_branch_non_dry_run_uses_token_env_a
   - inline input: `calls`, `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-448
+#### RT-UT-CASE-465
 
 - pytest node id:
 
@@ -620,7 +620,7 @@ runtime/tests/test_scm_runtime.py::test_push_branch_main_prints_json
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-449
+#### RT-UT-CASE-466
 
 - pytest node id:
 
@@ -637,7 +637,7 @@ runtime/tests/test_scm_runtime.py::test_commit_changes_rejects_non_semantic_mess
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-450
+#### RT-UT-CASE-467
 
 - pytest node id:
 
@@ -654,7 +654,7 @@ runtime/tests/test_scm_runtime.py::test_commit_changes_parser_main_script_and_pl
   - inline input: `parsed`, `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-451
+#### RT-UT-CASE-468
 
 - pytest node id:
 
@@ -671,7 +671,7 @@ runtime/tests/test_scm_runtime.py::test_commit_changes_dry_run_records_status_wi
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-452
+#### RT-UT-CASE-469
 
 - pytest node id:
 
@@ -688,7 +688,7 @@ runtime/tests/test_scm_runtime.py::test_commit_changes_missing_source_dir_is_rep
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-453
+#### RT-UT-CASE-470
 
 - pytest node id:
 
@@ -705,7 +705,7 @@ runtime/tests/test_scm_runtime.py::test_commit_changes_requires_changes_unless_a
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-454
+#### RT-UT-CASE-471
 
 - pytest node id:
 
@@ -722,7 +722,7 @@ runtime/tests/test_scm_runtime.py::test_commit_changes_non_dry_run_allows_empty_
   - inline input: `calls`, `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-455
+#### RT-UT-CASE-472
 
 - pytest node id:
 
@@ -739,7 +739,7 @@ runtime/tests/test_scm_runtime.py::test_bootstrap_repository_requires_human_appr
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-456
+#### RT-UT-CASE-473
 
 - pytest node id:
 
@@ -756,7 +756,7 @@ runtime/tests/test_scm_runtime.py::test_bootstrap_repository_rejects_non_semanti
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-457
+#### RT-UT-CASE-474
 
 - pytest node id:
 
@@ -773,7 +773,7 @@ runtime/tests/test_scm_runtime.py::test_bootstrap_repository_parser_main_and_scr
   - inline input: `parsed`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-458
+#### RT-UT-CASE-475
 
 - pytest node id:
 
@@ -790,7 +790,7 @@ runtime/tests/test_scm_runtime.py::test_bootstrap_repository_requires_existing_w
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-459
+#### RT-UT-CASE-476
 
 - pytest node id:
 
@@ -807,7 +807,7 @@ runtime/tests/test_scm_runtime.py::test_bootstrap_repository_dry_run_uses_scm_st
   - inline input: `args`, `state`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-460
+#### RT-UT-CASE-477
 
 - pytest node id:
 
@@ -824,7 +824,7 @@ runtime/tests/test_scm_runtime.py::test_bootstrap_repository_rejects_workflow_re
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-461
+#### RT-UT-CASE-478
 
 - pytest node id:
 
@@ -841,7 +841,7 @@ runtime/tests/test_scm_runtime.py::test_bootstrap_repository_requires_github_rep
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-462
+#### RT-UT-CASE-479
 
 - pytest node id:
 
@@ -858,7 +858,7 @@ runtime/tests/test_scm_runtime.py::test_bootstrap_repository_set_remote_adds_or_
   - inline input: `calls`, `get_url_returncode`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-463
+#### RT-UT-CASE-480
 
 - pytest node id:
 
@@ -875,7 +875,7 @@ runtime/tests/test_scm_runtime.py::test_bootstrap_repository_non_dry_run_commits
   - inline input: `calls`, `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-464
+#### RT-UT-CASE-481
 
 - pytest node id:
 
@@ -892,7 +892,7 @@ runtime/tests/test_scm_runtime.py::test_bootstrap_repository_non_dry_run_skips_c
   - inline input: `calls`, `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-465
+#### RT-UT-CASE-482
 
 - pytest node id:
 

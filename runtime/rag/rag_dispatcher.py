@@ -55,6 +55,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--trust-level", default="", help="Optional trust_level filter.")
     parser.add_argument("--chunks-index", default="rag/indexes/chunks.jsonl")
     parser.add_argument("--embeddings-index", default="rag/embeddings/chunks-embeddings.jsonl")
+    parser.add_argument("--retrieval-backend", default="file", choices=["file", "duckdb"])
+    parser.add_argument("--duckdb-path", default="rag/duckdb/ariadne-knowledge.duckdb")
+    parser.add_argument("--semantic-hint", default="")
+    parser.add_argument("--document-type", default="")
+    parser.add_argument("--environment", default="")
+    parser.add_argument("--knowledge-workflow", default="", help="Optional workflow filter for DuckDB knowledge search.")
+    parser.add_argument("--min-reliability", type=float, default=None)
+    parser.add_argument("--min-freshness", type=float, default=None)
     parser.add_argument("--output-dir", default="rag/retrieval")
     parser.add_argument("--search-mode", default="hybrid", choices=["keyword", "semantic", "hybrid"])
     parser.add_argument("--top-k", type=int, default=5)
@@ -186,6 +194,17 @@ def base_filters_from_args(args: argparse.Namespace) -> dict[str, Any]:
         "category": args.category,
         "trust_level": args.trust_level,
     }
+    optional_filters = {
+        "semantic_hint": getattr(args, "semantic_hint", ""),
+        "document_type": getattr(args, "document_type", ""),
+        "environment": getattr(args, "environment", ""),
+        "workflow": getattr(args, "knowledge_workflow", ""),
+        "min_reliability": getattr(args, "min_reliability", None),
+        "min_freshness": getattr(args, "min_freshness", None),
+    }
+    for key, value in optional_filters.items():
+        if value not in ("", None, []):
+            filters[key] = value
     return filters
 
 
@@ -284,6 +303,9 @@ def normalize_plan_query_items(plan: dict[str, Any], args: argparse.Namespace) -
         "category": metadata.get("category", ""),
         "trust_level": metadata.get("trust_level", ""),
     }
+    for key in ["semantic_hint", "document_type", "environment", "workflow", "min_reliability", "min_freshness"]:
+        if metadata.get(key) not in ("", None, []):
+            base_filters[key] = metadata.get(key)
     query_items: list[dict[str, Any]] = []
     for item in plan.get("queries", []):
         if isinstance(item, str):
@@ -446,6 +468,8 @@ def run_command(command: list[str], cwd: Path) -> dict[str, Any]:
 
 
 def ensure_indexes(args: argparse.Namespace, repo_root: Path) -> None:
+    if getattr(args, "retrieval_backend", "file") == "duckdb":
+        return
     chunks_index = resolve_path(repo_root, args.chunks_index)
     embeddings_index = resolve_path(repo_root, args.embeddings_index)
     missing = [path for path in [chunks_index, embeddings_index] if not path.exists()]
@@ -513,6 +537,10 @@ def retrieval_command(args: argparse.Namespace, query_item: dict[str, Any]) -> l
         args.chunks_index,
         "--embeddings-index",
         args.embeddings_index,
+        "--backend",
+        getattr(args, "retrieval_backend", "file"),
+        "--duckdb-path",
+        getattr(args, "duckdb_path", "rag/duckdb/ariadne-knowledge.duckdb"),
         "--output-dir",
         args.output_dir,
         "--search-mode",
@@ -530,6 +558,17 @@ def retrieval_command(args: argparse.Namespace, query_item: dict[str, Any]) -> l
         value = filters.get(option, getattr(args, option))
         if value:
             command.extend([f"--{option.replace('_', '-')}", value])
+    for option in ["semantic_hint", "document_type", "environment"]:
+        value = filters.get(option, getattr(args, option))
+        if value:
+            command.extend([f"--{option.replace('_', '-')}", str(value)])
+    workflow_value = filters.get("workflow", getattr(args, "knowledge_workflow", ""))
+    if workflow_value:
+        command.extend(["--workflow", str(workflow_value)])
+    for option in ["min_reliability", "min_freshness"]:
+        value = filters.get(option, getattr(args, option))
+        if value is not None:
+            command.extend([f"--{option.replace('_', '-')}", str(value)])
     tags = filters.get("tags", args.tag)
     for tag in tags if isinstance(tags, list) else [tags]:
         command.extend(["--tag", tag])

@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-306
+#### RT-UT-CASE-322
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_accepts_
   - inline input: `optimized`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-307
+#### RT-UT-CASE-323
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_rewrites
   - inline input: `rewritten_rows`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-308
+#### RT-UT-CASE-324
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_routes_g
   - inline input: `human_rows`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-309
+#### RT-UT-CASE-325
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_rejects_
   - inline input: `content`, `rejected`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-310
+#### RT-UT-CASE-326
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_helpers_
   - inline input: `parsed`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-311
+#### RT-UT-CASE-327
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_missing_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-312
+#### RT-UT-CASE-328
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_scoring_
   - inline input: `empty_chunk`, `heading_chunk`, `low_trust_chunk`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-313
+#### RT-UT-CASE-329
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_rewrite_
   - inline input: `duplicate_text`, `rewrite_policy`, `chunk`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-314
+#### RT-UT-CASE-330
 
 - pytest node id:
 

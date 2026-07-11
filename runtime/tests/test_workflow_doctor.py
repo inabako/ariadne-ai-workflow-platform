@@ -38,7 +38,7 @@ def test_run_git_raises_for_unexpected_returncode(monkeypatch, tmp_path: Path) -
         raise AssertionError("RuntimeError was not raised")
 
 
-def test_tracked_policy_violations_allows_only_readme_under_work_and_rag(monkeypatch) -> None:
+def test_tracked_policy_violations_allows_work_readme_but_blocks_rag_files(monkeypatch) -> None:
     monkeypatch.setattr(
         workflow_doctor,
         "run_git",
@@ -53,7 +53,7 @@ def test_tracked_policy_violations_allows_only_readme_under_work_and_rag(monkeyp
 
     violations = workflow_doctor.tracked_policy_violations(Path("repo"))
 
-    assert violations == ["work/issue-1/context/state.json", "rag/chunks/chunks.jsonl"]
+    assert violations == ["work/issue-1/context/state.json", "rag/README.md", "rag/chunks/chunks.jsonl"]
 
 
 def test_missing_required_files_reports_core_runtime_assets(tmp_path: Path) -> None:
@@ -201,6 +201,7 @@ def test_workflow_doctor_fail_on_warning_turns_warning_into_fail(monkeypatch, tm
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "duckdb_read_model_findings", lambda repo_root: [])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=True)
 
     result = workflow_doctor.run(args)
@@ -220,19 +221,25 @@ def test_workflow_doctor_run_reports_all_warning_types(monkeypatch, tmp_path: Pa
     )
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: ["work/close/improvement/issue-1"])
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [".vscode/settings.json:files.encoding"])
+    monkeypatch.setattr(
+        workflow_doctor,
+        "duckdb_read_model_findings",
+        lambda repo_root: ["missing:rag/duckdb/ariadne-knowledge.duckdb"],
+    )
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: ["missing: runtime/tests/test_new.py::test_new"])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=False)
 
     result = workflow_doctor.run(args)
 
     assert result["status"] == "warning"
-    assert result["warning_count"] == 6
+    assert result["warning_count"] == 7
     assert [warning["id"] for warning in result["warnings"]] == [
         "tracked-local-workspace-files",
         "missing-required-files",
         "human-gate-registry-responsibility-boundary",
         "incomplete-close-archive",
         "vscode-utf8-first",
+        "rag-duckdb-read-model-missing",
         "pytest-ut-spec-sync",
     ]
 
@@ -244,6 +251,7 @@ def test_workflow_doctor_run_passes_without_warnings(monkeypatch, tmp_path: Path
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "duckdb_read_model_findings", lambda repo_root: [])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=True)
 
     result = workflow_doctor.run(args)
@@ -258,6 +266,7 @@ def test_workflow_doctor_main_prints_pass_json(monkeypatch, tmp_path: Path, caps
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "duckdb_read_model_findings", lambda repo_root: [])
 
     code = workflow_doctor.main(["--repo-root", str(tmp_path)])
 
@@ -273,6 +282,7 @@ def test_workflow_doctor_main_returns_one_on_fail_on_warning(monkeypatch, tmp_pa
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "duckdb_read_model_findings", lambda repo_root: [])
 
     code = workflow_doctor.main(["--repo-root", str(tmp_path), "--fail-on-warning"])
 
@@ -313,6 +323,7 @@ def test_workflow_doctor_ut_spec_sync_findings_and_skip(monkeypatch, tmp_path: P
     monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "duckdb_read_model_findings", lambda repo_root: [])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=True, skip_ut_spec_sync=True)
     assert workflow_doctor.run(args)["status"] == "pass"
 

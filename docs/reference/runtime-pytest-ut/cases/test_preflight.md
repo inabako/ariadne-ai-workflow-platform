@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-224
+#### RT-UT-CASE-225
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_preflight.py::test_docker_compose_check_reports_missing_docke
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-225
+#### RT-UT-CASE-226
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_preflight.py::test_basic_checks_report_detected_state
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-226
+#### RT-UT-CASE-227
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_preflight.py::test_python_module_check_uses_current_interpret
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-227
+#### RT-UT-CASE-228
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_preflight.py::test_docker_compose_check_uses_compose_version
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-228
+#### RT-UT-CASE-229
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_preflight.py::test_docker_compose_check_reports_compose_error
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-229
+#### RT-UT-CASE-230
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_preflight.py::test_localty_protocol_check_uses_msys2_python_w
   - inline input: `calls`, `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-230
+#### RT-UT-CASE-231
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_preflight.py::test_localty_protocol_check_uses_fallback_repos
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-231
+#### RT-UT-CASE-232
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_preflight.py::test_localty_protocol_check_reports_missing_wit
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-232
+#### RT-UT-CASE-233
 
 - pytest node id:
 
@@ -161,7 +161,7 @@ runtime/tests/test_preflight.py::test_localty_protocol_check_reports_missing_wit
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-233
+#### RT-UT-CASE-234
 
 - pytest node id:
 
@@ -178,7 +178,7 @@ runtime/tests/test_preflight.py::test_msys2_package_check_missing_bash_and_succe
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-234
+#### RT-UT-CASE-235
 
 - pytest node id:
 
@@ -195,7 +195,7 @@ runtime/tests/test_preflight.py::test_docker_compose_profile_declares_required_d
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-235
+#### RT-UT-CASE-236
 
 - pytest node id:
 
@@ -212,7 +212,7 @@ runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-236
+#### RT-UT-CASE-237
 
 - pytest node id:
 
@@ -229,7 +229,7 @@ runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-237
+#### RT-UT-CASE-238
 
 - pytest node id:
 
@@ -246,7 +246,7 @@ runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-238
+#### RT-UT-CASE-239
 
 - pytest node id:
 
@@ -263,7 +263,7 @@ runtime/tests/test_preflight.py::test_build_checks_localty_gui_and_profiles_with
   - inline input: `gui_args`, `localty_args`, `vscode_args`, `web_args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-239
+#### RT-UT-CASE-240
 
 - pytest node id:
 
@@ -280,7 +280,7 @@ runtime/tests/test_preflight.py::test_install_requires_human_approval_before_run
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-240
+#### RT-UT-CASE-241
 
 - pytest node id:
 
@@ -297,7 +297,7 @@ runtime/tests/test_preflight.py::test_install_missing_runs_required_commands_and
   - inline input: `calls`, `checks`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-241
+#### RT-UT-CASE-242
 
 - pytest node id:
 
@@ -314,7 +314,7 @@ runtime/tests/test_preflight.py::test_install_missing_breaks_without_fallback_or
   - inline input: `calls`, `checks`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-242
+#### RT-UT-CASE-243
 
 - pytest node id:
 
@@ -331,7 +331,7 @@ runtime/tests/test_preflight.py::test_install_missing_runs_msys2_package_with_ba
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-243
+#### RT-UT-CASE-244
 
 - pytest node id:
 
@@ -348,7 +348,7 @@ runtime/tests/test_preflight.py::test_markdown_report_includes_fallback_command
   - inline input: `result`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-244
+#### RT-UT-CASE-245
 
 - pytest node id:
 
@@ -365,7 +365,7 @@ runtime/tests/test_preflight.py::test_markdown_report_includes_missing_optional_
   - inline input: `result`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-245
+#### RT-UT-CASE-246
 
 - pytest node id:
 
@@ -382,7 +382,7 @@ runtime/tests/test_preflight.py::test_markdown_report_iterates_multiple_required
   - inline input: `result`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-246
+#### RT-UT-CASE-247
 
 - pytest node id:
 
@@ -399,7 +399,7 @@ runtime/tests/test_preflight.py::test_markdown_report_reports_none_when_all_chec
   - inline input: `result`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-247
+#### RT-UT-CASE-248
 
 - pytest node id:
 
@@ -416,7 +416,7 @@ runtime/tests/test_preflight.py::test_write_reports_creates_json_and_markdown
   - inline input: `result`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-248
+#### RT-UT-CASE-249
 
 - pytest node id:
 
@@ -433,7 +433,7 @@ runtime/tests/test_preflight.py::test_main_writes_report_and_returns_ready
   - inline input: `output`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-249
+#### RT-UT-CASE-250
 
 - pytest node id:
 
@@ -450,7 +450,7 @@ runtime/tests/test_preflight.py::test_main_returns_two_when_required_check_missi
   - inline input: `output`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-250
+#### RT-UT-CASE-251
 
 - pytest node id:
 

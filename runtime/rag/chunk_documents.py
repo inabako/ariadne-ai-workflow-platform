@@ -12,6 +12,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, write_json  # noqa: E402
+from runtime.rag.cleanup_guard import assert_safe_clean_output_target  # noqa: E402
 
 
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
@@ -125,6 +126,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     input_dir = (repo_root / args.input_dir).resolve() if not Path(args.input_dir).is_absolute() else Path(args.input_dir)
     output_dir = (repo_root / args.output_dir).resolve() if not Path(args.output_dir).is_absolute() else Path(args.output_dir)
+    if args.clean_output:
+        assert_safe_clean_output_target(repo_root, output_dir)
     if args.clean_output and output_dir.exists():
         for path in output_dir.glob("*.json"):
             path.unlink()

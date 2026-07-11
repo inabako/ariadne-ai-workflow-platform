@@ -284,6 +284,11 @@ def test_ingestion_optimizer_clean_output_empty_run_and_invalid_chunk_specimens(
     assert not stale_chunk.exists()
     assert stale_evidence.read_text(encoding="utf-8") == ""
 
+    protected_duckdb = repo / "rag" / "duckdb"
+    protected_duckdb.mkdir(parents=True)
+    with pytest.raises(ValueError, match="Refusing to clean protected RAG path"):
+        ingestion_optimizer.run(make_args(repo, output_dir="rag/duckdb", clean_output=True))
+
     invalid_direct = chunks_dir / "invalid-direct.json"
     invalid_direct.write_text("[]", encoding="utf-8")
     with pytest.raises(ValueError, match="Invalid RAG chunk document"):

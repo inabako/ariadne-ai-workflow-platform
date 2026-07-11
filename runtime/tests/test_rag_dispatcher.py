@@ -52,6 +52,14 @@ def make_args(**overrides) -> argparse.Namespace:
         "trust_level": "",
         "chunks_index": "rag/indexes/chunks.jsonl",
         "embeddings_index": "rag/embeddings/chunks-embeddings.jsonl",
+        "retrieval_backend": "file",
+        "duckdb_path": "rag/duckdb/ariadne-knowledge.duckdb",
+        "semantic_hint": "",
+        "document_type": "",
+        "environment": "",
+        "knowledge_workflow": "",
+        "min_reliability": None,
+        "min_freshness": None,
         "output_dir": "rag/retrieval",
         "search_mode": "hybrid",
         "top_k": 5,
@@ -157,6 +165,52 @@ def test_dispatcher_planning_helpers_cover_context_and_explicit_paths(tmp_path: 
 
     no_optional_context = rag_dispatcher.collect_planning_context(make_args(task="", context_file=[], work_dir=""), repo)
     assert no_optional_context == ""
+
+
+def test_dispatcher_duckdb_backend_command_and_index_gate(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    args = make_args(
+        retrieval_backend="duckdb",
+        duckdb_path="rag/duckdb/knowledge.duckdb",
+        semantic_hint="dispatcher context",
+        document_type="rag-knowledge",
+        environment="windows",
+        knowledge_workflow="/rag-build",
+        min_reliability=0.6,
+        min_freshness=0.5,
+        tag=["duckdb"],
+        category="runtime",
+        python="python",
+    )
+    query_item = {
+        "query": "DuckDB dispatcher",
+        "purpose": "duckdb retrieval",
+        "search_mode": "keyword",
+        "filters": {
+            "tags": ["duckdb"],
+            "category": "runtime",
+            "semantic_hint": "dispatcher context",
+            "document_type": "rag-knowledge",
+            "environment": "windows",
+            "workflow": "/rag-build",
+            "min_reliability": 0.6,
+            "min_freshness": 0.5,
+        },
+    }
+
+    rag_dispatcher.ensure_indexes(args, repo)
+    command = rag_dispatcher.retrieval_command(args, query_item)
+
+    assert "--backend" in command
+    assert command[command.index("--backend") + 1] == "duckdb"
+    assert command[command.index("--duckdb-path") + 1] == "rag/duckdb/knowledge.duckdb"
+    assert "--semantic-hint" in command
+    assert "--document-type" in command
+    assert "--environment" in command
+    assert "--workflow" in command
+    assert "--min-reliability" in command
+    assert "--min-freshness" in command
 
 
 def test_dispatcher_execution_plan_and_plan_normalization_paths(tmp_path: Path) -> None:

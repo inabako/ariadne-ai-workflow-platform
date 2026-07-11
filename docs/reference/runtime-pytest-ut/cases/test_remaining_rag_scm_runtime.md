@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-380
+#### RT-UT-CASE-397
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_remaining_rag_scm_runtime.py::test_jsonize_rag_tree_should_co
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-381
+#### RT-UT-CASE-398
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_remaining_rag_scm_runtime.py::test_jsonize_rag_tree_reads_jso
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-382
+#### RT-UT-CASE-399
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_remaining_rag_scm_runtime.py::test_jsonize_rag_tree_run_conve
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-383
+#### RT-UT-CASE-400
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_remaining_rag_scm_runtime.py::test_jsonize_rag_tree_delete_so
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-384
+#### RT-UT-CASE-401
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_remaining_rag_scm_runtime.py::test_jsonize_rag_tree_parser_pa
   - inline input: `parsed`, `source_format`, `payload`, `text`, `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-385
+#### RT-UT-CASE-402
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_remaining_rag_scm_runtime.py::test_compare_requirements_safe_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-386
+#### RT-UT-CASE-403
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_remaining_rag_scm_runtime.py::test_compare_requirements_parse
   - inline input: `parsed`, `markdown`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-387
+#### RT-UT-CASE-404
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_remaining_rag_scm_runtime.py::test_compare_requirements_first
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-388
+#### RT-UT-CASE-405
 
 - pytest node id:
 
@@ -161,7 +161,7 @@ runtime/tests/test_remaining_rag_scm_runtime.py::test_compare_requirements_write
   - inline input: `args`, `json_report`, `markdown`, `artifact_index`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-389
+#### RT-UT-CASE-406
 
 - pytest node id:
 

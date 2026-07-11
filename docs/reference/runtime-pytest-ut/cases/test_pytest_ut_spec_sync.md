@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-251
+#### RT-UT-CASE-252
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_normalize_collected_node_and_par
   - inline input: `text`
 - 期待結果: 該当caseがpassし、UT仕様書とpytest実体の同期検査、入力値生成、Context First manifest登録が仕様どおりに確認される。
 
-#### RT-UT-CASE-252
+#### RT-UT-CASE-253
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_defensive_specimen_collect_pytes
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and the unusual or defensive runtime path remains documented as an intentional specimen.
 
-#### RT-UT-CASE-253
+#### RT-UT-CASE-254
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_defensive_specimen_script_path_l
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and the unusual or defensive runtime path remains documented as an intentional specimen.
 
-#### RT-UT-CASE-254
+#### RT-UT-CASE-255
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_defensive_specimen_parse_spec_cl
   - inline input: `text`
 - 期待結果: case passes and the unusual or defensive runtime path remains documented as an intentional specimen.
 
-#### RT-UT-CASE-255
+#### RT-UT-CASE-256
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_defensive_specimen_ast_decorator
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and the unusual or defensive runtime path remains documented as an intentional specimen.
 
-#### RT-UT-CASE-256
+#### RT-UT-CASE-257
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_defensive_specimen_ast_input_hel
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and the unusual or defensive runtime path remains documented as an intentional specimen.
 
-#### RT-UT-CASE-257
+#### RT-UT-CASE-258
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_defensive_specimen_function_info
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and the unusual or defensive runtime path remains documented as an intentional specimen.
 
-#### RT-UT-CASE-258
+#### RT-UT-CASE-259
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_input_lines_include_source_fixtu
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、UT仕様書とpytest実体の同期検査、入力値生成、Context First manifest登録が仕様どおりに確認される。
 
-#### RT-UT-CASE-259
+#### RT-UT-CASE-260
 
 - pytest node id:
 
@@ -161,7 +161,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_replace_input_sections_preserves
   - inline input: `spec`
 - 期待結果: 該当caseがpassし、UT仕様書とpytest実体の同期検査、入力値生成、Context First manifest登録が仕様どおりに確認される。
 
-#### RT-UT-CASE-260
+#### RT-UT-CASE-261
 
 - pytest node id:
 
@@ -178,7 +178,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_defensive_specimen_replace_input
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and the unusual or defensive runtime path remains documented as an intentional specimen.
 
-#### RT-UT-CASE-261
+#### RT-UT-CASE-262
 
 - pytest node id:
 
@@ -195,7 +195,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_defensive_specimen_replace_input
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 対象分岐が期待どおり処理され、pytest が成功する。
 
-#### RT-UT-CASE-262
+#### RT-UT-CASE-263
 
 - pytest node id:
 
@@ -212,7 +212,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_check_spec_reports_missing_stale
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、UT仕様書とpytest実体の同期検査、入力値生成、Context First manifest登録が仕様どおりに確認される。
 
-#### RT-UT-CASE-263
+#### RT-UT-CASE-264
 
 - pytest node id:
 
@@ -229,7 +229,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_check_spec_reads_split_case_file
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、UT仕様書とpytest実体の同期検査、入力値生成、Context First manifest登録が仕様どおりに確認される。
 
-#### RT-UT-CASE-264
+#### RT-UT-CASE-265
 
 - pytest node id:
 
@@ -246,7 +246,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_main_fix_inputs_and_check_json_o
   - inline input: `payload`
 - 期待結果: 該当caseがpassし、UT仕様書とpytest実体の同期検査、入力値生成、Context First manifest登録が仕様どおりに確認される。
 
-#### RT-UT-CASE-265
+#### RT-UT-CASE-266
 
 - pytest node id:
 
@@ -263,7 +263,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_main_fix_inputs_updates_split_ca
   - inline input: `payload`, `updated`
 - 期待結果: 該当caseがpassし、UT仕様書とpytest実体の同期検査、入力値生成、Context First manifest登録が仕様どおりに確認される。
 
-#### RT-UT-CASE-266
+#### RT-UT-CASE-267
 
 - pytest node id:
 
@@ -280,7 +280,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_defensive_specimen_default_paths
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and the unusual or defensive runtime path remains documented as an intentional specimen.
 
-#### RT-UT-CASE-267
+#### RT-UT-CASE-268
 
 - pytest node id:
 
@@ -297,7 +297,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_report_payload_and_context_first
   - inline input: `check_result`, `payload`, `saved`
 - 期待結果: 該当caseがpassし、UT仕様書とpytest実体の同期検査、入力値生成、Context First manifest登録が仕様どおりに確認される。
 
-#### RT-UT-CASE-268
+#### RT-UT-CASE-269
 
 - pytest node id:
 
@@ -314,7 +314,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_defensive_specimen_main_uses_def
   - inline input: `output`
 - 期待結果: case passes and the unusual or defensive runtime path remains documented as an intentional specimen.
 
-#### RT-UT-CASE-269
+#### RT-UT-CASE-270
 
 - pytest node id:
 
@@ -331,7 +331,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_defensive_specimen_main_writes_r
   - inline input: `output`
 - 期待結果: case passes and the unusual or defensive runtime path remains documented as an intentional specimen.
 
-#### RT-UT-CASE-270
+#### RT-UT-CASE-271
 
 - pytest node id:
 

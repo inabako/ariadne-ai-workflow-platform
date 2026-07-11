@@ -10,7 +10,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
-from runtime.rag import build_index, chunk_documents, embed_chunks, ingestion_optimizer, normalize_documents  # noqa: E402
+from runtime.rag import build_index, chunk_documents, duckdb_store, embed_chunks, ingestion_optimizer, normalize_documents  # noqa: E402
 from runtime.rag import standardize_corrective_report_names  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
@@ -55,6 +55,7 @@ def build_run_artifact(
     optimization_result = next((item["result"] for item in stages if item["name"] == "optimize-ingestion"), {})
     index_result = next((item["result"] for item in stages if item["name"] == "build-index"), {})
     embedding_result = next((item["result"] for item in stages if item["name"] == "embed-chunks"), {})
+    duckdb_result = next((item["result"] for item in stages if item["name"] == "duckdb-migrate"), {})
     source_dir = resolve_repo_path(repo_root, args.source_dir).resolve()
     normalized_dir = resolve_repo_path(repo_root, args.normalized_dir).resolve()
     chunks_dir = resolve_repo_path(repo_root, args.chunks_dir).resolve()
@@ -103,6 +104,13 @@ def build_run_artifact(
             "embedding_count": embedding_result.get("embedding_count", 0),
             "documents_index": index_result.get("documents_index", ""),
             "chunks_index": index_result.get("chunks_index", ""),
+            "duckdb_enabled": bool(getattr(args, "duckdb_migrate", False)),
+            "duckdb_path": duckdb_result.get("db", ""),
+            "duckdb_migration_summary": duckdb_result.get("evidence_output", ""),
+            "duckdb_registered_count": duckdb_result.get("registered_count", 0),
+            "duckdb_updated_count": duckdb_result.get("updated_count", 0),
+            "duckdb_skipped_count": duckdb_result.get("skipped_count", 0),
+            "duckdb_failed_count": duckdb_result.get("failed_count", 0),
         },
         "stages": stages,
         "human_check_required": bool(human_check_reasons),
@@ -130,6 +138,49 @@ def register_rag_build_context(
         owner="workflow",
         schema=".github/schemas/rag-build-run.schema.json",
     )
+
+
+def register_duckdb_migration_context(
+    repo_root: Path,
+    args: argparse.Namespace,
+    evidence_path: Path,
+    migration_result: dict[str, Any],
+) -> None:
+    work_dir = resolve_work_dir(repo_root, args.work_id, args.work_dir)
+    if work_dir is None:
+        return
+    work_id = args.work_id or work_dir.name
+    register_context(
+        repo_root,
+        work_dir,
+        work_id=work_id,
+        context_type="rag-duckdb-migration",
+        path=evidence_path,
+        required=False,
+        generated_by="runtime-rag-build",
+        owner="workflow",
+        schema=".github/schemas/rag-duckdb-migration.schema.json",
+        status="available" if migration_result.get("failed_count", 0) == 0 else "human-check-required",
+    )
+
+
+def write_duckdb_migration_evidence(
+    repo_root: Path,
+    evidence_path: Path,
+    migration_result: dict[str, Any],
+    *,
+    rag_build_run_path: Path,
+) -> dict[str, Any]:
+    payload = {
+        "schema_version": "1.0",
+        "artifact_type": "rag-duckdb-migration",
+        "created_at": utc_now_iso(),
+        "status": migration_result.get("status", "unknown"),
+        "rag_build_run": relative_to_repo(repo_root, rag_build_run_path),
+        "migration": migration_result,
+    }
+    write_json(evidence_path, payload)
+    return {**migration_result, "evidence_output": relative_to_repo(repo_root, evidence_path)}
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
@@ -210,16 +261,62 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     )
     stages.append(stage_record("embed-chunks", embedding_result))
 
-    artifact = build_run_artifact(repo_root, args, stages)
+    duckdb_migration_result: dict[str, Any] = {}
     artifact_path = resolve_repo_path(repo_root, args.output).resolve()
+    if getattr(args, "duckdb_migrate", False):
+        duckdb_path = resolve_repo_path(repo_root, getattr(args, "duckdb_path", str(duckdb_store.DEFAULT_DB_PATH))).resolve()
+        duckdb_source_value = getattr(args, "duckdb_source_dir", "") or index_chunks_dir
+        duckdb_source_dir = resolve_repo_path(
+            repo_root,
+            duckdb_source_value,
+        ).resolve()
+        duckdb_error_log = resolve_repo_path(
+            repo_root,
+            getattr(args, "duckdb_error_log", str(duckdb_store.DEFAULT_ERROR_LOG)),
+        ).resolve()
+        duckdb_policy_value = getattr(args, "duckdb_policy", "") or getattr(
+            args,
+            "ingestion_policy",
+            "runtime/rag/policies/knowledge-ingestion-policy.json",
+        )
+        duckdb_policy = ingestion_optimizer.load_policy(repo_root, duckdb_policy_value)
+        raw_duckdb_result = duckdb_store.migrate_directory(
+            repo_root,
+            duckdb_path,
+            duckdb_source_dir,
+            duckdb_policy,
+            duckdb_error_log,
+        )
+        evidence_path = resolve_repo_path(
+            repo_root,
+            getattr(args, "duckdb_evidence_output", "rag/evidence/duckdb/migration-summary.json"),
+        ).resolve()
+        duckdb_migration_result = write_duckdb_migration_evidence(
+            repo_root,
+            evidence_path,
+            raw_duckdb_result,
+            rag_build_run_path=artifact_path,
+        )
+        stages.append(stage_record("duckdb-migrate", duckdb_migration_result))
+
+    artifact = build_run_artifact(repo_root, args, stages)
     write_json(artifact_path, artifact)
     register_rag_build_context(repo_root, args, artifact_path)
+    if duckdb_migration_result:
+        register_duckdb_migration_context(
+            repo_root,
+            args,
+            resolve_repo_path(repo_root, duckdb_migration_result["evidence_output"]).resolve(),
+            duckdb_migration_result,
+        )
     return {
         "status": "completed",
         "rag_build_run": relative_to_repo(repo_root, artifact_path),
         "document_count": artifact["outputs"]["document_count"],
         "chunk_count": artifact["outputs"]["chunk_count"],
         "embedding_count": artifact["outputs"]["embedding_count"],
+        "duckdb_enabled": artifact["outputs"]["duckdb_enabled"],
+        "duckdb_migration_summary": artifact["outputs"]["duckdb_migration_summary"],
         "stages": [item["name"] for item in stages],
     }
 
@@ -240,6 +337,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--ingestion-evidence-dir", default="rag/evidence/ingestion")
     parser.add_argument("--ingestion-policy", default="runtime/rag/policies/knowledge-ingestion-policy.json")
     parser.add_argument("--skip-optimization", action="store_true")
+    parser.add_argument("--duckdb-migrate", action="store_true")
+    parser.add_argument("--duckdb-path", default=str(duckdb_store.DEFAULT_DB_PATH))
+    parser.add_argument("--duckdb-source-dir", default="")
+    parser.add_argument("--duckdb-error-log", default=str(duckdb_store.DEFAULT_ERROR_LOG))
+    parser.add_argument("--duckdb-evidence-output", default="rag/evidence/duckdb/migration-summary.json")
+    parser.add_argument("--duckdb-policy", default="")
     parser.add_argument("--project", default="")
     parser.add_argument("--repository", default="")
     parser.add_argument("--branch", default="")

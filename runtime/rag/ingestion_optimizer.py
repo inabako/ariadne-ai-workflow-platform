@@ -13,6 +13,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.rag.cleanup_guard import assert_safe_clean_output_target  # noqa: E402
 
 
 DEFAULT_POLICY_PATH = Path("runtime/rag/policies/knowledge-ingestion-policy.json")
@@ -453,7 +454,9 @@ def optimize_chunk(
     return evaluation, optimized
 
 
-def clean_outputs(output_dir: Path, evidence_dir: Path) -> None:
+def clean_outputs(repo_root: Path, output_dir: Path, evidence_dir: Path) -> None:
+    assert_safe_clean_output_target(repo_root, output_dir)
+    assert_safe_clean_output_target(repo_root, evidence_dir)
     if output_dir.exists():
         for path in output_dir.glob("*.json"):
             path.unlink()
@@ -479,7 +482,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     evidence_dir = resolve_repo_path(repo_root, args.evidence_dir).resolve()
     policy = load_policy(repo_root, args.policy)
     if args.clean_output:
-        clean_outputs(output_dir, evidence_dir)
+        clean_outputs(repo_root, output_dir, evidence_dir)
 
     chunk_paths = discover_chunks(chunks_dir)
     source_manifest = {

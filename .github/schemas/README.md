@@ -48,6 +48,8 @@
 | `rag-ingestion-evidence.schema.json` | RAG吸収前のchunk候補評価、ACCEPT / REWRITE / HUMAN_CHECK / REJECT、Evidence summary |
 | `rag-embedding.schema.json` | local embedding index のchunk vector |
 | `rag-build-run.schema.json` | RAG build pipelineの入力、stage結果、index、embedding出力、Context登録記録 |
+| `rag-duckdb-migration.schema.json` | rag-buildからDuckDB read modelを再生成したmigration evidence |
+| `rag-duckdb-reference-check.schema.json` | DuckDB read model構築後に代表queryで参照できることを検証するevidence |
 | `rag-dispatch-plan.schema.json` | RAG検索前のintent、metadata、semantic hint、query計画 |
 | `rag-retrieval-result.schema.json` | query、selected chunks、dropped chunks、filter条件 |
 | `rag-context-pack.schema.json` | 圧縮済みcontext、source、token見積もり |

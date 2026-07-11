@@ -4,11 +4,11 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 16 |
+| cases | 17 |
 
 ## ケース一覧
 
-#### RT-UT-CASE-338
+#### RT-UT-CASE-354
 
 - pytest node id:
 
@@ -19,13 +19,13 @@ runtime/tests/test_rag_retrieve_context.py::test_read_jsonl_reports_line_number_
 - 確認内容: pytest case `read jsonl reports line number for invalid json` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:36`
+  - source: `runtime/tests/test_rag_retrieve_context.py:45`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-339
+#### RT-UT-CASE-355
 
 - pytest node id:
 
@@ -36,13 +36,13 @@ runtime/tests/test_rag_retrieve_context.py::test_read_jsonl_requires_existing_fi
 - 確認内容: pytest case `read jsonl requires existing file and ignores non object rows` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:44`
+  - source: `runtime/tests/test_rag_retrieve_context.py:53`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-340
+#### RT-UT-CASE-356
 
 - pytest node id:
 
@@ -53,13 +53,13 @@ runtime/tests/test_rag_retrieve_context.py::test_tokenize_sparse_embedding_and_c
 - 確認内容: pytest case `tokenize sparse embedding and cosine cover cjk and empty values` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:55`
+  - source: `runtime/tests/test_rag_retrieve_context.py:64`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-341
+#### RT-UT-CASE-357
 
 - pytest node id:
 
@@ -70,13 +70,13 @@ runtime/tests/test_rag_retrieve_context.py::test_filter_row_applies_all_optional
 - 確認内容: pytest case `filter row applies all optional filters` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:67`
+  - source: `runtime/tests/test_rag_retrieve_context.py:76`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `row`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-342
+#### RT-UT-CASE-358
 
 - pytest node id:
 
@@ -87,13 +87,13 @@ runtime/tests/test_rag_retrieve_context.py::test_retrieve_filters_rows_and_selec
 - 確認内容: pytest case `retrieve filters rows and selects keyword matches` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:91`
+  - source: `runtime/tests/test_rag_retrieve_context.py:100`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `rows`, `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-343
+#### RT-UT-CASE-359
 
 - pytest node id:
 
@@ -104,13 +104,13 @@ runtime/tests/test_rag_retrieve_context.py::test_retrieve_scores_semantic_hybrid
 - 確認内容: pytest case `retrieve scores semantic hybrid no match and below top k` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:129`
+  - source: `runtime/tests/test_rag_retrieve_context.py:138`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `rows`, `embeddings`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-344
+#### RT-UT-CASE-360
 
 - pytest node id:
 
@@ -121,13 +121,13 @@ runtime/tests/test_rag_retrieve_context.py::test_retrieve_context_edges_for_empt
 - 確認内容: pytest case `retrieve context edges for empty terms embeddings and tiny budget` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:149`
+  - source: `runtime/tests/test_rag_retrieve_context.py:158`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `row`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-345
+#### RT-UT-CASE-361
 
 - pytest node id:
 
@@ -138,13 +138,13 @@ runtime/tests/test_rag_retrieve_context.py::test_retrieve_requires_positive_top_
 - 確認内容: pytest case `retrieve requires positive top k` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:190`
+  - source: `runtime/tests/test_rag_retrieve_context.py:199`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-346
+#### RT-UT-CASE-362
 
 - pytest node id:
 
@@ -155,13 +155,13 @@ runtime/tests/test_rag_retrieve_context.py::test_split_units_and_compress_chunk_
 - 確認内容: pytest case `split units and compress chunk cover matching fallback and truncation` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:208`
+  - source: `runtime/tests/test_rag_retrieve_context.py:217`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `content`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-347
+#### RT-UT-CASE-363
 
 - pytest node id:
 
@@ -172,13 +172,13 @@ runtime/tests/test_rag_retrieve_context.py::test_build_context_respects_budget_a
 - 確認内容: pytest case `build context respects budget and preserves source metadata` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:227`
+  - source: `runtime/tests/test_rag_retrieve_context.py:236`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `selected`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-348
+#### RT-UT-CASE-364
 
 - pytest node id:
 
@@ -189,13 +189,13 @@ runtime/tests/test_rag_retrieve_context.py::test_write_context_markdown_lists_so
 - 確認内容: pytest case `write context markdown lists sources` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:257`
+  - source: `runtime/tests/test_rag_retrieve_context.py:266`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `text`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-349
+#### RT-UT-CASE-365
 
 - pytest node id:
 
@@ -206,13 +206,13 @@ runtime/tests/test_rag_retrieve_context.py::test_run_keyword_retrieval_writes_co
 - 確認内容: pytest case `run keyword retrieval writes context pack and markdown` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:276`
+  - source: `runtime/tests/test_rag_retrieve_context.py:285`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `row`, `args`, `context_pack`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-350
+#### RT-UT-CASE-366
 
 - pytest node id:
 
@@ -223,13 +223,29 @@ runtime/tests/test_rag_retrieve_context.py::test_run_hybrid_retrieval_uses_embed
 - 確認内容: pytest case `run hybrid retrieval uses embeddings and absolute output dir` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:327`
+  - source: `runtime/tests/test_rag_retrieve_context.py:336`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `row`, `retrieval`, `context_pack`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-351
+#### RT-UT-CASE-367
+
+- pytest node id:
+
+```text
+runtime/tests/test_rag_retrieve_context.py::test_run_can_retrieve_from_duckdb_backend
+```
+
+- 確認内容: pytest case `run can retrieve from duckdb backend` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_rag_retrieve_context.py:389`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `retrieval_result`, `context_pack`
+- 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
+#### RT-UT-CASE-368
 
 - pytest node id:
 
@@ -240,13 +256,13 @@ runtime/tests/test_rag_retrieve_context.py::test_run_rejects_non_positive_max_ch
 - 確認内容: pytest case `run rejects non positive max chars` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:380`
+  - source: `runtime/tests/test_rag_retrieve_context.py:446`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-352
+#### RT-UT-CASE-369
 
 - pytest node id:
 
@@ -257,13 +273,13 @@ runtime/tests/test_rag_retrieve_context.py::test_semantic_search_requires_embedd
 - 確認内容: pytest case `semantic search requires embeddings index` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:385`
+  - source: `runtime/tests/test_rag_retrieve_context.py:451`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-353
+#### RT-UT-CASE-370
 
 - pytest node id:
 
@@ -274,7 +290,7 @@ runtime/tests/test_rag_retrieve_context.py::test_main_prints_json
 - 確認内容: pytest case `main prints json` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_retrieve_context.py:413`
+  - source: `runtime/tests/test_rag_retrieve_context.py:479`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル

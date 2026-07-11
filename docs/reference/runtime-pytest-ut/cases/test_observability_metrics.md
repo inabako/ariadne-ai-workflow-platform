@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-207
+#### RT-UT-CASE-208
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_observability_metrics.py::test_monthly_log_path_uses_year_mon
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-208
+#### RT-UT-CASE-209
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_observability_metrics.py::test_resolve_log_path_rotates_base_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-209
+#### RT-UT-CASE-210
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_observability_metrics.py::test_resolve_log_path_can_disable_r
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-210
+#### RT-UT-CASE-211
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_observability_metrics.py::test_append_jsonl_appends_one_recor
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-211
+#### RT-UT-CASE-212
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_observability_metrics.py::test_append_jsonl_returns_warning_w
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-212
+#### RT-UT-CASE-213
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_observability_metrics.py::test_schema_helpers_sanitize_negati
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-213
+#### RT-UT-CASE-214
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_observability_metrics.py::test_runtime_metric_record_falls_ba
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-214
+#### RT-UT-CASE-215
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_observability_metrics.py::test_duration_timer_records_elapsed
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-215
+#### RT-UT-CASE-216
 
 - pytest node id:
 
@@ -161,7 +161,7 @@ runtime/tests/test_observability_metrics.py::test_collector_defaults_log_dir_und
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-216
+#### RT-UT-CASE-217
 
 - pytest node id:
 
@@ -178,7 +178,7 @@ runtime/tests/test_observability_metrics.py::test_collector_records_non_fatal_lo
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-217
+#### RT-UT-CASE-218
 
 - pytest node id:
 
@@ -195,7 +195,7 @@ runtime/tests/test_observability_metrics.py::test_collector_records_workflow_age
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-218
+#### RT-UT-CASE-219
 
 - pytest node id:
 
@@ -212,7 +212,7 @@ runtime/tests/test_observability_metrics.py::test_collector_records_human_check_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-219
+#### RT-UT-CASE-220
 
 - pytest node id:
 
@@ -229,7 +229,7 @@ runtime/tests/test_observability_metrics.py::test_collector_failed_workflow_save
   - inline input: `payload`
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-220
+#### RT-UT-CASE-221
 
 - pytest node id:
 
@@ -246,7 +246,7 @@ runtime/tests/test_observability_metrics.py::test_collector_saves_workflow_evide
   - inline input: `manifest`
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-221
+#### RT-UT-CASE-222
 
 - pytest node id:
 
@@ -263,7 +263,7 @@ runtime/tests/test_observability_metrics.py::test_collector_evidence_summary_can
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-222
+#### RT-UT-CASE-223
 
 - pytest node id:
 
@@ -280,7 +280,7 @@ runtime/tests/test_observability_metrics.py::test_collector_evidence_summary_ret
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
-#### RT-UT-CASE-223
+#### RT-UT-CASE-224
 
 - pytest node id:
 

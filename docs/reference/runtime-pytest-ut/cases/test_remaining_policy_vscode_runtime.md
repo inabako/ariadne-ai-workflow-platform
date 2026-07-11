@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-354
+#### RT-UT-CASE-371
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_lo
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-355
+#### RT-UT-CASE-372
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_lo
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-356
+#### RT-UT-CASE-373
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_li
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-357
+#### RT-UT-CASE-374
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_ch
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-358
+#### RT-UT-CASE-375
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_ch
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-359
+#### RT-UT-CASE-376
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_no
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-360
+#### RT-UT-CASE-377
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_un
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-361
+#### RT-UT-CASE-378
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_ma
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-362
+#### RT-UT-CASE-379
 
 - pytest node id:
 
@@ -161,7 +161,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_ma
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-363
+#### RT-UT-CASE-380
 
 - pytest node id:
 
@@ -178,7 +178,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_ma
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-364
+#### RT-UT-CASE-381
 
 - pytest node id:
 
@@ -195,7 +195,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-365
+#### RT-UT-CASE-382
 
 - pytest node id:
 
@@ -212,7 +212,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_f
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-366
+#### RT-UT-CASE-383
 
 - pytest node id:
 
@@ -229,7 +229,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-367
+#### RT-UT-CASE-384
 
 - pytest node id:
 
@@ -246,7 +246,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_c
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-368
+#### RT-UT-CASE-385
 
 - pytest node id:
 
@@ -263,7 +263,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_w
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-369
+#### RT-UT-CASE-386
 
 - pytest node id:
 
@@ -280,7 +280,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-370
+#### RT-UT-CASE-387
 
 - pytest node id:
 
@@ -297,7 +297,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-371
+#### RT-UT-CASE-388
 
 - pytest node id:
 
@@ -314,7 +314,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-372
+#### RT-UT-CASE-389
 
 - pytest node id:
 
@@ -331,7 +331,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_m
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-373
+#### RT-UT-CASE-390
 
 - pytest node id:
 
@@ -348,7 +348,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-374
+#### RT-UT-CASE-391
 
 - pytest node id:
 
@@ -365,7 +365,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-375
+#### RT-UT-CASE-392
 
 - pytest node id:
 
@@ -382,7 +382,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-376
+#### RT-UT-CASE-393
 
 - pytest node id:
 
@@ -399,7 +399,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-377
+#### RT-UT-CASE-394
 
 - pytest node id:
 
@@ -416,7 +416,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_s
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-378
+#### RT-UT-CASE-395
 
 - pytest node id:
 
@@ -433,7 +433,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_m
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-379
+#### RT-UT-CASE-396
 
 - pytest node id:
 

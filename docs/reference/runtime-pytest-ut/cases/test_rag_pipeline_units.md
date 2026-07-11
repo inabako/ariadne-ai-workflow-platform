@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-315
+#### RT-UT-CASE-331
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_rag_pipeline_units.py::test_normalize_document_preserves_fron
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-316
+#### RT-UT-CASE-332
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_rag_pipeline_units.py::test_normalize_documents_parser_and_sc
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-317
+#### RT-UT-CASE-333
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_rag_pipeline_units.py::test_normalize_documents_front_matter_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-318
+#### RT-UT-CASE-334
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_rag_pipeline_units.py::test_normalize_document_includes_exter
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-319
+#### RT-UT-CASE-335
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_rag_pipeline_units.py::test_normalize_documents_run_cleans_js
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-320
+#### RT-UT-CASE-336
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_rag_pipeline_units.py::test_normalize_documents_missing_sourc
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-321
+#### RT-UT-CASE-337
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_rag_pipeline_units.py::test_normalize_documents_module_can_be
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-322
+#### RT-UT-CASE-338
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_rag_pipeline_units.py::test_discover_sources_ignores_readme
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-323
+#### RT-UT-CASE-339
 
 - pytest node id:
 
@@ -161,7 +161,7 @@ runtime/tests/test_rag_pipeline_units.py::test_split_content_validates_chunk_set
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-324
+#### RT-UT-CASE-340
 
 - pytest node id:
 
@@ -178,7 +178,7 @@ runtime/tests/test_rag_pipeline_units.py::test_chunk_documents_parser_and_headin
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-325
+#### RT-UT-CASE-341
 
 - pytest node id:
 
@@ -195,7 +195,7 @@ runtime/tests/test_rag_pipeline_units.py::test_split_content_short_empty_and_ove
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-326
+#### RT-UT-CASE-342
 
 - pytest node id:
 
@@ -212,7 +212,7 @@ runtime/tests/test_rag_pipeline_units.py::test_split_content_defensive_fallback_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-327
+#### RT-UT-CASE-343
 
 - pytest node id:
 
@@ -229,7 +229,7 @@ runtime/tests/test_rag_pipeline_units.py::test_chunk_document_writes_chunk_with_
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-328
+#### RT-UT-CASE-344
 
 - pytest node id:
 
@@ -246,7 +246,7 @@ runtime/tests/test_rag_pipeline_units.py::test_chunk_document_rejects_non_object
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-329
+#### RT-UT-CASE-345
 
 - pytest node id:
 
@@ -263,7 +263,7 @@ runtime/tests/test_rag_pipeline_units.py::test_discover_documents_errors_and_sor
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-330
+#### RT-UT-CASE-346
 
 - pytest node id:
 
@@ -280,7 +280,7 @@ runtime/tests/test_rag_pipeline_units.py::test_chunk_documents_run_cleans_output
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-331
+#### RT-UT-CASE-347
 
 - pytest node id:
 
@@ -297,7 +297,7 @@ runtime/tests/test_rag_pipeline_units.py::test_chunk_documents_main_paths
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-332
+#### RT-UT-CASE-348
 
 - pytest node id:
 
@@ -314,7 +314,7 @@ runtime/tests/test_rag_pipeline_units.py::test_build_index_writes_document_and_c
   - inline input: `args`, `documents`, `chunks`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-333
+#### RT-UT-CASE-349
 
 - pytest node id:
 
@@ -331,7 +331,7 @@ runtime/tests/test_rag_pipeline_units.py::test_build_index_parser_invalid_rows_e
   - inline input: `parsed`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-334
+#### RT-UT-CASE-350
 
 - pytest node id:
 
@@ -348,7 +348,7 @@ runtime/tests/test_rag_pipeline_units.py::test_embed_chunks_is_deterministic_and
   - inline input: `row`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-335
+#### RT-UT-CASE-351
 
 - pytest node id:
 
@@ -365,7 +365,7 @@ runtime/tests/test_rag_pipeline_units.py::test_embed_chunks_parser_jsonl_edges_a
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-336
+#### RT-UT-CASE-352
 
 - pytest node id:
 
@@ -382,7 +382,7 @@ runtime/tests/test_rag_pipeline_units.py::test_embed_chunks_run_writes_jsonl
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-337
+#### RT-UT-CASE-353
 
 - pytest node id:
 

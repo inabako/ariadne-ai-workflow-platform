@@ -7,6 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from runtime import ctl
+from runtime.rag import duckdb_store
 
 
 def repo_root() -> Path:
@@ -30,6 +31,7 @@ def test_ctl_without_modifier_warns_and_does_not_show_list() -> None:
     assert "警告" in output
     assert "aiwfctl help list" in output
     assert "aiwfctl path shell" in output
+    assert "aiwfctl knowledge search" in output
     assert "## Workflow Commands" not in output
 
 
@@ -53,6 +55,182 @@ def test_ctl_warning_can_be_colored_yellow() -> None:
     assert "aiwfctl help list" in output
     assert "aiwfctl path shell" in output
     assert "aiwfctl env select web-svg" in output
+    assert "aiwfctl knowledge search" in output
+
+
+def test_ctl_knowledge_usage_and_search_export_context(tmp_path: Path) -> None:
+    root = tmp_path
+    (root / ".git").mkdir()
+    (root / "runtime" / "registries").mkdir(parents=True)
+    (root / "runtime" / "registries" / "workflow_help.json").write_text(
+        '{"commands": [], "extensions": []}',
+        encoding="utf-8",
+    )
+    db = root / "rag" / "duckdb" / "knowledge.duckdb"
+    source = root / "rag" / "optimized-chunks" / "knowledge.json"
+    source.parent.mkdir(parents=True)
+    source.write_text(
+        json.dumps(
+            {
+                "knowledge_id": "ctl-knowledge",
+                "title": "CTL Knowledge",
+                "content": "aiwfctl knowledge search can find DuckDB context records.",
+                "semantic_hint": "aiwfctl duckdb context",
+                "metadata": {"status": "approved", "trust_level": "high", "tags": ["ctl"]},
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    policy = duckdb_store.ingestion_optimizer.load_policy(
+        repo_root(), "runtime/rag/policies/knowledge-ingestion-policy.json"
+    )
+    duckdb_store.ingest_file(root, db, source, policy)
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(root), "knowledge"])
+    code, output = ctl.run(args)
+    assert code == 1
+    assert "Knowledge Management" in output
+    assert "aiwfctl knowledge source clone" in output
+
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "knowledge",
+            "source",
+            "--path",
+            "work/db/ariadne-knowledge-platform",
+            "status",
+        ]
+    )
+    code, output = ctl.run(args)
+    assert code == 0
+    assert "Knowledge Source Repository" in output
+    assert "Action : status" in output
+    assert "work/db/ariadne-knowledge-platform" in output
+
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "knowledge",
+            "--db",
+            str(db),
+            "search",
+            "--query",
+            "DuckDB context",
+            "--tag",
+            "ctl",
+        ]
+    )
+    code, output = ctl.run(args)
+    assert code == 0
+    assert "Knowledge Search" in output
+    assert "ctl-knowledge" in output
+
+    output_path = root / "work" / "issue-1" / "context" / "knowledge.json"
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "knowledge",
+            "--db",
+            str(db),
+            "export-context",
+            "--query",
+            "DuckDB context",
+            "--tag",
+            "ctl",
+            "--output",
+            str(output_path),
+            "--json",
+        ]
+    )
+    code, output = ctl.run(args)
+    assert code == 0
+    assert '"artifact_type": "rag-duckdb-context-export"' in output
+    assert output_path.exists()
+
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "knowledge",
+            "--db",
+            str(db),
+            "rebuild",
+            "--source",
+            "rag/optimized-chunks",
+            "--source-repo",
+            "work/db/ariadne-knowledge-platform",
+            "--reset",
+        ]
+    )
+    code, output = ctl.run(args)
+    assert code == 1
+    assert "Knowledge source repository is not available" in output
+
+    (root / "work" / "db" / "ariadne-knowledge-platform" / ".git").mkdir(parents=True)
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "knowledge",
+            "source",
+            "--path",
+            "work/db/ariadne-knowledge-platform",
+            "import-local",
+            "--clean",
+        ]
+    )
+    code, output = ctl.run(args)
+    assert code == 0
+    assert "Action : import-local" in output
+    assert (root / "work" / "db" / "ariadne-knowledge-platform" / "rag" / "optimized-chunks" / "knowledge.json").exists()
+
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "knowledge",
+            "--db",
+            str(db),
+            "rebuild",
+            "--source-repo",
+            "work/db/ariadne-knowledge-platform",
+            "--reset",
+        ]
+    )
+    code, output = ctl.run(args)
+    assert code == 0
+    assert "Knowledge Rebuild" in output
+    assert "Source Repo     : work/db/ariadne-knowledge-platform" in output
+    assert "Registered" in output
+
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "knowledge",
+            "--db",
+            str(db),
+            "verify",
+            "--query",
+            "DuckDB context",
+            "--output",
+            "rag/evidence/duckdb/reference-check.json",
+        ]
+    )
+    code, output = ctl.run(args)
+    assert code == 0
+    assert "Knowledge Reference Check" in output
+    assert "Status       : completed" in output
+    assert "Manifest     : rag/evidence/duckdb/context/context-manifest.json" in output
+    assert (root / "rag" / "evidence" / "duckdb" / "reference-check.json").exists()
+    manifest = json.loads((root / "rag" / "evidence" / "duckdb" / "context" / "context-manifest.json").read_text(encoding="utf-8"))
+    assert manifest["work_id"] == "duckdb-reference-check"
+    assert "rag-duckdb-reference-check" in {item["type"] for item in manifest["contexts"]}
 
 
 def test_ctl_env_select_gui_mode_returns_windows_msys2_profile() -> None:

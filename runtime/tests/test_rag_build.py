@@ -24,6 +24,12 @@ def make_args(tmp_path: Path, **overrides: object) -> argparse.Namespace:
         "ingestion_evidence_dir": "rag/evidence/ingestion",
         "ingestion_policy": "runtime/rag/policies/knowledge-ingestion-policy.json",
         "skip_optimization": False,
+        "duckdb_migrate": False,
+        "duckdb_path": "rag/duckdb/ariadne-knowledge.duckdb",
+        "duckdb_source_dir": "",
+        "duckdb_error_log": "rag/duckdb/migration-errors.jsonl",
+        "duckdb_evidence_output": "rag/evidence/duckdb/migration-summary.json",
+        "duckdb_policy": "",
         "project": "ariadne",
         "repository": "ariadne-ai-workflow-platform",
         "branch": "main",
@@ -78,6 +84,7 @@ def test_rag_build_artifact_defaults_and_human_check_reasons(tmp_path: Path) -> 
         chunks_dir=str(tmp_path / "rag" / "chunks"),
         indexes_dir=str(tmp_path / "rag" / "indexes"),
         embeddings_output=str(tmp_path / "rag" / "embeddings" / "chunks-embeddings.jsonl"),
+        duckdb_migrate=True,
     )
     stages = [
         rag_build.stage_record("normalize-documents", {"document_count": 2}),
@@ -100,6 +107,17 @@ def test_rag_build_artifact_defaults_and_human_check_reasons(tmp_path: Path) -> 
             {"documents_index": "rag/indexes/documents.jsonl", "chunks_index": "rag/indexes/chunks.jsonl", "chunk_count": 4},
         ),
         rag_build.stage_record("embed-chunks", {"embedding_count": 5}),
+        rag_build.stage_record(
+            "duckdb-migrate",
+            {
+                "db": "rag/duckdb/ariadne-knowledge.duckdb",
+                "evidence_output": "rag/evidence/duckdb/migration-summary.json",
+                "registered_count": 4,
+                "updated_count": 1,
+                "skipped_count": 2,
+                "failed_count": 0,
+            },
+        ),
     ]
 
     artifact = rag_build.build_run_artifact(tmp_path, args, stages)
@@ -116,6 +134,11 @@ def test_rag_build_artifact_defaults_and_human_check_reasons(tmp_path: Path) -> 
     assert artifact["outputs"]["human_check_required_count"] == 1
     assert artifact["outputs"]["ingestion_summary"] == "rag/evidence/ingestion/ingestion-summary.json"
     assert artifact["outputs"]["embedding_count"] == 5
+    assert artifact["outputs"]["duckdb_enabled"] is True
+    assert artifact["outputs"]["duckdb_registered_count"] == 4
+    assert artifact["outputs"]["duckdb_updated_count"] == 1
+    assert artifact["outputs"]["duckdb_skipped_count"] == 2
+    assert artifact["outputs"]["duckdb_failed_count"] == 0
     assert artifact["human_check_required"] is True
     assert "clean-output was used" in artifact["human_check_reasons"][0]
     assert "source report filenames" in artifact["human_check_reasons"][1]
@@ -337,6 +360,89 @@ def test_rag_build_run_can_skip_ingestion_optimization(monkeypatch, tmp_path: Pa
     assert artifact["outputs"]["accepted_chunk_count"] == 0
 
 
+def test_rag_build_run_can_register_duckdb_migration_context(monkeypatch, tmp_path: Path) -> None:
+    stage_names: list[str] = []
+    migration_calls: list[dict[str, object]] = []
+
+    monkeypatch.setattr(
+        rag_build.normalize_documents,
+        "run",
+        lambda args: stage_names.append("normalize") or {"document_count": 1},
+    )
+    monkeypatch.setattr(
+        rag_build.chunk_documents,
+        "run",
+        lambda args: stage_names.append("chunk") or {"chunk_count": 2},
+    )
+    monkeypatch.setattr(
+        rag_build.ingestion_optimizer,
+        "run",
+        lambda args: stage_names.append("optimize") or {"candidate_chunk_count": 2, "accepted_chunk_count": 2},
+    )
+    monkeypatch.setattr(
+        rag_build.build_index,
+        "run",
+        lambda args: stage_names.append(f"index:{args.chunks_dir}") or {"documents_index": "", "chunks_index": "", "chunk_count": 2},
+    )
+    monkeypatch.setattr(
+        rag_build.embed_chunks,
+        "run",
+        lambda args: stage_names.append("embed") or {"embedding_count": 2},
+    )
+
+    def fake_migrate(repo_root: Path, db_path: Path, source: Path, policy: dict[str, object], error_log: Path) -> dict[str, object]:
+        migration_calls.append(
+            {
+                "repo_root": repo_root,
+                "db_path": db_path,
+                "source": source,
+                "policy": policy,
+                "error_log": error_log,
+            }
+        )
+        return {
+            "status": "completed",
+            "artifact_type": "rag-duckdb-migration-summary",
+            "db": "rag/duckdb/test.duckdb",
+            "source": "rag/optimized-chunks",
+            "target_file_count": 2,
+            "registered_count": 2,
+            "updated_count": 0,
+            "skipped_count": 0,
+            "failed_count": 0,
+            "error_log": "",
+            "errors": [],
+        }
+
+    monkeypatch.setattr(rag_build.duckdb_store, "migrate_directory", fake_migrate)
+
+    result = rag_build.run(
+        make_args(
+            tmp_path,
+            work_id="issue-duckdb",
+            source_dir="docs",
+            document_type="design-note",
+            skip_standardize=True,
+            duckdb_migrate=True,
+            duckdb_path="rag/duckdb/test.duckdb",
+        )
+    )
+
+    assert result["stages"] == ["normalize-documents", "chunk-documents", "optimize-ingestion", "build-index", "embed-chunks", "duckdb-migrate"]
+    assert result["duckdb_enabled"] is True
+    assert result["duckdb_migration_summary"] == "rag/evidence/duckdb/migration-summary.json"
+    assert migration_calls[0]["db_path"] == tmp_path / "rag" / "duckdb" / "test.duckdb"
+    assert migration_calls[0]["source"] == tmp_path / "rag" / "optimized-chunks"
+    evidence = json.loads((tmp_path / "rag" / "evidence" / "duckdb" / "migration-summary.json").read_text(encoding="utf-8"))
+    assert evidence["artifact_type"] == "rag-duckdb-migration"
+    assert evidence["migration"]["registered_count"] == 2
+    artifact = json.loads((tmp_path / result["rag_build_run"]).read_text(encoding="utf-8"))
+    assert artifact["outputs"]["duckdb_registered_count"] == 2
+    manifest = json.loads((tmp_path / "work" / "issue-duckdb" / "context" / "context-manifest.json").read_text(encoding="utf-8"))
+    context_types = {item["type"] for item in manifest["contexts"]}
+    assert {"rag-build-run", "rag-duckdb-migration"} <= context_types
+
+
 def test_rag_build_parser_and_main_paths(monkeypatch, tmp_path: Path, capsys) -> None:
     parser = rag_build.build_parser()
     args = parser.parse_args(
@@ -353,12 +459,17 @@ def test_rag_build_parser_and_main_paths(monkeypatch, tmp_path: Path, capsys) ->
             "--replace-references",
             "--random-length",
             "5",
+            "--duckdb-migrate",
+            "--duckdb-path",
+            "rag/duckdb/test.duckdb",
         ]
     )
     assert args.work_id == "issue-1"
     assert args.standardize_filenames is True
     assert args.replace_references is True
     assert args.random_length == 5
+    assert args.duckdb_migrate is True
+    assert args.duckdb_path == "rag/duckdb/test.duckdb"
 
     monkeypatch.setattr(
         rag_build,

@@ -73,9 +73,11 @@ Evidenceは、最適化スコアを絶対的な正解として扱うためでは
 
 ## DuckDB移行方針
 
-現時点ではJSON / JSONLをsource of truthにします。
+JSON / JSONLをsource of truthにします。
 
-将来DuckDBへ移行する場合も、次の単位をtable化しやすいように分けています。
+DuckDBはsource of truthを置き換えるDBではなく、file-based RAG artifactから再生成するread modelとして導入します。Phase 1の実装と運用は `docs/rag/duckdb-read-model.md` を参照します。
+
+DuckDBでは、次の単位をtable化しやすいように分けています。
 
 - source manifest
 - chunk candidates

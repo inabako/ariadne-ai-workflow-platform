@@ -11,6 +11,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
+from runtime.rag import duckdb_store  # noqa: E402
 from runtime.tools import pytest_ut_spec_sync  # noqa: E402
 from runtime.workflow.close_archive import REPORT_FILES  # noqa: E402
 
@@ -27,7 +28,10 @@ def tracked_policy_violations(repo_root: Path) -> list[str]:
     violations: list[str] = []
     for item in tracked:
         normalized = item.replace("\\", "/")
-        if normalized.startswith(("work/", "rag/")) and not normalized.endswith("/README.md"):
+        if normalized.startswith("rag/"):
+            violations.append(normalized)
+            continue
+        if normalized.startswith("work/") and not normalized.endswith("/README.md"):
             violations.append(normalized)
     return violations
 
@@ -183,6 +187,24 @@ def vscode_utf8_first_findings(repo_root: Path) -> list[str]:
     return findings
 
 
+def duckdb_read_model_findings(repo_root: Path) -> list[str]:
+    source_repo = (repo_root / duckdb_store.DEFAULT_SOURCE_REPO_PATH).resolve()
+    if not source_repo.exists():
+        return []
+    source_dirs = duckdb_store.source_repo_standard_sources(repo_root, source_repo)
+    has_source_records = any(source_dir.exists() and any(source_dir.rglob("*.json")) for source_dir in source_dirs)
+    if not has_source_records:
+        return []
+    db_path = (repo_root / duckdb_store.DEFAULT_DB_PATH).resolve()
+    if db_path.exists():
+        return []
+    return [
+        f"missing:{relative_to_repo(repo_root, db_path)}",
+        f"source:{relative_to_repo(repo_root, source_repo)}",
+        "rebuild:aiwfctl knowledge rebuild --source-repo work/db/ariadne-knowledge-platform --reset",
+    ]
+
+
 def ut_spec_sync_findings(repo_root: Path) -> list[str]:
     spec_path = repo_root / "docs" / "reference" / "runtime-pytest-ut" / "case-specification.md"
     runtime_root = repo_root / "runtime"
@@ -221,7 +243,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         warnings.append(
             {
                 "id": "tracked-local-workspace-files",
-                "message": "work/ または rag/ 配下でREADME以外がGit管理されています。",
+                "message": "work/ 配下でREADME以外、または rag/ 配下のファイルがGit管理されています。",
                 "paths": tracked_violations,
             }
         )
@@ -247,6 +269,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "id": "vscode-utf8-first",
                 "message": "VSCode workspace UTF-8 first settings are incomplete.",
                 "paths": utf8_findings,
+            }
+        )
+    duckdb_findings = duckdb_read_model_findings(repo_root)
+    if duckdb_findings:
+        warnings.append(
+            {
+                "id": "rag-duckdb-read-model-missing",
+                "message": "knowledge sourceが存在しますが、生成DuckDB read modelが見つかりません。rag cleanup後はrebuildが必要です。",
+                "paths": duckdb_findings,
             }
         )
     if not getattr(args, "skip_ut_spec_sync", False):

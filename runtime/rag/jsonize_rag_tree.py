@@ -12,6 +12,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.rag.cleanup_guard import assert_safe_clean_output_target  # noqa: E402
 
 
 UUID_JSON_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.json$")
@@ -99,6 +100,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     output_dir = (repo_root / args.output_dir if not Path(args.output_dir).is_absolute() else Path(args.output_dir)).resolve()
     if not rag_dir.exists():
         raise FileNotFoundError(f"RAG directory not found: {rag_dir}")
+    if args.clean_output:
+        assert_safe_clean_output_target(repo_root, output_dir)
     if args.clean_output and output_dir.exists():
         for path in output_dir.glob("*.json"):
             path.unlink()

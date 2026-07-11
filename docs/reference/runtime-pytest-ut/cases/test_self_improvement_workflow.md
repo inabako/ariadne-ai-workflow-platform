@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-466
+#### RT-UT-CASE-483
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_self_improvement_workflow.py::test_parser_and_branch_name
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-467
+#### RT-UT-CASE-484
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_self_improvement_workflow.py::test_init_and_create_feedback
   - inline input: `args`, `text`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-468
+#### RT-UT-CASE-485
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_self_improvement_workflow.py::test_review_feedback_updates_st
   - inline input: `text`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-469
+#### RT-UT-CASE-486
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_self_improvement_workflow.py::test_issue_body_requires_accept
   - inline input: `text`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-470
+#### RT-UT-CASE-487
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_self_improvement_workflow.py::test_evidence_scaffold_register
   - inline input: `data`, `manifest_data`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-471
+#### RT-UT-CASE-488
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_self_improvement_workflow.py::test_main_prints_json
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-472
+#### RT-UT-CASE-489
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_self_improvement_workflow.py::test_workflow_skills_declare_fe
   - inline input: `missing`, `text`, `required`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-473
+#### RT-UT-CASE-490
 
 - pytest node id:
 

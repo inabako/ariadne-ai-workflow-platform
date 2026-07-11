@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-474
+#### RT-UT-CASE-491
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_parse_model_render_and_val
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-475
+#### RT-UT-CASE-492
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_helpers_cover_prefix_disco
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-476
+#### RT-UT-CASE-493
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_renderers_and_failure_path
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-477
+#### RT-UT-CASE-494
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_model_fallbacks_duplicate_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-478
+#### RT-UT-CASE-495
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_input_init_inspect_and_cla
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-479
+#### RT-UT-CASE-496
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_validate_detects_policy_sy
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-480
+#### RT-UT-CASE-497
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_run_generate_complete_forc
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-481
+#### RT-UT-CASE-498
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_main_run_and_self_test_err
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-482
+#### RT-UT-CASE-499
 
 - pytest node id:
 
@@ -161,7 +161,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_self_test_fails_if_existin
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-483
+#### RT-UT-CASE-500
 
 - pytest node id:
 
@@ -178,7 +178,7 @@ runtime/tests/test_svg_layout_modes.py::test_gui_mode_run_generate_skips_when_no
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-484
+#### RT-UT-CASE-501
 
 - pytest node id:
 
@@ -195,7 +195,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_mode_parse_model_render_and
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-485
+#### RT-UT-CASE-502
 
 - pytest node id:
 
@@ -212,7 +212,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_mode_helpers_cover_prefix_d
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-486
+#### RT-UT-CASE-503
 
 - pytest node id:
 
@@ -229,7 +229,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_mode_renderers_and_failure_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-487
+#### RT-UT-CASE-504
 
 - pytest node id:
 
@@ -246,7 +246,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_mode_model_fallbacks_duplic
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-488
+#### RT-UT-CASE-505
 
 - pytest node id:
 
@@ -263,7 +263,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_validate_detects_policy_rea
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-489
+#### RT-UT-CASE-506
 
 - pytest node id:
 
@@ -280,7 +280,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_init_input_and_resolvers
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-490
+#### RT-UT-CASE-507
 
 - pytest node id:
 
@@ -297,7 +297,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_run_generate_complete_force
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-491
+#### RT-UT-CASE-508
 
 - pytest node id:
 
@@ -314,7 +314,7 @@ runtime/tests/test_svg_layout_modes.py::test_web_svg_main_run_and_error_boundary
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-492
+#### RT-UT-CASE-509
 
 - pytest node id:
 

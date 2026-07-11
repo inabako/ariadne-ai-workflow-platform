@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-271
+#### RT-UT-CASE-272
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_rag_artifact_migration.py::test_migrate_retrieval_artifacts_r
   - inline input: `args`, `migrated_context`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-272
+#### RT-UT-CASE-273
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_rag_artifact_migration.py::test_migrate_retrieval_artifacts_d
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-273
+#### RT-UT-CASE-274
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_rag_artifact_migration.py::test_migrate_retrieval_artifacts_r
   - inline input: `args`, `payload`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-274
+#### RT-UT-CASE-275
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_rag_artifact_migration.py::test_defensive_specimen_migration_
   - inline input: `payload`
 - 期待結果: 対象分岐が期待どおり処理され、pytest が成功する。
 
-#### RT-UT-CASE-275
+#### RT-UT-CASE-276
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_rag_artifact_migration.py::test_migrate_retrieval_artifacts_j
   - inline input: `args`, `payload`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-276
+#### RT-UT-CASE-277
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_rag_artifact_migration.py::test_migrate_retrieval_artifacts_p
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-277
+#### RT-UT-CASE-278
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_rag_artifact_migration.py::test_migrate_retrieval_artifacts_m
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-278
+#### RT-UT-CASE-279
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_rag_artifact_migration.py::test_migrate_retrieval_artifacts_d
   - inline input: `args`, `payload`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-279
+#### RT-UT-CASE-280
 
 - pytest node id:
 
@@ -161,7 +161,7 @@ runtime/tests/test_rag_artifact_migration.py::test_migrate_retrieval_artifacts_j
   - inline input: `wrappers`, `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-280
+#### RT-UT-CASE-281
 
 - pytest node id:
 
@@ -178,7 +178,7 @@ runtime/tests/test_rag_artifact_migration.py::test_migrate_retrieval_artifacts_p
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-281
+#### RT-UT-CASE-282
 
 - pytest node id:
 
@@ -195,7 +195,7 @@ runtime/tests/test_rag_artifact_migration.py::test_migrate_retrieval_artifacts_d
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-282
+#### RT-UT-CASE-283
 
 - pytest node id:
 
@@ -212,7 +212,7 @@ runtime/tests/test_rag_artifact_migration.py::test_migrate_retrieval_artifacts_m
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-283
+#### RT-UT-CASE-284
 
 - pytest node id:
 
@@ -229,7 +229,7 @@ runtime/tests/test_rag_artifact_migration.py::test_standardize_report_names_rena
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-284
+#### RT-UT-CASE-285
 
 - pytest node id:
 
@@ -246,7 +246,7 @@ runtime/tests/test_rag_artifact_migration.py::test_standardize_report_names_skip
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-285
+#### RT-UT-CASE-286
 
 - pytest node id:
 
@@ -263,7 +263,7 @@ runtime/tests/test_rag_artifact_migration.py::test_standardize_report_names_reje
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-286
+#### RT-UT-CASE-287
 
 - pytest node id:
 
@@ -280,7 +280,7 @@ runtime/tests/test_rag_artifact_migration.py::test_standardize_report_names_pars
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-287
+#### RT-UT-CASE-288
 
 - pytest node id:
 
@@ -297,7 +297,7 @@ runtime/tests/test_rag_artifact_migration.py::test_standardize_report_names_miss
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-288
+#### RT-UT-CASE-289
 
 - pytest node id:
 
@@ -314,7 +314,7 @@ runtime/tests/test_rag_artifact_migration.py::test_standardize_report_names_repl
   - inline input: `old_rel`, `new_rel`, `files`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-289
+#### RT-UT-CASE-290
 
 - pytest node id:
 

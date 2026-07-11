@@ -229,7 +229,7 @@ python runtime/workflow/workflow_doctor.py
 python runtime/workflow/workflow_doctor.py --fail-on-warning
 ```
 
-主に、`work/` / `rag/` のREADME-only policy、必須runtime file、close archive標準8ファイルを確認します。
+主に、`work/` のREADME-only policy、Ariadne本体側 `rag/` の非追跡policy、必須runtime file、close archive標準8ファイルを確認します。
 
 ## Runtime pytest
 

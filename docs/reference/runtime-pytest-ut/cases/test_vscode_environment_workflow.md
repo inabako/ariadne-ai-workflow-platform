@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-493
+#### RT-UT-CASE-510
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_build
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-494
+#### RT-UT-CASE-511
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_init_
   - inline input: `state`, `runtime_context`, `manifest`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-495
+#### RT-UT-CASE-512
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_draft
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-496
+#### RT-UT-CASE-513
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_open_
   - inline input: `open_questions`, `state`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-497
+#### RT-UT-CASE-514
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_rag_f
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-498
+#### RT-UT-CASE-515
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_write
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-499
+#### RT-UT-CASE-516
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_requi
   - inline input: `requirements`, `validation_json`, `validation_md`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-500
+#### RT-UT-CASE-517
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_valid
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-501
+#### RT-UT-CASE-518
 
 - pytest node id:
 
@@ -161,7 +161,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_main_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-502
+#### RT-UT-CASE-519
 
 - pytest node id:
 

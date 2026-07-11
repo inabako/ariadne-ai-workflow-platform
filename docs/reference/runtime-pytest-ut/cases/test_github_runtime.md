@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-147
+#### RT-UT-CASE-148
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_github_runtime.py::test_github_api_urls_support_dotcom_and_en
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-148
+#### RT-UT-CASE-149
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_github_runtime.py::test_defensive_specimen_issue_body_report_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 対象分岐が期待どおり処理され、pytest が成功する。
 
-#### RT-UT-CASE-149
+#### RT-UT-CASE-150
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_github_runtime.py::test_github_token_is_required
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-150
+#### RT-UT-CASE-151
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_github_runtime.py::test_github_api_json_sends_request_and_par
   - inline input: `seen`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-151
+#### RT-UT-CASE-152
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_github_runtime.py::test_github_api_json_reports_http_and_url_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-152
+#### RT-UT-CASE-153
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_github_runtime.py::test_github_graphql_json_returns_data_and_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-153
+#### RT-UT-CASE-154
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_github_runtime.py::test_github_graphql_json_reports_http_and_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-154
+#### RT-UT-CASE-155
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_github_runtime.py::test_get_branch_sha_requires_commit_sha
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-155
+#### RT-UT-CASE-156
 
 - pytest node id:
 
@@ -161,7 +161,7 @@ runtime/tests/test_github_runtime.py::test_get_branch_sha_returns_commit_sha
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-156
+#### RT-UT-CASE-157
 
 - pytest node id:
 
@@ -178,7 +178,7 @@ runtime/tests/test_github_runtime.py::test_get_repository_issue_graphql_context_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-157
+#### RT-UT-CASE-158
 
 - pytest node id:
 
@@ -195,7 +195,7 @@ runtime/tests/test_github_runtime.py::test_create_linked_branch_uses_context_and
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-158
+#### RT-UT-CASE-159
 
 - pytest node id:
 
@@ -212,7 +212,7 @@ runtime/tests/test_github_runtime.py::test_create_branch_ref_returns_ref_and_val
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-159
+#### RT-UT-CASE-160
 
 - pytest node id:
 
@@ -229,7 +229,7 @@ runtime/tests/test_github_runtime.py::test_normalize_issue_title_applies_prefix_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-160
+#### RT-UT-CASE-161
 
 - pytest node id:
 
@@ -246,7 +246,7 @@ runtime/tests/test_github_runtime.py::test_infer_flow_label_from_agent_context[r
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-161
+#### RT-UT-CASE-162
 
 - pytest node id:
 
@@ -263,7 +263,7 @@ runtime/tests/test_github_runtime.py::test_infer_flow_label_from_agent_context[r
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-162
+#### RT-UT-CASE-163
 
 - pytest node id:
 
@@ -280,7 +280,7 @@ runtime/tests/test_github_runtime.py::test_infer_flow_label_from_agent_context[c
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-163
+#### RT-UT-CASE-164
 
 - pytest node id:
 
@@ -297,7 +297,7 @@ runtime/tests/test_github_runtime.py::test_infer_flow_label_from_agent_context[d
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-164
+#### RT-UT-CASE-165
 
 - pytest node id:
 
@@ -314,7 +314,7 @@ runtime/tests/test_github_runtime.py::test_infer_flow_label_from_agent_context[u
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-165
+#### RT-UT-CASE-166
 
 - pytest node id:
 
@@ -331,7 +331,7 @@ runtime/tests/test_github_runtime.py::test_default_issue_body_uses_project_templ
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-166
+#### RT-UT-CASE-167
 
 - pytest node id:
 
@@ -348,7 +348,7 @@ runtime/tests/test_github_runtime.py::test_issue_body_from_args_reads_body_file
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-167
+#### RT-UT-CASE-168
 
 - pytest node id:
 
@@ -365,7 +365,7 @@ runtime/tests/test_github_runtime.py::test_issue_manager_template_default_and_pa
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-168
+#### RT-UT-CASE-169
 
 - pytest node id:
 
@@ -382,7 +382,7 @@ runtime/tests/test_github_runtime.py::test_manage_issue_draft_writes_body_record
   - inline input: `args`, `artifact_index`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-169
+#### RT-UT-CASE-170
 
 - pytest node id:
 
@@ -399,7 +399,7 @@ runtime/tests/test_github_runtime.py::test_manage_issue_create_uses_defaults_and
   - inline input: `args`, `artifact_index`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-170
+#### RT-UT-CASE-171
 
 - pytest node id:
 
@@ -416,7 +416,7 @@ runtime/tests/test_github_runtime.py::test_manage_issue_requires_work_dir_and_gi
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-171
+#### RT-UT-CASE-172
 
 - pytest node id:
 
@@ -433,7 +433,7 @@ runtime/tests/test_github_runtime.py::test_manage_issue_rejects_repo_without_own
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-172
+#### RT-UT-CASE-173
 
 - pytest node id:
 
@@ -450,7 +450,7 @@ runtime/tests/test_github_runtime.py::test_manage_issue_rejects_slug_without_own
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-173
+#### RT-UT-CASE-174
 
 - pytest node id:
 
@@ -467,7 +467,7 @@ runtime/tests/test_github_runtime.py::test_create_issue_with_api_extracts_number
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-174
+#### RT-UT-CASE-175
 
 - pytest node id:
 
@@ -484,7 +484,7 @@ runtime/tests/test_github_runtime.py::test_create_issue_with_api_builds_url_from
   - inline input: `payloads`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-175
+#### RT-UT-CASE-176
 
 - pytest node id:
 
@@ -501,7 +501,7 @@ runtime/tests/test_github_runtime.py::test_issue_manager_main_prints_json
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-176
+#### RT-UT-CASE-177
 
 - pytest node id:
 
@@ -518,7 +518,7 @@ runtime/tests/test_github_runtime.py::test_pull_request_create_requires_human_ap
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-177
+#### RT-UT-CASE-178
 
 - pytest node id:
 
@@ -535,7 +535,7 @@ runtime/tests/test_github_runtime.py::test_pull_request_defaults_use_latest_issu
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-178
+#### RT-UT-CASE-179
 
 - pytest node id:
 
@@ -552,7 +552,7 @@ runtime/tests/test_github_runtime.py::test_pull_request_uses_title_and_body_file
   - inline input: `args`, `state`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-179
+#### RT-UT-CASE-180
 
 - pytest node id:
 
@@ -569,7 +569,7 @@ runtime/tests/test_github_runtime.py::test_pull_request_requires_work_repo_and_h
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-180
+#### RT-UT-CASE-181
 
 - pytest node id:
 
@@ -586,7 +586,7 @@ runtime/tests/test_github_runtime.py::test_create_pull_request_with_api_posts_pa
   - inline input: `seen`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-181
+#### RT-UT-CASE-182
 
 - pytest node id:
 
@@ -603,7 +603,7 @@ runtime/tests/test_github_runtime.py::test_pull_request_draft_writes_record_and_
   - inline input: `args`, `state`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-182
+#### RT-UT-CASE-183
 
 - pytest node id:
 

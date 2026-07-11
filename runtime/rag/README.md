@@ -11,11 +11,16 @@ source markdown
   -> ingestion optimization
   -> accepted optimized chunk JSON
   -> JSONL indexes
+  -> optional DuckDB generated read model
   -> local embeddings
   -> compressed context pack
 ```
 
-これにより、あとから OpenAI embeddings、SQLite、DuckDB、PostgreSQL + pgvector、FAISS、Chroma などへ移行できます。
+DuckDBはsource of truthではなく、file-based RAG artifactから再生成できるread modelです。詳細は `docs/rag/duckdb-read-model.md` を参照します。
+
+RAG吸収の標準運用は、作業中の `work/<workflow-id>/process-report/*.md` をHuman承認後に `work/db/ariadne-knowledge-platform` 側へ登録し、DuckDB read modelへ再構築する流れです。詳細は `docs/rag/duckdb-read-model.md` の「RAG吸収標準フロー」を参照します。
+
+これにより、あとから OpenAI embeddings、PostgreSQL + pgvector、FAISS、Chroma などへ移行できます。
 
 ## Directory Flow
 
@@ -29,6 +34,7 @@ rag/
   optimized-chunks/          accepted chunk JSON files after ingestion optimization
   evidence/ingestion/        ingestion optimization evidence
   indexes/                   documents.jsonl / chunks.jsonl
+  duckdb/                    generated DuckDB read model, Git ignored
   embeddings/                local embedding index
   retrieval/                 temporary retrieval results and prompts
 ```
@@ -87,6 +93,71 @@ python runtime/rag/build_index.py `
   --chunks-dir rag/optimized-chunks `
   --output-dir rag/indexes
 ```
+
+Optional DuckDB read model:
+
+```powershell
+python runtime/rag/duckdb_store.py init
+python runtime/rag/duckdb_store.py migrate --source rag/optimized-chunks
+python runtime/rag/duckdb_store.py rebuild --reset
+python runtime/rag/duckdb_store.py search --query "PyQt GUI smoke test" --limit 10
+python runtime/rag/duckdb_store.py export-context --query "PyQt GUI smoke test" --output work/issue-123/context/knowledge.json
+python runtime/rag/duckdb_store.py verify --query workflow --query runtime --query RAG --work-dir rag/evidence/duckdb --work-id duckdb-reference-check
+```
+
+`rag/duckdb/ariadne-knowledge.duckdb` は生成物です。Git管理せず、必要なタイミングで再生成します。
+
+ただし、生成物であっても運用上のread model実体です。`rag/` cleanup時は `rag/duckdb/` を直接削除しないでください。欠落した場合は `workflow_doctor` / `aiwfctl doctor` が警告し、`aiwfctl knowledge rebuild --source-repo work/db/ariadne-knowledge-platform --reset` で再生成します。
+
+`aiwfctl` から呼ぶ場合:
+
+```powershell
+aiwfctl knowledge source clone
+aiwfctl knowledge source status
+aiwfctl knowledge source import-local --clean
+aiwfctl knowledge rebuild --source-repo work/db/ariadne-knowledge-platform --reset
+aiwfctl knowledge search --query "PyQt GUI smoke test" --limit 10
+aiwfctl knowledge export-context --query "PyQt GUI smoke test" --output work/issue-123/context/knowledge.json
+aiwfctl knowledge verify --query workflow --query runtime --query RAG --source-repo work/db/ariadne-knowledge-platform --work-dir rag/evidence/duckdb --work-id duckdb-reference-check
+```
+
+`source clone` は `inabako/ariadne-knowledge-platform.git` を `work/db/ariadne-knowledge-platform` にcloneします。`source import-local --clean` は、既存のローカル `rag/chunks`、`rag/jsonized`、`rag/normalized` などをknowledge repo cloneへコピーします。
+
+`rebuild --source-repo ... --reset` は、knowledge repo clone内の標準RAGソースから既存JSONを投入します。投入後の参照確認は `rag/evidence/duckdb/reference-check.json` に保存されます。
+
+汎用のDuckDB smoke / reference checkでは、`--work-dir rag/evidence/duckdb --work-id duckdb-reference-check` を指定し、`rag/evidence/duckdb/context/context-manifest.json` に `rag-duckdb-reference-check` contextを登録します。後続workflowは、このmanifestからDuckDB参照可否を読み取れます。
+
+特定Issueや実行中workflowに紐づく確認では、`--work-id <work-id>` を指定し、`work/<work-id>/context/context-manifest.json` に登録します。
+
+`retrieve_context.py` からDuckDB read modelを使う場合:
+
+```powershell
+python runtime/rag/retrieve_context.py `
+  "PyQt GUI smoke test" `
+  --backend duckdb `
+  --duckdb-path rag/duckdb/ariadne-knowledge.duckdb `
+  --tag gui
+```
+
+`rag_dispatcher.py` からDuckDB read modelを使う場合:
+
+```powershell
+python runtime/rag/rag_dispatcher.py `
+  --task "PyQt GUI smoke test" `
+  --retrieval-backend duckdb `
+  --duckdb-path rag/duckdb/ariadne-knowledge.duckdb `
+  --tag gui
+```
+
+`rag_build.py` からRAG build成果物としてDuckDB migration evidenceを残す場合:
+
+```powershell
+python runtime/rag/rag_build.py `
+  --duckdb-migrate `
+  --work-id issue-123
+```
+
+この場合、`rag/evidence/duckdb/migration-summary.json` を出力し、`work/<work-id>/context/context-manifest.json` に `rag-duckdb-migration` contextを登録します。
 
 ### 5. Retrieve And Compress Context
 
@@ -175,8 +246,11 @@ python runtime/rag/jsonize_rag_tree.py `
 | `rag/chunks/*.json` | retrieval しやすい単位に分割した raw chunk |
 | `rag/optimized-chunks/*.json` | RAG吸収最適化で `ACCEPT` された embedding 対象chunk |
 | `rag/evidence/ingestion/*.json*` | chunk候補、評価、判定、Human Check、reject、summary |
+| `rag/evidence/duckdb/migration-summary.json` | rag-buildからDuckDB read modelを再生成したmigration evidence |
 | `rag/indexes/documents.jsonl` | document-level index |
 | `rag/indexes/chunks.jsonl` | chunk-level index |
+| `rag/duckdb/ariadne-knowledge.duckdb` | file-based RAG artifactから再生成するDuckDB read model |
+| `work/<work-id>/context/knowledge.json` | DuckDB read model検索結果から生成するAgent向けContext JSON |
 | `rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |
 | `rag/jsonized/*.json` | 非UUID JSON、JSONL、Markdown、text artifact を UUID名 JSON wrapper 化したもの |
 | `rag/retrieval/<uuid>.json` (`artifact_type: rag-dispatch-plan`) | 検索前のintent、metadata、semantic hint、query計画 |

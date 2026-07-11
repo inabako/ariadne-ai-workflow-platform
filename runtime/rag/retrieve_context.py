@@ -15,6 +15,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.rag import duckdb_store  # noqa: E402
 
 
 WORD_RE = re.compile(r"[A-Za-z0-9_.:-]+|[\u3040-\u30ff\u3400-\u9fff]+")
@@ -32,6 +33,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--top-k", type=int, default=8)
     parser.add_argument("--max-chars", type=int, default=6000)
     parser.add_argument("--search-mode", default="hybrid", choices=["keyword", "semantic", "hybrid"])
+    parser.add_argument("--backend", default="file", choices=["file", "duckdb"])
+    parser.add_argument("--duckdb-path", default=str(duckdb_store.DEFAULT_DB_PATH))
+    parser.add_argument("--semantic-hint", default="")
+    parser.add_argument("--document-type", default="")
+    parser.add_argument("--environment", default="")
+    parser.add_argument("--workflow", default="")
+    parser.add_argument("--min-reliability", type=float, default=None)
+    parser.add_argument("--min-freshness", type=float, default=None)
     parser.add_argument("--project", default="")
     parser.add_argument("--repository", default="")
     parser.add_argument("--branch", default="")
@@ -42,6 +51,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repo-root", default=None)
     parser.add_argument("--write-markdown", action="store_true")
     return parser
+
+
+def arg_value(args: argparse.Namespace, name: str, default: Any = "") -> Any:
+    return getattr(args, name, default)
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -89,6 +102,60 @@ def filter_row(row: dict[str, Any], args: argparse.Namespace) -> bool:
     if args.trust_level and row.get("trust_level") != args.trust_level:
         return False
     return True
+
+
+def duckdb_filters_from_args(args: argparse.Namespace) -> duckdb_store.SearchFilters:
+    return duckdb_store.SearchFilters(
+        query=str(args.query),
+        semantic_hint=str(arg_value(args, "semantic_hint", "")),
+        category=str(arg_value(args, "category", "")),
+        tags=[str(tag) for tag in arg_value(args, "tag", [])],
+        source=str(arg_value(args, "source_type", "")),
+        document_type=str(arg_value(args, "document_type", "")),
+        environment=str(arg_value(args, "environment", "")),
+        workflow=str(arg_value(args, "workflow", "")),
+        min_reliability=arg_value(args, "min_reliability", None),
+        min_freshness=arg_value(args, "min_freshness", None),
+        limit=int(arg_value(args, "top_k", 8)),
+    )
+
+
+def duckdb_result_to_chunk(row: dict[str, Any]) -> dict[str, Any]:
+    knowledge_id = str(row.get("knowledge_id", ""))
+    return {
+        "chunk_id": knowledge_id,
+        "document_id": knowledge_id,
+        "source_path": row.get("source_path", ""),
+        "chunk_path": row.get("source_file", ""),
+        "chunk_index": 0,
+        "title": row.get("title", ""),
+        "heading_path": [row.get("title", "")] if row.get("title") else [],
+        "content": row.get("content", ""),
+        "tags": row.get("tags", []),
+        "source_type": row.get("source", ""),
+        "category": row.get("category", ""),
+        "topic": row.get("semantic_hint", ""),
+        "trust_level": row.get("optimization_decision", ""),
+        "retrieved_at": row.get("updated_at", ""),
+        "verify_before_use": False,
+        "sources": [],
+        "_score": row.get("final_score", 0),
+        "_keyword_score": row.get("keyword_match_score", 0),
+        "_semantic_score": row.get("semantic_hint_score", 0),
+        "_rerank_method": "duckdb",
+        "_duckdb_scores": row.get("scores", {}),
+    }
+
+
+def retrieve_duckdb(repo_root: Path, args: argparse.Namespace) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any], Path]:
+    duckdb_path = Path(str(arg_value(args, "duckdb_path", duckdb_store.DEFAULT_DB_PATH)))
+    duckdb_path = duckdb_path if duckdb_path.is_absolute() else repo_root / duckdb_path
+    search_result = duckdb_store.search_knowledge(duckdb_path.resolve(), duckdb_filters_from_args(args))
+    selected = [duckdb_result_to_chunk(row) for row in search_result.get("results", [])]
+    dropped: list[dict[str, Any]] = []
+    if not selected:
+        dropped.append({"chunk_id": "", "score": 0, "reason": "no-duckdb-query-match"})
+    return selected, dropped, search_result, duckdb_path.resolve()
 
 
 def score_row(row: dict[str, Any], query_terms: list[str]) -> float:
@@ -320,13 +387,21 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     ).resolve()
     output_dir = (repo_root / args.output_dir if not Path(args.output_dir).is_absolute() else Path(args.output_dir)).resolve()
 
-    rows = read_jsonl(chunks_index)
-    embeddings, dimensions = read_embeddings(embeddings_index)
-    if args.search_mode == "semantic" and not embeddings:
-        raise FileNotFoundError(
-            f"Semantic search requires embeddings index. Run runtime/rag/embed_chunks.py first: {embeddings_index}"
-        )
-    selected, dropped = retrieve(rows, embeddings, dimensions, args)
+    backend = str(arg_value(args, "backend", "file"))
+    duckdb_search: dict[str, Any] = {}
+    duckdb_path = Path(str(arg_value(args, "duckdb_path", duckdb_store.DEFAULT_DB_PATH)))
+    embeddings: dict[str, dict[str, Any]] = {}
+    if backend == "duckdb":
+        selected, dropped, duckdb_search, duckdb_path = retrieve_duckdb(repo_root, args)
+        rows = list(duckdb_search.get("results", []))
+    else:
+        rows = read_jsonl(chunks_index)
+        embeddings, dimensions = read_embeddings(embeddings_index)
+        if args.search_mode == "semantic" and not embeddings:
+            raise FileNotFoundError(
+                f"Semantic search requires embeddings index. Run runtime/rag/embed_chunks.py first: {embeddings_index}"
+            )
+        selected, dropped = retrieve(rows, embeddings, dimensions, args)
     context, sources = build_context(selected, args)
     retrieval_id = str(uuid.uuid4())
     context_pack_id = str(uuid.uuid4())
@@ -363,8 +438,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "context_pack_id": context_pack_id,
         "query": args.query,
         "created_at": utc_now_iso(),
+        "backend": backend,
         "index_path": relative_to_repo(repo_root, chunks_index),
         "embeddings_index_path": relative_to_repo(repo_root, embeddings_index) if embeddings else "",
+        "duckdb_path": relative_to_repo(repo_root, duckdb_path) if backend == "duckdb" else "",
         "search_mode": args.search_mode,
         "filters": {
             "project": args.project,
@@ -374,10 +451,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "source_type": args.source_type,
             "category": args.category,
             "trust_level": args.trust_level,
+            "semantic_hint": arg_value(args, "semantic_hint", ""),
+            "document_type": arg_value(args, "document_type", ""),
+            "environment": arg_value(args, "environment", ""),
+            "workflow": arg_value(args, "workflow", ""),
+            "min_reliability": arg_value(args, "min_reliability", None),
+            "min_freshness": arg_value(args, "min_freshness", None),
         },
         "candidate_count": len(rows),
         "selected_chunks": selected_summary,
         "dropped_chunks": dropped,
+        "duckdb_search": duckdb_search if backend == "duckdb" else {},
     }
     context_pack = {
         "schema_version": "1.0",
@@ -388,6 +472,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "created_at": retrieval_result["created_at"],
         "compression": {
             "method": f"{args.search_mode}-retrieval-extractive-compression",
+            "backend": backend,
             "retrieval_method": args.search_mode,
             "embedding_model": "local-hash-embedding-v1" if embeddings else "",
             "max_chars": args.max_chars,

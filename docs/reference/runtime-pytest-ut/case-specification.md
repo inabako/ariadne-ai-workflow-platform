@@ -1,4 +1,4 @@
-﻿# Runtime pytest 単体試験仕様書（545ケース）
+﻿# Runtime pytest 単体試験仕様書（564ケース）
 
 作成日: 2026-07-07
 
@@ -12,12 +12,12 @@ coverage推移と監査履歴は repository root の `Runtime pytest 分岐・CL
 
 | 項目 | 値 |
 | --- | ---: |
-| pytest files | 32 |
-| pytest test functions | 532 |
-| pytest collected cases | 545 |
-| pytest result | `545 passed` |
-| statement coverage | 100.00% |
-| total coverage | 99.73% |
+| pytest files | 33 |
+| pytest test functions | 551 |
+| pytest collected cases | 564 |
+| pytest result | `564 passed` |
+| statement coverage | 99.66% |
+| total coverage | 99.48% |
 
 ## 共通前提
 
@@ -51,7 +51,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_context_first.py](cases/test_context_first.md) | 34 |
 | [test_corrective_action_report.py](cases/test_corrective_action_report.md) | 6 |
 | [test_coverage_audit.py](cases/test_coverage_audit.md) | 6 |
-| [test_ctl_help.py](cases/test_ctl_help.md) | 33 |
+| [test_ctl_help.py](cases/test_ctl_help.md) | 34 |
 | [test_dispatcher_context.py](cases/test_dispatcher_context.md) | 12 |
 | [test_docs_sync_workflow.py](cases/test_docs_sync_workflow.md) | 11 |
 | [test_github_knowledge_maintenance.py](cases/test_github_knowledge_maintenance.md) | 18 |
@@ -63,11 +63,12 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_preflight.py](cases/test_preflight.md) | 27 |
 | [test_pytest_ut_spec_sync.py](cases/test_pytest_ut_spec_sync.md) | 20 |
 | [test_rag_artifact_migration.py](cases/test_rag_artifact_migration.md) | 19 |
-| [test_rag_build.py](cases/test_rag_build.md) | 7 |
-| [test_rag_dispatcher.py](cases/test_rag_dispatcher.md) | 9 |
+| [test_rag_build.py](cases/test_rag_build.md) | 8 |
+| [test_rag_dispatcher.py](cases/test_rag_dispatcher.md) | 10 |
+| [test_rag_duckdb_store.py](cases/test_rag_duckdb_store.md) | 15 |
 | [test_rag_ingestion_optimizer.py](cases/test_rag_ingestion_optimizer.md) | 9 |
 | [test_rag_pipeline_units.py](cases/test_rag_pipeline_units.md) | 23 |
-| [test_rag_retrieve_context.py](cases/test_rag_retrieve_context.md) | 16 |
+| [test_rag_retrieve_context.py](cases/test_rag_retrieve_context.md) | 17 |
 | [test_remaining_policy_vscode_runtime.py](cases/test_remaining_policy_vscode_runtime.md) | 26 |
 | [test_remaining_rag_scm_runtime.py](cases/test_remaining_rag_scm_runtime.md) | 10 |
 | [test_retrieval_runtime.py](cases/test_retrieval_runtime.md) | 23 |
@@ -84,6 +85,6 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 - この文書は `pytest --collect-only -q tests` の収集結果を正として更新します。
 - 同期確認は `cd runtime && .\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py --spec ..\docs\reference\runtime-pytest-ut\case-specification.md --runtime-root . check` で実行します。
 - 入力値欄の再生成は `cd runtime && .\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py --spec ..\docs\reference\runtime-pytest-ut\case-specification.md --runtime-root . fix-inputs` で実行します。
-- テスト関数を追加、削除、renameした場合は、この545ケース仕様書も更新します。
+- テスト関数を追加、削除、renameした場合は、この564ケース仕様書も更新します。
 - `pytest.mark.parametrize` によって1つのtest functionから複数caseが収集される場合は、pytest node idのparameter表記まで仕様として残します。
 - 個別caseの詳細な入力値やfixtureは、該当pytest sourceを正とします。

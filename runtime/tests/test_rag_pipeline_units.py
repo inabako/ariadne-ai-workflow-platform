@@ -215,6 +215,24 @@ def test_normalize_documents_run_cleans_json_output_and_accepts_absolute_paths(t
     assert not old_json.exists()
     assert old_text.exists()
 
+    protected = repo / "rag" / "duckdb"
+    protected.mkdir(parents=True)
+    with pytest.raises(ValueError, match="Refusing to clean protected RAG path"):
+        normalize_documents.run(
+            argparse.Namespace(
+                repo_root=str(repo),
+                source_dir=str(source_dir),
+                output_dir="rag/duckdb",
+                document_type="note",
+                project="ariadne",
+                repository="repo",
+                branch="main",
+                commit="abc123",
+                status="approved",
+                clean_output=True,
+            )
+        )
+
 
 def test_normalize_documents_missing_source_and_main_paths(tmp_path: Path, monkeypatch, capsys) -> None:
     with pytest.raises(FileNotFoundError, match="RAG source directory not found"):
@@ -437,6 +455,19 @@ def test_chunk_documents_run_cleans_output_and_supports_absolute_dirs(tmp_path: 
     assert result["input_dir"] == str(input_dir)
     assert result["output_dir"] == str(output_dir)
     assert Path(result["chunks"][0]).exists()
+
+    protected = repo / "rag"
+    with pytest.raises(ValueError, match="Refusing to clean protected RAG path"):
+        chunk_documents.run(
+            argparse.Namespace(
+                repo_root=str(repo),
+                input_dir=str(input_dir),
+                output_dir=str(protected),
+                chunk_size=100,
+                chunk_overlap=0,
+                clean_output=True,
+            )
+        )
 
 
 def test_chunk_documents_main_paths(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys) -> None:

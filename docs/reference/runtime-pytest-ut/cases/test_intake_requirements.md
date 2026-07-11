@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-192
+#### RT-UT-CASE-193
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_intake_requirements.py::test_parser_and_workflow_mapping_help
   - inline input: `parsed`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-193
+#### RT-UT-CASE-194
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_intake_requirements.py::test_discover_requirement_documents_r
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-194
+#### RT-UT-CASE-195
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_intake_requirements.py::test_repository_control_and_unique_de
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-195
+#### RT-UT-CASE-196
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_intake_requirements.py::test_initialize_context_and_manifest_
   - inline input: `agent_context`, `handoff`, `manifest`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-196
+#### RT-UT-CASE-197
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_intake_requirements.py::test_run_with_explicit_requirements_c
   - inline input: `agent_context`, `artifact_index`, `handoff`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-197
+#### RT-UT-CASE-198
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_intake_requirements.py::test_run_discovers_single_requirement
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-198
+#### RT-UT-CASE-199
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_intake_requirements.py::test_run_rejects_missing_explicit_req
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-199
+#### RT-UT-CASE-200
 
 - pytest node id:
 

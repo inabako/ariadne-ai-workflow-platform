@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-503
+#### RT-UT-CASE-520
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_vscode_workspace.py::test_aiwfctl_path_shell_task_is_provisio
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-504
+#### RT-UT-CASE-521
 
 - pytest node id:
 

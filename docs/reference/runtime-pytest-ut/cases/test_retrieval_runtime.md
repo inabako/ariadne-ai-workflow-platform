@@ -8,7 +8,7 @@
 
 ## ケース一覧
 
-#### RT-UT-CASE-390
+#### RT-UT-CASE-407
 
 - pytest node id:
 
@@ -25,7 +25,7 @@ runtime/tests/test_retrieval_runtime.py::test_task_plan_rejects_duplicate_task_i
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-391
+#### RT-UT-CASE-408
 
 - pytest node id:
 
@@ -42,7 +42,7 @@ runtime/tests/test_retrieval_runtime.py::test_task_plan_rejects_invalid_shapes[p
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-392
+#### RT-UT-CASE-409
 
 - pytest node id:
 
@@ -59,7 +59,7 @@ runtime/tests/test_retrieval_runtime.py::test_task_plan_rejects_invalid_shapes[p
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-393
+#### RT-UT-CASE-410
 
 - pytest node id:
 
@@ -76,7 +76,7 @@ runtime/tests/test_retrieval_runtime.py::test_task_plan_rejects_invalid_shapes[p
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-394
+#### RT-UT-CASE-411
 
 - pytest node id:
 
@@ -93,7 +93,7 @@ runtime/tests/test_retrieval_runtime.py::test_task_plan_rejects_invalid_shapes[p
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-395
+#### RT-UT-CASE-412
 
 - pytest node id:
 
@@ -110,7 +110,7 @@ runtime/tests/test_retrieval_runtime.py::test_task_plan_rejects_invalid_shapes[p
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-396
+#### RT-UT-CASE-413
 
 - pytest node id:
 
@@ -127,7 +127,7 @@ runtime/tests/test_retrieval_runtime.py::test_task_plan_rejects_invalid_shapes[p
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-397
+#### RT-UT-CASE-414
 
 - pytest node id:
 
@@ -144,7 +144,7 @@ runtime/tests/test_retrieval_runtime.py::test_task_plan_rejects_invalid_shapes[p
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-398
+#### RT-UT-CASE-415
 
 - pytest node id:
 
@@ -161,7 +161,7 @@ runtime/tests/test_retrieval_runtime.py::test_task_plan_rejects_invalid_shapes[p
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-399
+#### RT-UT-CASE-416
 
 - pytest node id:
 
@@ -178,7 +178,7 @@ runtime/tests/test_retrieval_runtime.py::test_task_plan_rejects_unknown_dependen
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-400
+#### RT-UT-CASE-417
 
 - pytest node id:
 
@@ -195,7 +195,7 @@ runtime/tests/test_retrieval_runtime.py::test_task_plan_accepts_valid_dependenci
   - inline input: `parsed`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-401
+#### RT-UT-CASE-418
 
 - pytest node id:
 
@@ -212,7 +212,7 @@ runtime/tests/test_retrieval_runtime.py::test_task_runner_dry_run_writes_reports
   - inline input: `args`, `artifact_index`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-402
+#### RT-UT-CASE-419
 
 - pytest node id:
 
@@ -229,7 +229,7 @@ runtime/tests/test_retrieval_runtime.py::test_run_defaults_auto_to_parallel_and_
   - inline input: `calls`, `artifact_index`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-403
+#### RT-UT-CASE-420
 
 - pytest node id:
 
@@ -246,7 +246,7 @@ runtime/tests/test_retrieval_runtime.py::test_run_rejects_missing_work_dir_and_u
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-404
+#### RT-UT-CASE-421
 
 - pytest node id:
 
@@ -263,7 +263,7 @@ runtime/tests/test_retrieval_runtime.py::test_run_one_task_records_failure_logs
   - inline input: `task`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-405
+#### RT-UT-CASE-422
 
 - pytest node id:
 
@@ -280,7 +280,7 @@ runtime/tests/test_retrieval_runtime.py::test_run_one_task_skips_missing_command
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-406
+#### RT-UT-CASE-423
 
 - pytest node id:
 
@@ -297,7 +297,7 @@ runtime/tests/test_retrieval_runtime.py::test_run_one_task_records_success_and_r
   - inline input: `calls`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-407
+#### RT-UT-CASE-424
 
 - pytest node id:
 
@@ -314,7 +314,7 @@ runtime/tests/test_retrieval_runtime.py::test_sequential_stop_on_failure_blocks_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-408
+#### RT-UT-CASE-425
 
 - pytest node id:
 
@@ -331,7 +331,7 @@ runtime/tests/test_retrieval_runtime.py::test_sequential_blocks_failed_dependenc
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-409
+#### RT-UT-CASE-426
 
 - pytest node id:
 
@@ -348,7 +348,7 @@ runtime/tests/test_retrieval_runtime.py::test_parallel_blocks_failed_dependency_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-410
+#### RT-UT-CASE-427
 
 - pytest node id:
 
@@ -365,7 +365,7 @@ runtime/tests/test_retrieval_runtime.py::test_result_to_dict_and_write_reports_i
   - inline input: `markdown`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-411
+#### RT-UT-CASE-428
 
 - pytest node id:
 
@@ -382,7 +382,7 @@ runtime/tests/test_retrieval_runtime.py::test_main_prints_json_and_reports_error
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-412
+#### RT-UT-CASE-429
 
 - pytest node id:
 
