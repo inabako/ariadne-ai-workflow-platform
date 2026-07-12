@@ -29,6 +29,15 @@
       "description": "Ariadne workflow実行中の摩擦や改善候補をwork/feedback/へ保存し、Human Reviewで採用判断し、Accepted feedbackからIssue body、標準branch名、evidence scaffoldを作成する。"
     },
     {
+      "slash_command": "/system-integration-quality",
+      "skill": "system-integration-quality",
+      "skill_path": "skills/system-integration-quality/SKILL.md",
+      "delegated_prompt": "/system-integration-quality",
+      "prompt_path": ".github/prompts/system-integration-quality.prompt.md",
+      "workflow": "system-integration-quality",
+      "description": "生成・改修したコードを対象システムへ自然に統合できているか確認し、エミュレータ候補、Integration Test、Human Check、Knowledge化対象を整理する。"
+    },
+    {
       "slash_command": "/github-knowledge-maintenance",
       "skill": "github-knowledge-maintenance",
       "skill_path": "skills/github-knowledge-maintenance/SKILL.md",

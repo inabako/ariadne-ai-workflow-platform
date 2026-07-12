@@ -52,6 +52,11 @@
 | `rag-duckdb-reference-check.schema.json` | DuckDB read model構築後に代表queryで参照できることを検証するevidence |
 | `sdk-analysis-context.schema.json` | 要件定義工程のSDK事前解析context |
 | `sdk-external-discovery.schema.json` | SDKプログラムから外部関連資料の確認候補を作るdiscovery context |
+| `system-integration-context.schema.json` | システム統合品質向上workflowの統合ポイント、エミュレータ候補、Human Check context |
+| `emulator-setup-context.schema.json` | cloud emulator templateをwork配下へ展開した結果を記録するcontext |
+| `emulator-health-context.schema.json` | cloud emulator template展開後のhealth/preflight/evidence context |
+| `integration-test-plan-context.schema.json` | Integration Testの実行順序、Human Check、証跡期待値を記録するrunbook context |
+| `integration-finalization-context.schema.json` | Integration Test後のEvidence、違和感、完了条件、Knowledge化対象を記録する最終context |
 | `rag-dispatch-plan.schema.json` | RAG検索前のintent、metadata、semantic hint、query計画 |
 | `rag-retrieval-result.schema.json` | query、selected chunks、dropped chunks、filter条件 |
 | `rag-context-pack.schema.json` | 圧縮済みcontext、source、token見積もり |

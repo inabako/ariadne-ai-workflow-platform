@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/inabako/ariadne-ai-workflow-platform/schemas/emulator-setup-context.schema.json",
+  "title": "Emulator Setup Context",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "status", "work_id", "workflow", "prepared"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "type": "string", "const": "emulator-setup-context" },
+    "status": {
+      "type": "string",
+      "enum": ["prepared", "existing", "skipped", "human-check-required"]
+    },
+    "work_id": { "type": "string" },
+    "workflow": { "type": "string", "const": "system-integration-quality" },
+    "source_context": { "type": "string" },
+    "emulator_candidates": { "type": "array", "items": { "type": "object" } },
+    "prepared": { "type": "array", "items": { "type": "object" } },
+    "manifest_path": { "type": "string" },
+    "manifest_contexts": { "type": "array", "items": { "type": "string" } },
+    "artifacts": { "type": "object" },
+    "rules": { "type": "object" }
+  }
+}

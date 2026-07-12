@@ -50,6 +50,73 @@
       ]
     },
     {
+      "command": "/system-integration-quality",
+      "aliases": [
+        "/integration-quality"
+      ],
+      "workflow": "system-integration-quality",
+      "skill": "system-integration-quality",
+      "skill_path": "skills/system-integration-quality/SKILL.md",
+      "prompt_path": ".github/prompts/system-integration-quality.prompt.md",
+      "overview": "生成・改修したコードを対象システムへ自然に統合できているか確認し、必要なエミュレータ候補、Integration Test、Human Check、Knowledge化対象を整理する。",
+      "prerequisites": [
+        "対象作業の work/<work-id>/ が存在する。",
+        "対象repositoryは通常 work/<work-id>/source/repository に配置する。別パスの場合は --target-repo で指定する。",
+        "SDKや外部サービスを使う場合は、可能な範囲で aiwfctl sdk analyze / discover のcontextを先に生成する。",
+        "本番credential、本番クラウド、本番決済、production networkはHuman Checkなしで実行しない。"
+      ],
+      "arguments": [
+        {
+          "name": "work-id",
+          "required": true,
+          "description": "統合品質確認を行う作業ID。work/<work-id>/reports と work/<work-id>/context に成果物を保存する。",
+          "examples": [
+            "issue-123"
+          ]
+        },
+        {
+          "name": "with-emulator",
+          "required": false,
+          "description": "クラウドエミュレータやサービス固有test helperの候補と再現可否区分を含める。",
+          "examples": [
+            "--with-emulator"
+          ]
+        }
+      ],
+      "details": [
+        "work/<work-id>/context/sdk-analysis-context.json と sdk-external-discovery.json があれば読み、cloud / payment metadataを統合品質確認へ引き継ぐ。",
+        "対象repositoryのpackage、tests、docs/evidence、設定ファイル、Adapter / Port候補を静的に確認する。",
+        "AWS/GCPなどのcloud metadataからLocalStack、Google Cloud emulator、service-specific test double候補を整理する。",
+        "Stripeなどの外部サービスSDKはStripe CLI / test modeなど、専用test helper候補として整理する。",
+        "エミュレータ構築が必要な場合は templates/boilerplates/cloud-emulators/ から work/<work-id>/test-environment/emulator/ へコピーし、コピー先だけを編集する。",
+        "aiwfctl integration emulator prepare --work-id <work-id> で候補templateをwork配下へ展開し、work/<work-id>/context/emulator-context.json を生成する。",
+        "aiwfctl integration emulator health --work-id <work-id> で展開済みtemplate、evidence directory、Docker CLI前提を起動前に確認し、work/<work-id>/context/emulator-health-context.json と health-summary.md を生成する。",
+        "aiwfctl integration test-plan --work-id <work-id> でIntegration Testの実行順序、Human Check、証跡期待値をrunbook化し、work/<work-id>/context/integration-test-plan-context.json と integration-test-runbook.md を生成する。",
+        "aiwfctl integration finalize --work-id <work-id> でIntegration Test後のEvidence、違和感、完了条件、Knowledge化対象を整理し、work/<work-id>/context/integration-finalization-context.json と system-integration-final-report.md を生成する。",
+        "emulator_verified、real_cloud_verification_required、unsupported_by_emulatorで再現可否を区分する。",
+        "実クラウドやDockerを無条件に起動せず、親workflowまたはHuman Checkで実行判断する。",
+        "Context First manifestへ system-integration contextを登録し、後続workflowが統合品質結果を読めるようにする。",
+        "統合時の摩擦、エミュレータ構築不足、Knowledge不足、Human Check集中があれば work/feedback/ に Proposed feedbackを保存する。通常workflowの中から /self-improvement を自動実行しない。"
+      ],
+      "examples": [
+        "aiwfctl integration analyze --work-id issue-123",
+        "aiwfctl integration verify --work-id issue-123",
+        "aiwfctl integration verify --work-id issue-123 --with-emulator",
+        "aiwfctl integration emulator prepare --work-id issue-123",
+        "aiwfctl integration emulator health --work-id issue-123",
+        "aiwfctl integration test-plan --work-id issue-123",
+        "aiwfctl integration finalize --work-id issue-123"
+      ],
+      "related_runtime": [
+        "runtime/workflow/system_integration.py",
+        "runtime/workflow/sdk_analysis.py",
+        "runtime/workflow/context_first.py"
+      ],
+      "docs": [
+        "docs/workflows/system-integration-quality.md"
+      ]
+    },
+    {
       "command": "/robotics-new-system",
       "aliases": [
         "/new-robotics-system-development"

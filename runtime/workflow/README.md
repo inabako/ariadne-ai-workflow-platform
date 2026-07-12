@@ -263,6 +263,47 @@ Stripe SDKでは、payment vendor、言語、package manager、候補payment ser
 
 `sdk-external-discovery.json` は Context First manifest に `sdk-external-discovery` として登録されます。これは外部ページ本文を保存せず、公式docs、package registry、release notes、security advisory確認の候補URLと検索queryを後続workflowへ渡すためのcontextです。
 
+## `system_integration.py`
+
+生成・改修したコードが対象システムへ自然に統合されているかを確認するruntimeです。SDK解析contextが存在する場合、AWS/GCPの `cloud` metadata、Stripeなどの `payment` metadataを読み、統合ポイント、エミュレータ候補、本番差分、Human Checkを整理します。
+
+```powershell
+python runtime/workflow/system_integration.py analyze --work-id issue-123
+python runtime/workflow/system_integration.py verify --work-id issue-123 --with-emulator
+aiwfctl integration analyze --work-id issue-123
+aiwfctl integration verify --work-id issue-123 --with-emulator
+aiwfctl integration emulator prepare --work-id issue-123
+aiwfctl integration emulator health --work-id issue-123
+aiwfctl integration test-plan --work-id issue-123
+aiwfctl integration finalize --work-id issue-123
+```
+
+出力:
+
+```text
+work/<work-id>/reports/system-integration-report.md
+work/<work-id>/context/integration-context.json
+work/<work-id>/context/emulator-context.json
+work/<work-id>/context/emulator-health-context.json
+work/<work-id>/test-evidence/emulator/health-summary.md
+work/<work-id>/context/integration-test-plan-context.json
+work/<work-id>/test-evidence/integration-test/integration-test-runbook.md
+work/<work-id>/context/integration-finalization-context.json
+work/<work-id>/reports/system-integration-final-report.md
+```
+
+`integration-context.json` は Context First manifest に `system-integration` として登録されます。実クラウドや本番credentialは無条件に使わず、`emulator_verified`、`real_cloud_verification_required`、`unsupported_by_emulator` で検証境界を明示します。
+
+エミュレータ候補には `template_path` を含めます。必要な場合は `templates/boilerplates/cloud-emulators/` から `work/<work-id>/test-environment/emulator/` へコピーし、コピー先だけを編集します。
+
+`aiwfctl integration emulator prepare --work-id <work-id>` は候補templateをコピーし、`test-evidence/emulator/` と `emulator-context.json` を作成します。Dockerや実クラウドは起動しません。
+
+`aiwfctl integration emulator health --work-id <work-id>` は展開済みtemplate、evidence directory、Docker CLI前提を起動前に確認し、`emulator-health-context.json` と `health-summary.md` を作成します。既定ではDockerを起動せず、`--probe-docker` 指定時のみ非破壊のversion確認を行います。
+
+`aiwfctl integration test-plan --work-id <work-id>` はIntegration Testの実行順序をrunbook化し、`integration-test-plan-context.json` と `integration-test-runbook.md` を作成します。この段階ではDockerや対象システムを起動せず、mutable操作はHuman Checkへ残します。
+
+`aiwfctl integration finalize --work-id <work-id>` はHuman承認後に生成されたEvidenceを読み、完了条件、違和感、Knowledge化対象を整理し、`integration-finalization-context.json` と `system-integration-final-report.md` を作成します。この段階でもテストやDockerは実行しません。
+
 ## Runtime pytest
 
 runtimeの重要CLIを変更した場合は、軽量pytestを実行します。

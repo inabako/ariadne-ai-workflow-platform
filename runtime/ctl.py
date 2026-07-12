@@ -14,6 +14,7 @@ if __package__ in {None, ""}:
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
 from runtime.workflow import sdk_analysis  # noqa: E402
+from runtime.workflow import system_integration  # noqa: E402
 from runtime.workflow import workflow_doctor  # noqa: E402
 from runtime.workflow import dispatcher_context  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
@@ -1014,6 +1015,44 @@ def build_parser() -> argparse.ArgumentParser:
     sdk_discover.add_argument("--max-bytes", type=int, default=120_000)
     sdk_discover.add_argument("--json", action="store_true")
 
+    integration_cmd = sub.add_parser("integration", help="Analyze or verify system integration quality.")
+    integration_sub = integration_cmd.add_subparsers(dest="integration_command")
+    integration_analyze = integration_sub.add_parser("analyze", help="Analyze system integration points and emulator candidates.")
+    integration_analyze.add_argument("--work-id", required=True)
+    integration_analyze.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    integration_analyze.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+    integration_analyze.add_argument("--with-emulator", action="store_true", help="Include emulator suitability classification.")
+    integration_analyze.add_argument("--json", action="store_true")
+    integration_verify = integration_sub.add_parser("verify", help="Verify system integration evidence and emulator suitability.")
+    integration_verify.add_argument("--work-id", required=True)
+    integration_verify.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    integration_verify.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+    integration_verify.add_argument("--with-emulator", action="store_true", help="Include emulator suitability classification.")
+    integration_verify.add_argument("--json", action="store_true")
+    integration_test_plan = integration_sub.add_parser("test-plan", help="Create Integration Test runbook and Context First plan.")
+    integration_test_plan.add_argument("--work-id", required=True)
+    integration_test_plan.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    integration_test_plan.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+    integration_test_plan.add_argument("--json", action="store_true")
+    integration_finalize = integration_sub.add_parser("finalize", help="Collect evidence, detect discomfort, and create final integration report.")
+    integration_finalize.add_argument("--work-id", required=True)
+    integration_finalize.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    integration_finalize.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+    integration_finalize.add_argument("--json", action="store_true")
+    integration_emulator = integration_sub.add_parser("emulator", help="Prepare or inspect emulator work-area templates.")
+    integration_emulator_sub = integration_emulator.add_subparsers(dest="emulator_command", required=True)
+    integration_emulator_prepare = integration_emulator_sub.add_parser("prepare", help="Copy emulator templates to work/<work-id>/test-environment/emulator.")
+    integration_emulator_prepare.add_argument("--work-id", required=True)
+    integration_emulator_prepare.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    integration_emulator_prepare.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+    integration_emulator_prepare.add_argument("--force", action="store_true", help="Refresh existing copied emulator template directories.")
+    integration_emulator_prepare.add_argument("--json", action="store_true")
+    integration_emulator_health = integration_emulator_sub.add_parser("health", help="Check copied emulator templates and write health evidence.")
+    integration_emulator_health.add_argument("--work-id", required=True)
+    integration_emulator_health.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    integration_emulator_health.add_argument("--probe-docker", action="store_true", help="Run non-mutating docker version checks.")
+    integration_emulator_health.add_argument("--json", action="store_true")
+
     doctor_cmd = sub.add_parser("doctor", help="Run workflow repository health checks.")
     doctor_cmd.add_argument("--json", action="store_true", help="Print doctor result as JSON.")
     doctor_cmd.add_argument("--fail-on-warning", action="store_true", help="Return non-zero when warnings are found.")
@@ -1339,6 +1378,42 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
         if getattr(args, "json", False):
             return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
         return 0, sdk_analysis.format_result(result) + "\n"
+
+    if command == "integration":
+        integration_command = getattr(args, "integration_command", None)
+        if integration_command is None:
+            return 1, (
+                "System Integration Quality\n\n"
+                "Usage:\n"
+                "  aiwfctl integration analyze --work-id <work-id>\n"
+                "  aiwfctl integration verify --work-id <work-id>\n"
+                "  aiwfctl integration verify --work-id <work-id> --with-emulator\n\n"
+                "  aiwfctl integration emulator prepare --work-id <work-id>\n"
+                "  aiwfctl integration emulator health --work-id <work-id>\n\n"
+                "  aiwfctl integration test-plan --work-id <work-id>\n\n"
+                "  aiwfctl integration finalize --work-id <work-id>\n\n"
+                "Outputs:\n"
+                "  work/<work-id>/reports/system-integration-report.md\n"
+                "  work/<work-id>/context/integration-context.json\n"
+                "  work/<work-id>/context/emulator-context.json\n"
+                "  work/<work-id>/context/emulator-health-context.json\n"
+                "  work/<work-id>/test-evidence/emulator/health-summary.md\n"
+                "  work/<work-id>/context/integration-test-plan-context.json\n"
+                "  work/<work-id>/test-evidence/integration-test/integration-test-runbook.md\n"
+                "  work/<work-id>/context/integration-finalization-context.json\n"
+                "  work/<work-id>/reports/system-integration-final-report.md\n"
+            )
+        try:
+            integration_args = argparse.Namespace(**vars(args))
+            integration_args.command = integration_command
+            integration_args.repo_root = str(repo_root)
+            result = system_integration.run(integration_args)
+        except Exception as exc:
+            return 1, f"System integration failed: {exc}\n"
+        code = 0 if result.get("status") != "human-check-required" else 2
+        if getattr(args, "json", False):
+            return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        return code, system_integration.format_result(result) + "\n"
 
     if command == "doctor":
         result = workflow_doctor.run(
