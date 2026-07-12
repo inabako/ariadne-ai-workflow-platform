@@ -15,6 +15,12 @@ Ariadne AI Workflow Platform の名前、物語、思想、ロゴモチーフを
 4. [Epilogue — Ariadne AI Workflow Platform](epilogue.md)
    - Ariadneという名前とContext Firstの物語的背景を確認します。
 
+## Brand Assets
+
+| Asset | Purpose |
+| --- | --- |
+| [ariadne-logo-master.svg](logo/ariadne-logo-master.svg) | Ariadne AI Workflow Platform のmaster logo |
+
 ## Brand Principle
 
 Ariadne は、AI を万能に見せるためのplatformではありません。
