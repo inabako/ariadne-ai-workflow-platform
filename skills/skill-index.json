@@ -38,6 +38,15 @@
       "description": "生成・改修したコードを対象システムへ自然に統合できているか確認し、エミュレータ候補、Integration Test、Human Check、Knowledge化対象を整理する。"
     },
     {
+      "slash_command": "/flutter-multiplatform",
+      "skill": "flutter-multiplatform",
+      "skill_path": "skills/flutter-multiplatform/SKILL.md",
+      "delegated_prompt": "/flutter-multiplatform",
+      "prompt_path": ".github/prompts/flutter-multiplatform.prompt.md",
+      "workflow": "flutter-multiplatform",
+      "description": "Flutterアプリの対象platform、開発環境、boilerplate、静的解析、test、platform別build計画、evidence、Knowledge化対象を整理する。"
+    },
+    {
       "slash_command": "/github-knowledge-maintenance",
       "skill": "github-knowledge-maintenance",
       "skill_path": "skills/github-knowledge-maintenance/SKILL.md",
@@ -196,6 +205,23 @@
         "corrective-action-fix"
       ],
       "output": "work/<issue-id>/web-ui/"
+    },
+    {
+      "name": "flutter-multiplatform",
+      "standalone_skill": true,
+      "prompt_path": ".github/prompts/flutter-multiplatform.prompt.md",
+      "doc_path": "docs/workflows/flutter-multiplatform.md",
+      "template_path": "templates/boilerplates/flutter/",
+      "runtime_path": "runtime/workflow/flutter_multiplatform.py",
+      "trigger": "Flutter requirement or work/<work-id>/requirements/flutter-targets.yaml",
+      "parent_workflows": [
+        "requirement-discovery",
+        "new-robotics-system-development",
+        "robotics-maintenance-development",
+        "corrective-action-fix",
+        "system-integration-quality"
+      ],
+      "output": "work/<work-id>/context/flutter-development-context.json"
     },
     {
       "name": "noise-reduction-phase",

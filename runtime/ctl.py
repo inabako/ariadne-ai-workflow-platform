@@ -13,6 +13,7 @@ if __package__ in {None, ""}:
 
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
+from runtime.workflow import flutter_multiplatform  # noqa: E402
 from runtime.workflow import sdk_analysis  # noqa: E402
 from runtime.workflow import system_integration  # noqa: E402
 from runtime.workflow import workflow_doctor  # noqa: E402
@@ -1015,6 +1016,26 @@ def build_parser() -> argparse.ArgumentParser:
     sdk_discover.add_argument("--max-bytes", type=int, default=120_000)
     sdk_discover.add_argument("--json", action="store_true")
 
+    flutter_cmd = sub.add_parser("flutter", help="Analyze Flutter multi-platform targets and build dispatch.")
+    flutter_sub = flutter_cmd.add_subparsers(dest="flutter_command")
+    for name in ["analyze", "init", "verify", "build", "run-workflow"]:
+        flutter_item = flutter_sub.add_parser(name)
+        flutter_item.add_argument("--work-id", required=True)
+        flutter_item.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+        flutter_item.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+        flutter_item.add_argument("--targets", default="", help="Comma-separated Flutter targets: android,ios,web,windows,macos,linux")
+        flutter_item.add_argument("--mode", choices=flutter_multiplatform.BUILD_MODES, default="debug")
+        flutter_item.add_argument("--force", action="store_true", help="Refresh copied boilerplate during init.")
+        flutter_item.add_argument("--execute", action="store_true", help="Run verification/build commands and capture evidence.")
+        flutter_item.add_argument("--human-check", choices=["approved"], default="", help="Required for release execution.")
+        flutter_item.add_argument("--timeout-seconds", type=int, default=600)
+        flutter_item.add_argument("--json", action="store_true")
+    flutter_finalize = flutter_sub.add_parser("finalize", help="Judge Flutter verification/build evidence completion.")
+    flutter_finalize.add_argument("--work-id", required=True)
+    flutter_finalize.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    flutter_finalize.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+    flutter_finalize.add_argument("--json", action="store_true")
+
     integration_cmd = sub.add_parser("integration", help="Analyze or verify system integration quality.")
     integration_sub = integration_cmd.add_subparsers(dest="integration_command")
     integration_analyze = integration_sub.add_parser("analyze", help="Analyze system integration points and emulator candidates.")
@@ -1098,6 +1119,7 @@ def format_root_usage_warning(color: bool = False) -> str:
             "  aiwfctl context init --work-id issue-123 --workflow /docs-sync",
             "  aiwfctl knowledge search --query \"PyQt GUI smoke test\"",
             "  aiwfctl sdk analyze --work-id issue-123",
+            "  aiwfctl flutter analyze --work-id issue-123",
             "  aiwfctl doctor",
             "  aiwfctl path check",
             "  aiwfctl path register",
@@ -1133,6 +1155,7 @@ def format_help_usage_warning(color: bool = False) -> str:
             "  aiwfctl env select web-svg",
             "  aiwfctl context init --work-id issue-123 --workflow /docs-sync",
             "  aiwfctl knowledge search --query \"PyQt GUI smoke test\"",
+            "  aiwfctl flutter analyze --work-id issue-123",
             "  aiwfctl doctor",
         ]
     ) + "\n"
@@ -1378,6 +1401,35 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
         if getattr(args, "json", False):
             return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
         return 0, sdk_analysis.format_result(result) + "\n"
+
+    if command == "flutter":
+        flutter_command = getattr(args, "flutter_command", None)
+        if flutter_command is None:
+            return 1, (
+                "Flutter Multi-platform\n\n"
+                "Usage:\n"
+                "  aiwfctl flutter analyze --work-id <work-id>\n"
+                "  aiwfctl flutter init --work-id <work-id> --targets android,web,windows\n"
+                "  aiwfctl flutter verify --work-id <work-id> --execute\n"
+                "  aiwfctl flutter build --work-id <work-id> --targets android,web,windows --mode release --execute --human-check approved\n"
+                "  aiwfctl flutter finalize --work-id <work-id>\n"
+                "  aiwfctl flutter run-workflow --work-id <work-id> --targets android,web,windows\n\n"
+                "Outputs:\n"
+                "  work/<work-id>/context/flutter-development-context.json\n"
+                "  work/<work-id>/reports/flutter-multiplatform-report.md\n"
+                "  work/<work-id>/evidence/flutter/common/verification-plan.md\n"
+            )
+        try:
+            flutter_args = argparse.Namespace(**vars(args))
+            flutter_args.command = flutter_command
+            flutter_args.repo_root = str(repo_root)
+            result = flutter_multiplatform.run(flutter_args)
+        except Exception as exc:
+            return 1, f"Flutter multi-platform failed: {exc}\n"
+        code = 0 if result.get("status") not in {"human-check-required", "failed"} else 2
+        if getattr(args, "json", False):
+            return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        return code, flutter_multiplatform.format_result(result) + "\n"
 
     if command == "integration":
         integration_command = getattr(args, "integration_command", None)

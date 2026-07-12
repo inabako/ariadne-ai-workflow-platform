@@ -4,7 +4,7 @@
 
 この文書は、Ariadne AI Workflow Platform の `runtime/tests` 配下にある全pytestを、UTのテスト項目表として整理したものです。
 
-590ケースをpytest node id単位で列挙した単体試験仕様書は [Runtime pytest 単体試験仕様書（590ケース）](case-specification.md) を参照します。ケース本文はsource fileごとに `cases/*.md` へ分離しています。
+606ケースをpytest node id単位で列挙した単体試験仕様書は [Runtime pytest 単体試験仕様書（606ケース）](case-specification.md) を参照します。ケース本文はsource fileごとに `cases/*.md` へ分離しています。
 
 詳細なcoverage推移と監査結果は、repository root の `Runtime pytest 分岐・CLI・coverage監査レポート.md` を参照します。
 
@@ -13,10 +13,10 @@
 | 項目 | 値 |
 | --- | ---: |
 | pytest対象ディレクトリ | `runtime/tests` |
-| pytest files | 35 |
-| pytest test functions | 577 |
-| pytest collected tests | 590 |
-| pytest result | `590 passed` |
+| pytest files | 36 |
+| pytest test functions | 593 |
+| pytest collected tests | 606 |
+| pytest result | `606 passed` |
 | statement coverage | 99.66% |
 | total coverage | 99.48% |
 | missing lines | 31 |
@@ -58,6 +58,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | RT-UT-006 | `runtime/tests/test_ctl_help.py` | 34 | 34 | `runtime/ctl.py` | `aiwfctl help`、`aiwfctl doctor`、`aiwfctl knowledge`、env選択、検索、警告色、Context First初期化、registry参照 | 巨大化したworkflowをCLI索引から迷わず呼べるようにする |
 | RT-UT-007 | `runtime/tests/test_dispatcher_context.py` | 12 | 12 | `runtime/workflow/dispatcher_context.py` | workflow/tool candidate scoring、human check、registry fallback、context生成 | Intentからworkflow/tool選定へ進むdispatcherの判断根拠を固定する |
 | RT-UT-008 | `runtime/tests/test_docs_sync_workflow.py` | 11 | 11 | `runtime/workflow/docs_sync.py` | docs-sync init、SCM context gate、analysis template、Issue body、CLI dispatch | 実装とdocs差分をdocs-only workflowとして安全に切り出す |
+| RT-UT-036 | `runtime/tests/test_flutter_multiplatform.py` | 16 | 16 | `runtime/workflow/flutter_multiplatform.py`、`runtime/ctl.py` | target未指定Human Check、yaml/CLI target読込、host OS別build可否、boilerplate展開、verify/build実行、evidence回収、WebDriver不足分類、finalize完了判定、aiwfctl入口 | Flutter multi-platform開発でtarget/platform/build環境を推測せず、実試験証跡と完了判定をContext Firstで後続workflowへ渡す |
 | RT-UT-009 | `runtime/tests/test_github_knowledge_maintenance.py` | 18 | 18 | `runtime/workflow/github_knowledge_maintenance.py` | GitHub knowledge init、operation gate、tool selection、repair/sync/RAG candidate | GitHub情報を長期知識資産化する際のhuman gateと出力を守る |
 | RT-UT-010 | `runtime/tests/test_github_runtime.py` | 31 | 35 | `runtime/github/*` | REST/GraphQL API、Issue作成、PR作成、linked branch、title/body生成、エラー応答 | GitHub mutationをmockで安全に検証し、実API依存を局所化する |
 | RT-UT-011 | `runtime/tests/test_init_corrective_action_fix.py` | 7 | 7 | `runtime/workflow/init_corrective_action_fix.py` | corrective report解決、manifest優先、work初期化、report context登録、CLI | 改善レポートから修正workflowへ入る入口を安定させる |
@@ -96,6 +97,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | SCM / GitHub mutation boundary | `test_scm_runtime.py`, `test_github_runtime.py`, `test_github_knowledge_maintenance.py` |
 | Environment / VSCode / preflight | `test_preflight.py`, `test_remaining_policy_vscode_runtime.py`, `test_vscode_environment_workflow.py`, `test_vscode_workspace.py` |
 | GUI / Web SVG workflow extension | `test_svg_layout_modes.py` |
+| Flutter multi-platform workflow | `test_flutter_multiplatform.py` |
 | Runtime quality guard | `test_coverage_audit.py`, `test_pytest_ut_spec_sync.py`, `test_self_improvement_workflow.py`, `test_workflow_doctor.py`, `test_workflow_state_noise_validation.py` |
 
 ## 運用ルール

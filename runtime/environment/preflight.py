@@ -54,8 +54,17 @@ def run_command(command: Sequence[str], cwd: Path | None = None, env: dict[str, 
     )
 
 
-def which_check(executable: str, *, required: bool, install_hint: str, install_command: str | None = None) -> Check:
+def which_check(
+    executable: str,
+    *,
+    required: bool,
+    install_hint: str,
+    install_command: str | None = None,
+    fallback_paths: Sequence[Path] | None = None,
+) -> Check:
     path = shutil.which(executable)
+    if path is None and fallback_paths:
+        path = next((str(candidate) for candidate in fallback_paths if candidate.exists()), None)
     return Check(
         id=f"exe:{executable}",
         label=executable,
@@ -368,6 +377,56 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
         ))
         checks.append(docker_compose_check(required=True))
 
+    if args.profile == "flutter":
+        checks.append(which_check(
+            "flutter",
+            required=True,
+            install_hint="Install Flutter SDK and add the Flutter SDK bin directory to PATH.",
+            install_command="manual install required: https://docs.flutter.dev/get-started/install",
+            fallback_paths=[
+                Path(r"C:\flutter\bin\flutter.bat"),
+                Path(r"C:\flutter\bin\flutter.cmd"),
+                Path(r"C:\flutter\bin\flutter.exe"),
+            ],
+        ))
+        checks.append(which_check(
+            "dart",
+            required=False,
+            install_hint="Dart is normally bundled with Flutter. Verify Flutter SDK PATH when dart is missing.",
+            install_command="manual install required: https://docs.flutter.dev/get-started/install",
+            fallback_paths=[
+                Path(r"C:\flutter\bin\dart.bat"),
+                Path(r"C:\flutter\bin\dart.cmd"),
+                Path(r"C:\flutter\bin\dart.exe"),
+            ],
+        ))
+        checks.append(which_check(
+            "java",
+            required=False,
+            install_hint="Required for Android build toolchains when Android target is selected.",
+            install_command="winget install --id EclipseAdoptium.Temurin.21.JDK -e",
+        ))
+        checks.append(which_check(
+            "adb",
+            required=False,
+            install_hint="Required for Android emulator/device checks when Android target is selected.",
+            install_command="Install Android Studio / Android SDK platform-tools.",
+        ))
+        checks.append(which_check(
+            "chromedriver",
+            required=False,
+            install_hint="Required when running Flutter Web integration tests through flutter drive -d chrome.",
+            install_command="Install ChromeDriver matching the installed Chrome version and ensure chromedriver is on PATH.",
+        ))
+        if source_dir:
+            checks.append(path_check(
+                source_dir / "pubspec.yaml",
+                check_id="path:flutter-pubspec",
+                label="target pubspec.yaml",
+                required=False,
+                install_hint="Pass --source-dir pointing at the Flutter application root when validating an existing app.",
+            ))
+
     return checks
 
 
@@ -473,6 +532,7 @@ def build_parser() -> argparse.ArgumentParser:
             "web-nextjs",
             "docker-compose",
             "vscode-environment",
+            "flutter",
         ],
         default="corrective-action-fix",
     )

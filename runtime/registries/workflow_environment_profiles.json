@@ -57,6 +57,22 @@
         "利用者は vscode-environment を指定する。vscode-workspace は内部Backend名として表示する。",
         "User Pathやterminal設定など人間の開発環境に影響する場合はHuman Checkを挟む。"
       ]
+    },
+    {
+      "name": "flutter",
+      "backend": "flutter-multiplatform",
+      "purpose": "Flutter / Dart / Android / iOS / Web / Desktop multi-platform development",
+      "recommended_for": ["Flutter", "Dart", "Android", "iOS", "Web", "Windows desktop", "macOS desktop", "Linux desktop"],
+      "example_commands": [
+        "aiwfctl env select flutter",
+        "aiwfctl env select flutter --work-id issue-123",
+        "aiwfctl flutter analyze --work-id issue-123"
+      ],
+      "notes": [
+        "利用者は flutter を指定する。flutter-multiplatform は内部Backend名として表示する。",
+        "target platformごとのbuild可否は aiwfctl flutter analyze/build がhost OSを見て個別判定する。",
+        "iOS/macOS build、署名、Store配布、実機試験はHuman Check対象。"
+      ]
     }
   ],
   "profiles": [
@@ -195,6 +211,36 @@
         "default terminalやUser Pathなど人間の開発環境に影響する",
         "拡張機能やtool installが必要"
       ]
+    },
+    {
+      "id": "flutter-multiplatform",
+      "aliases": ["flutter", "dart", "android", "ios", "mobile", "desktop", "flutter-web"],
+      "title": "Flutter Multi-platform",
+      "environment": "Host OS + Flutter SDK",
+      "shell": "PowerShell / Bash",
+      "os": "Windows / macOS / Linux",
+      "summary": "Flutter/Dartアプリの対象platform選択、host OS別build可否、静的解析、test、build dispatchを扱うprofile。",
+      "applies_when": [
+        "Flutter projectを新規作成または改修する",
+        "Android / iOS / Web / Windows / macOS / Linux targetを要件で選択する",
+        "platform別build、Integration Test、Evidence保存を計画する"
+      ],
+      "primary_tools": ["aiwfctl", "Flutter SDK", "Dart", "Android SDK", "Xcode", "platform build tools"],
+      "verification": [
+        "aiwfctl env select flutter",
+        "uv run --project runtime python runtime/environment/preflight.py --profile flutter --work-id <work-id> --source-dir <target-repo>",
+        "aiwfctl flutter analyze --work-id <work-id>",
+        "flutter doctor"
+      ],
+      "preflight_profile": "flutter",
+      "run_command": "aiwfctl flutter analyze --work-id <work-id>",
+      "docs": ["docs/workflows/flutter-multiplatform.md", "docs/reference/environment-selection.md"],
+      "human_check_required_when": [
+        "対象platformが未指定である",
+        "iOS/macOS buildにmacOS/Xcodeが必要",
+        "Android/iOS/macOS/Windows/Linuxの署名、配布、native依存、実機試験が必要",
+        "Platform ChannelやNative codeを追加する"
+      ]
     }
   ],
   "mappings": [
@@ -255,6 +301,14 @@
       "docs": ["docs/workflows/realtime-iac.md"]
     },
     {
+      "subject_type": "command",
+      "subject": "/flutter-multiplatform",
+      "profiles": ["flutter-multiplatform"],
+      "selection_reason": "Flutter target選択、Dart/Flutter SDK、platform別build/test/evidenceを扱うため。",
+      "triggers": ["Flutter", "Dart", "Android", "iOS", "Flutter Web", "Desktop app"],
+      "docs": ["docs/workflows/flutter-multiplatform.md"]
+    },
+    {
       "subject_type": "keyword",
       "subject": "pyqt qt msys2 gui gstreamer qtest",
       "profiles": ["windows-msys2-gui"],
@@ -271,6 +325,12 @@
       "subject": "docker compose container kubernetes terraform",
       "profiles": ["docker-compose"],
       "selection_reason": "Docker / container / IaC検証に該当するため。"
+    },
+    {
+      "subject_type": "keyword",
+      "subject": "flutter dart android ios mobile desktop flutter web",
+      "profiles": ["flutter-multiplatform"],
+      "selection_reason": "Flutter / Dart / mobile / web / desktop multi-platform開発に該当するため。"
     }
   ]
 }

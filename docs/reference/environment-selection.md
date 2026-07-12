@@ -15,6 +15,7 @@ aiwfctl env show gui-mode
 aiwfctl env select gui-mode
 aiwfctl env select web-svg
 aiwfctl env select docker
+aiwfctl env select flutter
 ```
 
 PATHが未反映の場合は、repo-local wrapperから直接呼びます。
@@ -33,6 +34,7 @@ PATHが未反映の場合は、repo-local wrapperから直接呼びます。
 | `web-svg` | `wsl-ubuntu-web` | Web SVG、Node.js、npm、Next.js、React、Playwright |
 | `docker` | `docker-compose` | Docker / Docker Compose、本番相当、結合試験 |
 | `vscode-environment` | `vscode-workspace` | VSCode Workspace-as-Code、terminal、task、aiwfctl導線 |
+| `flutter` | `flutter-multiplatform` | Flutter、Dart、Android、iOS、Web、Windows/macOS/Linux desktop |
 
 source of truthは次です。
 
@@ -69,6 +71,7 @@ aiwfctl env show web-svg
 aiwfctl env select gui-mode
 aiwfctl env select web-svg
 aiwfctl env select docker
+aiwfctl env select flutter
 ```
 
 JSONで受け取る場合:
@@ -180,6 +183,33 @@ wsl-ubuntu-web
 docker-compose
 ```
 
+### Flutter Multi-platform
+
+次の場合に選択します。
+
+- Flutter / Dart projectを扱う。
+- Android / iOS / Web / Windows / macOS / Linux targetを選ぶ。
+- platform別build、Integration Test、Evidence保存を計画する。
+
+対応Backend:
+
+```text
+flutter-multiplatform
+```
+
+target別build環境:
+
+| Target | Build environment |
+| --- | --- |
+| Android | Windows / macOS / Linux |
+| iOS | macOS |
+| Web | Windows / macOS / Linux |
+| Windows | Windows |
+| macOS | macOS |
+| Linux | Linux |
+
+対象platform未指定時は、全platform対応とは推測せずHuman Checkへ戻します。
+
 ## Human Check
 
 次の場合は推測で進めず、Human Checkに戻します。
@@ -189,6 +219,7 @@ docker-compose
 - OS依存libraryの有無を確認できない。
 - Docker Desktop起動、network公開、tool installなどローカル環境へ影響する。
 - GUI、camera、GStreamer、field networkなど外部I/Oが絡む。
+- iOS/macOS build、Flutter release build、署名、Store配布、Platform Channel、native code追加が絡む。
 
 ## Preflightとの関係
 
@@ -218,4 +249,28 @@ Dockerの場合:
 uv run --project runtime python runtime/environment/preflight.py `
   --profile docker-compose `
   --work-id issue-123
+```
+
+Flutterの場合:
+
+```powershell
+uv run --project runtime python runtime/environment/preflight.py `
+  --profile flutter `
+  --work-id issue-123 `
+  --source-dir C:\github\some-flutter-app
+```
+
+Flutter Web Integration Testまで実行する場合は、`flutter drive -d chrome` がWebDriverを要求します。`chromedriver` がPATHにない場合、preflightではoptional missingとして表示し、Flutter workflow側では `build-environment-required` として完了判定を止めます。
+
+Flutter SDKを導入済みでもPATH未反映の場合:
+
+```powershell
+.\runtime\tools\register-flutter-path.cmd --check
+.\runtime\tools\register-flutter-path.cmd --shell
+```
+
+標準配置は `C:\flutter` です。別pathにSDKを置いた場合は第2引数でSDK rootを渡します。
+
+```powershell
+.\runtime\tools\register-flutter-path.cmd --shell C:\tools\flutter
 ```

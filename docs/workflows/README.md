@@ -17,6 +17,7 @@
 | `/self-improvement` | workflow実行中の摩擦を採用判断し、改善Issueへつなぐ | workflow feedback | `work/feedback/*.md`, issue body, evidence scaffold |
 | `/github-knowledge-maintenance` | GitHub Issue / PR / docs / CARを知識資産として保守する | target repository, scan mode, repair mode | `github-knowledge-analysis.json`, repair plan, RAG candidates |
 | `/vscode-environment` | VSCode workspace as code、task、terminal、AI workflow、evidenceを整備する | なし、target workspace path、またはcustom-design draft | `.vscode/*`, `workspace-test.md` |
+| `/flutter-multiplatform` | Flutterアプリの対象platform、環境、boilerplate、test、build計画、evidenceを整理する | `work/<work-id>/requirements/flutter-targets.yaml` または `--targets` | `flutter-development-context.json`, `flutter-multiplatform-report.md` |
 | `/knowledge-capture` | 完了IssueのPR材料、RAG候補、docs候補、archive準備を作る | `work/issue-<number>` | `knowledge-capture-report.md` |
 | `/rag-build` | Markdown reportをRAG artifactへ変換する | `rag/corrective-action-report/*.md` | `rag/normalized/`, `rag/chunks/`, `rag/indexes/`, `rag/embeddings/` |
 | `/rag-load` | 開発前に過去知識を検索し、圧縮contextを読む | task, repository, branch | `rag/retrieval/*.json` |
@@ -45,6 +46,7 @@
 | workflowの摩擦や改善候補をIssue化したい | [Self-Improvement](self-improvement.md) |
 | Git履歴を変えずにIssue / PR / docs / CARの説明資産を育てたい | [GitHub Knowledge Maintenance](github-knowledge-maintenance.md) |
 | VSCode workspace as code、terminal、task、AI workflow起動を整えたい | [VSCode Environment](vscode-environment.md) |
+| Flutterアプリのmulti-platform target、環境、test、build計画を整理したい | [Flutter Multi-platform](flutter-multiplatform.md) |
 | 作業完了後にPR文面と知識回収を整えたい | [Knowledge Capture](knowledge-capture.md) |
 | 過去reportを検索可能にしたい | [RAG Build / Load](rag-build-load.md) |
 | Ariadne自身のruntime、pytest、UT仕様書、Context First、docs品質を確認したい | [Runtime Health Check](runtime-health-check.md) |
@@ -78,6 +80,7 @@
 - GaC / UaCの`generated/`は候補であり、既存sourceへ無条件上書きしません。
 - Next.js画面機能を実装する場合、Implementation前に `nextjs-webapp-implementation-prep.md` を作成し、新規appか既存app拡張か、template採用可否、画面契約、API契約、auth、env、test evidenceを明示します。
 - Web画面向けSVGがある場合は`WEB_SYS_`、`WEB_FEAT_`、`WEB_FIX_`を使い、`web-ui/generated/`は候補としてreview後に採用部分だけ統合します。
+- Flutterを扱う場合は、`work/<work-id>/requirements/flutter-targets.yaml` または `aiwfctl flutter ... --targets` で対象platformを明示します。未指定時にAndroid/iOS/Web/Desktop全部とはみなしません。
 - `/realtime-iac` では、IaC検証前に `iac-test-cases.md` を作成し、Docker Desktop、Linux runtime、integration、human check の分類を明示します。
 - `/github-knowledge-maintenance` では、GitHub mutation前に `github-knowledge-analysis.json` と human-reviewed sync plan を必ず作成します。
 - PyQt / Qt GUIでは、テストケース表からQTest化できる結合疎通試験を選別し、外部I/Oは原則stub / disableします。

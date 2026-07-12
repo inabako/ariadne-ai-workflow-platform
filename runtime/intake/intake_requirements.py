@@ -57,6 +57,7 @@ def build_parser() -> argparse.ArgumentParser:
             "robotics-new-system-iac",
             "realtime-iac",
             "github-knowledge-maintenance",
+            "flutter-multiplatform",
         ],
     )
     parser.add_argument("--phase", default="intake")
@@ -132,6 +133,8 @@ def command_for_workflow(workflow: str) -> str:
         return "/realtime-iac"
     if workflow == "github-knowledge-maintenance":
         return "/github-knowledge-maintenance"
+    if workflow == "flutter-multiplatform":
+        return "/flutter-multiplatform"
     return "/new-robotics-system-development"
 
 
@@ -140,6 +143,8 @@ def id_prefix_for_workflow(workflow: str) -> str:
         return "SYS"
     if workflow == "robotics-maintenance-development":
         return "FEAT"
+    if workflow == "flutter-multiplatform":
+        return "FLUTTER"
     return "WF"
 
 
@@ -165,6 +170,12 @@ def open_questions_for_workflow(workflow: str) -> list[str]:
             "Clone approval is not confirmed at intake.",
             "RAG publication approval is not confirmed at intake.",
         ]
+    if workflow == "flutter-multiplatform":
+        return [
+            "Flutter target platforms are not confirmed at intake.",
+            "Build host OS and remote build requirements are not confirmed at intake.",
+            "Signing, Store distribution, Platform Channel, and native dependency policy are not confirmed at intake.",
+        ]
     return [
         "STOP / emergency stop behavior is not confirmed at intake.",
         "Communication loss behavior is not confirmed at intake.",
@@ -186,6 +197,12 @@ def consumed_by_for_workflow(workflow: str) -> list[str]:
             "github-metadata-collector-agent",
             "knowledge-asset-discovery-agent",
             "narrative-analyzer-agent",
+        ]
+    if workflow == "flutter-multiplatform":
+        return [
+            "flutter-requirements-agent",
+            "flutter-environment-dispatcher",
+            "flutter-build-dispatcher",
         ]
     return ["robotics-architect-agent"]
 

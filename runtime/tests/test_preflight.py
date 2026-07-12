@@ -29,6 +29,14 @@ def test_basic_checks_report_detected_state(monkeypatch: pytest.MonkeyPatch, tmp
 
     exe = preflight.which_check("git", required=True, install_hint="install git")
     missing = preflight.which_check("uv", required=True, install_hint="install uv", install_command="winget install uv")
+    fallback_exe = tmp_path / "fallback-tool.cmd"
+    fallback_exe.write_text("@echo off\n", encoding="utf-8")
+    fallback = preflight.which_check(
+        "fallback-tool",
+        required=True,
+        install_hint="install fallback tool",
+        fallback_paths=[fallback_exe],
+    )
     existing_path = preflight.path_check(
         tmp_path,
         check_id="path:repo",
@@ -48,6 +56,8 @@ def test_basic_checks_report_detected_state(monkeypatch: pytest.MonkeyPatch, tmp
     assert exe.detected == "C:/tools/git.exe"
     assert missing.ok is False
     assert missing.install_command == "winget install uv"
+    assert fallback.ok is True
+    assert fallback.detected == str(fallback_exe)
     assert existing_path.to_dict()["detected"] == str(tmp_path)
     assert missing_path.to_dict()["detected"] == ""
 

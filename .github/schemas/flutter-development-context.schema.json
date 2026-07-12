@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "flutter-development-context.schema.json",
+  "title": "Flutter Development Context",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "status",
+    "work_id",
+    "workflow",
+    "stage",
+    "target_declaration",
+    "environment_decisions",
+    "flutter_project",
+    "boilerplate",
+    "human_checks",
+    "rules"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "type": "string", "const": "flutter-development-context" },
+    "status": {
+      "type": "string",
+      "enum": ["available", "human-check-required", "build-environment-required", "failed", "passed", "conditional-pass"]
+    },
+    "work_id": { "type": "string" },
+    "workflow": { "type": "string", "const": "flutter-multiplatform" },
+    "stage": {
+      "type": "string",
+      "enum": ["analyze", "init", "verify", "build", "run-workflow", "finalize"]
+    },
+    "generated_at": { "type": "string" },
+    "target_repo": { "type": "string" },
+    "build_mode": { "type": "string", "enum": ["debug", "profile", "release"] },
+    "target_declaration": {
+      "type": "object",
+      "required": ["source", "path", "targets", "unknown_targets"],
+      "properties": {
+        "source": { "type": "string" },
+        "path": { "type": "string" },
+        "exists": { "type": "boolean" },
+        "targets": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["android", "ios", "web", "windows", "macos", "linux"] }
+        },
+        "unknown_targets": { "type": "array", "items": { "type": "string" } },
+        "requirements": { "type": "object" },
+        "framework": {}
+      },
+      "additionalProperties": true
+    },
+    "environment_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["target", "host_os", "status", "required_environment", "reason"],
+        "properties": {
+          "target": { "type": "string" },
+          "host_os": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["build_available", "build_environment_required", "remote_build_required", "human_check_required"]
+          },
+          "required_environment": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "flutter_project": { "type": "object" },
+    "boilerplate": { "type": "object" },
+    "verification": { "type": "object" },
+    "build_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["target", "status", "command", "artifact_path", "warnings", "errors"],
+        "properties": {
+          "target": { "type": "string" },
+          "status": { "type": "string" },
+          "command": { "type": "string" },
+          "artifact_path": { "type": "string" },
+          "started_at": {},
+          "finished_at": {},
+          "warnings": { "type": "array", "items": { "type": "string" } },
+          "errors": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "human_checks": { "type": "array", "items": { "type": "string" } },
+    "finalization": { "type": "object" },
+    "knowledge_targets": { "type": "array", "items": { "type": "string" } },
+    "artifacts": { "type": "object" },
+    "manifest_path": { "type": "string" },
+    "manifest_contexts": { "type": "array", "items": { "type": "string" } },
+    "rules": {
+      "type": "object",
+      "required": [
+        "do_not_assume_all_platforms_when_targets_missing",
+        "do_not_execute_store_distribution_without_human_check",
+        "do_not_generate_signing_credentials",
+        "build_commands_are_planned_until_parent_workflow_executes_them"
+      ],
+      "properties": {
+        "do_not_assume_all_platforms_when_targets_missing": { "type": "boolean" },
+        "do_not_execute_store_distribution_without_human_check": { "type": "boolean" },
+        "do_not_generate_signing_credentials": { "type": "boolean" },
+        "build_commands_are_planned_until_parent_workflow_executes_them": { "type": "boolean" }
+      }
+    }
+  },
+  "additionalProperties": true
+}

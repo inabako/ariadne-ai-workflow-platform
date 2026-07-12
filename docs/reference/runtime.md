@@ -13,7 +13,7 @@
 | `runtime/rag/` | report normalization、chunking、index、retrieval |
 | `runtime/retrieval/` | sequential / parallel task runner |
 | `runtime/scm/` | repository sync、branch、commit、push |
-| `runtime/workflow/` | docs-sync、corrective-action-fix、GaC/UaC GUI mode、Web SVG Layout mode、knowledge-captureの補助CLI |
+| `runtime/workflow/` | docs-sync、corrective-action-fix、GaC/UaC GUI mode、Web SVG Layout mode、Flutter Multi-platform、knowledge-captureの補助CLI |
 
 ## Common CLI
 
@@ -36,6 +36,7 @@
 | `runtime/workflow/vscode_environment.py` | VSCode Environment workflowのwork folder、requirements scaffold、validation scaffoldを作る |
 | `runtime/workflow/gui_mode.py` | `work/requirements/svg-input/<PREFIX>_*.svg`をIssueへ取り込み、GUI設計、PyQt6候補、QTest候補を`gac-uac/`へ生成・検証する |
 | `runtime/workflow/web_svg_layout_mode.py` | `work/requirements/svg-input/WEB_<PREFIX>_*.svg`をIssueへ取り込み、Web layout、React候補、Playwright候補を`web-ui/`へ生成・検証する |
+| `runtime/workflow/flutter_multiplatform.py` | Flutter target宣言、host OS別build可否、boilerplate選択、静的解析/test/build計画、Flutter contextとreportを生成する |
 | `runtime/workflow/knowledge_capture.py` | PR材料、knowledge capture report、archive readinessを作り、target repository側の `docs/evidence/<issue-id>/` scaffoldを自動生成する |
 | `runtime/workflow/close_archive.py` | `work/close/<category>/<archive-id>`を軽量なreport-only archiveとして作成、監査、承認付きpruneする |
 | `runtime/workflow/noise_reduction.py` | 要件定義前の不明ワード、Critical項目不足、曖昧表現を抽出し、Human InterviewとReadinessを生成する |

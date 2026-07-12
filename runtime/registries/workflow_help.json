@@ -117,6 +117,84 @@
       ]
     },
     {
+      "command": "/flutter-multiplatform",
+      "aliases": [
+        "/flutter"
+      ],
+      "workflow": "flutter-multiplatform",
+      "skill": "flutter-multiplatform",
+      "skill_path": "skills/flutter-multiplatform/SKILL.md",
+      "prompt_path": ".github/prompts/flutter-multiplatform.prompt.md",
+      "overview": "Flutterアプリの対象platform、開発環境、boilerplate、静的解析、test、platform別build計画、evidence、Knowledge化対象を整理する。",
+      "prerequisites": [
+        "対象work-idがある。通常は親workflowのissue work directoryを使う。",
+        "対象platformは work/<work-id>/requirements/flutter-targets.yaml または --targets で明示する。未指定時に全platform対応とは扱わない。",
+        "iOS/macOS build、署名、Store配布、実機試験、Platform Channel追加はHuman Check対象。",
+        "実buildや配布は親workflowまたはHuman Check後に行う。実試験を自動実行する場合は --execute を明示する。"
+      ],
+      "arguments": [
+        {
+          "name": "work-id",
+          "required": true,
+          "description": "Flutter対象選択、Context、Evidence、Reportを保存する作業ID。",
+          "examples": [
+            "issue-123"
+          ]
+        },
+        {
+          "name": "targets",
+          "required": false,
+          "description": "対象Flutter platform。android, ios, web, windows, macos, linux から必要なものだけをcomma separatedで指定する。",
+          "examples": [
+            "android,web,windows"
+          ]
+        },
+        {
+          "name": "mode",
+          "required": false,
+          "description": "build mode。debug / profile / release。releaseはHuman Check対象。",
+          "examples": [
+            "debug",
+            "release"
+          ]
+        }
+      ],
+      "details": [
+        "work/<work-id>/requirements/flutter-targets.yaml を読み、対象platformを確定する。CLI --targets があればそれを優先する。",
+        "対象platform未指定時はHuman Checkで止め、全platform対応とは推測しない。",
+        "Environment Dispatcher profileは aiwfctl env select flutter で確認する。",
+        "Android/WebはWindows/macOS/Linux、iOS/macOSはmacOS、WindowsはWindows、LinuxはLinuxとしてbuild環境を判定する。",
+        "templates/boilerplates/flutter/ からFlutter boilerplateをwork/<work-id>/implementation/flutter-projectへ展開できる。",
+        "dart format、flutter analyze、flutter test、flutter test integration_test の検証計画を作る。--execute 指定時は実行し、stdout/stderr/summaryをevidenceへ保存する。",
+        "Web targetのIntegration Testは flutter drive -d chrome を使う。chromedriver/WebDriverが無い場合は build-environment-required として分類する。",
+        "flutter build apk/ios/web/windows/macos/linux のbuild dispatchをtarget別に生成する。--execute 指定時は実行可能targetだけ実行し、target別evidenceへ保存する。",
+        "aiwfctl flutter finalize --work-id <work-id> でverify/build/evidenceを読み、完了判定を生成する。",
+        "work/<work-id>/context/flutter-development-context.json と context-manifest.json にContext First artifactを登録する。",
+        "work/<work-id>/reports/flutter-multiplatform-report.md と work/<work-id>/evidence/flutter/ に証跡を保存する。",
+        "Platform差分、build条件、test方法、エラー解決はKnowledge化対象として後続workflowへ渡す。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/flutter-multiplatform --work-id issue-123",
+        "aiwfctl flutter analyze --work-id issue-123",
+        "aiwfctl flutter init --work-id issue-123 --targets android,web,windows",
+        "aiwfctl flutter verify --work-id issue-123 --execute",
+        "aiwfctl flutter build --work-id issue-123 --targets web --mode debug --execute",
+        "aiwfctl flutter build --work-id issue-123 --targets android,web,windows --mode release --execute --human-check approved",
+        "aiwfctl flutter run-workflow --work-id issue-123 --targets android,web,windows --execute",
+        "aiwfctl flutter finalize --work-id issue-123"
+      ],
+      "related_runtime": [
+        "runtime/workflow/flutter_multiplatform.py",
+        "runtime/workflow/context_first.py",
+        "runtime/environment/preflight.py"
+      ],
+      "docs": [
+        "docs/workflows/flutter-multiplatform.md",
+        "docs/reference/environment-selection.md"
+      ]
+    },
+    {
       "command": "/robotics-new-system",
       "aliases": [
         "/new-robotics-system-development"
