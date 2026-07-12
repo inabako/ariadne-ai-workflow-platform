@@ -1,5 +1,9 @@
 ﻿# Ariadne AI Workflow Platform
 
+<p align="center">
+  <img src="assets/ariadne-logo-master.svg" alt="Ariadne AI Workflow Platform logo" width="360">
+</p>
+
 Ariadne AI Workflow Platform は、AI Agent が複雑なworkflow迷宮を迷わず進むためのContext First型AI workflow repositoryです。
 
 アリアドネの糸が迷宮を消すのではなく、迷宮を歩く者の帰還を助けたように、このplatformはDispatcher、Context、RAG、Evidence、Human Checkを一本の糸として結び、AIが本質的な問題解決へ集中できる状態を作ります。

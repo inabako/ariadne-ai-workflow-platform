@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420" role="img" aria-labelledby="title desc">
+  <title>Ariadne Ribbon Spool Logo</title><desc>SVG-native Ariadne logo featuring an abstract ribbon spool and a single guiding thread.</desc><defs>
+    <linearGradient id="threadGradient" x1="110" y1="250" x2="470" y2="250" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="50%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="spoolGradient" x1="120" y1="130" x2="300" y2="340" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22C55E"/>
+      <stop offset="48%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+
+  <g id="symbol" transform="translate(50,20)">
+    <path d="M150 90              C115 125 110 235 150 275              C182 307 238 307 270 275" fill="none" stroke="url(#spoolGradient)" stroke-width="24" stroke-linecap="round"/>
+    <path d="M270 90              C305 125 310 235 270 275              C238 307 182 307 150 275" fill="none" stroke="url(#spoolGradient)" stroke-width="24" stroke-linecap="round"/>
+
+    <path d="M165 118              C188 132 232 132 255 118              M160 155              C185 168 235 168 260 155              M158 192              C184 205 236 205 262 192              M160 229              C185 242 235 242 260 229" fill="none" stroke="url(#spoolGradient)" stroke-width="10" stroke-linecap="round" opacity="0.82"/>
+
+    <path d="M272 237              C329 264 376 246 421 221              C466 196 522 199 570 219              C599 231 621 233 642 224" fill="none" stroke="url(#threadGradient)" stroke-width="12" stroke-linecap="round"/>
+  </g>
+
+  <text x="360" y="402" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="58" font-weight="600" letter-spacing="-1" fill="#0F172A" text-anchor="middle">Ariadne</text>
+
+</svg>
