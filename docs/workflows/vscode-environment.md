@@ -153,6 +153,10 @@ target workspace に `runtime/tools/*.cmd` などのrepo-local command toolが�
 
 Windows上の日本語Markdown、prompt、JSON、workflow docsを扱うworkspaceでは、VSCode provisioningの最初に「このworkspaceはUTF-8で扱う」と宣言します。
 
+`runtime/workflow/vscode_environment.py init` は `runtime-context.json` に `encoding_contract` を出力します。後続Agentはこのcontractを読み、`.vscode/settings.json`、`.editorconfig`、PowerShell terminal profileのUTF-8設定を初期構築に含めます。
+
+Codexの `~/.codex/config.toml` / `.codex/config.toml` はCodexが認識する設定のためのファイルです。UTF-8を強制する標準の `[encoding]` tableとして扱わず、Codex向けの方針共有は `AGENTS.md` やworkflow docsに書きます。機械チェックは `aiwfctl doctor --fail-on-warning` で行います。
+
 `.vscode/settings.json` では、文字コードの自動推測に頼らずUTF-8を明示します。
 
 ```json

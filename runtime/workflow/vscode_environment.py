@@ -20,6 +20,12 @@ DEFAULT_DRAFT_DIR = "work/requirements/devlop-edit-draft"
 DEFAULT_DRAFT_SCAFFOLD = "README.md"
 DEFAULT_RAG_SOURCE_DIR = "rag/workspace-environment"
 CROCKFORD_BASE32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+UTF8_POWERSHELL_STARTUP = (
+    "[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false); "
+    "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); "
+    "$OutputEncoding = [System.Text.UTF8Encoding]::new($false); "
+    "chcp 65001 > $null"
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -79,6 +85,42 @@ def ensure_work_dirs(base: Path) -> None:
         (base / name).mkdir(parents=True, exist_ok=True)
 
 
+def utf8_first_contract() -> dict[str, Any]:
+    return {
+        "policy": "utf-8-first",
+        "required": True,
+        "vscode_settings": {
+            "files.encoding": "utf8",
+            "files.autoGuessEncoding": False,
+            "files.eol": "\n",
+            "terminal.integrated.env.windows": {
+                "PYTHONUTF8": "1",
+                "PYTHONIOENCODING": "utf-8",
+                "AIWF_TEXT_ENCODING": "utf-8",
+            },
+        },
+        "powershell_startup": UTF8_POWERSHELL_STARTUP,
+        "editorconfig_required": {
+            "[*]": {
+                "charset": "utf-8",
+                "end_of_line": "lf",
+            },
+            "[*.{bat,cmd}]": {
+                "charset": "unset",
+                "end_of_line": "crlf",
+            },
+        },
+        "codex_config_note": {
+            "scope": "~/.codex/config.toml or <repo>/.codex/config.toml",
+            "standard_encoding_key_supported": False,
+            "do_not_add_encoding_table_as_enforcement": True,
+            "note": "Codex config.toml is for documented Codex settings such as model, provider, approvals, sandbox, MCP, hooks, and features. Do not rely on an invented [encoding] table for mojibake prevention.",
+            "recommended_policy_location": "AGENTS.md or workflow docs for human/agent guidance; .vscode/settings.json, .editorconfig, PowerShell profile, and aiwfctl doctor for enforcement.",
+        },
+        "doctor_check": "aiwfctl doctor --fail-on-warning",
+    }
+
+
 def init_work(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = repo_root_from(args)
     base = work_dir(repo_root, args.work_id)
@@ -120,6 +162,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
             "default_shell": "PowerShell",
             "terminal_scope": "VSCode integrated terminal",
         },
+        "encoding_contract": utf8_first_contract(),
         "tool_paths": [
             "runtime/tools",
         ],
@@ -637,10 +680,57 @@ Repo-local command toolsがある場合、VSCode統合ターミナルのPATHへ�
 ```json
 {{
   "terminal.integrated.env.windows": {{
-    "Path": "${{workspaceFolder}}\\runtime\\tools;${{env:Path}}"
+    "Path": "${{workspaceFolder}}\\runtime\\tools;${{env:Path}}",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "AIWF_TEXT_ENCODING": "utf-8"
   }}
 }}
 ```
+
+## UTF-8 First / Mojibake Prevention
+
+VSCode初期構築時点で、このworkspaceをUTF-8として扱う契約を明示する。日本語Markdown、prompt、JSON、workflow docsを含む場合、文字コードの自動推測に頼らない。
+
+`.vscode/settings.json` に必ず含める:
+
+```json
+{{
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false,
+  "files.eol": "\\n",
+  "terminal.integrated.env.windows": {{
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "AIWF_TEXT_ENCODING": "utf-8"
+  }}
+}}
+```
+
+PowerShell terminal profileの起動時に必ず含める:
+
+```powershell
+[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false)
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+chcp 65001 > $null
+```
+
+`.editorconfig` に必ず含める:
+
+```ini
+[*]
+charset = utf-8
+end_of_line = lf
+
+[*.{{bat,cmd}}]
+charset = unset
+end_of_line = crlf
+```
+
+Codexの `config.toml` はCodexが認識する設定だけに使う。UTF-8を強制するために独自の `[encoding]` tableを追加しても、Codex標準設定として解釈される前提にしない。
+
+Codex向けにUTF-8方針を永続化したい場合は、`AGENTS.md` やworkflow docsへ「このrepositoryはUTF-8 Firstで扱う」と書き、機械チェックは `.vscode/settings.json`、`.editorconfig`、PowerShell profile、`aiwfctl doctor --fail-on-warning` で行う。
 
 ## Tasks
 
@@ -724,12 +814,14 @@ def write_validation_template(args: argparse.Namespace) -> dict[str, Any]:
             "必須tool一覧",
             "必須VSCode extension一覧",
             "terminal profile構成",
+            "UTF-8 First設定（.vscode/settings.json、.editorconfig、PowerShell profile、Codex向け方針はAGENTS.md/docsへ記載）",
             "AI workflow入口task一覧",
         ],
         "conditions": [],
         "open_questions": [
             "どのtarget workspaceへ .vscode files を配置するか。",
             "VSCodeから利用可能にする必須taskはどれか。",
+            "Shift_JIS / CP932を保持する必要があるファイル種別はあるか。",
         ],
         "evidence": [],
     }

@@ -70,6 +70,9 @@ Use `work/requirements/devlop-edit-draft/README.md` and `README_*.md` only as op
 11. Implement `.vscode/settings.json`, `tasks.json`, `launch.json`, `extensions.json`, and optional `workspace.code-workspace`.
     - If the workspace has repo-local command tools such as `runtime/tools/*.cmd`, add that tools directory to `terminal.integrated.env.windows.Path`.
     - For this workflow repository, include `${workspaceFolder}\\runtime\\tools` so `aiwfctl help` works in VSCode integrated terminals.
+    - Read `work/<work-id>/context/runtime-context.json` `encoding_contract` and apply UTF-8 First settings before editing Japanese Markdown, prompts, JSON, or workflow docs.
+    - Set `.vscode/settings.json` `files.encoding=utf8`, `files.autoGuessEncoding=false`, `PYTHONUTF8=1`, `PYTHONIOENCODING=utf-8`, and `AIWF_TEXT_ENCODING=utf-8`; add PowerShell UTF-8 startup commands and `.editorconfig` UTF-8 rules.
+    - Do not add an invented `[encoding]` table to Codex `~/.codex/config.toml` or `.codex/config.toml` expecting Codex to enforce it. Codex config should contain documented Codex settings only; put UTF-8 policy in `AGENTS.md` or workflow docs and enforce it with `aiwfctl doctor`.
     - Add a provisioning/support task for `runtime/tools/register-aiwfctl-path.cmd --shell` when `aiwfctl` should also work from normal PowerShell or Windows Terminal.
     - The same registration and refreshed shell can be invoked through `runtime/tools/aiwfctl.cmd path shell`.
 12. Run workspace tests and record evidence.

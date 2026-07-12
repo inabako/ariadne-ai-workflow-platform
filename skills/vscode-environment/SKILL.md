@@ -199,6 +199,10 @@ This allows commands such as `aiwfctl help list` to work in VSCode terminals wit
 
 When provisioning a Windows VSCode workspace that contains Japanese Markdown, prompts, JSON, or workflow docs, declare UTF-8 at the start of the workspace environment instead of relying on auto-detection.
 
+`runtime/workflow/vscode_environment.py init` writes `encoding_contract` into `work/<work-id>/context/runtime-context.json`. Read that contract before implementing `.vscode` files, and treat it as the provisioning baseline unless the target repository has a documented mixed-encoding exception.
+
+Do not treat Codex `~/.codex/config.toml` or project `.codex/config.toml` as a UTF-8 enforcement layer by inventing an `[encoding]` table. Codex config should contain documented Codex settings only. Use `AGENTS.md` or workflow docs for agent-facing UTF-8 policy text, and use `.vscode/settings.json`, `.editorconfig`, PowerShell startup commands, and `aiwfctl doctor` for machine enforcement.
+
 Add or preserve these settings in `.vscode/settings.json` unless the target repository has an explicit, documented encoding exception:
 
 ```json

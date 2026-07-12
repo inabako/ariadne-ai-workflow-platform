@@ -47,6 +47,12 @@ def test_vscode_environment_init_work_writes_state_and_runtime_context(tmp_path:
     assert result["mode"] == "target-workspace"
     assert state["target_dir"] == str(target.resolve())
     assert runtime_context["tool_paths"] == ["runtime/tools"]
+    assert runtime_context["encoding_contract"]["policy"] == "utf-8-first"
+    assert runtime_context["encoding_contract"]["vscode_settings"]["files.encoding"] == "utf8"
+    assert runtime_context["encoding_contract"]["vscode_settings"]["files.autoGuessEncoding"] is False
+    assert runtime_context["encoding_contract"]["vscode_settings"]["terminal.integrated.env.windows"]["PYTHONUTF8"] == "1"
+    assert runtime_context["encoding_contract"]["codex_config_note"]["standard_encoding_key_supported"] is False
+    assert runtime_context["encoding_contract"]["codex_config_note"]["do_not_add_encoding_table_as_enforcement"] is True
     assert {entry["type"] for entry in manifest["contexts"]} >= {"vscode-environment-state", "runtime-context"}
 
     with pytest.raises(FileExistsError, match="Work directory already exists"):
@@ -168,7 +174,12 @@ def test_vscode_environment_requirements_and_validation_templates(tmp_path: Path
     assert "custom-design" in requirements
     assert second_req["path"] == req_result["path"]
     assert "terminal.integrated.env.windows" in requirements
+    assert "UTF-8 First / Mojibake Prevention" in requirements
+    assert '"files.encoding": "utf8"' in requirements
+    assert "独自の `[encoding]` table" in requirements
+    assert "aiwfctl doctor --fail-on-warning" in requirements
     assert validation_json["status"] == "conditional-pass"
+    assert any("UTF-8 First" in item for item in validation_json["missing_required_items"])
     assert "Workspace共有Artifact検証" in validation_md
     assert "- 必須tool一覧" in validation_md
 
