@@ -12,6 +12,7 @@
       "overview": "箇条書き草案から完成版の要件定義書を作成する。",
       "prerequisites": [
         "人間が作成した草案が work/requirements/draft/ にある。",
+        "SDKプログラムを使う場合は work/requirements/sdk/ に配置する。無い場合はSDK事前解析をスキップする。",
         "完成版保存前に人間レビューとOKを得る前提で進める。",
         "Critical項目が不明な場合は推測で確定しない。"
       ],
@@ -28,6 +29,10 @@
       "details": [
         "work/requirements/draft/ の人間作成草案を読む。",
         "Noise Reductionで不明ワード、曖昧表現、Critical項目不足を抽出する。",
+        "work/requirements/sdk/ があれば aiwfctl sdk analyze --work-id <work-id> を実行し、SDK解析contextと要件追記候補を作成する。",
+        "aiwfctl sdk discover --work-id <work-id> を実行し、公式docs、package registry、release notes、security advisory確認用の外部discovery contextを作成する。",
+        "AWS/GCP SDKはcloud metadata、Stripe SDKはpayment metadataとして、専用のHuman Check項目を要件定義へ引き継ぐ。",
+        "SDK採用可否、license、vendor lock-in、credential管理、production network、cost、deprecated / unsupported status、security不明点は人間確認なしで確定しない。",
         "必要な質問を作成し、人間回答なしで完成版を確定しない。",
         "レビュー草案を作成し、人間OK後に work/requirements/ へ完成版を保存する。",
         "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
@@ -36,7 +41,8 @@
         "/requirement-discovery"
       ],
       "related_runtime": [
-        "runtime/workflow/noise_reduction.py"
+        "runtime/workflow/noise_reduction.py",
+        "runtime/workflow/sdk_analysis.py"
       ],
       "docs": [
         "docs/workflows/requirement-discovery.md",

@@ -1,4 +1,4 @@
-﻿# Runtime pytest 単体試験仕様書（564ケース）
+# Runtime pytest 単体試験仕様書（575ケース）
 
 作成日: 2026-07-07
 
@@ -12,10 +12,10 @@ coverage推移と監査履歴は repository root の `Runtime pytest 分岐・CL
 
 | 項目 | 値 |
 | --- | ---: |
-| pytest files | 33 |
-| pytest test functions | 551 |
-| pytest collected cases | 564 |
-| pytest result | `564 passed` |
+| pytest files | 34 |
+| pytest test functions | 562 |
+| pytest collected cases | 575 |
+| pytest result | `575 passed` |
 | statement coverage | 99.66% |
 | total coverage | 99.48% |
 
@@ -74,6 +74,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_retrieval_runtime.py](cases/test_retrieval_runtime.md) | 23 |
 | [test_scm_runtime.py](cases/test_scm_runtime.md) | 53 |
 | [test_self_improvement_workflow.py](cases/test_self_improvement_workflow.md) | 8 |
+| [test_sdk_analysis.py](cases/test_sdk_analysis.md) | 11 |
 | [test_svg_layout_modes.py](cases/test_svg_layout_modes.md) | 19 |
 | [test_vscode_environment_workflow.py](cases/test_vscode_environment_workflow.md) | 10 |
 | [test_vscode_workspace.py](cases/test_vscode_workspace.md) | 2 |
@@ -85,6 +86,6 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 - この文書は `pytest --collect-only -q tests` の収集結果を正として更新します。
 - 同期確認は `cd runtime && .\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py --spec ..\docs\reference\runtime-pytest-ut\case-specification.md --runtime-root . check` で実行します。
 - 入力値欄の再生成は `cd runtime && .\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py --spec ..\docs\reference\runtime-pytest-ut\case-specification.md --runtime-root . fix-inputs` で実行します。
-- テスト関数を追加、削除、renameした場合は、この564ケース仕様書も更新します。
+- テスト関数を追加、削除、renameした場合は、この575ケース仕様書も更新します。
 - `pytest.mark.parametrize` によって1つのtest functionから複数caseが収集される場合は、pytest node idのparameter表記まで仕様として残します。
 - 個別caseの詳細な入力値やfixtureは、該当pytest sourceを正とします。

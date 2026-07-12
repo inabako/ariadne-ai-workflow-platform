@@ -39,6 +39,7 @@
 | `runtime/workflow/knowledge_capture.py` | PR材料、knowledge capture report、archive readinessを作り、target repository側の `docs/evidence/<issue-id>/` scaffoldを自動生成する |
 | `runtime/workflow/close_archive.py` | `work/close/<category>/<archive-id>`を軽量なreport-only archiveとして作成、監査、承認付きpruneする |
 | `runtime/workflow/noise_reduction.py` | 要件定義前の不明ワード、Critical項目不足、曖昧表現を抽出し、Human InterviewとReadinessを生成する |
+| `runtime/workflow/sdk_analysis.py` | 要件定義工程で `work/requirements/sdk/` のSDKプログラムを事前解析し、SDK分析context、外部関連資料discovery context、要件追記候補、Knowledge JSON候補を生成する。AWS/GCPはcloud metadata、Stripeはpayment metadataとして専用Human Checkを出す |
 | `runtime/workflow/workflow_state.py` | workflowの現在地を `context/workflow-state.json` として標準化する |
 | `runtime/workflow/context_first.py` | Context First manifestを作成・確認し、必須Dispatcher Context不足時にHuman Checkへ戻す |
 | `runtime/workflow/human_gate_policy.py` | 人間承認が必要な操作をregistryで確認する |

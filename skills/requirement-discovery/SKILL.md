@@ -39,21 +39,58 @@ work/requirements/draft/<draft-name>.txt
 
 If no draft exists, ask the human to place a draft there. If multiple drafts exist and the target was not specified, ask which one to process.
 
+## Optional SDK Program Input
+
+SDK program files may be placed under the requirement input folder:
+
+```text
+work/requirements/sdk/
+```
+
+If this directory does not exist, is empty, or contains no analyzable SDK program files, skip SDK pre-analysis and continue requirement discovery.
+
+When SDK input exists, run:
+
+```powershell
+aiwfctl sdk analyze --work-id <work-id>
+aiwfctl sdk discover --work-id <work-id>
+```
+
+Main outputs:
+
+```text
+work/<work-id>/reports/sdk-analysis-report.md
+work/<work-id>/context/sdk-analysis-context.json
+work/<work-id>/context/sdk-files.json
+work/<work-id>/requirements/sdk-integration-requirements.md
+work/<work-id>/reports/sdk-external-discovery-report.md
+work/<work-id>/context/sdk-external-discovery.json
+work/<work-id>/requirements/sdk-external-requirements.md
+```
+
+The SDK analysis context is optional supporting context. It must not replace human confirmation for license, adoption, vendor lock-in, auth management, production network usage, cost, deprecated / unsupported SDK status, or unclear security behavior.
+
+The SDK external discovery context is a search plan and evidence handoff. It identifies official docs, package registry, release notes, security advisory, and deprecation checks to perform. Do not store full external page bodies.
+
+For AWS / GCP SDKs, the analysis also records cloud provider, language, package manager, SDK generation, candidate services, credential model, region / project requirements, local test options, and cloud-specific Human Checks.
+For Stripe SDKs, the analysis records payment vendor, SDK language, package manager, candidate payment services, API key / webhook signing secret handling, test mode, idempotency, PCI boundary, refund / chargeback / tax concerns, and payment-specific Human Checks.
+
 ## Workflow
 
 1. Read the human bullet-list draft.
 2. Inspect for missing, unclear, or contradictory information.
 3. Run the Noise Reduction Phase before creating a requirement review draft.
 4. If Noise Reduction readiness is `BLOCK`, return the Human Interview sheet to the human and do not continue.
-5. Identify knowledge gaps where the team lacks enough technical context to ask good requirement questions.
-6. If prior internal RAG is relevant, run `/rag-load` for prior findings, risks, or test gaps.
-7. If external technical knowledge is needed, use `rag/external-web/knowledge-sources.md` as the source index.
-8. If specialist knowledge is needed to ask good questions or frame constraints, run the relevant Specialist Agent as QA support.
-9. Ask the human focused questions when clarification is required.
-10. Review the human answers together with the original draft, Noise Reduction outputs, and any cited RAG context.
-11. Create a requirement review draft under `work/requirements/draft/`.
-12. Request human review.
-13. After explicit human OK, save the completed requirement document under `work/requirements/`.
+5. If a `work/requirements/sdk/` input exists, run SDK Pre-Analysis and SDK External Discovery, then register `sdk-analysis` and `sdk-external-discovery` into the Context First manifest.
+6. Identify knowledge gaps where the team lacks enough technical context to ask good requirement questions.
+7. If prior internal RAG is relevant, run `/rag-load` for prior findings, risks, or test gaps.
+8. If external technical knowledge is needed, use `rag/external-web/knowledge-sources.md` as the source index.
+9. If specialist knowledge is needed to ask good questions or frame constraints, run the relevant Specialist Agent as QA support.
+10. Ask the human focused questions when clarification is required.
+11. Review the human answers together with the original draft, Noise Reduction outputs, SDK analysis context, and any cited RAG context.
+12. Create a requirement review draft under `work/requirements/draft/`.
+13. Request human review.
+14. After explicit human OK, save the completed requirement document under `work/requirements/`.
 
 ## Noise Reduction Phase Gate
 

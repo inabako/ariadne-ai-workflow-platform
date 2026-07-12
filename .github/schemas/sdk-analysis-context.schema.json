@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/inabako/ariadne-ai-workflow-platform/schemas/sdk-analysis-context.schema.json",
+  "title": "SDK Analysis Context",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "status", "work_id", "source"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "type": "string", "const": "sdk-analysis-context" },
+    "status": {
+      "type": "string",
+      "enum": ["available", "human-check-required", "skipped"]
+    },
+    "work_id": { "type": "string" },
+    "workflow": { "type": "string" },
+    "source": {
+      "type": "object",
+      "required": ["path", "exists", "analyzed_file_count", "files"],
+      "properties": {
+        "path": { "type": "string" },
+        "exists": { "type": "boolean" },
+        "analyzed_file_count": { "type": "integer", "minimum": 0 },
+        "files": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "sdk": { "type": "object" },
+    "cloud": { "type": "object" },
+    "payment": { "type": "object" },
+    "inventory": { "type": "array", "items": { "type": "object" } },
+    "findings": { "type": "object" },
+    "secret_findings": { "type": "array", "items": { "type": "object" } },
+    "human_checks": { "type": "array", "items": { "type": "string" } },
+    "artifacts": { "type": "object" },
+    "rules": { "type": "object" }
+  }
+}

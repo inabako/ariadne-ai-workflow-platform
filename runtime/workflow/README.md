@@ -231,6 +231,38 @@ python runtime/workflow/workflow_doctor.py --fail-on-warning
 
 主に、`work/` のREADME-only policy、Ariadne本体側 `rag/` の非追跡policy、必須runtime file、close archive標準8ファイルを確認します。
 
+## `sdk_analysis.py`
+
+要件定義工程で `work/requirements/sdk/` に置かれたSDKプログラムを事前解析します。入力が無い場合は `status: skipped` として、親workflowを止めません。
+
+```powershell
+python runtime/workflow/sdk_analysis.py analyze --work-id issue-123
+python runtime/workflow/sdk_analysis.py discover --work-id issue-123
+aiwfctl sdk analyze --work-id issue-123
+aiwfctl sdk discover --work-id issue-123
+```
+
+主な出力:
+
+```text
+work/<work-id>/reports/sdk-analysis-report.md
+work/<work-id>/context/sdk-analysis-context.json
+work/<work-id>/context/sdk-files.json
+work/<work-id>/requirements/sdk-integration-requirements.md
+work/<work-id>/reports/sdk-external-discovery-report.md
+work/<work-id>/context/sdk-external-discovery.json
+work/<work-id>/requirements/sdk-external-requirements.md
+work/db/ariadne-knowledge-platform/rag/jsonized/<knowledge-id>.json
+```
+
+`sdk-analysis-context.json` は Context First manifest に `sdk-analysis` として登録されます。secret-like literalは値をコピーせず、検出事実だけをHuman Checkへ渡します。
+
+AWS / GCP SDKでは、provider、言語、package manager、SDK世代、候補サービス、credential model、region / project要件、local test候補、cloud固有のHuman Checkを `cloud` として構造化します。`sdk-files.json` にはSHA-256付きinventoryを保存します。
+
+Stripe SDKでは、payment vendor、言語、package manager、候補payment service、API key / webhook signing secret、test mode、idempotency、PCI境界、返金・chargeback・税・通貨などのHuman Checkを `payment` として構造化します。
+
+`sdk-external-discovery.json` は Context First manifest に `sdk-external-discovery` として登録されます。これは外部ページ本文を保存せず、公式docs、package registry、release notes、security advisory確認の候補URLと検索queryを後続workflowへ渡すためのcontextです。
+
 ## Runtime pytest
 
 runtimeの重要CLIを変更した場合は、軽量pytestを実行します。

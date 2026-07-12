@@ -13,6 +13,7 @@ if __package__ in {None, ""}:
 
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
+from runtime.workflow import sdk_analysis  # noqa: E402
 from runtime.workflow import workflow_doctor  # noqa: E402
 from runtime.workflow import dispatcher_context  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
@@ -989,6 +990,30 @@ def build_parser() -> argparse.ArgumentParser:
     knowledge_verify.add_argument("--source-repo", default="")
     knowledge_verify.add_argument("--json", action="store_true")
 
+    sdk_cmd = sub.add_parser("sdk", help="Analyze SDK input before requirement discovery review drafting.")
+    sdk_sub = sdk_cmd.add_subparsers(dest="sdk_command")
+    sdk_analyze = sdk_sub.add_parser("analyze", help="Analyze work/requirements/sdk and create SDK analysis context.")
+    sdk_analyze.add_argument("--work-id", required=True)
+    sdk_analyze.add_argument("--source", default="", help="SDK program directory. Default: work/requirements/sdk")
+    sdk_analyze.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    sdk_analyze.add_argument(
+        "--knowledge-dir",
+        default="",
+        help="Knowledge JSON output directory. Default: work/db/ariadne-knowledge-platform/rag/jsonized",
+    )
+    sdk_analyze.add_argument("--no-knowledge", action="store_true", help="Do not write Knowledge JSON.")
+    sdk_analyze.add_argument("--skip-sdk-analysis", action="store_true")
+    sdk_analyze.add_argument("--max-files", type=int, default=200)
+    sdk_analyze.add_argument("--max-bytes", type=int, default=120_000)
+    sdk_analyze.add_argument("--json", action="store_true")
+    sdk_discover = sdk_sub.add_parser("discover", help="Create external source discovery plan from work/requirements/sdk.")
+    sdk_discover.add_argument("--work-id", required=True)
+    sdk_discover.add_argument("--source", default="", help="SDK program directory. Default: work/requirements/sdk")
+    sdk_discover.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    sdk_discover.add_argument("--max-files", type=int, default=200)
+    sdk_discover.add_argument("--max-bytes", type=int, default=120_000)
+    sdk_discover.add_argument("--json", action="store_true")
+
     doctor_cmd = sub.add_parser("doctor", help="Run workflow repository health checks.")
     doctor_cmd.add_argument("--json", action="store_true", help="Print doctor result as JSON.")
     doctor_cmd.add_argument("--fail-on-warning", action="store_true", help="Return non-zero when warnings are found.")
@@ -1033,6 +1058,7 @@ def format_root_usage_warning(color: bool = False) -> str:
             "  aiwfctl env select gui-mode",
             "  aiwfctl context init --work-id issue-123 --workflow /docs-sync",
             "  aiwfctl knowledge search --query \"PyQt GUI smoke test\"",
+            "  aiwfctl sdk analyze --work-id issue-123",
             "  aiwfctl doctor",
             "  aiwfctl path check",
             "  aiwfctl path register",
@@ -1285,6 +1311,34 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
         if getattr(args, "json", False):
             return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
         return 0, format_knowledge_result(result)
+
+    if command == "sdk":
+        sdk_command = getattr(args, "sdk_command", None)
+        if sdk_command is None:
+            return 1, (
+                "SDK Analysis\n\n"
+                "Usage:\n"
+                "  aiwfctl sdk analyze --work-id <work-id>\n"
+                "  aiwfctl sdk discover --work-id <work-id>\n"
+                "  aiwfctl sdk analyze --work-id <work-id> --source work/requirements/sdk\n\n"
+                "Outputs:\n"
+                "  work/<work-id>/reports/sdk-analysis-report.md\n"
+                "  work/<work-id>/context/sdk-analysis-context.json\n"
+                "  work/<work-id>/requirements/sdk-integration-requirements.md\n"
+                "  work/<work-id>/reports/sdk-external-discovery-report.md\n"
+                "  work/<work-id>/context/sdk-external-discovery.json\n"
+                "  work/<work-id>/requirements/sdk-external-requirements.md\n"
+            )
+        try:
+            sdk_args = argparse.Namespace(**vars(args))
+            sdk_args.command = sdk_command
+            sdk_args.repo_root = str(repo_root)
+            result = sdk_analysis.run(sdk_args)
+        except Exception as exc:
+            return 1, f"SDK analysis failed: {exc}\n"
+        if getattr(args, "json", False):
+            return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        return 0, sdk_analysis.format_result(result) + "\n"
 
     if command == "doctor":
         result = workflow_doctor.run(

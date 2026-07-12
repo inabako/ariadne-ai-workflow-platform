@@ -35,6 +35,47 @@ Accepted draft extensions:
 
 The preferred input is one `.txt` bullet-list draft.
 
+## Optional SDK Program Input
+
+SDK program files are optional input for this requirement discovery run.
+
+Place them here:
+
+```text
+work/requirements/sdk/
+```
+
+If the directory is missing, empty, contains excluded-only files, or is intentionally skipped, do not block the workflow. Record that SDK pre-analysis was skipped and continue.
+
+If analyzable SDK input exists, run SDK pre-analysis before creating the requirement review draft:
+
+```powershell
+aiwfctl sdk analyze --work-id <work-id>
+aiwfctl sdk discover --work-id <work-id>
+```
+
+Outputs:
+
+```text
+work/<work-id>/reports/sdk-analysis-report.md
+work/<work-id>/context/sdk-analysis-context.json
+work/<work-id>/context/sdk-files.json
+work/<work-id>/requirements/sdk-integration-requirements.md
+work/<work-id>/reports/sdk-external-discovery-report.md
+work/<work-id>/context/sdk-external-discovery.json
+work/<work-id>/requirements/sdk-external-requirements.md
+```
+
+Carry `sdk-integration-requirements.md`, `sdk-analysis-context.json`, `sdk-external-requirements.md`, and `sdk-external-discovery.json` into the requirement review draft as supporting context.
+
+Do not finalize SDK adoption, license acceptability, vendor lock-in, credential management, production network use, cost, deprecated / unsupported status, or unclear security behavior without human confirmation.
+
+External discovery is a search plan and evidence handoff. Prefer official docs, package registry, official repository, release notes, changelog, migration guide, security advisory, and deprecation notice. Do not store full external page bodies.
+
+For AWS / GCP SDKs, carry cloud provider, language, package manager, SDK generation, candidate services, credential model, region / project requirements, local test options, and cloud-specific Human Checks into the requirement review draft.
+
+For Stripe SDKs, carry payment vendor, payment services, API key / webhook signing secret handling, test mode, idempotency, PCI boundary, refund / chargeback / tax / currency concerns, and payment-specific Human Checks into the requirement review draft.
+
 ## Delegated Agent
 
 Use:
@@ -49,16 +90,18 @@ Use:
 2. AI inspects the draft.
 3. AI runs Noise Reduction Phase and creates terminology, conflict, ambiguity, Human Interview, glossary, and readiness artifacts.
 4. If Noise Reduction readiness is `BLOCK`, AI stops and sends Human Interview questions back to the human.
-5. AI identifies both clarification gaps and technical knowledge gaps.
-6. If saved internal RAG is relevant, AI reads prior findings through `/rag-load`.
-7. If external knowledge is needed, AI uses `rag/external-web/knowledge-sources.md` and the external-web agents to create or dispatch external-web RAG.
-8. If specialist knowledge is needed to ask good questions or frame constraints, AI uses Specialist Agent QA support.
-9. If the draft is unclear, AI sends questions back to the human.
-10. Human answers.
-11. AI inspects the draft, answers, Noise Reduction outputs, and cited RAG context again.
-12. AI creates a requirement review draft under `work/requirements/draft/`.
-13. Human reviews the requirement review draft.
-14. After explicit human OK, AI saves the completed requirement document under `work/requirements/`.
+5. AI checks whether `work/requirements/sdk/` exists and has analyzable files.
+6. If SDK input exists, AI runs `aiwfctl sdk analyze --work-id <work-id>` and `aiwfctl sdk discover --work-id <work-id>`, then registers `sdk-analysis` and `sdk-external-discovery` contexts. If not, AI skips without blocking.
+7. AI identifies both clarification gaps and technical knowledge gaps.
+8. If saved internal RAG is relevant, AI reads prior findings through `/rag-load`.
+9. If external knowledge is needed, AI uses `rag/external-web/knowledge-sources.md` and the external-web agents to create or dispatch external-web RAG.
+10. If specialist knowledge is needed to ask good questions or frame constraints, AI uses Specialist Agent QA support.
+11. If the draft is unclear, AI sends questions back to the human.
+12. Human answers.
+13. AI inspects the draft, answers, Noise Reduction outputs, SDK analysis context, and cited RAG context again.
+14. AI creates a requirement review draft under `work/requirements/draft/`.
+15. Human reviews the requirement review draft.
+16. After explicit human OK, AI saves the completed requirement document under `work/requirements/`.
 
 ## Noise Reduction Phase
 
