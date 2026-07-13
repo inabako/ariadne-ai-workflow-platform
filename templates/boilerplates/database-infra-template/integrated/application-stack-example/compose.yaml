@@ -1,0 +1,20 @@
+include:
+  - ../../postgresql/docker-compose/compose.yaml
+
+services:
+  app-placeholder:
+    image: alpine:3.20
+    command: ["sh", "-c", "echo Use database_connection contract from Terraform output; sleep 3600"]
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    environment:
+      DATABASE_ENGINE: postgresql
+      DATABASE_HOST: postgresql
+      DATABASE_PORT: "5432"
+      DATABASE_NAME: app_db
+      DATABASE_USERNAME_SECRET_REF: database.username
+      DATABASE_PASSWORD_SECRET_REF: database.password
+    networks:
+      - database_internal
+

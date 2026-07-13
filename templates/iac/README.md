@@ -20,3 +20,4 @@
 - Docker Desktopで検証できないLinux依存項目は Linux runtime validation へ移す。
 - Host設定変更やinstallが必要な検証は、人間承認前に実行しない。
 - 開発・CI/CD・監視platformを構築する場合は `templates/boilerplates/platform-infra-template/` を候補にし、Terraform component selection、Docker Compose profile、admin CIDR、secret source、backup / restore、product別validation evidenceを確認する。
+- PostgreSQL / MySQLなどのDB基盤を構築する場合は `templates/boilerplates/database-infra-template/` を候補にし、connection contract、app user、persistence、backup / restore、migration、secret redaction、evidenceを確認する。

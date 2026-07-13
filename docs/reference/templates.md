@@ -37,7 +37,7 @@ templates/
 | `templates/iac/` | `software-inventory-template.md`, `communication-specification-template.md`, `realtime-iac-design-template.md`, `realtime-iac-test-specification-template.md` | リアルタイムシステム向けIaCの受領gate、設計、Docker Desktop / Linux / integration検証 |
 | `templates/editorconfig/` | `target-repository.editorconfig` | target repositoryのencoding / line ending補助 |
 | `templates/noise-reduction/` | `*-report-template.md`, `human-interview-sheet-template.md`, `project-glossary-template.md`, `readiness-report-template.md` | 要件定義前の未知用語、用語衝突、表記揺れ、資料矛盾、曖昧表現、Human Interview、Glossary、Readiness成果物 |
-| `templates/boilerplates/` | `gateway-template/`, `nextjs-webapp-template/`, `pyqt-template/`, `realtime-gateway-infra-template/`, `platform-infra-template/`, `cloud-emulators/`, `flutter/` | 新規Go gateway / Next.js webapp / PyQt GUI / realtime gateway IaC / platform infrastructure / cloud emulator / Flutter multi-platform環境をtemplateから生成するためのboilerplate置き場 |
+| `templates/boilerplates/` | `gateway-template/`, `nextjs-webapp-template/`, `pyqt-template/`, `realtime-gateway-infra-template/`, `platform-infra-template/`, `database-infra-template/`, `cloud-emulators/`, `flutter/` | 新規Go gateway / Next.js webapp / PyQt GUI / realtime gateway IaC / platform infrastructure / database infrastructure / cloud emulator / Flutter multi-platform環境をtemplateから生成するためのboilerplate置き場 |
 | `templates/gui-mode/` | `README.md` | SVG入力、GaC / UaC生成、親workflowへの安全な返却方法 |
 | `templates/web-svg-layout/` | `README.md` | Web画面向けSVG入力、layout / React / Playwright候補、親workflowへの安全な返却方法 |
 | `templates/self-improvement/` | `workflow-feedback-template.md`, `self-improvement-issue-template.md`, `self-improvement-checklist.md` | workflow摩擦のFeedback report、Issue body、採用判断checklist |
@@ -60,6 +60,7 @@ templates/
 - Self-Improvement Workflowでは、Feedback reportを `work/feedback/` 直下に保存し、テンプレートは `templates/self-improvement/` を使う。
 - IaC工程では、realtime gateway infrastructure が対象に含まれる場合 `realtime-gateway-infra-template/` を候補にし、shared artifacts、software inventory、secret source、firewall policy、rollbackを確認してからコピーする。
 - IaC工程で開発基盤、CI/CD基盤、監視基盤が対象に含まれる場合 `platform-infra-template/` を候補にし、Terraform component selection、Docker Compose profile、admin CIDR、secret source、backup / restore、product別validation evidenceを確認してからコピーする。
+- IaC工程でPostgreSQL、MySQL、DB connection contract、backup / restore、migrationが対象に含まれる場合 `database-infra-template/` を候補にし、DB engine、DB version、database name、app user、connection source、persistence、backup / restore、migration、secret redaction、evidenceを確認してからコピーする。
 - System Integration Quality workflowでクラウドまたは外部サービスSDKが検出された場合、`templates/boilerplates/cloud-emulators/` を候補にし、`work/<work-id>/test-environment/emulator/` へコピーしてから起動する。本番credentialは使わない。
 - Flutter Multi-platform workflowでは、`templates/boilerplates/flutter/` を候補にし、`work/<work-id>/implementation/flutter-project/` へコピーする。対象platform未指定時は全platform対応と推測しない。
 - テスト成果物の保存先は [Test Artifact Storage](test-artifact-storage.md) に従う。

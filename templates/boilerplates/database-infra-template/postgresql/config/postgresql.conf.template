@@ -1,0 +1,5 @@
+listen_addresses = '*'
+max_connections = {{POSTGRES_MAX_CONNECTIONS}}
+timezone = '{{POSTGRES_TIMEZONE}}'
+client_encoding = 'UTF8'
+

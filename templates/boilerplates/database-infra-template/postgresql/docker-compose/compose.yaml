@@ -1,0 +1,34 @@
+services:
+  postgresql:
+    image: postgres:16-alpine
+    container_name: ariadne-postgresql
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    env_file:
+      - env.example
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-app_db}
+      POSTGRES_USER: ${POSTGRES_ADMIN_USER:-postgres_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:-change-me-in-secret-source}
+      TZ: ${POSTGRES_TIMEZONE:-Asia/Tokyo}
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+      - ../init:/docker-entrypoint-initdb.d:ro
+      - ../config/postgresql.conf.template:/etc/postgresql/postgresql.conf.template:ro
+      - postgresql_backup:/backup
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    networks:
+      - database_internal
+
+volumes:
+  postgresql_data:
+  postgresql_backup:
+
+networks:
+  database_internal:
+    internal: true
+

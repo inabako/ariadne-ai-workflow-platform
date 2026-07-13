@@ -13,6 +13,7 @@
 | `pyqt-template/` | PyQt / Qt GUI app | `pyqt-template_組み込み指示書.md` | available |
 | `realtime-gateway-infra-template/` | Realtime gateway IaC / infrastructure | `realtime-gateway-infra-template_実装指示書.md` | available |
 | `platform-infra-template/` | GitLab / Jenkins / Grafana / Zabbix platform infrastructure | `Platform_Infrastructure_Boilerplate_追加実装指示書.md` | available |
+| `database-infra-template/` | PostgreSQL / MySQL shared database infrastructure | `Database_Infrastructure_Boilerplate_追加実装指示書.md` | available |
 | `cloud-emulators/` | Local cloud / external service emulator environment | `docs/workflows/system-integration-quality.md` | available |
 
 ## Workflow Rule
@@ -24,6 +25,7 @@
 - template採用時も、architecture、protocol、port、safety behavior、test case table、evidence planを省略しません。
 - IaC template採用時も、shared artifacts、software inventory、public exposure、secret source、firewall policy、rollbackを省略しません。
 - platform infrastructure template採用時は、Terraform component selection、Docker Compose profile、admin CIDR、secret source、backup / restore、product別validation evidenceを省略しません。
+- database infrastructure template採用時は、DB engine、DB version、database name、app user、connection source、persistence、backup / restore、migration、connection contract、secret redaction、evidenceを省略しません。
 - cloud emulator template採用時も、本番credentialを使わず、`work/<work-id>/test-environment/emulator/` へコピーしてから起動し、`test-evidence/emulator/` に本番差分とHuman Checkを残します。
 
 ## Expected Selection Report

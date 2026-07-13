@@ -31,7 +31,7 @@ created_at:
 
 | Component | Type | Language / Framework | Template Candidate | Match |
 | --- | --- | --- | --- | --- |
-|  | Go gateway / Next.js webapp / PyQt GUI / realtime gateway IaC / platform infrastructure / other |  | gateway-template / nextjs-webapp-template / pyqt-template / realtime-gateway-infra-template / platform-infra-template / none | yes / no |
+|  | Go gateway / Next.js webapp / PyQt GUI / realtime gateway IaC / platform infrastructure / database infrastructure / other |  | gateway-template / nextjs-webapp-template / pyqt-template / realtime-gateway-infra-template / platform-infra-template / database-infra-template / none | yes / no |
 
 ## Template Availability
 
@@ -42,6 +42,7 @@ created_at:
 | pyqt-template | `templates/boilerplates/pyqt-template/` | yes / no | `pyqt-template_組み込み指示書.md` |
 | realtime-gateway-infra-template | `templates/boilerplates/realtime-gateway-infra-template/` | yes / no | `realtime-gateway-infra-template_実装指示書.md` |
 | platform-infra-template | `templates/boilerplates/platform-infra-template/` | yes / no | `Platform_Infrastructure_Boilerplate_追加実装指示書.md` |
+| database-infra-template | `templates/boilerplates/database-infra-template/` | yes / no | `Database_Infrastructure_Boilerplate_追加実装指示書.md` |
 
 ## Decision
 
@@ -71,6 +72,7 @@ Use only when `decision: use-template`.
 | API client / auth / environment boundary |  |  | yes / no |  |
 | network / runtime / security / observability / dns |  |  | yes / no |  |
 | platform component / CI/CD / monitoring / backup / restore |  |  | yes / no |  |
+| database engine / connection contract / migration / backup / restore |  |  | yes / no |  |
 
 ## Required Tests
 
@@ -94,6 +96,11 @@ Use only when `decision: use-template`.
 | Jenkins sample job | yes / no |  |  |
 | Grafana datasource / dashboard | yes / no |  |  |
 | Zabbix item / problem / recovery | yes / no |  |  |
+| database connection | yes / no |  |  |
+| database read / write | yes / no |  |  |
+| database persistence | yes / no |  |  |
+| database backup / restore | yes / no |  |  |
+| database migration | yes / no |  |  |
 | environment tfvars example review | yes / no |  |  |
 | firewall / exposure consistency | yes / no |  |  |
 | secret placeholder check | yes / no |  |  |
@@ -109,6 +116,7 @@ Use only when `decision: use-template`.
 - STOP、communication loss、startup safe state、shutdown safe stateのtestを省略しない。
 - IaC template採用時は、shared artifacts、software inventory、public exposure、secret source、firewall policy、rollbackを省略しない。
 - platform infrastructure template採用時は、Terraform component selection、Docker Compose profile、admin CIDR、secret source、backup / restore、product別validation evidenceを省略しない。
+- database infrastructure template採用時は、DB engine、DB version、database name、app user、connection source、persistence、backup / restore、migration、connection contract、secret redaction、evidenceを省略しない。
 - `.env`、real secret、production password、private keyを生成しない。
 - Templateが存在しない場合は、従来実装へ進む理由を記録する。
 

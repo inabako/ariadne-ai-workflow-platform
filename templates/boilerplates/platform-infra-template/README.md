@@ -10,6 +10,7 @@
 | --- | --- |
 | `realtime-gateway-infra-template/` | アプリケーション実行基盤、gateway runtime、port、network、observability |
 | `platform-infra-template/` | GitLab、Jenkins、Grafana、Zabbix などの開発・CI/CD・監視platform |
+| `database-infra-template/` | PostgreSQL、MySQL などの共通DB基盤。platform製品からも参照するが、このtemplate配下には実装しない |
 
 ## Terraform First
 
@@ -84,4 +85,3 @@ Terraform が利用可能な環境:
 - GitLab / Jenkins / Grafana / Zabbix の責務を `realtime-gateway-infra-template/` と混ぜない。
 - validation結果は `work/<receipt-id>/test-evidence/` またはtarget repoの `docs/evidence/` に保存する。
 - prodではadmin CIDR、secret source、backup、restore、rollback、public exposureをHuman Check対象にする。
-
