@@ -1,6 +1,6 @@
-﻿# Intent-Driven Robotics AI Workflow: Agent Guide
+# Ariadne AI Workflow: Agent Guide
 
-このリポジトリは、Localty の robotics system development を Intent、Safety、Operational Learning を中心に進めるための AI workflow repository です。
+このリポジトリは、Localty の対象システム開発を Intent、Safety、Operational Learning を中心に進めるための AI workflow repository です。
 
 Agent は、単に成果物を作るだけではなく、次のAgentと人間が判断を継続できるように、context、decision、reason、evidence、risk、open QA を残してください。
 
@@ -13,7 +13,16 @@ Agent は、単に成果物を作るだけではなく、次のAgentと人間が
 - 実装前に責務境界
 - 現場学習をRAG知識として残す
 
-Robotics workflow では、実装できたかより先に、安全に試せるか、安全に止められるか、安全に戻せるかを確認します。
+Ariadne workflow では、実装できたかより先に、安全に試せるか、安全に止められるか、安全に戻せるかを確認します。
+
+## Ariadne Responsibility
+
+Ariadne は、AI Agent が迷わず作業を進めるために、workflow の入口、context、decision、evidence、Human Check、handoff を管理します。
+
+- 会話ログではなく、後続Agentと人間が読める artifact を残す。
+- 対象システムの責務境界、risk、test evidence を先に見える化する。
+- GitHub Issue、branch、push、install、RAG公開などの副作用は Human Check で分離する。
+- workflow 中に摩擦や不足を見つけた場合は、Ariadne 自身の改善候補として保存する。
 
 ## Directory Roles
 
@@ -73,24 +82,24 @@ Workflow prompts live in `.github/prompts/`.
 
 Current prompt set:
 
-- `/robotics-workflow`
+- `/ariadne-workflow`
 - `/requirement-discovery`
 - `/docs-sync`
 - `/github-knowledge-maintenance`
 - `/vscode-environment`
-- `/robotics-new-system`
-- `/robotics-feature-maintenance`
+- `/ariadne-new-system`
+- `/ariadne-feature-maintenance`
 - `gac-uac-gui-mode` (parent workflow extension; not a standalone Skill)
 - `/corrective-action-report`
 - `/corrective-action-fix`
 - `/pre-development-preparation`
 - `/rag-build`
 - `/rag-load`
-- `/new-robotics-system-development`
-- `/robotics-maintenance-development`
-- `/robotics-safety-gates`
-- `/robotics-test-strategy`
-- `/robotics-release-and-field-operation`
+- `/ariadne-new-system-development`
+- `/ariadne-feature-maintenance-development`
+- `/ariadne-safety-gates`
+- `/ariadne-test-strategy`
+- `/ariadne-release-and-field-operation`
 
 Role-based Agent prompts live in `.github/agents/`.
 
@@ -102,8 +111,8 @@ Current Skill entrypoints:
 - `/docs-sync` -> `skills/docs-sync/SKILL.md` -> `work/<target-branch>/context/docs-drift-analysis.json`, then docs-only `feature/issue-<number>`
 - `/github-knowledge-maintenance` -> `skills/github-knowledge-maintenance/SKILL.md` -> `work/github-knowledge-<repository>-<mode>/context/github-knowledge-analysis.json`, then approval-gated GitHub documentation sync and RAG candidates
 - `/vscode-environment` -> `skills/vscode-environment/SKILL.md` -> `work/<work-id>/`, `.vscode/*`, optional `workspace.code-workspace`
-- `/robotics-new-system` -> `skills/robotics-new-system/SKILL.md` -> `/new-robotics-system-development`
-- `/robotics-feature-maintenance` -> `skills/robotics-feature-maintenance/SKILL.md` -> `/robotics-maintenance-development`
+- `/ariadne-new-system` -> `skills/ariadne-new-system/SKILL.md` -> `/ariadne-new-system-development`
+- `/ariadne-feature-maintenance` -> `skills/ariadne-feature-maintenance/SKILL.md` -> `/ariadne-feature-maintenance-development`
 - `/corrective-action-report` -> `skills/corrective-action-report/SKILL.md` -> `rag/corrective-action-report/`
 - `/corrective-action-fix` -> `skills/corrective-action-fix/SKILL.md` -> `work/<branch>/`, `work/issue-<issue-number>/`, `feature/issue-<issue-number>`
 - `/rag-build` -> `skills/rag-build/SKILL.md` -> `rag/normalized/`, `rag/chunks/`, `rag/indexes/`, `rag/embeddings/`
