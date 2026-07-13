@@ -51,7 +51,7 @@ tags:
 
 | Participant ID | Name | Type | Owner | Network Zone | Trust Level | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| P-001 |  | robot / gateway / operator-ui / service / external-system / monitoring |  | private / public / host / container / field | trusted / semi-trusted / untrusted |  |
+| P-001 |  | controller / gateway / operator-ui / service / external-system / monitoring |  | private / public / host / container / field | trusted / semi-trusted / untrusted |  |
 
 ## 4. Communication Flow Matrix
 

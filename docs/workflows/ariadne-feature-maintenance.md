@@ -66,7 +66,7 @@ Intake
 特に次はreview対象です。
 
 - STOP、communication loss、safe state、watchdog
-- robot command authority、operator workflow
+- control command authority、operator workflow
 - UDP / TCP / QUIC / NAT / routing
 - Python / Go runtime、thread、async、process lifecycle
 - GStreamer、video latency、receiver behavior
@@ -99,7 +99,7 @@ High / critical finding がある場合は、Change DesignまたはTest Planへ�
 - show / close lifecycle
 - external I/O disabled or stubbed startup
 
-実robot、実camera、physical STOP、router / VPN / field networkは、QTestだけで完了扱いにせず、人間確認またはbench evidenceを残します。
+実機、実カメラ、physical STOP、router / VPN / field networkは、QTestだけで完了扱いにせず、人間確認またはbench evidenceを残します。
 
 ## GaC / UaC GUI Mode
 

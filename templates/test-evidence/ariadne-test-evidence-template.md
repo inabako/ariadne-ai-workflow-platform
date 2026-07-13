@@ -59,7 +59,7 @@ tags:
 | Item | Value |
 | --- | --- |
 | Location | lab / bench / field / CI / simulation |
-| Robot / Device |  |
+| Device / Runtime |  |
 | OS / Runtime |  |
 | Hardware Revision |  |
 | Network Condition | LAN / VPN / relay / intermittent / offline |

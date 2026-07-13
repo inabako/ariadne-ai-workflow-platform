@@ -104,7 +104,7 @@ work/issue-<issue-number>/test-evidence/qtest_integration/
 work/issue-<issue-number>/source/repository/docs/evidence/issue-<issue-number>/integration/qtest/
 ```
 
-QTestで自動化できない実robot、実camera、physical STOP、router / VPN / field networkは、manualまたはstartup evidenceとして残します。
+QTestで自動化できない実機、実カメラ、physical STOP、router / VPN / field networkは、manualまたはstartup evidenceとして残します。
 
 ## Push Gate
 

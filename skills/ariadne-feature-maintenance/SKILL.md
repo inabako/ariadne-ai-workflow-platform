@@ -186,7 +186,7 @@ Use the new-feature flow prefix for GitHub Issues:
 
 ## Specialist Review Gate
 
-Use Specialist Agent review when a change affects STOP behavior, communication loss, robot command authority, network routing/protocol behavior, runtime lifecycle, video pipeline, deployment platform, observability, or evidence strategy.
+Use Specialist Agent review when a change affects STOP behavior, communication loss, control command authority, network routing/protocol behavior, runtime lifecycle, video pipeline, deployment platform, observability, or evidence strategy.
 
 Save review outputs under:
 
@@ -200,7 +200,7 @@ The review must record trusted external-web RAG, rejected or limited claims, cur
 
 When the changed system includes a PyQt / Qt GUI, convert automatable GUI integration test cases from the approved test specification into QTest-based test sources.
 
-Keep physical robot behavior, real camera quality, physical STOP, router / VPN, and field network checks as bench / human-check evidence.
+Keep physical controlled-system behavior, real camera quality, physical STOP, router / VPN, and field network checks as bench / human-check evidence.
 
 
 ## Workflow Feedback Output

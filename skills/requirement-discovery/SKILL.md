@@ -147,7 +147,7 @@ Examples:
 - realtime gateway
 - NAT traversal
 - Go network programming
-- robot safety behavior
+- physical safety behavior
 - video transport
 - observability
 

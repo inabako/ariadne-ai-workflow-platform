@@ -716,7 +716,7 @@ def render_generation_plan(issue_id: str, mode: str, kind: str) -> str:
             "- `QApplication`を共有生成し、MainWindowのshow/closeを確認する。",
             "- `findChild`で主要Widgetを探索する。",
             "- buttonがある場合は`QTest.mouseClick`と`QSignalSpy`でsignalを確認する。",
-            "- 実network、camera、robot controller、外部processを起動しない。",
+            "- 実network、camera、device controller、外部processを起動しない。",
         ]
         phase = "qtest-generation"
     return front_matter(issue_id, mode, phase) + "\n".join(body)

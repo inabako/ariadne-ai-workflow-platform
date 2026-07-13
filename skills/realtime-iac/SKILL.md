@@ -229,7 +229,7 @@ The IaC workflow owns:
 The IaC workflow does not own:
 
 - application protocol semantics
-- robot control authority rules
+- control authority rules
 - business/application behavior
 - safety behavior definition
 - generated secrets

@@ -87,7 +87,7 @@ tags:
 
 ## 7. Test Environment Matrix
 
-| Environment ID | Location | Robot / Device | Network | Runtime / OS | Purpose |
+| Environment ID | Location | Device / Runtime | Network | Runtime / OS | Purpose |
 | --- | --- | --- | --- | --- | --- |
 | ENV-001 | CI / lab / bench / field |  | LAN / VPN / relay / intermittent |  |  |
 

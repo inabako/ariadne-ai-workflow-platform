@@ -123,7 +123,7 @@ SVGが無い場合も`work/<issue-id>/context/gui-mode-state.json`へ`status: sk
 - SVGを画像として貼るだけで完了しません。
 - SVG座標を`setGeometry`へ転写しません。
 - PyQt6候補はLayoutを使い、対象Widgetへ`objectName`を設定します。
-- controllerは注入可能にし、network、camera、robot、processなどの外部I/Oを直接起動しません。
+- controllerは注入可能にし、network、camera、device controller、processなどの外部I/Oを直接起動しません。
 - QTest候補はoffscreen実行、MainWindow生成、findChild、button signalを確認します。
 - generated配下を既存sourceへ無条件コピーしません。親workflowで差分reviewし、必要部分だけを通常のsource / testsへ統合します。
 
@@ -138,7 +138,7 @@ gac-uac/generated/pyqt6/
 gac-uac/generated/tests/
 ```
 
-実robot、実camera、physical STOP、field networkなどは、このサブワークフローのQTestだけで完了扱いにせず、親workflowのbench / integration / human checkへ残します。
+実機、実カメラ、physical STOP、field networkなどは、このサブワークフローのQTestだけで完了扱いにせず、親workflowのbench / integration / human checkへ残します。
 
 ## SVG Inbox Inspection
 

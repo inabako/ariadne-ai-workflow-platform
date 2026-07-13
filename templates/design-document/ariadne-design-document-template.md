@@ -85,12 +85,12 @@ tags:
 
 ## 7. System Context
 
-現場、operator、robot / device、network、外部systemとの関係を記載します。
+現場、operator、device / runtime、network、外部systemとの関係を記載します。
 
 | Actor / System | Responsibility | Input | Output | Failure Impact |
 | --- | --- | --- | --- | --- |
 | Operator |  |  |  |  |
-| Robot / Device |  |  |  |  |
+| Device / Runtime |  |  |  |  |
 | Runtime Process |  |  |  |  |
 | Remote Gateway |  |  |  |  |
 | External Service |  |  |  |  |
@@ -137,7 +137,7 @@ tags:
 | Shutdown safe state |  |  | yes |
 | Sensor failure |  |  |  |
 | Process crash |  |  |  |
-| Wrong robot connection |  |  |  |
+| Wrong target connection |  |  |  |
 
 ## 11. Runtime Design
 

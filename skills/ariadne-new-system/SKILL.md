@@ -229,7 +229,7 @@ Use the initial development prefix for GitHub Issues:
 
 ## Specialist Review Gate
 
-Use Specialist Agent review when a draft artifact depends on domain-specific knowledge such as Go realtime gateway, Python GUI/runtime, network protocols, GStreamer, platform deployment, observability, test fault injection, or robot safety control.
+Use Specialist Agent review when a draft artifact depends on domain-specific knowledge such as Go realtime gateway, Python GUI/runtime, network protocols, GStreamer, platform deployment, observability, test fault injection, or safety control.
 
 Save review outputs under:
 
@@ -243,7 +243,7 @@ The review must record trusted external-web RAG, rejected or limited claims, rep
 
 When the new system includes a PyQt / Qt GUI, convert automatable GUI integration test cases from the approved test specification into QTest-based test sources.
 
-Keep physical robot behavior, real camera quality, physical STOP, and field network checks as bench / human-check evidence.
+Keep physical controlled-system behavior, real camera quality, physical STOP, and field network checks as bench / human-check evidence.
 
 
 ## Workflow Feedback Output

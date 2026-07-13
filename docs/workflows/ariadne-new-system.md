@@ -99,7 +99,7 @@ High / critical finding がある場合は、System Architecture、Runtime / Net
 
 QTest化する対象は、GUI操作、widget状態、signal / slot、ログやpacket表示など、外部I/Oをstubまたはdisableして検証できるものです。
 
-実robot、実camera、physical STOP、field networkなどは、QTestでは置き換えず、bench / limited field / human checkとして残します。
+実機、実カメラ、physical STOP、field networkなどは、QTestでは置き換えず、bench / limited field / human checkとして残します。
 
 ## GaC / UaC GUI Mode
 
