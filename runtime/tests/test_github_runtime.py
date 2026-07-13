@@ -251,8 +251,8 @@ def test_normalize_issue_title_applies_prefix_once() -> None:
 @pytest.mark.parametrize(
     ("workflow_name", "expected"),
     [
-        ("robotics-new-system", "初期開発"),
-        ("robotics-feature-maintenance", "新規機能フロー"),
+        ("ariadne-new-system", "初期開発"),
+        ("ariadne-feature-maintenance", "新規機能フロー"),
         ("corrective-action-fix", "改善フロー"),
         ("docs-sync", "改善フロー"),
         ("unknown", ""),

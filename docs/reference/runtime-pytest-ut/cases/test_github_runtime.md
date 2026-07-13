@@ -1,4 +1,4 @@
-﻿# test_github_runtime.py
+# test_github_runtime.py
 
 このファイルは `runtime/tests/test_github_runtime.py` のpytest node id単位UT仕様です。
 
@@ -234,15 +234,15 @@ runtime/tests/test_github_runtime.py::test_normalize_issue_title_applies_prefix_
 - pytest node id:
 
 ```text
-runtime/tests/test_github_runtime.py::test_infer_flow_label_from_agent_context[robotics-new-system-\u521d\u671f\u958b\u767a]
+runtime/tests/test_github_runtime.py::test_infer_flow_label_from_agent_context[ariadne-new-system-\u521d\u671f\u958b\u767a]
 ```
 
-- 確認内容: pytest case `infer flow label from agent context[robotics-new-system-\u521d\u671f\u958b\u767a]` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 確認内容: pytest case `infer flow label from agent context[ariadne-new-system-\u521d\u671f\u958b\u767a]` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_github_runtime.py:261`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=`workflow_name`, `expected`, case=`robotics-new-system-\u521d\u671f\u958b\u767a`
+  - parameter: names=`workflow_name`, `expected`, case=`ariadne-new-system-\u521d\u671f\u958b\u767a`
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
@@ -251,15 +251,15 @@ runtime/tests/test_github_runtime.py::test_infer_flow_label_from_agent_context[r
 - pytest node id:
 
 ```text
-runtime/tests/test_github_runtime.py::test_infer_flow_label_from_agent_context[robotics-feature-maintenance-\u65b0\u898f\u6a5f\u80fd\u30d5\u30ed\u30fc]
+runtime/tests/test_github_runtime.py::test_infer_flow_label_from_agent_context[ariadne-feature-maintenance-\u65b0\u898f\u6a5f\u80fd\u30d5\u30ed\u30fc]
 ```
 
-- 確認内容: pytest case `infer flow label from agent context[robotics-feature-maintenance-\u65b0\u898f\u6a5f\u80fd\u30d5\u30ed\u30fc]` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 確認内容: pytest case `infer flow label from agent context[ariadne-feature-maintenance-\u65b0\u898f\u6a5f\u80fd\u30d5\u30ed\u30fc]` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_github_runtime.py:261`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=`workflow_name`, `expected`, case=`robotics-feature-maintenance-\u65b0\u898f\u6a5f\u80fd\u30d5\u30ed\u30fc`
+  - parameter: names=`workflow_name`, `expected`, case=`ariadne-feature-maintenance-\u65b0\u898f\u6a5f\u80fd\u30d5\u30ed\u30fc`
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 

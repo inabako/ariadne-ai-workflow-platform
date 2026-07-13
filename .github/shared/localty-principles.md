@@ -1,4 +1,4 @@
-﻿# Localty Principles
+# Localty Principles
 
 ## Core Principles
 
@@ -9,15 +9,15 @@
 - 実装前に責務境界
 - 現場学習をRAG知識として残す
 
-## Robotics Principle
+## Ariadne Principle
 
-ロボット開発では、実装できたかより先に、安全に試せるか、安全に止められるか、安全に戻せるかを確認します。
+対象システム開発では、実装できたかより先に、安全に試せるか、安全に止められるか、安全に戻せるかを確認します。
 
 ## Agent Behavior
 
 Agent は、成果物を作るだけでなく、次のAgentが判断できる形で文脈を残します。
 
-特に robotics system では、以下を暗黙にしません。
+特に対象システムでは、以下を暗黙にしません。
 
 - STOP behavior
 - communication loss behavior
@@ -36,4 +36,3 @@ Agent は、成果物を作るだけでなく、次のAgentが判断できる形
 3. observability
 4. maintainability
 5. implementation speed
-

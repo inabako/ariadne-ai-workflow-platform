@@ -1,4 +1,4 @@
-﻿# Robotics Test Strategy
+# Ariadne Test Strategy
 
 ## Output Language
 
@@ -6,11 +6,11 @@
 
 ## Purpose
 
-Robotics system の test strategy を定義します。
+対象システムの test strategy を定義します。
 
-Robotics では、unit test だけでは安全を保証できません。simulation、mock、bench、limited field test を段階的に組み合わせます。
+Ariadne では、unit test だけでは安全を保証できません。simulation、mock、bench、limited field test を段階的に組み合わせます。
 
-## Test Pyramid For Robotics
+## Test Pyramid For Ariadne
 
 ```text
 field test
@@ -140,7 +140,7 @@ static checks
 
 ## Required Regression Areas
 
-変更内容に関係なく、robotics system では次を regression 候補にします。
+変更内容に関係なく、対象システムでは次を regression 候補にします。
 
 - STOP / emergency stop
 - startup safe state

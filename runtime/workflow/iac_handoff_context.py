@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import argparse
 import json
@@ -82,7 +82,7 @@ def create_handoff(
     return {
         "schema_version": "1.0",
         "artifact_type": "realtime-iac-handoff",
-        "source_workflow": "robotics-new-system-iac",
+        "source_workflow": "ariadne-new-system-iac",
         "target_workflow": "realtime-iac",
         "work_id": work_id,
         "created_at": utc_now_iso(),
@@ -124,7 +124,7 @@ def create_execution_plan(
         "artifact_type": "execution-plan",
         "architecture": "context-first",
         "work_id": work_id,
-        "source_workflow": "robotics-new-system-iac",
+        "source_workflow": "ariadne-new-system-iac",
         "target_workflow": "realtime-iac",
         "created_at": utc_now_iso(),
         "status": "ready-for-human-check",
@@ -199,7 +199,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         context_type="realtime-iac-handoff",
         path=handoff_path,
         required=True,
-        generated_by="robotics-new-system-iac",
+        generated_by="ariadne-new-system-iac",
         owner="workflow",
         schema=".github/schemas/realtime-iac-handoff.schema.json",
     )
@@ -210,7 +210,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         context_type="execution-plan",
         path=execution_plan_path,
         required=True,
-        generated_by="robotics-new-system-iac",
+        generated_by="ariadne-new-system-iac",
         owner="workflow",
         schema=".github/schemas/execution-plan.schema.json",
     )

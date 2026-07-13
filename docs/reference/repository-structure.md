@@ -1,6 +1,6 @@
-﻿# Repository Structure
+# Repository Structure
 
-この repository は、robotics workflow を実行するための prompt、Skill、runtime、template、work artifact、RAG artifact を分けて管理します。
+この repository は、Ariadne workflow を実行するための prompt、Skill、runtime、template、work artifact、RAG artifact を分けて管理します。
 
 ## Root Directories
 

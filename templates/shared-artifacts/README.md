@@ -1,6 +1,6 @@
 # Shared Artifacts Templates
 
-Shared Artifacts are the handoff boundary between the new robotics system workflow and the realtime IaC workflow.
+Shared Artifacts are the handoff boundary between the Ariadne New System workflow and the realtime IaC workflow.
 
 They are the single source of truth for IaC. The IaC workflow must not invent missing ports, routes, software, public exposure, or ownership boundaries.
 

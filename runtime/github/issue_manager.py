@@ -56,7 +56,7 @@ def build_parser() -> argparse.ArgumentParser:
 def infer_flow_label(work_dir: Path) -> str:
     context = read_json(work_dir / "context" / "agent-context.json", default={}) or {}
     workflow_name = str(context.get("workflow", {}).get("name", "")).lower()
-    if "new-robotics-system" in workflow_name or "new-system" in workflow_name:
+    if "ariadne-new-system" in workflow_name or "new-system" in workflow_name:
         return ISSUE_TITLE_PREFIXES["initial-development"]
     if "maintenance" in workflow_name or "feature" in workflow_name:
         return ISSUE_TITLE_PREFIXES["new-feature"]

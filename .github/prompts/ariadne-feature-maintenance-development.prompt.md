@@ -1,4 +1,4 @@
-﻿# Robotics Maintenance Development Flow
+# Ariadne Feature Maintenance Development Flow
 
 ## Output Language
 
@@ -6,7 +6,7 @@
 
 ## Purpose
 
-既存 robotics system に対する bug fix、改善、hardware 交換、network 変更、field issue 対応を安全に進めるための flow です。
+既存対象システムに対する bug fix、改善、hardware 交換、network 変更、field issue 対応を安全に進めるための flow です。
 
 保守開発では、変更量よりも影響範囲と安全性を重視します。
 

@@ -1,4 +1,4 @@
-﻿# Templates
+# Templates
 
 `templates/` は、workflow成果物のひな形を置く場所です。
 
@@ -27,12 +27,12 @@ templates/
 
 | Directory | Template | Purpose |
 | --- | --- | --- |
-| `templates/requirements/new-system/` | `robotics-new-system-requirements-template.md` | 新規system用の要件定義書 |
-| `templates/requirements/feature-maintenance/` | `robotics-feature-maintenance-requirements-template.md` | 新機能 / 保守開発用の要件定義書 |
-| `templates/design-document/` | `robotics-design-document-template.md` | 設計方針、責務境界、安全設計、test strategy |
-| `templates/process-report/` | `robotics-process-report-template.md`, `boilerplate-template-selection-report-template.md`, `nextjs-webapp-implementation-prep-template.md` | 工程入力、実行内容、判断、finding、handoff、boilerplate採用可否、Next.js画面実装前準備 |
-| `templates/test-evidence/` | `robotics-test-evidence-template.md` | テスト条件、結果、証跡、pass / fail判断 |
-| `templates/test-specifications/` | `robotics-test-specification-template.md` | test strategy、test case table、PyQt QTest source plan、entry / exit criteria |
+| `templates/requirements/new-system/` | `ariadne-new-system-requirements-template.md` | 新規system用の要件定義書 |
+| `templates/requirements/feature-maintenance/` | `ariadne-feature-maintenance-requirements-template.md` | 新機能 / 保守開発用の要件定義書 |
+| `templates/design-document/` | `ariadne-design-document-template.md` | 設計方針、責務境界、安全設計、test strategy |
+| `templates/process-report/` | `ariadne-process-report-template.md`, `boilerplate-template-selection-report-template.md`, `nextjs-webapp-implementation-prep-template.md` | 工程入力、実行内容、判断、finding、handoff、boilerplate採用可否、Next.js画面実装前準備 |
+| `templates/test-evidence/` | `ariadne-test-evidence-template.md` | テスト条件、結果、証跡、pass / fail判断 |
+| `templates/test-specifications/` | `ariadne-test-specification-template.md` | test strategy、test case table、PyQt QTest source plan、entry / exit criteria |
 | `templates/shared-artifacts/` | `shared-artifacts-index-template.md`, `port-definition-template.md`, `network-boundary-definition-template.md`, `architecture-decision-record-template.md` | 新システム設計からIaCへ渡す要件、port、network boundary、ADRの共有成果物 |
 | `templates/iac/` | `software-inventory-template.md`, `communication-specification-template.md`, `realtime-iac-design-template.md`, `realtime-iac-test-specification-template.md` | リアルタイムシステム向けIaCの受領gate、設計、Docker Desktop / Linux / integration検証 |
 | `templates/editorconfig/` | `target-repository.editorconfig` | target repositoryのencoding / line ending補助 |

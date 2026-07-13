@@ -164,5 +164,5 @@ work/requirements/draft/<draft-stem>-specialist-review-<domain>.md
 
 ## Next
 
-- 新規systemなら [Robotics New System](robotics-new-system.md)
-- 既存systemの変更なら [Robotics Feature Maintenance](robotics-feature-maintenance.md)
+- 新規systemなら [Ariadne New System](ariadne-new-system.md)
+- 既存対象システムの変更なら [Ariadne Feature Maintenance](ariadne-feature-maintenance.md)

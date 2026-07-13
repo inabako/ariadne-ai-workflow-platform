@@ -1,11 +1,11 @@
-﻿# Robotics Feature Maintenance
+# Ariadne Feature Maintenance
 
-既存 robotics system の新機能追加、bug fix、hardware replacement、network change、deployment change、field issue response、運用改善を扱うworkflowです。
+既存対象システムの新機能追加、bug fix、hardware replacement、network change、deployment change、field issue response、運用改善を扱うworkflowです。
 
 ## Command
 
 ```text
-/robotics-feature-maintenance
+/ariadne-feature-maintenance
 ```
 
 ## Required Input
@@ -87,7 +87,7 @@ High / critical finding がある場合は、Change DesignまたはTest Planへ�
 
 ## PyQt QTest Integration
 
-既存systemの変更対象にPyQt / Qt GUIが含まれる場合、Test Planで作成したテストケース表から、QTestで自動化できる結合疎通試験をソース化します。
+既存対象システムの変更対象にPyQt / Qt GUIが含まれる場合、Test Planで作成したテストケース表から、QTestで自動化できる結合疎通試験をソース化します。
 
 優先対象:
 
@@ -181,5 +181,5 @@ work/<receipt-id>/context/
 ## Source Skill
 
 ```text
-skills/robotics-feature-maintenance/SKILL.md
+skills/ariadne-feature-maintenance/SKILL.md
 ```

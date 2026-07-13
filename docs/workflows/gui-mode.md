@@ -4,8 +4,8 @@ SVGで表現された人間の画面意図を、Semantic Layout Graph、Widget M
 
 独立した大本流やslash commandではありません。次の親workflowから自動dispatchします。
 
-- `/robotics-new-system`
-- `/robotics-feature-maintenance`
+- `/ariadne-new-system`
+- `/ariadne-feature-maintenance`
 - `/corrective-action-fix`
 
 ## Activation

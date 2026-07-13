@@ -1,4 +1,0 @@
-interface:
-  display_name: "Robotics New System"
-  short_description: "Start a new robotics system workflow."
-  default_prompt: "/robotics-new-system"

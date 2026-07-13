@@ -1,15 +1,15 @@
-﻿# Workflow Index
+# Workflow Index
 
-このページは、Intent-Driven Robotics AI Workflow の入口を選ぶための一覧です。
+このページは、Ariadne AI Workflow の入口を選ぶための一覧です。
 
 ## Entry Points
 
 | Command / Skill | 使う場面 | 主な入力 | 主な出力 |
 | --- | --- | --- | --- |
 | `/requirement-discovery` | 箇条書き草案から要件定義書を完成させたい | `work/requirements/draft/<draft>` | `work/requirements/<requirements>.md` |
-| `/robotics-new-system` | 新しいrobotics system、runtime、remote operation、device integrationを開始する | 完成版要件定義書 | `work/<receipt-id>/` |
-| `/robotics-new-system-iac` | 新しいrobotics systemを設計し、Shared Artifactsを検証してからrealtime IaCへ渡す | 完成版要件定義書 | `work/<receipt-id>/`, validated Shared Artifacts, IaC artifacts |
-| `/robotics-feature-maintenance` | 既存robotics systemの新機能追加、bug fix、保守開発を行う | 完成版要件定義書 | `work/<receipt-id>/` |
+| `/ariadne-new-system` | 新しい対象システム、runtime、remote operation、device integrationを開始する | 完成版要件定義書 | `work/<receipt-id>/` |
+| `/ariadne-new-system-iac` | 新しい対象システムを設計し、Shared Artifactsを検証してからrealtime IaCへ渡す | 完成版要件定義書 | `work/<receipt-id>/`, validated Shared Artifacts, IaC artifacts |
+| `/ariadne-feature-maintenance` | 既存対象システムの新機能追加、bug fix、保守開発を行う | 完成版要件定義書 | `work/<receipt-id>/` |
 | `/realtime-iac` | リアルタイムシステム向けIaCを設計、生成、レビュー、検証、文書化する | 完成版要件定義書、共有通信/port/network成果物 | `work/<receipt-id>/`, IaC artifacts |
 | `/corrective-action-report` | repository / branchをread-onlyで調査し、改善reportだけ作る | target repository, target branch | `rag/corrective-action-report/*.md` |
 | `/corrective-action-fix` | 改善reportからIssue、branch、修正、test、pushまで進める | target repository, target branch | `work/<branch>/`, `work/issue-<number>/` |
@@ -36,9 +36,9 @@
 | --- | --- |
 | まだ要件が箇条書きだけ | [Requirement Discovery](requirement-discovery.md) |
 | 要件化前に未知用語、表記揺れ、資料矛盾、曖昧表現を整理したい | [Noise Reduction Phase](noise-reduction-phase.md) |
-| 新しいrobotics systemを作る | [Robotics New System](robotics-new-system.md) |
-| 新しいrobotics systemを作り、そのままDocker Compose、systemd、firewall、監視などのIaCまで連携したい | [Robotics New System + IaC](robotics-new-system-iac.md) |
-| 既存systemへ機能追加、bug fix、保守対応をする | [Robotics Feature Maintenance](robotics-feature-maintenance.md) |
+| 新しい対象システムを作る | [Ariadne New System](ariadne-new-system.md) |
+| 新しい対象システムを作り、そのままDocker Compose、systemd、firewall、監視などのIaCまで連携したい | [Ariadne New System + IaC](ariadne-new-system-iac.md) |
+| 既存対象システムへ機能追加、bug fix、保守対応をする | [Ariadne Feature Maintenance](ariadne-feature-maintenance.md) |
 | Docker Compose、systemd、firewall、reverse proxy、監視などのIaCを整備したい | [Realtime IaC](realtime-iac.md) |
 | まず改善点を洗い出したいが、sourceは変更しない | [Corrective Action Report](corrective-action-report.md) |
 | 改善点の修正まで進めたい | [Corrective Action Fix](corrective-action-fix.md) |
@@ -69,13 +69,13 @@
 - 通常workflowではFeedback reportを `Proposed` として残し、`/self-improvement` は自動実行しません。Feedbackがたまった後に `/self-improvement` を実行して採用 / 不採用 / 保留を判断します。
 - `/self-improvement` のFeedbackは `work/feedback/` 直下のreportに保存し、採用 / 不採用 / 保留は同じreportへ追記します。詳細は [Workflow Feedback](../reference/workflow-feedback.md) を確認します。
 - 成果物は `work/<id>/context/artifact-index.json` に登録できる形で残します。
-- `/robotics-new-system-iac` では、新システム設計後に Shared Artifacts を生成し、Shared Artifact Validator の `pass` または human-approved `conditional-pass` を得るまで IaC に進みません。
+- `/ariadne-new-system-iac` では、新システム設計後に Shared Artifacts を生成し、Shared Artifact Validator の `pass` または human-approved `conditional-pass` を得るまで IaC に進みません。
 - RAG化する成果物は、metadata、evidence、open questions、stable section order を保ちます。
 - 外部Web RAGは current code、test evidence、人間承認済み運用知見を上書きしません。
 - 改善flowで外部WebRAGを使う場合、findingは必ず対象repository evidenceへ結び直します。
 - Specialist Agent reviewは作業中は `work/<id>/process-report/` に保存し、人間承認後に内部RAG候補として扱います。
 - Specialist Agent reviewでは、採用した外部Web RAG、採用しなかったclaim、検証方法を残します。
-- 実装系workflow（`/robotics-new-system`、`/robotics-feature-maintenance`、`/corrective-action-fix`）では、テスト実行前に `unit-test-cases.md`、`integration-test-cases.md`、`human-check-list.md` を作成します。
+- 実装系workflow（`/ariadne-new-system`、`/ariadne-feature-maintenance`、`/corrective-action-fix`）では、テスト実行前に `unit-test-cases.md`、`integration-test-cases.md`、`human-check-list.md` を作成します。
 - 実装系workflowはIssue作成後に`work/requirements/svg-input/`から`SYS_`、`FEAT_`、`FIX_`のSVGを取り込み、SVGが無ければ`skipped`で通常flowを継続します。
 - GaC / UaCの`generated/`は候補であり、既存sourceへ無条件上書きしません。
 - Next.js画面機能を実装する場合、Implementation前に `nextjs-webapp-implementation-prep.md` を作成し、新規appか既存app拡張か、template採用可否、画面契約、API契約、auth、env、test evidenceを明示します。

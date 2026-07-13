@@ -881,7 +881,7 @@ def format_index_markdown(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="aiwfctl", description="Intent-Driven Robotics AI Workflow control helper.")
+    parser = argparse.ArgumentParser(prog="aiwfctl", description="Ariadne AI Workflow control helper.")
     parser.add_argument("--repo-root", default="")
     sub = parser.add_subparsers(dest="command")
 

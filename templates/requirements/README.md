@@ -1,12 +1,12 @@
-﻿# Requirements Templates
+# Requirements Templates
 
-このディレクトリは、ロボティクス向け要件定義書のひな形を格納します。
+このディレクトリは、対象システム向け要件定義書のひな形を格納します。
 
 ## Templates
 
 | Directory | Purpose |
 | --- | --- |
-| `new-system/` | 新しいrobotics systemを立ち上げる要件定義書 |
+| `new-system/` | 新しい対象システムを立ち上げる要件定義書 |
 | `feature-maintenance/` | 新機能追加および保守開発の要件定義書 |
 
 ## Repository Control

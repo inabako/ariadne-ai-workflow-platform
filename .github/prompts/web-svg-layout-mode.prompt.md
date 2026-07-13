@@ -1,4 +1,4 @@
-﻿---
+---
 name: web-svg-layout-mode
 description: 既存Issue駆動workflow内でWeb画面向けSVGを検出し、route/layout/component設計、React候補、Playwright候補を生成して親workflowへ返します。
 argument-hint: "<issue-id> [work-dir]"
@@ -7,7 +7,7 @@ agent: agent
 
 # Web SVG Layout Mode
 
-このpromptは独立した大本流ではありません。`/robotics-new-system`、`/robotics-feature-maintenance`、`/corrective-action-fix` のIssue作業領域作成後、Web画面機能がある場合に差し込む共通サブワークフローです。
+このpromptは独立した大本流ではありません。`/ariadne-new-system`、`/ariadne-feature-maintenance`、`/corrective-action-fix` のIssue作業領域作成後、Web画面機能がある場合に差し込む共通サブワークフローです。
 
 ## Dispatcher
 

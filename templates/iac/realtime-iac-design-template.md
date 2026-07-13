@@ -16,7 +16,7 @@ source_requirements:
   - ""
 related_issue: ""
 tags:
-  - robotics
+  - ariadne
   - realtime
   - iac
 ---

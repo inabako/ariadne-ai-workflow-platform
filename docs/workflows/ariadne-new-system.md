@@ -1,11 +1,11 @@
-﻿# Robotics New System
+# Ariadne New System
 
-新しい robotics system、robot runtime、remote operation system、device integration、architecture-level launch を始めるworkflowです。
+新しい対象システム、runtime、remote operation、device integration、architecture-level launch を始めるworkflowです。
 
 ## Command
 
 ```text
-/robotics-new-system
+/ariadne-new-system
 ```
 
 ## Required Input
@@ -210,5 +210,5 @@ work/<receipt-id>/context/
 ## Source Skill
 
 ```text
-skills/robotics-new-system/SKILL.md
+skills/ariadne-new-system/SKILL.md
 ```

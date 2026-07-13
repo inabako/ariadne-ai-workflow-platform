@@ -7,7 +7,7 @@ agent: agent
 
 # GaC / UaC GUI Mode
 
-このpromptは独立した大本流ではありません。`/robotics-new-system`、`/robotics-feature-maintenance`、`/corrective-action-fix`のIssue作業領域作成後に差し込む共通サブワークフローです。
+このpromptは独立した大本流ではありません。`/ariadne-new-system`、`/ariadne-feature-maintenance`、`/corrective-action-fix`のIssue作業領域作成後に差し込む共通サブワークフローです。
 
 ## Dispatcher
 

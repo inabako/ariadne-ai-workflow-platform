@@ -1,4 +1,4 @@
-﻿# Runtime Intake
+# Runtime Intake
 
 `runtime/intake/` は、投入された要件定義書を受付ID単位の作業領域へ移動し、workflow の初期状態を作るための機能を格納します。
 
@@ -19,22 +19,22 @@
 ```powershell
 python runtime/intake/intake_requirements.py `
   --project-name localty-system-gui `
-  --workflow new-robotics-system-development
+  --workflow ariadne-new-system-development
 ```
 
 `--workflow` は以下を受け付けます。
 
 ```text
-new-robotics-system-development
-robotics-maintenance-development
-robotics-new-system-iac
+ariadne-new-system-development
+ariadne-feature-maintenance-development
+ariadne-new-system-iac
 realtime-iac
 ```
 
 採番prefixの既定値:
 
-- `new-robotics-system-development`, `robotics-new-system-iac`: `SYS-*`
-- `robotics-maintenance-development`: `FEAT-*`
+- `ariadne-new-system-development`, `ariadne-new-system-iac`: `SYS-*`
+- `ariadne-feature-maintenance-development`: `FEAT-*`
 - その他: `WF-*`
 
 `--receipt-id`または`--id-prefix`で明示指定できます。GUI入力自体は`work/requirements/svg-input/`へ置き、ファイル名の`SYS_`、`FEAT_`、`FIX_`で親フローを指定します。
@@ -49,7 +49,7 @@ realtime-iac
 python runtime/intake/intake_requirements.py `
   C:\path\to\requirements.md `
   --project-name localty-system-gui `
-  --workflow new-robotics-system-development
+  --workflow ariadne-new-system-development
 ```
 
 既定では要件定義書を `work/<採番ID>/design-document/` へ移動します。

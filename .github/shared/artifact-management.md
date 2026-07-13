@@ -1,4 +1,4 @@
-﻿# Artifact Management
+# Artifact Management
 
 ## Purpose
 
@@ -63,10 +63,10 @@ templates/
 
 | Template | Output Directory | Required Use |
 | --- | --- | --- |
-| `templates/design-document/robotics-design-document-template.md` | `work/<採番ID>/design-document/` | architecture、responsibility boundary、safety design、test strategy を定義するとき |
-| `templates/process-report/robotics-process-report-template.md` | `work/<採番ID>/process-report/` | Agent / tool / review / comparison / implementation の工程結果を残すとき |
-| `templates/test-evidence/robotics-test-evidence-template.md` | `work/<採番ID>/test-evidence/` | test execution の条件、結果、証跡、pass / fail 判断を残すとき |
-| `templates/test-specifications/robotics-test-specification-template.md` | `work/<採番ID>/test-specifications/` | test strategy、test case table、entry / exit criteria を定義するとき |
+| `templates/design-document/ariadne-design-document-template.md` | `work/<採番ID>/design-document/` | architecture、responsibility boundary、safety design、test strategy を定義するとき |
+| `templates/process-report/ariadne-process-report-template.md` | `work/<採番ID>/process-report/` | Agent / tool / review / comparison / implementation の工程結果を残すとき |
+| `templates/test-evidence/ariadne-test-evidence-template.md` | `work/<採番ID>/test-evidence/` | test execution の条件、結果、証跡、pass / fail 判断を残すとき |
+| `templates/test-specifications/ariadne-test-specification-template.md` | `work/<採番ID>/test-specifications/` | test strategy、test case table、entry / exit criteria を定義するとき |
 | `templates/noise-reduction/` | `work/requirements/draft/<draft-stem>-noise-reduction/` | 要件review draft前にノイズ除去、Human Interview、Project Glossary、Readinessを作るとき |
 | `templates/process-report/boilerplate-template-selection-report-template.md` | `work/<採番ID>/process-report/` | 新システム実装前にboilerplate template採用可否を判断するとき |
 | `templates/web-svg-layout/` | `work/<採番ID>/web-ui/` | Web画面向けSVGからlayout / component / React / Playwright候補を作るとき |

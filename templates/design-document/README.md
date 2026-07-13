@@ -8,7 +8,7 @@
 
 | File | Purpose |
 | --- | --- |
-| `robotics-design-document-template.md` | robotics system / feature / maintenance に共通で使う設計書 |
+| `ariadne-design-document-template.md` | 対象システム / feature / maintenance に共通で使う設計書 |
 
 ## Quality Rule
 

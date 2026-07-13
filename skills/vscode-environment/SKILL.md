@@ -1,4 +1,4 @@
-﻿---
+---
 name: vscode-environment
 description: Build or maintain reproducible VSCode Workspace-as-Code environments for AI workflows. Use when the user selects /vscode-environment or asks to standardize .vscode/settings.json, tasks.json, launch.json, extensions.json, workspace.code-workspace, terminal profiles, AI extension setup, Docker/Git/Python/Node/Java tooling, or evidence-backed VSCode environment setup.
 ---
@@ -353,7 +353,7 @@ Update the target workspace README or setup docs with setup steps, recommended e
 
 ### 9. RAG Capture And UUID JSON Finalization
 
-When the VSCode environment pattern is reusable for Localty or another robotics workspace, save a Markdown source note under:
+When the VSCode environment pattern is reusable for Localty or another target workspace, save a Markdown source note under:
 
 ```text
 rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md

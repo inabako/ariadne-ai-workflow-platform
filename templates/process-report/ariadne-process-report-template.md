@@ -19,7 +19,7 @@ input_artifacts:
 output_artifacts:
   - ""
 tags:
-  - robotics
+  - ariadne
   - process-report
 ---
 

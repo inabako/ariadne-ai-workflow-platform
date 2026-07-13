@@ -1,18 +1,36 @@
-﻿# Robotics Workflow
+# Ariadne Workflow
 
 ## Output Language
 
 既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
 
-このディレクトリは、Localty の Intent-Driven Robotics Workflow を定義します。
+このディレクトリは、Localty の Ariadne Workflow を定義します。
 
-Web system の workflow をそのまま流用せず、robotics system に必要な safety、hardware、field operation、runtime、network、operator responsibility を中心に置きます。
+Ariadne は特定ドメイン専用の手順ではなく、対象システムの責務境界、runtime、network、operator responsibility、safety、evidence を一貫して扱う workflow です。
 
 ## Core Principle
 
-ロボット開発では、実装できたかより先に、安全に試せるか、安全に止められるか、安全に戻せるかを確認します。
+対象システム開発では、実装できたかより先に、安全に試せるか、安全に止められるか、安全に戻せるかを確認します。
 
 Localty の workflow は、完成形を一度に作るためではなく、現場で学びながら安全に成長するためのものです。
+
+## Ariadne Responsibility
+
+Ariadne は、workflow の入口、context、decision、evidence、Human Check、handoff を明示し、AI Agent が推測で副作用を起こさないようにします。
+
+扱うもの:
+
+- requirement intake と repository control
+- design / implementation / test / operation の成果物
+- specialist review と risk finding
+- RAG retrieval と knowledge capture
+- GitHub / SCM / runtime helper の承認境界
+
+扱わないもの:
+
+- 会話ログだけを根拠にした実装開始
+- missing requirement をAI推測で補うこと
+- Human Checkなしのpush、install、RAG公開、archive削除
 
 ## Workflow Set
 
@@ -21,20 +39,20 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 | `requirement-discovery.prompt.md` | `/requirement-discovery` Skill entrypoint |
 | `noise-reduction-phase.prompt.md` | `/requirement-discovery` 内で要件review draft前に実行するノイズ除去フェーズ |
 | `docs-sync.prompt.md` | `/docs-sync` Skill entrypoint |
-| `robotics-new-system.prompt.md` | `/robotics-new-system` Skill entrypoint |
-| `robotics-new-system-iac.prompt.md` | `/robotics-new-system-iac` Skill entrypoint |
-| `robotics-feature-maintenance.prompt.md` | `/robotics-feature-maintenance` Skill entrypoint |
+| `ariadne-new-system.prompt.md` | `/ariadne-new-system` Skill entrypoint |
+| `ariadne-new-system-iac.prompt.md` | `/ariadne-new-system-iac` Skill entrypoint |
+| `ariadne-feature-maintenance.prompt.md` | `/ariadne-feature-maintenance` Skill entrypoint |
 | `gac-uac-gui-mode.prompt.md` | SVGがある場合に3つの実装workflowへ差し込む共通GUI拡張 |
 | `nextjs-webapp-implementation-prep.prompt.md` | Next.js画面機能がある場合に3つの実装workflowへ差し込む実装前準備 |
 | `web-svg-layout-mode.prompt.md` | Web画面向けSVGがある場合に3つの実装workflowへ差し込む画面layout拡張 |
 | `realtime-iac.prompt.md` | `/realtime-iac` Skill entrypoint |
 | `corrective-action-report.prompt.md` | `/corrective-action-report` Skill entrypoint |
 | `pre-development-preparation.prompt.md` | 開発前準備、repository sync、Issue、branch 作成 |
-| `new-robotics-system-development.prompt.md` | 新システム開発の標準フロー |
-| `robotics-maintenance-development.prompt.md` | 既存システムの新機能追加・保守変更フロー |
-| `robotics-safety-gates.prompt.md` | 各段階で通す Safety Gate |
-| `robotics-test-strategy.prompt.md` | simulation、bench、field を含む test strategy |
-| `robotics-release-and-field-operation.prompt.md` | release、rollback、現場運用、incident capture |
+| `ariadne-new-system-development.prompt.md` | 新システム開発の標準フロー |
+| `ariadne-feature-maintenance-development.prompt.md` | 既存システムの新機能追加・保守変更フロー |
+| `ariadne-safety-gates.prompt.md` | 各段階で通す Safety Gate |
+| `ariadne-test-strategy.prompt.md` | simulation、bench、field を含む test strategy |
+| `ariadne-release-and-field-operation.prompt.md` | release、rollback、現場運用、incident capture |
 | `knowledge-capture.prompt.md` | PR資料、テスト証跡、RAG/docs候補、archive準備 |
 
 ## Skill Entrypoints
@@ -43,9 +61,9 @@ Localty の workflow は、完成形を一度に作るためではなく、現�
 | --- | --- | --- |
 | `/requirement-discovery` | `skills/requirement-discovery/SKILL.md` | requirement discovery and human review |
 | `/docs-sync` | `skills/docs-sync/SKILL.md` | implementation/docs drift analysis and docs-only issue branch |
-| `/robotics-new-system` | `skills/robotics-new-system/SKILL.md` | `/new-robotics-system-development` |
-| `/robotics-new-system-iac` | `skills/robotics-new-system-iac/SKILL.md` | Shared Artifacts validation then `/realtime-iac` |
-| `/robotics-feature-maintenance` | `skills/robotics-feature-maintenance/SKILL.md` | `/robotics-maintenance-development` |
+| `/ariadne-new-system` | `skills/ariadne-new-system/SKILL.md` | `/ariadne-new-system-development` |
+| `/ariadne-new-system-iac` | `skills/ariadne-new-system-iac/SKILL.md` | Shared Artifacts validation then `/realtime-iac` |
+| `/ariadne-feature-maintenance` | `skills/ariadne-feature-maintenance/SKILL.md` | `/ariadne-feature-maintenance-development` |
 | `/realtime-iac` | `skills/realtime-iac/SKILL.md` | realtime IaC design, generation, validation, and docs |
 | `/corrective-action-report` | `skills/corrective-action-report/SKILL.md` | read-only improvement report |
 | `/knowledge-capture` | `skills/knowledge-capture/SKILL.md` | finalization and knowledge recovery |
@@ -124,15 +142,15 @@ Completion は、人間レビューで OK が出た後に `work/requirements/` �
 
 ```text
 intent / requirements
-  -> robotics architect
-  -> robotics runtime agent
+  -> Ariadne architect
+  -> Ariadne runtime agent
   -> network migration planner
   -> remote gateway architect
   -> deployment architect
   -> shared artifact validator when IaC is in scope
   -> safety / security / network / observability reviews
   -> run Web SVG Layout Mode when WEB_* SVG exists
-  -> robotics tester
+  -> Ariadne tester
   -> implementer
   -> documentation writer
   -> knowledge capture

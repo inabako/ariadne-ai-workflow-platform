@@ -1,4 +1,4 @@
-﻿# VSCode Environment
+# VSCode Environment
 
 このrepositoryは、VSCode Workspace as Codeとして `.vscode` を持ちます。
 
@@ -137,9 +137,9 @@ Workflow entrypoint tasks:
 
 ```text
 workflow:requirement-discovery
-workflow:robotics-new-system
-workflow:robotics-new-system-iac
-workflow:robotics-feature-maintenance
+workflow:ariadne-new-system
+workflow:ariadne-new-system-iac
+workflow:ariadne-feature-maintenance
 workflow:realtime-iac
 workflow:corrective-action-report
 workflow:corrective-action-fix

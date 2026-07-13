@@ -1,11 +1,11 @@
-﻿# Web SVG Layout Mode
+# Web SVG Layout Mode
 
 SVGで表現された画面レイアウト案を、Web画面向けのroute、section、component責務、responsive layout、React候補、Playwright候補へ変換する共通サブフローです。Next.jsは、このフローが扱うWeb framework profileの1つです。
 
 独立したslash commandではありません。Web画面機能を含む親workflowのImplementation前に実行します。
 
-- `/robotics-new-system`
-- `/robotics-feature-maintenance`
+- `/ariadne-new-system`
+- `/ariadne-feature-maintenance`
 - `/corrective-action-fix`
 
 ## Activation

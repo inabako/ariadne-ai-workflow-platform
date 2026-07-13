@@ -1,4 +1,4 @@
-﻿# Workflow Flowcharts
+# Workflow Flowcharts
 
 各AI workflowの動作イメージを掴むためのMermaid式flowchartです。
 
@@ -27,7 +27,7 @@ flowchart TD
   M -- yes --> N[Save completed requirement]
 ```
 
-## Robotics New System
+## Ariadne New System
 
 ```mermaid
 flowchart TD
@@ -52,7 +52,7 @@ flowchart TD
   Q --> R[Release / handover]
 ```
 
-## Robotics New System + Realtime IaC
+## Ariadne New System + Realtime IaC
 
 ```mermaid
 flowchart TD
@@ -83,7 +83,7 @@ flowchart TD
   Q --> R[IaC design / generation / validation / docs]
 ```
 
-## Robotics Feature Maintenance
+## Ariadne Feature Maintenance
 
 ```mermaid
 flowchart TD

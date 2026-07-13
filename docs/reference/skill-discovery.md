@@ -19,8 +19,8 @@ VS Code / GitHub Copilot Chat の `/` 候補に出すpromptは、次に置きま
 .github/prompts/corrective-action-report.prompt.md
 .github/prompts/rag-build.prompt.md
 .github/prompts/rag-load.prompt.md
-.github/prompts/robotics-new-system.prompt.md
-.github/prompts/robotics-feature-maintenance.prompt.md
+.github/prompts/ariadne-new-system.prompt.md
+.github/prompts/ariadne-feature-maintenance.prompt.md
 ```
 
 候補に出ない場合は、`C:\github\ariadne-ai-workflow-platform` をworkspaceとして開いているか確認します。

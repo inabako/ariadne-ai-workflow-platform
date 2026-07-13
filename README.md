@@ -1,4 +1,4 @@
-﻿# Ariadne AI Workflow Platform
+# Ariadne AI Workflow Platform
 
 <p align="center">
   <img src="docs/brand/logo/ariadne-logo-master.svg" alt="Ariadne AI Workflow Platform logo" width="360">
@@ -10,11 +10,21 @@ Ariadne AI Workflow Platform は、AI Agent が複雑なworkflow迷宮を迷わ�
 
 この思想の背景は [Brand Guide](docs/brand/README.md) にまとめています。
 
-Localty の robotics system development を、Intent、Safety、Operational Learning を中心に進めるための AI workflow repository です。
+Localty の対象システム開発を、Intent、Safety、Operational Learning を中心に進めるための AI workflow repository です。
 
-Web system の workflow をそのまま流用せず、robotics system に必要な hardware、field operation、runtime、network、operator responsibility、safety gate を含めて設計します。
+Ariadne は特定ドメイン専用ではなく、対象システムの責務境界、runtime、network、operator responsibility、safety gate、evidence を一貫して扱うための workflow platform です。
 
 この repository は、現場で学びながら、安全に試し、安全に止め、安全に戻し、学びを次の workflow / Agent / RAG に残すための foundation です。
+
+## Ariadne の責務
+
+Ariadne は、AI Agent が作業を進める前に必要な文脈、判断、証跡、人間確認点をそろえるための workflow platform です。
+
+- 要件、設計、実装、検証、運用知見を artifact として残す。
+- workflow の入口、停止条件、Human Check、handoff を明示する。
+- 対象システムの責務境界、risk、test evidence を曖昧にしない。
+- GitHub、SCM、RAG、runtime helper を使う場合も、判断根拠を追跡できる形で保存する。
+- AI が推測で副作用を起こさないよう、承認が必要な操作を gate として分離する。
 
 ## Quick Start
 
@@ -31,9 +41,9 @@ Workflow を選ぶ場合:
 | --- | --- | --- |
 | 箇条書き草案から要件定義書を作る | `/requirement-discovery` | [Requirement Discovery](docs/workflows/requirement-discovery.md) |
 | 要件定義前に未知用語、表記揺れ、資料矛盾、曖昧表現を除去する | `/requirement-discovery` 内で実行 | [Noise Reduction Phase](docs/workflows/noise-reduction-phase.md) |
-| 新しいrobotics systemを始める | `/robotics-new-system` | [Robotics New System](docs/workflows/robotics-new-system.md) |
-| 新システム設計からShared Artifacts検証、IaC連携まで一気通貫で行う | `/robotics-new-system-iac` | [Robotics New System + IaC](docs/workflows/robotics-new-system-iac.md) |
-| 既存systemの新機能追加、bug fix、保守開発を行う | `/robotics-feature-maintenance` | [Robotics Feature Maintenance](docs/workflows/robotics-feature-maintenance.md) |
+| 新しい対象システムを始める | `/ariadne-new-system` | [Ariadne New System](docs/workflows/ariadne-new-system.md) |
+| 新システム設計からShared Artifacts検証、IaC連携まで一気通貫で行う | `/ariadne-new-system-iac` | [Ariadne New System + IaC](docs/workflows/ariadne-new-system-iac.md) |
+| 既存システムの新機能追加、bug fix、保守開発を行う | `/ariadne-feature-maintenance` | [Ariadne Feature Maintenance](docs/workflows/ariadne-feature-maintenance.md) |
 | SVGからPyQt6画面・QTest候補を作る | 親workflow内で自動実行 | [GaC / UaC GUI Mode](docs/workflows/gui-mode.md) |
 | Next.js画面機能の実装前に画面/API/auth/env/testを揃える | 親workflow内で実行 | [Next.js Webapp Implementation Prep](docs/workflows/nextjs-webapp-implementation-prep.md) |
 | SVGからWeb画面layout・React候補・Playwright候補を作る | 親workflow内で自動実行 | [Web SVG Layout Mode](docs/workflows/web-svg-layout-mode.md) |
@@ -62,7 +72,7 @@ GUI SVGはIssue作成前に`work/requirements/svg-input/`へ配置します。Py
 - 学びを `rag/` と workflow docs に戻す。
 - 人間向けreport、document、review、evidence、RAG source Markdownは既定で日本語にする。
 
-Robotics workflow では、作れるかより先に、安全に試せるか、止められるか、戻せるか、観測できるかを確認します。
+Ariadne workflow では、作れるかより先に、安全に試せるか、止められるか、戻せるか、観測できるかを確認します。
 
 ## Repository Map
 
@@ -184,7 +194,7 @@ GITHUB_TOKEN=
 
 ## Status
 
-この repository は、Localty の robotics workflow を試行錯誤しながら育てる foundation です。
+この repository は、Localty の Ariadne workflow を試行錯誤しながら育てる foundation です。
 
 現在は以下を整備済みです。
 

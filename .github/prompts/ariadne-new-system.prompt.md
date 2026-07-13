@@ -1,4 +1,4 @@
-# Robotics New System Skill Entrypoint
+# Ariadne New System Skill Entrypoint
 
 ## Output Language
 
@@ -6,18 +6,18 @@
 
 ## Purpose
 
-`/robotics-new-system` は、新しい robotics system を立ち上げるための Skill entrypoint です。
+`/ariadne-new-system` は、新しい対象システムを立ち上げるための Skill entrypoint です。
 
 Use:
 
 ```text
-skills/robotics-new-system/SKILL.md
+skills/ariadne-new-system/SKILL.md
 ```
 
 Then delegate the detailed workflow to:
 
 ```text
-/new-robotics-system-development
+/ariadne-new-system-development
 ```
 
 ## Required Intake Gate
@@ -25,7 +25,7 @@ Then delegate the detailed workflow to:
 Before implementation or design work, run or require:
 
 ```powershell
-python runtime/intake/intake_requirements.py --workflow new-robotics-system-development
+python runtime/intake/intake_requirements.py --workflow ariadne-new-system-development
 ```
 
 Reject the order when:
@@ -38,11 +38,11 @@ Do not proceed from chat history alone.
 
 ## Next Step
 
-After intake succeeds, run `/pre-development-preparation`, then run `/rag-load`, then continue with `/new-robotics-system-development`.
+After intake succeeds, run `/pre-development-preparation`, then run `/rag-load`, then continue with `/ariadne-new-system-development`.
 
 `/rag-load` must search prior corrective action reports in parallel where possible and use `runtime/rag/retrieve_context.py` to generate compressed context packs before development design starts.
 
-Before implementation starts, run the Boilerplate Template Selection Gate from `/new-robotics-system-development`.
+Before implementation starts, run the Boilerplate Template Selection Gate from `/ariadne-new-system-development`.
 
 - If a matching template exists under `templates/boilerplates/`, copy it and implement only in the copied destination.
 - If the system includes realtime gateway IaC / infrastructure, consider `templates/boilerplates/realtime-gateway-infra-template/` and preserve the IaC gates for shared artifacts, software inventory, exposure, secrets, firewall policy, rollback, and Terraform validation.

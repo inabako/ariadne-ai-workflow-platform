@@ -1,4 +1,4 @@
-﻿# New Robotics System Development Flow
+# Ariadne New System Development Flow
 
 ## Output Language
 
@@ -6,7 +6,7 @@
 
 ## Purpose
 
-新しい robotics system を、Intent から安全に動かせる現場運用まで段階的に育てるための flow です。
+新しい対象システムを、Intent から安全に動かせる現場運用まで段階的に育てるための flow です。
 
 この flow では、最初から完成形を決め切ることよりも、risk を見える化し、safe trial を重ねながら system boundary を固めることを重視します。
 

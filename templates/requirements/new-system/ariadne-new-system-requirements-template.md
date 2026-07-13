@@ -1,8 +1,8 @@
-﻿# Robotics New System Requirements
+# Ariadne New System Requirements
 
 ## Intent
 
-新しい robotics system で達成したい mission、現場価値、安全上の前提を記載します。
+新しい対象システムで達成したい mission、現場価値、安全上の前提を記載します。
 
 ## Decision
 
@@ -10,7 +10,7 @@
 
 ## Reason
 
-ロボティクス開発では、実装前に対象repository、現場条件、安全停止、通信断、rollback、観測性を揃えないと、後工程で安全に試せなくなります。
+対象システム開発では、実装前に対象repository、現場条件、安全停止、通信断、rollback、観測性を揃えないと、後工程で安全に試せなくなります。
 
 ## Repository Control
 
@@ -44,8 +44,8 @@ repository が空の場合、この要件定義書は受領されません。
 | Item | Value |
 | --- | --- |
 | System Name |  |
-| Robot / Device |  |
-| System Type | robot / remote-operation / runtime / gateway / telemetry / other |
+| Primary Device / Runtime |  |
+| System Type | remote-operation / runtime / gateway / telemetry / webapp / service / other |
 | Primary Operator |  |
 | Target Environment | indoor / outdoor / lab / field / other |
 
@@ -70,9 +70,9 @@ repository が空の場合、この要件定義書は受領されません。
 
 | ID | Requirement | Reason | Blocking |
 | --- | --- | --- | --- |
-| SAFE-001 | STOP / emergency stop behavior must be defined. | Robot must be safely stoppable. | yes |
-| SAFE-002 | Communication loss behavior must be defined. | Stale command must not keep moving the robot. | yes |
-| SAFE-003 | Startup / shutdown safe state must be defined. | Robot must not move unexpectedly. | yes |
+| SAFE-001 | STOP / emergency stop behavior must be defined when the system can affect people, equipment, data, or operations. | The system must be safely stoppable or recoverable. | yes |
+| SAFE-002 | Communication loss behavior must be defined. | Stale commands or stale state must not keep unsafe behavior running. | yes |
+| SAFE-003 | Startup / shutdown safe state must be defined. | The system must not enter an unsafe state unexpectedly. | yes |
 
 ## Functional Requirements
 
@@ -80,7 +80,7 @@ repository が空の場合、この要件定義書は受領されません。
 | --- | --- | --- | --- |
 | FR-001 |  |  |  |
 
-## Robotics Interfaces
+## Target System Interfaces
 
 | Area | Input / Output | Expected Behavior | Failure Behavior |
 | --- | --- | --- | --- |

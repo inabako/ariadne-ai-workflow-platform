@@ -6,7 +6,7 @@ receipt_id: ""
 repository: ""
 branch: ""
 commit: ""
-workflow: robotics-new-system-iac
+workflow: ariadne-new-system-iac
 phase: shared-artifact-generation
 status: draft
 owner_agent: ""
@@ -14,7 +14,7 @@ created_at: ""
 updated_at: ""
 related_issue: ""
 tags:
-  - robotics
+  - ariadne
   - shared-artifacts
   - port-definition
 ---

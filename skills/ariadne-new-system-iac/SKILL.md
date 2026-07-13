@@ -1,9 +1,9 @@
-﻿---
-name: robotics-new-system-iac
-description: Run the integrated new robotics system plus realtime IaC workflow. Use when the user selects /robotics-new-system-iac or asks to create a new robotics system and then generate validated Shared Artifacts for the realtime IaC workflow.
+---
+name: ariadne-new-system-iac
+description: Run the integrated Ariadne New System plus realtime IaC workflow. Use when the user selects /ariadne-new-system-iac or asks to create a new target system and then generate validated Shared Artifacts for the realtime IaC workflow.
 ---
 
-# Robotics New System + IaC
+# Ariadne New System + IaC
 
 ## Default Language
 
@@ -14,18 +14,18 @@ Respond to the user in Japanese by default. Human-facing reports, docs, reviews,
 Use this skill when the user specifies:
 
 ```text
-/robotics-new-system-iac
+/ariadne-new-system-iac
 ```
 
 This skill delegates the detailed workflow to:
 
 ```text
-.github/prompts/robotics-new-system-iac.prompt.md
+.github/prompts/ariadne-new-system-iac.prompt.md
 ```
 
 ## Purpose
 
-Create a new robotics system and hand it to the realtime IaC workflow through validated Shared Artifacts.
+Create a new target system design and hand it to the realtime IaC workflow through validated Shared Artifacts.
 
 The integrated flow is:
 
@@ -41,7 +41,7 @@ New System Workflow
 Before starting, run or require the intake harness.
 
 ```powershell
-uv run --project runtime python runtime/intake/intake_requirements.py --workflow robotics-new-system-iac
+uv run --project runtime python runtime/intake/intake_requirements.py --workflow ariadne-new-system-iac
 ```
 
 The harness must reject the order when:
@@ -197,7 +197,7 @@ templates/boilerplates/realtime-gateway-infra-template/
 This integrated skill composes:
 
 ```text
-skills/robotics-new-system/SKILL.md
+skills/ariadne-new-system/SKILL.md
 skills/realtime-iac/SKILL.md
 ```
 

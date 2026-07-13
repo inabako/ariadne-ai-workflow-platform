@@ -1,4 +1,4 @@
-﻿# Robotics Release And Field Operation
+# Ariadne Release And Field Operation
 
 ## Output Language
 
@@ -6,7 +6,7 @@
 
 ## Purpose
 
-Robotics system を現場へ出す前後の release、rollback、operation handover、incident capture を定義します。
+対象システムを現場へ出す前後の release、rollback、operation handover、incident capture を定義します。
 
 Release は software deployment だけではありません。operator、robot、network、field condition、recovery procedure を含む運用切り替えです。
 
@@ -158,4 +158,3 @@ Release 後に確認すること:
 - post-release observation が記録済み
 - incident / near-miss があれば knowledge-inbox に保存済み
 - next improvement が必要なら issue / field note 化済み
-

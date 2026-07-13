@@ -16,7 +16,7 @@ updated_at: ""
 test_specification: ""
 related_issue: ""
 tags:
-  - robotics
+  - ariadne
   - test-evidence
 ---
 

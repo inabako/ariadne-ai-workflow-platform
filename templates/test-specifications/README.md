@@ -8,7 +8,7 @@ test specification は、実装後に慌てて確認項目を作るためでは�
 
 | File | Purpose |
 | --- | --- |
-| `robotics-test-specification-template.md` | robotics の test strategy と test case table |
+| `ariadne-test-specification-template.md` | Ariadne の test strategy と test case table |
 
 ## Quality Rule
 

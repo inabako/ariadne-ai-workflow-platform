@@ -33,11 +33,11 @@ MODE_BY_PREFIX = {
     "FIX": "corrective-improvement",
 }
 SVG_INBOX_PREFIXES = {
-    "SYS": "robotics-new-system / GaC-UaC GUI",
-    "FEAT": "robotics-feature-maintenance / GaC-UaC GUI",
+    "SYS": "ariadne-new-system / GaC-UaC GUI",
+    "FEAT": "ariadne-feature-maintenance / GaC-UaC GUI",
     "FIX": "corrective-action-fix / GaC-UaC GUI",
-    "WEB_SYS": "robotics-new-system / Web SVG Layout",
-    "WEB_FEAT": "robotics-feature-maintenance / Web SVG Layout",
+    "WEB_SYS": "ariadne-new-system / Web SVG Layout",
+    "WEB_FEAT": "ariadne-feature-maintenance / Web SVG Layout",
     "WEB_FIX": "corrective-action-fix / Web SVG Layout",
 }
 INPUT_PREFIX_BY_MODE = {
@@ -1205,7 +1205,7 @@ def write_artifacts(
                 "created_at": now,
                 "updated_at": now,
                 "depends_on": [relative_to_repo(repo_root, path) for path in svg_files],
-                "consumed_by": ["parent-workflow", "robotics-tester-agent"],
+                "consumed_by": ["parent-workflow", "ariadne-tester-agent"],
                 "summary": "SVGから生成したGUI設計または実装候補。",
                 "unresolved_items": ["Human review is required before source integration."],
             },

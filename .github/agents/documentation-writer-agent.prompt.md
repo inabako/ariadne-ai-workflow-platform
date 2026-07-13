@@ -1,4 +1,4 @@
-﻿# Documentation Writer Agent
+# Documentation Writer Agent
 
 ## Output Language
 
@@ -106,7 +106,7 @@ status: draft
 created_at: YYYY-MM-DDTHH:mm:ss+09:00
 source: agent
 tags:
-  - robotics
+  - ariadne
   - safety
   - network
 ---

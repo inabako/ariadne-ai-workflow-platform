@@ -247,7 +247,7 @@ def test_requirement_intake_registers_context_manifest(tmp_path: Path) -> None:
     requirements_dir = tmp_path / "work" / "requirements"
     requirements_dir.mkdir(parents=True)
     (requirements_dir / "requirements.md").write_text(
-        "# Requirement\n\nRepository: owner/robotics-target\nTarget Branch: main\n",
+        "# Requirement\n\nRepository: owner/ariadne-target\nTarget Branch: main\n",
         encoding="utf-8",
     )
 
@@ -256,9 +256,9 @@ def test_requirement_intake_registers_context_manifest(tmp_path: Path) -> None:
         requirements_dir=str(requirements_dir),
         receipt_id="SYS-9001",
         id_prefix=None,
-        project_name="robotics-target",
+        project_name="ariadne-target",
         project_repository="",
-        workflow="new-robotics-system-development",
+        workflow="ariadne-new-system-development",
         phase="intake",
         intent_summary="test intake",
         risk_level="unknown",
@@ -277,7 +277,7 @@ def test_requirement_intake_registers_context_manifest(tmp_path: Path) -> None:
 
 def test_corrective_action_fix_init_registers_context_manifest(tmp_path: Path) -> None:
     args = argparse.Namespace(
-        repository="owner/robotics-target",
+        repository="owner/ariadne-target",
         target_branch="feature/issue-9001",
         work_id="issue-9001",
         base_work_id="",

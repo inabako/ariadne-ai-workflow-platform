@@ -1,6 +1,6 @@
-﻿# Localty Agent Prompts
+# Localty Agent Prompts
 
-このディレクトリには、Intent-Driven Robotics Workflow で利用する Agent prompt を格納します。
+このディレクトリには、Ariadne Workflow で利用する Agent prompt を格納します。
 
 各Agentは、Localtyの成長文化を守るために設計されています。
 
@@ -40,18 +40,18 @@
 | `gui-pyqt6-generator-agent.prompt.md` | 外部I/OなしのPyQt6候補生成 | `gac-uac/generated/pyqt6/` |
 | `gui-qtest-generator-agent.prompt.md` | offscreen実行可能なQTest smoke候補生成 | `gac-uac/generated/tests/test_gui_smoke.py` |
 | `web-svg-layout-mode.prompt.md` | SVGからWeb route、component、responsive layout、React候補、Playwright候補を生成 | `web-ui/` |
-| `robotics-architect-agent.prompt.md` | システム構造と責務境界 | `architecture.md` |
+| `ariadne-architect-agent.prompt.md` | システム構造と責務境界 | `architecture.md` |
 | `shared-artifact-validator-agent.prompt.md` | 新システム設計成果物をIaC投入可能なShared Artifactsとして検証 | `shared-artifact-validation.md`, `shared-artifact-validation.json` |
-| `robotics-runtime-agent.prompt.md` | process model、lifecycle、restart、watchdog | `runtime-design.md` |
+| `ariadne-runtime-agent.prompt.md` | process model、lifecycle、restart、watchdog | `runtime-design.md` |
 | `network-migration-planner-agent.prompt.md` | LAN -> VPN -> Relay -> Remote Ops の移行計画 | `network-migration-plan.md` |
 | `remote-gateway-architect-agent.prompt.md` | remote gateway のサービス境界 | `remote-gateway-architecture.md` |
 | `deployment-architect-agent.prompt.md` | deployment topology と migration plan | `deployment-architecture.md` |
 | `remote-gateway-implementer-agent.prompt.md` | 承認済みarchitectureに基づく実装 | source, tests, `implementation-report.md` |
-| `safety-reviewer-agent.prompt.md` | ロボティクス安全レビュー | `safety-review.md` |
+| `safety-reviewer-agent.prompt.md` | 対象システム安全レビュー | `safety-review.md` |
 | `security-reviewer-agent.prompt.md` | remote access と command security のレビュー | `security-review.md` |
 | `network-reviewer-agent.prompt.md` | network design review | `network-review.md` |
 | `observability-reviewer-agent.prompt.md` | logs, metrics, telemetry, incident traceability | `observability-review.md` |
-| `robotics-tester-agent.prompt.md` | test strategy と test matrix | `test-specification.md` |
+| `ariadne-tester-agent.prompt.md` | test strategy と test matrix | `test-specification.md` |
 | `documentation-writer-agent.prompt.md` | decision record と再利用可能な知識化 | docs, troubleshooting, RAG notes |
 | `knowledge-capture-agent.prompt.md` | PR資料、証跡整理、RAG/docs候補抽出、archive準備 | PR docs, `knowledge-capture-report.md` |
 | `workflow-help-curator-agent.prompt.md` | aiwfctl help registry、schema、docs、testsの同期確認と検索性改善 | `workflow-help-curation-report.md`, `runtime/registries/workflow_help.json` |
@@ -92,8 +92,8 @@ draft bullets
   -> corrective action report / fix with external web as supporting reference when needed
   -> docs drift analysis when docs sync is requested
   -> GitHub knowledge maintenance when Issue / PR / docs / CAR explanation assets need repair
-  -> robotics architect
-  -> robotics runtime agent
+  -> Ariadne architect
+  -> Ariadne runtime agent
   -> network migration planner
   -> remote gateway architect
   -> deployment architect
@@ -101,7 +101,7 @@ draft bullets
   -> claim prefixed SVG from work/requirements/svg-input and run GaC / UaC GUI agents
   -> run Web SVG Layout Mode when WEB_* SVG exists
   -> safety / security / network / observability reviews
-  -> robotics tester
+  -> Ariadne tester
   -> realtime IaC agents when IaC is in scope
   -> boilerplate template selection before implementation
   -> implementer
@@ -171,7 +171,7 @@ status: draft
 created_at: 2026-05-31T00:00:00+09:00
 source: agent
 tags:
-  - robotics
+  - ariadne
   - safety
   - network
 ---

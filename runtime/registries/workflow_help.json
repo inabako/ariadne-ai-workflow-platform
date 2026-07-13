@@ -1,4 +1,4 @@
-﻿{
+{
   "registry_version": "1.0",
   "description": "AI workflow prompt command help registry. aiwfctl help reads this file to show searchable terminal help.",
   "commands": [
@@ -195,15 +195,15 @@
       ]
     },
     {
-      "command": "/robotics-new-system",
+      "command": "/ariadne-new-system",
       "aliases": [
-        "/new-robotics-system-development"
+        "/ariadne-new-system-development"
       ],
-      "workflow": "new-robotics-system-development",
-      "skill": "robotics-new-system",
-      "skill_path": "skills/robotics-new-system/SKILL.md",
-      "prompt_path": ".github/prompts/robotics-new-system.prompt.md",
-      "overview": "新しいrobotics system、runtime、remote operation、device integrationを開始する。",
+      "workflow": "ariadne-new-system-development",
+      "skill": "ariadne-new-system",
+      "skill_path": "skills/ariadne-new-system/SKILL.md",
+      "prompt_path": ".github/prompts/ariadne-new-system.prompt.md",
+      "overview": "新しい対象システム、runtime、remote operation、device integrationを開始する。",
       "prerequisites": [
         "work/requirements/ に完成版要件定義書が1件だけある。",
         "Repository Control、target repository、branch方針が要件定義書で確認できる。",
@@ -227,7 +227,7 @@
         "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
       "examples": [
-        "/robotics-new-system"
+        "/ariadne-new-system"
       ],
       "related_runtime": [
         "runtime/intake/intake_requirements.py",
@@ -235,17 +235,17 @@
         "runtime/rag/rag_dispatcher.py"
       ],
       "docs": [
-        "docs/workflows/robotics-new-system.md",
+        "docs/workflows/ariadne-new-system.md",
         "docs/workflows/gui-mode.md"
       ]
     },
     {
-      "command": "/robotics-new-system-iac",
+      "command": "/ariadne-new-system-iac",
       "aliases": [],
-      "workflow": "robotics-new-system-iac",
-      "skill": "robotics-new-system-iac",
-      "skill_path": "skills/robotics-new-system-iac/SKILL.md",
-      "prompt_path": ".github/prompts/robotics-new-system-iac.prompt.md",
+      "workflow": "ariadne-new-system-iac",
+      "skill": "ariadne-new-system-iac",
+      "skill_path": "skills/ariadne-new-system-iac/SKILL.md",
+      "prompt_path": ".github/prompts/ariadne-new-system-iac.prompt.md",
       "overview": "新システム開発からShared Artifacts検証、realtime IaC連携まで進める。",
       "prerequisites": [
         "work/requirements/ に完成版要件定義書が1件だけある。",
@@ -272,7 +272,7 @@
         "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
       "examples": [
-        "/robotics-new-system-iac"
+        "/ariadne-new-system-iac"
       ],
       "related_runtime": [
         "runtime/intake/intake_requirements.py",
@@ -281,24 +281,24 @@
         "runtime/workflow/context_first.py"
       ],
       "docs": [
-        "docs/workflows/robotics-new-system-iac.md",
+        "docs/workflows/ariadne-new-system-iac.md",
         "docs/workflows/realtime-iac.md"
       ]
     },
     {
-      "command": "/robotics-feature-maintenance",
+      "command": "/ariadne-feature-maintenance",
       "aliases": [
-        "/robotics-maintenance-development"
+        "/ariadne-feature-maintenance-development"
       ],
-      "workflow": "robotics-maintenance-development",
-      "skill": "robotics-feature-maintenance",
-      "skill_path": "skills/robotics-feature-maintenance/SKILL.md",
-      "prompt_path": ".github/prompts/robotics-maintenance-development.prompt.md",
-      "overview": "既存robotics systemの新機能追加、bug fix、保守開発を開始する。",
+      "workflow": "ariadne-feature-maintenance-development",
+      "skill": "ariadne-feature-maintenance",
+      "skill_path": "skills/ariadne-feature-maintenance/SKILL.md",
+      "prompt_path": ".github/prompts/ariadne-feature-maintenance-development.prompt.md",
+      "overview": "既存対象システムの新機能追加、bug fix、保守開発を開始する。",
       "prerequisites": [
         "work/requirements/ に完成版要件定義書が1件だけある。",
         "対象repository、target branch、変更目的、受け入れ条件が明確である。",
-        "既存systemへの影響範囲と安全上の未解決QAを確認できる。"
+        "既存対象システムへの影響範囲と安全上の未解決QAを確認できる。"
       ],
       "arguments": [
         {
@@ -318,7 +318,7 @@
         "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
       "examples": [
-        "/robotics-feature-maintenance"
+        "/ariadne-feature-maintenance"
       ],
       "related_runtime": [
         "runtime/intake/intake_requirements.py",
@@ -326,7 +326,7 @@
         "runtime/workflow/gui_mode.py"
       ],
       "docs": [
-        "docs/workflows/robotics-feature-maintenance.md"
+        "docs/workflows/ariadne-feature-maintenance.md"
       ]
     },
     {
@@ -930,8 +930,8 @@
         "FIX_"
       ],
       "parent_workflows": [
-        "robotics-new-system",
-        "robotics-feature-maintenance",
+        "ariadne-new-system",
+        "ariadne-feature-maintenance",
         "corrective-action-fix"
       ],
       "details": [
@@ -979,8 +979,8 @@
         "WEB_FIX_"
       ],
       "parent_workflows": [
-        "robotics-new-system",
-        "robotics-feature-maintenance",
+        "ariadne-new-system",
+        "ariadne-feature-maintenance",
         "corrective-action-fix"
       ],
       "details": [

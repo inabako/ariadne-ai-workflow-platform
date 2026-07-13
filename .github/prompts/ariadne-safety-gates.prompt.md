@@ -1,4 +1,4 @@
-﻿# Robotics Safety Gates
+# Ariadne Safety Gates
 
 ## Output Language
 
@@ -6,7 +6,7 @@
 
 ## Purpose
 
-Robotics workflow の各段階で、安全に次へ進めるかを判断するための gate です。
+Ariadne workflow の各段階で、安全に次へ進めるかを判断するための gate です。
 
 Safety Gate は作業を止めるためではなく、危険な曖昧さを早い段階で見つけるためにあります。
 

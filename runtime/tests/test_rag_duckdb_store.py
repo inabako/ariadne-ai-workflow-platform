@@ -285,7 +285,7 @@ def test_duckdb_store_search_ranks_keyword_and_metadata_filters(tmp_path: Path) 
         category="test",
         document_type="gui-knowledge",
         environment="windows-msys2-gui",
-        workflow="/robotics-feature-maintenance",
+        workflow="/ariadne-feature-maintenance",
         metadata={"status": "approved", "trust_level": "high", "tags": ["gui", "pyqt"], "repository": "repo"},
     )
     web = write_record(
@@ -297,7 +297,7 @@ def test_duckdb_store_search_ranks_keyword_and_metadata_filters(tmp_path: Path) 
         category="test",
         document_type="web-knowledge",
         environment="wsl-ubuntu-web",
-        workflow="/robotics-feature-maintenance",
+        workflow="/ariadne-feature-maintenance",
         metadata={"status": "approved", "trust_level": "medium", "tags": ["web", "svg"], "repository": "repo"},
     )
     duckdb_store.ingest_file(repo, db, gui, policy)
@@ -313,7 +313,7 @@ def test_duckdb_store_search_ranks_keyword_and_metadata_filters(tmp_path: Path) 
             source="",
             document_type="gui-knowledge",
             environment="windows-msys2-gui",
-            workflow="/robotics-feature-maintenance",
+            workflow="/ariadne-feature-maintenance",
             min_reliability=0.5,
             min_freshness=0.5,
             limit=5,

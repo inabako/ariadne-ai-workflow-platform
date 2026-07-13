@@ -10,7 +10,7 @@
 
 対象:
 
-- robotics
+- ariadne
 - IoT system
 - edge AI
 - video streaming system

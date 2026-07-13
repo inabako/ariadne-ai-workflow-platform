@@ -1,2 +1,2 @@
-"""Runtime package for the Intent-Driven Robotics AI Workflow."""
+"""Runtime package for the Ariadne AI Workflow."""
 

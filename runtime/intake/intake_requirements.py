@@ -50,11 +50,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--project-repository", default="")
     parser.add_argument(
         "--workflow",
-        default="new-robotics-system-development",
+        default="ariadne-new-system-development",
         choices=[
-            "new-robotics-system-development",
-            "robotics-maintenance-development",
-            "robotics-new-system-iac",
+            "ariadne-new-system-development",
+            "ariadne-feature-maintenance-development",
+            "ariadne-new-system-iac",
             "realtime-iac",
             "github-knowledge-maintenance",
             "flutter-multiplatform",
@@ -125,23 +125,23 @@ def unique_destination(directory: Path, filename: str) -> Path:
 
 
 def command_for_workflow(workflow: str) -> str:
-    if workflow == "robotics-maintenance-development":
-        return "/robotics-maintenance-development"
-    if workflow == "robotics-new-system-iac":
-        return "/robotics-new-system-iac"
+    if workflow == "ariadne-feature-maintenance-development":
+        return "/ariadne-feature-maintenance-development"
+    if workflow == "ariadne-new-system-iac":
+        return "/ariadne-new-system-iac"
     if workflow == "realtime-iac":
         return "/realtime-iac"
     if workflow == "github-knowledge-maintenance":
         return "/github-knowledge-maintenance"
     if workflow == "flutter-multiplatform":
         return "/flutter-multiplatform"
-    return "/new-robotics-system-development"
+    return "/ariadne-new-system-development"
 
 
 def id_prefix_for_workflow(workflow: str) -> str:
-    if workflow in {"new-robotics-system-development", "robotics-new-system-iac"}:
+    if workflow in {"ariadne-new-system-development", "ariadne-new-system-iac"}:
         return "SYS"
-    if workflow == "robotics-maintenance-development":
+    if workflow == "ariadne-feature-maintenance-development":
         return "FEAT"
     if workflow == "flutter-multiplatform":
         return "FLUTTER"
@@ -156,7 +156,7 @@ def open_questions_for_workflow(workflow: str) -> list[str]:
             "Network boundary definition is not confirmed at intake.",
             "Public exposure scope and secret handling are not confirmed at intake.",
         ]
-    if workflow == "robotics-new-system-iac":
+    if workflow == "ariadne-new-system-iac":
         return [
             "STOP / emergency stop behavior is not confirmed at intake.",
             "Communication loss behavior is not confirmed at intake.",
@@ -185,9 +185,9 @@ def open_questions_for_workflow(workflow: str) -> list[str]:
 def consumed_by_for_workflow(workflow: str) -> list[str]:
     if workflow == "realtime-iac":
         return ["iac-requirements-agent"]
-    if workflow == "robotics-new-system-iac":
+    if workflow == "ariadne-new-system-iac":
         return [
-            "robotics-architect-agent",
+            "ariadne-architect-agent",
             "shared-artifact-validator-agent",
             "iac-requirements-agent",
         ]
@@ -204,7 +204,7 @@ def consumed_by_for_workflow(workflow: str) -> list[str]:
             "flutter-environment-dispatcher",
             "flutter-build-dispatcher",
         ]
-    return ["robotics-architect-agent"]
+    return ["ariadne-architect-agent"]
 
 
 def initialize_context(

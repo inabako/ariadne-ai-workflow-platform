@@ -84,8 +84,8 @@ flowchart LR
   end
 
   subgraph HighWorkflows[環境依存が強いWorkflow]
-    NewSys[/robotics-new-system/]
-    Feature[/robotics-feature-maintenance/]
+    NewSys[/ariadne-new-system/]
+    Feature[/ariadne-feature-maintenance/]
     Fix[/corrective-action-fix/]
     Iac[/realtime-iac/]
     Vscode[/vscode-environment/]
@@ -155,8 +155,8 @@ flowchart LR
 
 | Workflow | 主に読むDispatcher Context | 主に生成・更新するWorkflow Context | 備考 |
 | --- | --- | --- | --- |
-| `/robotics-new-system` | `workflow-selection`, `tool-selection`, `environment-selection`, `execution-plan` | `agent-context`, `artifact-index`, `handoff-package`, design artifacts | GUI / Web / IaC候補があるため環境判断の効果が大きい |
-| `/robotics-feature-maintenance` | `workflow-selection`, `tool-selection`, `environment-selection`, `execution-plan` | impact analysis、test evidence、workflow固有state | 既存systemの変更で、環境とtoolの取り違えを防ぐ |
+| `/ariadne-new-system` | `workflow-selection`, `tool-selection`, `environment-selection`, `execution-plan` | `agent-context`, `artifact-index`, `handoff-package`, design artifacts | GUI / Web / IaC候補があるため環境判断の効果が大きい |
+| `/ariadne-feature-maintenance` | `workflow-selection`, `tool-selection`, `environment-selection`, `execution-plan` | impact analysis、test evidence、workflow固有state | 既存対象システムの変更で、環境とtoolの取り違えを防ぐ |
 | `/corrective-action-fix` | `workflow-selection`, `tool-selection`, `environment-selection`, `execution-plan`, `corrective-action-report` | issue work context、test evidence、knowledge-capture候補 | 改善reportから実装修正へ進むため、report所在と実行計画が重要 |
 | `/realtime-iac` | `environment-selection`, `tool-selection`, `execution-plan` | IaC artifacts、validation evidence | `environment-selection.environment == docker` をgateにする |
 | `/vscode-environment` | `environment-selection`, `runtime-context` | `vscode-environment-state`, `.vscode/*`候補 | self-provision / target-workspace / custom-designを分ける |

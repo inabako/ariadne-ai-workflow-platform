@@ -29,7 +29,7 @@ Semantic commit examples:
 ```text
 feat: add remote gateway skeleton
 fix: correct telemetry timeout handling
-docs: update robotics safety gate
+docs: update target-system safety gate
 test: add communication loss regression
 chore: update workflow skill index
 ```

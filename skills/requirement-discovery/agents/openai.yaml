@@ -1,4 +1,4 @@
 interface:
   display_name: "Requirement Discovery"
-  short_description: "Create a reviewed robotics requirement document from draft bullets."
+  short_description: "Create a reviewed target-system requirement document from draft bullets."
   default_prompt: "/requirement-discovery\n日本語で出力してください。"

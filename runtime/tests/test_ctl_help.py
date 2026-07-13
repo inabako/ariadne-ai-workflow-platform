@@ -505,8 +505,8 @@ def test_realtime_iac_help_declares_docker_context_gate() -> None:
     assert "environment-selection.environment" in output
 
 
-def test_robotics_new_system_iac_help_declares_execution_plan_handoff() -> None:
-    args = ctl.build_parser().parse_args(["--repo-root", str(repo_root()), "help", "show", "/robotics-new-system-iac"])
+def test_ariadne_new_system_iac_help_declares_execution_plan_handoff() -> None:
+    args = ctl.build_parser().parse_args(["--repo-root", str(repo_root()), "help", "show", "/ariadne-new-system-iac"])
 
     code, output = ctl.run(args)
 
@@ -629,7 +629,7 @@ def test_ctl_help_search_finds_svg_gui_workflows() -> None:
     code, output = ctl.run(args)
 
     assert code == 0
-    assert "/robotics-new-system" in output
+    assert "/ariadne-new-system" in output
     assert "/corrective-action-fix" in output
     assert "gac-uac-gui-mode" in output
 

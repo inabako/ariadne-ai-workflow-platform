@@ -1,11 +1,11 @@
-﻿# Robotics New System + Realtime IaC
+# Ariadne New System + Realtime IaC
 
-新しい robotics system を作り、その設計結果を Shared Artifacts として固定してから realtime IaC workflow へ渡す統合workflowです。
+新しい対象システムを作り、その設計結果を Shared Artifacts として固定してから realtime IaC workflow へ渡す統合workflowです。
 
 ## Command
 
 ```text
-/robotics-new-system-iac
+/ariadne-new-system-iac
 ```
 
 ## Flow
@@ -130,7 +130,7 @@ templates/iac/software-inventory-template.md
 ## Source Skills
 
 ```text
-skills/robotics-new-system/SKILL.md
+skills/ariadne-new-system/SKILL.md
 skills/realtime-iac/SKILL.md
-skills/robotics-new-system-iac/SKILL.md
+skills/ariadne-new-system-iac/SKILL.md
 ```

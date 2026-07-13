@@ -1,4 +1,4 @@
-﻿{
+{
   "schema_version": "1.0",
   "skills": [
     {
@@ -8,7 +8,7 @@
       "delegated_prompt": "/requirement-discovery",
       "prompt_path": ".github/prompts/requirement-discovery.prompt.md",
       "workflow": "requirement-discovery",
-      "description": "Create a completed robotics requirement document from a human bullet-list draft in work/requirements/draft, with clarification questions and human review before saving to work/requirements."
+      "description": "Create a completed target-system requirement document from a human bullet-list draft in work/requirements/draft, with clarification questions and human review before saving to work/requirements."
     },
     {
       "slash_command": "/docs-sync",
@@ -65,31 +65,31 @@
       "description": "Build or maintain reproducible VSCode Workspace-as-Code settings, tasks, launch configs, extensions, terminal profiles, AI workflow tasks, tests, evidence, and setup docs."
     },
     {
-      "slash_command": "/robotics-new-system",
-      "skill": "robotics-new-system",
-      "skill_path": "skills/robotics-new-system/SKILL.md",
-      "delegated_prompt": "/new-robotics-system-development",
-      "prompt_path": ".github/prompts/new-robotics-system-development.prompt.md",
-      "workflow": "new-robotics-system-development",
-      "description": "新しい robotics system、runtime、remote operation system、device integration、architecture-level launch を開始する。"
+      "slash_command": "/ariadne-new-system",
+      "skill": "ariadne-new-system",
+      "skill_path": "skills/ariadne-new-system/SKILL.md",
+      "delegated_prompt": "/ariadne-new-system-development",
+      "prompt_path": ".github/prompts/ariadne-new-system-development.prompt.md",
+      "workflow": "ariadne-new-system-development",
+      "description": "新しい対象システム、runtime、remote operation、device integration、architecture-level launch を開始する。"
     },
     {
-      "slash_command": "/robotics-new-system-iac",
-      "skill": "robotics-new-system-iac",
-      "skill_path": "skills/robotics-new-system-iac/SKILL.md",
-      "delegated_prompt": "/robotics-new-system-iac",
-      "prompt_path": ".github/prompts/robotics-new-system-iac.prompt.md",
-      "workflow": "robotics-new-system-iac",
-      "description": "Start a new robotics system workflow, generate and validate Shared Artifacts, then hand off to the realtime IaC workflow."
+      "slash_command": "/ariadne-new-system-iac",
+      "skill": "ariadne-new-system-iac",
+      "skill_path": "skills/ariadne-new-system-iac/SKILL.md",
+      "delegated_prompt": "/ariadne-new-system-iac",
+      "prompt_path": ".github/prompts/ariadne-new-system-iac.prompt.md",
+      "workflow": "ariadne-new-system-iac",
+      "description": "新しい対象システムを設計し、Shared Artifactsを生成・検証してからrealtime IaC workflowへ渡す。"
     },
     {
-      "slash_command": "/robotics-feature-maintenance",
-      "skill": "robotics-feature-maintenance",
-      "skill_path": "skills/robotics-feature-maintenance/SKILL.md",
-      "delegated_prompt": "/robotics-maintenance-development",
-      "prompt_path": ".github/prompts/robotics-maintenance-development.prompt.md",
-      "workflow": "robotics-maintenance-development",
-      "description": "既存 robotics system の新機能追加、bug fix、hardware replacement、network change、deployment change、field issue response を開始する。"
+      "slash_command": "/ariadne-feature-maintenance",
+      "skill": "ariadne-feature-maintenance",
+      "skill_path": "skills/ariadne-feature-maintenance/SKILL.md",
+      "delegated_prompt": "/ariadne-feature-maintenance-development",
+      "prompt_path": ".github/prompts/ariadne-feature-maintenance-development.prompt.md",
+      "workflow": "ariadne-feature-maintenance-development",
+      "description": "既存対象システムの新機能追加、bug fix、hardware replacement、network change、deployment change、field issue response を開始する。"
     },
     {
       "slash_command": "/realtime-iac",
@@ -171,8 +171,8 @@
       "runtime_path": "runtime/workflow/gui_mode.py",
       "trigger": "work/requirements/svg-input/{SYS,FEAT,FIX}_*.svg",
       "parent_workflows": [
-        "new-robotics-system-development",
-        "robotics-maintenance-development",
+        "ariadne-new-system-development",
+        "ariadne-feature-maintenance-development",
         "corrective-action-fix"
       ],
       "output": "work/<issue-id>/gac-uac/"
@@ -185,8 +185,8 @@
       "template_path": "templates/process-report/nextjs-webapp-implementation-prep-template.md",
       "trigger": "Next.js dashboard/admin/monitoring/business webapp implementation before source changes",
       "parent_workflows": [
-        "new-robotics-system-development",
-        "robotics-maintenance-development",
+        "ariadne-new-system-development",
+        "ariadne-feature-maintenance-development",
         "corrective-action-fix"
       ],
       "output": "work/<id>/process-report/nextjs-webapp-implementation-prep.md"
@@ -200,8 +200,8 @@
       "runtime_path": "runtime/workflow/web_svg_layout_mode.py",
       "trigger": "work/requirements/svg-input/{WEB_SYS,WEB_FEAT,WEB_FIX}_*.svg",
       "parent_workflows": [
-        "new-robotics-system-development",
-        "robotics-maintenance-development",
+        "ariadne-new-system-development",
+        "ariadne-feature-maintenance-development",
         "corrective-action-fix"
       ],
       "output": "work/<issue-id>/web-ui/"
@@ -216,8 +216,8 @@
       "trigger": "Flutter requirement or work/<work-id>/requirements/flutter-targets.yaml",
       "parent_workflows": [
         "requirement-discovery",
-        "new-robotics-system-development",
-        "robotics-maintenance-development",
+        "ariadne-new-system-development",
+        "ariadne-feature-maintenance-development",
         "corrective-action-fix",
         "system-integration-quality"
       ],

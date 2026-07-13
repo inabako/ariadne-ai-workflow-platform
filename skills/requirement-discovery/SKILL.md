@@ -1,6 +1,6 @@
-﻿---
+---
 name: requirement-discovery
-description: Create a completed robotics requirement document from a human bullet-list draft in work/requirements/draft by inspecting it, asking blocking clarification questions, using optional RAG context, preparing a review draft, and saving the final document to work/requirements only after human OK. Use when the user selects /requirement-discovery or asks to create requirements from draft bullets.
+description: Create a completed target-system requirement document from a human bullet-list draft in work/requirements/draft by inspecting it, asking blocking clarification questions, using optional RAG context, preparing a review draft, and saving the final document to work/requirements only after human OK. Use when the user selects /requirement-discovery or asks to create requirements from draft bullets.
 ---
 
 # Requirement Discovery
@@ -191,7 +191,7 @@ Category output examples:
 
 ```text
 rag/external-web/network/
-rag/external-web/robotics/
+rag/external-web/system-design/
 rag/external-web/ai-workflow/
 rag/external-web/architecture/
 ```
@@ -263,13 +263,13 @@ work/requirements/<requirement-name>.md
 After this workflow completes, development workflows can intake the completed requirement document with:
 
 ```powershell
-python runtime/intake/intake_requirements.py --workflow new-robotics-system-development
+python runtime/intake/intake_requirements.py --workflow ariadne-new-system-development
 ```
 
 or:
 
 ```powershell
-python runtime/intake/intake_requirements.py --workflow robotics-maintenance-development
+python runtime/intake/intake_requirements.py --workflow ariadne-feature-maintenance-development
 ```
 
 Use the workflow that matches the completed requirement document.

@@ -8,7 +8,7 @@ test evidence は、「テストした」という主張ではなく、「どの
 
 | File | Purpose |
 | --- | --- |
-| `robotics-test-evidence-template.md` | robotics の unit / integration / simulation / bench / limited-field / rollback test 共通の証跡 |
+| `ariadne-test-evidence-template.md` | Ariadne の unit / integration / simulation / bench / limited-field / rollback test 共通の証跡 |
 
 ## Quality Rule
 

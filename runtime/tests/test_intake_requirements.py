@@ -10,7 +10,7 @@ import pytest
 from runtime.intake import intake_requirements
 
 
-def write_requirement(path: Path, repository: str = "owner/robotics-target", branch: str = "main") -> Path:
+def write_requirement(path: Path, repository: str = "owner/ariadne-target", branch: str = "main") -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         f"# Requirement\n\nRepository: {repository}\nTarget Branch: {branch}\n",
@@ -25,9 +25,9 @@ def make_args(repo_root: Path, **overrides) -> argparse.Namespace:
         "requirements_dir": None,
         "receipt_id": "SYS-1000",
         "id_prefix": None,
-        "project_name": "robotics-target",
+        "project_name": "ariadne-target",
         "project_repository": "",
-        "workflow": "new-robotics-system-development",
+        "workflow": "ariadne-new-system-development",
         "phase": "intake",
         "intent_summary": "test intake",
         "risk_level": "unknown",
@@ -71,29 +71,29 @@ def test_parser_and_workflow_mapping_helpers() -> None:
     assert parsed.risk_level == "critical"
     assert parsed.copy is True
 
-    assert intake_requirements.command_for_workflow("robotics-maintenance-development") == "/robotics-maintenance-development"
-    assert intake_requirements.command_for_workflow("robotics-new-system-iac") == "/robotics-new-system-iac"
+    assert intake_requirements.command_for_workflow("ariadne-feature-maintenance-development") == "/ariadne-feature-maintenance-development"
+    assert intake_requirements.command_for_workflow("ariadne-new-system-iac") == "/ariadne-new-system-iac"
     assert intake_requirements.command_for_workflow("realtime-iac") == "/realtime-iac"
     assert intake_requirements.command_for_workflow("github-knowledge-maintenance") == "/github-knowledge-maintenance"
-    assert intake_requirements.command_for_workflow("new-robotics-system-development") == "/new-robotics-system-development"
+    assert intake_requirements.command_for_workflow("ariadne-new-system-development") == "/ariadne-new-system-development"
 
-    assert intake_requirements.id_prefix_for_workflow("new-robotics-system-development") == "SYS"
-    assert intake_requirements.id_prefix_for_workflow("robotics-new-system-iac") == "SYS"
-    assert intake_requirements.id_prefix_for_workflow("robotics-maintenance-development") == "FEAT"
+    assert intake_requirements.id_prefix_for_workflow("ariadne-new-system-development") == "SYS"
+    assert intake_requirements.id_prefix_for_workflow("ariadne-new-system-iac") == "SYS"
+    assert intake_requirements.id_prefix_for_workflow("ariadne-feature-maintenance-development") == "FEAT"
     assert intake_requirements.id_prefix_for_workflow("realtime-iac") == "WF"
 
     assert "Port definition list is not confirmed at intake." in intake_requirements.open_questions_for_workflow("realtime-iac")
-    assert "Shared Artifacts readiness for IaC handoff is not confirmed at intake." in intake_requirements.open_questions_for_workflow("robotics-new-system-iac")
+    assert "Shared Artifacts readiness for IaC handoff is not confirmed at intake." in intake_requirements.open_questions_for_workflow("ariadne-new-system-iac")
     assert "GitHub mutation approval is not confirmed at intake." in intake_requirements.open_questions_for_workflow("github-knowledge-maintenance")
-    assert intake_requirements.open_questions_for_workflow("new-robotics-system-development") == [
+    assert intake_requirements.open_questions_for_workflow("ariadne-new-system-development") == [
         "STOP / emergency stop behavior is not confirmed at intake.",
         "Communication loss behavior is not confirmed at intake.",
     ]
 
     assert intake_requirements.consumed_by_for_workflow("realtime-iac") == ["iac-requirements-agent"]
-    assert "shared-artifact-validator-agent" in intake_requirements.consumed_by_for_workflow("robotics-new-system-iac")
+    assert "shared-artifact-validator-agent" in intake_requirements.consumed_by_for_workflow("ariadne-new-system-iac")
     assert "github-metadata-collector-agent" in intake_requirements.consumed_by_for_workflow("github-knowledge-maintenance")
-    assert intake_requirements.consumed_by_for_workflow("new-robotics-system-development") == ["robotics-architect-agent"]
+    assert intake_requirements.consumed_by_for_workflow("ariadne-new-system-development") == ["ariadne-architect-agent"]
 
 
 def test_discover_requirement_documents_rejects_invalid_inputs(tmp_path: Path) -> None:
@@ -200,7 +200,7 @@ def test_run_with_explicit_requirements_copies_and_uses_unique_names(tmp_path: P
     )
 
     assert result["receipt_id"] == "GITHUB-1"
-    assert result["repository"] == "owner/robotics-target"
+    assert result["repository"] == "owner/ariadne-target"
     assert result["target_branch"] == "main"
     assert result["copied"] is True
     assert result["requirements_dir"] is None
@@ -237,7 +237,7 @@ def test_run_discovers_single_requirement_moves_and_generates_receipt(
             requirements_dir=str(requirements_dir),
             receipt_id=None,
             id_prefix=None,
-            workflow="robotics-maintenance-development",
+            workflow="ariadne-feature-maintenance-development",
             project_name="Maint",
             copy=False,
         )

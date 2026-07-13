@@ -1,4 +1,0 @@
-interface:
-  display_name: "Robotics Feature Maintenance"
-  short_description: "Start a robotics feature or maintenance workflow."
-  default_prompt: "/robotics-feature-maintenance"

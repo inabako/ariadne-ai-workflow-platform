@@ -1,4 +1,4 @@
-﻿---
+---
 name: corrective-action-report
 description: Analyze the current state of a user-specified repository and branch, identify improvement points, risks, missing documentation, test gaps, architecture concerns, and workflow opportunities, then write a corrective action report for RAG accumulation. Use when the user selects /corrective-action-report or asks for a current improvement report, corrective action report, repository health review, or cross-project improvement findings.
 ---
@@ -60,7 +60,7 @@ Review the repository from these angles:
 - GitHub workflow readiness: issue, branch, commit, CI, review flow
 - RAG candidates: knowledge worth preserving for future Agents
 
-For robotics repositories, prioritize STOP behavior, communication loss behavior, startup / shutdown safe state, operator responsibility, field operation assumptions, telemetry, and incident capture.
+For target repositories, prioritize STOP behavior, communication loss behavior, startup / shutdown safe state, operator responsibility, field operation assumptions, telemetry, and incident capture.
 
 ## Workflow
 

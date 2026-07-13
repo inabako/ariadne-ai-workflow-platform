@@ -1,4 +1,4 @@
-﻿# Runtime SCM
+# Runtime SCM
 
 `runtime/scm/` は、target repository の取得、要件比較、Issue番号branch作成、semantic commit を扱います。
 
@@ -119,5 +119,5 @@ Allowed examples:
 
 - `feat: add remote gateway skeleton`
 - `fix: correct telemetry timeout handling`
-- `docs: update robotics safety gate`
+- `docs: update target-system safety gate`
 - `test: add communication loss regression`

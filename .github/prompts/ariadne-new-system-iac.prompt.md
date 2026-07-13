@@ -1,4 +1,4 @@
-# Robotics New System + Realtime IaC Workflow
+# Ariadne New System + Realtime IaC Workflow
 
 ## Output Language
 
@@ -6,7 +6,7 @@
 
 ## Purpose
 
-新しい robotics system を設計し、その結果を Shared Artifacts として固定してから realtime IaC workflow へ渡す統合flowです。
+新しい対象システムを設計し、その結果を Shared Artifacts として固定してから realtime IaC workflow へ渡す統合flowです。
 
 ```text
 新システムワークフロー
@@ -35,7 +35,7 @@
 
 ## Phase 1: New System Workflow
 
-`/robotics-new-system` と同じ観点で、新システムの設計を進めます。
+`/ariadne-new-system` と同じ観点で、新システムの設計を進めます。
 
 出力:
 

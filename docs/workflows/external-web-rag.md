@@ -31,7 +31,7 @@ rag/
   external-web/
     knowledge-sources.md
     network/
-    robotics/
+    system-design/
     ai-workflow/
     architecture/
     go-runtime/

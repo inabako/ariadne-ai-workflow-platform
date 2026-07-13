@@ -1,4 +1,4 @@
-﻿---
+---
 name: nextjs-webapp-implementation-prep
 description: 親workflow内でNext.js画面機能の実装前に、新規/既存分類、boilerplate採用可否、画面契約、API契約、auth、env、testを整理します。
 argument-hint: "<work-id> [target-app-path]"
@@ -7,7 +7,7 @@ agent: agent
 
 # Next.js Webapp Implementation Preparation
 
-このpromptは独立した大本流ではありません。`/robotics-new-system`、`/robotics-feature-maintenance`、`/corrective-action-fix` のImplementation前に差し込む準備サブワークフローです。
+このpromptは独立した大本流ではありません。`/ariadne-new-system`、`/ariadne-feature-maintenance`、`/corrective-action-fix` のImplementation前に差し込む準備サブワークフローです。
 
 目的は、画面実装を始める前に曖昧な判断を残さないことです。特に、画面だけ先に作ってAPI契約、認証、環境変数、テスト証跡が後から合わなくなる状態を防ぎます。新規アプリではboilerplateを安全にコピーできるかを確認し、既存アプリでは既存構成を壊さず参照だけに留めます。未確認事項が残る場合は実装へ進まず、Open QAとして人間確認に戻します。
 

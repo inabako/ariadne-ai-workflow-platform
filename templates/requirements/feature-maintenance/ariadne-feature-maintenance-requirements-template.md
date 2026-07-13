@@ -1,8 +1,8 @@
-﻿# Robotics Feature / Maintenance Requirements
+# Ariadne Feature / Maintenance Requirements
 
 ## Intent
 
-既存 robotics system に対する新機能追加、bug fix、保守変更、field feedback対応で達成したいことを記載します。
+既存対象システムに対する新機能追加、bug fix、保守変更、field feedback対応で達成したいことを記載します。
 
 ## Decision
 
@@ -10,7 +10,7 @@
 
 ## Reason
 
-保守開発では、既存の安全挙動、operator workflow、runtime、network、hardware dependency を壊さないことが重要です。
+保守開発では、既存の安全挙動、operator workflow、runtime、network、external dependency を壊さないことが重要です。
 
 ## Repository Control
 
@@ -45,7 +45,7 @@ repository が空の場合、この要件定義書は受領されません。
 | --- | --- |
 | Change Title |  |
 | Change Type | feature / bugfix / safety-improvement / reliability / observability / device-replacement / docs |
-| Target Robot / System |  |
+| Target System / Component |  |
 | Related Incident / Field Note |  |
 | Expected GitHub Issue Title |  |
 

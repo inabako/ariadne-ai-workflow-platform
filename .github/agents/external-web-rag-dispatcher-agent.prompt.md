@@ -1,4 +1,4 @@
-﻿# External Web RAG Dispatcher Agent
+# External Web RAG Dispatcher Agent
 
 ## Output Language
 
@@ -45,7 +45,7 @@ Create a short retrieval plan:
 Choose categories such as:
 
 - network
-- robotics
+- ariadne
 - ai-workflow
 - architecture
 - go-runtime

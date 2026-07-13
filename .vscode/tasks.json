@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "2.0.0",
   "tasks": [
     {
@@ -23,7 +23,7 @@
       "problemMatcher": []
     },
     {
-      "label": "workflow:robotics-new-system",
+      "label": "workflow:ariadne-new-system",
       "type": "process",
       "command": "uv",
       "args": [
@@ -34,9 +34,9 @@
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
         "--command",
-        "/robotics-new-system",
+        "/ariadne-new-system",
         "--skill",
-        "skills/robotics-new-system/SKILL.md"
+        "skills/ariadne-new-system/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -44,7 +44,7 @@
       "problemMatcher": []
     },
     {
-      "label": "workflow:robotics-new-system-iac",
+      "label": "workflow:ariadne-new-system-iac",
       "type": "process",
       "command": "uv",
       "args": [
@@ -55,9 +55,9 @@
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
         "--command",
-        "/robotics-new-system-iac",
+        "/ariadne-new-system-iac",
         "--skill",
-        "skills/robotics-new-system-iac/SKILL.md"
+        "skills/ariadne-new-system-iac/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -65,7 +65,7 @@
       "problemMatcher": []
     },
     {
-      "label": "workflow:robotics-feature-maintenance",
+      "label": "workflow:ariadne-feature-maintenance",
       "type": "process",
       "command": "uv",
       "args": [
@@ -76,9 +76,9 @@
         "runtime/workflow/vscode_task_runner.py",
         "skill-info",
         "--command",
-        "/robotics-feature-maintenance",
+        "/ariadne-feature-maintenance",
         "--skill",
-        "skills/robotics-feature-maintenance/SKILL.md"
+        "skills/ariadne-feature-maintenance/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"

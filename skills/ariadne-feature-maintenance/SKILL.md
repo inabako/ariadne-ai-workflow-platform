@@ -1,9 +1,9 @@
-﻿---
-name: robotics-feature-maintenance
-description: Start the Intent-Driven Robotics AI Workflow for adding a new feature to an existing robotics system or performing maintenance development such as bug fix, hardware replacement, network change, deployment change, field issue response, or operational improvement. Use when the user selects /robotics-feature-maintenance or asks to begin feature or maintenance work from a completed requirement document in work/requirements/.
+---
+name: ariadne-feature-maintenance
+description: Start the Ariadne AI Workflow for adding a new feature to an existing target system or performing maintenance development such as bug fix, hardware replacement, network change, deployment change, field issue response, or operational improvement. Use when the user selects /ariadne-feature-maintenance or asks to begin feature or maintenance work from a completed requirement document in work/requirements/.
 ---
 
-# Robotics Feature Maintenance
+# Ariadne Feature Maintenance
 
 ## Default Language
 
@@ -14,13 +14,13 @@ Respond to the user in Japanese by default. Human-facing reports, docs, reviews,
 Use this skill when the user specifies:
 
 ```text
-/robotics-feature-maintenance
+/ariadne-feature-maintenance
 ```
 
 This skill delegates the detailed workflow to:
 
 ```text
-.github/prompts/robotics-maintenance-development.prompt.md
+.github/prompts/ariadne-feature-maintenance-development.prompt.md
 ```
 
 ## Intake Gate
@@ -29,7 +29,7 @@ Before starting the workflow, run or require the intake harness.
 
 ```powershell
 python runtime/intake/intake_requirements.py `
-  --workflow robotics-maintenance-development `
+  --workflow ariadne-feature-maintenance-development `
   --id-prefix FEAT
 ```
 
@@ -48,12 +48,12 @@ Do not treat chat history as a substitute for an accepted requirement document.
 3. Run the GaC / UaC GUI Mode Dispatcher. If `work/requirements/svg-input/FEAT_*.svg` exists, claim it into the Issue work area and generate GUI difference / PyQt6 / QTest candidates before normal implementation. If no SVG exists, record `skipped` and continue.
 4. Run `/rag-load` before entering the development body. Derive parallel retrieval queries from the requirement, repository, branch, comparison report, and issue summary.
 5. If impact analysis, change design, or test planning depends on specialist knowledge, run the relevant Specialist Agent review before implementation.
-6. Run `/robotics-maintenance-development` only after relevant RAG context has been loaded and summarized.
+6. Run `/ariadne-feature-maintenance-development` only after relevant RAG context has been loaded and summarized.
 7. Before implementation, create the issue test case tables and evidence plan.
 8. If the change includes a Next.js dashboard, admin, monitoring, or business webapp screen, run the Next.js Webapp Implementation Preparation Gate before source changes.
 9. If matching `work/requirements/svg-input/WEB_FEAT_*.svg` exists, run the Web SVG Layout Mode and validate `web-ui/` before source changes.
-9. Preserve artifacts under `work/<receipt-id>/`.
-10. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, Next.js webapp preparation result, and handoff context as JSON where schemas exist.
+10. Preserve artifacts under `work/<receipt-id>/`.
+11. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, Next.js webapp preparation result, and handoff context as JSON where schemas exist.
 
 ## GaC / UaC GUI Mode Gate
 

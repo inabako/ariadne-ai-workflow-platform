@@ -4,7 +4,7 @@ receipt_id:
 repository:
 branch:
 commit:
-workflow: new-robotics-system-development
+workflow: ariadne-new-system-development
 phase: boilerplate-template-selection
 status: draft
 language: ja-JP

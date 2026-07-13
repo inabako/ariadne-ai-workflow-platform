@@ -1,6 +1,6 @@
-﻿---
+---
 name: requirement-discovery
-description: Human bullet-list draft files under work/requirements/draft are inspected, clarified through questions, converted into a reviewed robotics requirement document, and saved to work/requirements after human OK.
+description: Human bullet-list draft files under work/requirements/draft are inspected, clarified through questions, converted into a reviewed target-system requirement document, and saved to work/requirements after human OK.
 argument-hint: "[draft-file]"
 agent: agent
 ---
@@ -13,7 +13,7 @@ agent: agent
 
 ## Purpose
 
-This workflow converts a human-written bullet-list draft into a completed robotics requirement document.
+This workflow converts a human-written bullet-list draft into a completed target-system requirement document.
 
 The workflow is for requirement discovery only. It must not start implementation, create a GitHub Issue, create a branch, or decide design details.
 

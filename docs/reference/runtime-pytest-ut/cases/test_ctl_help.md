@@ -1,4 +1,4 @@
-﻿# test_ctl_help.py
+# test_ctl_help.py
 
 このファイルは `runtime/tests/test_ctl_help.py` のpytest node id単位UT仕様です。
 
@@ -335,10 +335,10 @@ runtime/tests/test_ctl_help.py::test_realtime_iac_help_declares_docker_context_g
 - pytest node id:
 
 ```text
-runtime/tests/test_ctl_help.py::test_robotics_new_system_iac_help_declares_execution_plan_handoff
+runtime/tests/test_ctl_help.py::test_ariadne_new_system_iac_help_declares_execution_plan_handoff
 ```
 
-- 確認内容: pytest case `robotics new system iac help declares execution plan handoff` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 確認内容: pytest case `ariadne new system iac help declares execution plan handoff` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_ctl_help.py:509`

@@ -1,11 +1,11 @@
-﻿# Next.js Webapp Implementation Preparation
+# Next.js Webapp Implementation Preparation
 
 Next.js 画面機能を実装する前に、対象が新規webappか既存webapp拡張かを分類し、`nextjs-webapp-template` の採用可否、画面契約、API契約、認証、環境変数、テスト方針を揃える準備サブフローです。
 
 独立したslash commandではありません。親workflowのImplementation前に実行します。
 
-- `/robotics-new-system`
-- `/robotics-feature-maintenance`
+- `/ariadne-new-system`
+- `/ariadne-feature-maintenance`
 - `/corrective-action-fix`
 
 ## Activation

@@ -17,11 +17,11 @@ source_requirements:
   - ""
 related_issue: ""
 tags:
-  - robotics
+  - ariadne
   - design-document
 ---
 
-# Robotics Design Document: <title>
+# Ariadne Design Document: <title>
 
 ## 1. Intent
 
@@ -31,7 +31,7 @@ tags:
 | --- | --- |
 | Primary Intent |  |
 | Target User / Operator |  |
-| Target Robot / Device |  |
+| Target System / Component |  |
 | Target Environment | lab / indoor / outdoor / field / other |
 | Success Criteria |  |
 | Non-goal Summary |  |

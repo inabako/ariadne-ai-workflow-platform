@@ -1,4 +1,4 @@
-﻿# Robotics Feature Maintenance Skill Entrypoint
+# Ariadne Feature Maintenance Skill Entrypoint
 
 ## Output Language
 
@@ -6,18 +6,18 @@
 
 ## Purpose
 
-`/robotics-feature-maintenance` は、既存 robotics system の新機能追加または保守開発を開始するための Skill entrypoint です。
+`/ariadne-feature-maintenance` は、既存対象システムの新機能追加または保守開発を開始するための Skill entrypoint です。
 
 Use:
 
 ```text
-skills/robotics-feature-maintenance/SKILL.md
+skills/ariadne-feature-maintenance/SKILL.md
 ```
 
 Then delegate the detailed workflow to:
 
 ```text
-/robotics-maintenance-development
+/ariadne-feature-maintenance-development
 ```
 
 ## Required Intake Gate
@@ -25,7 +25,7 @@ Then delegate the detailed workflow to:
 Before implementation or design work, run or require:
 
 ```powershell
-python runtime/intake/intake_requirements.py --workflow robotics-maintenance-development
+python runtime/intake/intake_requirements.py --workflow ariadne-feature-maintenance-development
 ```
 
 Reject the order when:
@@ -38,6 +38,6 @@ Do not proceed from chat history alone.
 
 ## Next Step
 
-After intake succeeds, run `/pre-development-preparation`, then run `/rag-load`, then continue with `/robotics-maintenance-development`.
+After intake succeeds, run `/pre-development-preparation`, then run `/rag-load`, then continue with `/ariadne-feature-maintenance-development`.
 
 `/rag-load` must search prior corrective action reports in parallel where possible and use `runtime/rag/retrieve_context.py` to generate compressed context packs before maintenance design starts.

@@ -18,7 +18,7 @@ source_requirements:
 related_design_document: ""
 related_issue: ""
 tags:
-  - robotics
+  - ariadne
   - test-specification
 ---
 

@@ -1,9 +1,9 @@
-﻿---
-name: robotics-new-system
-description: Start the Intent-Driven Robotics AI Workflow for creating a new robotics system, robot runtime, remote operation system, device integration, or architecture-level system launch. Use when the user selects /robotics-new-system or asks to begin a new robotics system development flow from a completed requirement document in work/requirements/.
+---
+name: ariadne-new-system
+description: Start the Ariadne AI Workflow for creating a new target system, runtime, remote operation system, device integration, or architecture-level system launch. Use when the user selects /ariadne-new-system or asks to begin an Ariadne New System flow from a completed requirement document in work/requirements/.
 ---
 
-# Robotics New System
+# Ariadne New System
 
 ## Default Language
 
@@ -14,13 +14,13 @@ Respond to the user in Japanese by default. Human-facing reports, docs, reviews,
 Use this skill when the user specifies:
 
 ```text
-/robotics-new-system
+/ariadne-new-system
 ```
 
 This skill delegates the detailed workflow to:
 
 ```text
-.github/prompts/new-robotics-system-development.prompt.md
+.github/prompts/ariadne-new-system-development.prompt.md
 ```
 
 ## Intake Gate
@@ -29,7 +29,7 @@ Before starting the workflow, run or require the intake harness.
 
 ```powershell
 python runtime/intake/intake_requirements.py `
-  --workflow new-robotics-system-development `
+  --workflow ariadne-new-system-development `
   --id-prefix SYS
 ```
 
@@ -48,13 +48,13 @@ Do not treat chat history as a substitute for an accepted requirement document.
 3. Run the GaC / UaC GUI Mode Dispatcher. If `work/requirements/svg-input/SYS_*.svg` exists, claim it into the Issue work area and generate GUI design / PyQt6 / QTest candidates before normal implementation. If no SVG exists, record `skipped` and continue.
 4. Run `/rag-load` before entering the development body. Derive parallel retrieval queries from the requirement, repository, branch, comparison report, and issue summary.
 5. If architecture, runtime, network, deployment, safety, or test strategy depends on specialist knowledge, run the relevant Specialist Agent review before implementation.
-6. Run `/new-robotics-system-development` only after relevant RAG context has been loaded and summarized.
+6. Run `/ariadne-new-system-development` only after relevant RAG context has been loaded and summarized.
 7. Before implementation, create the issue test case tables and evidence plan.
 8. Before implementation, run the Boilerplate Template Selection Gate. If a matching boilerplate template exists under `templates/boilerplates/`, use it as the starting point. If no matching template exists, record the reason and continue with traditional coding.
 9. If the system includes a Next.js dashboard, admin, monitoring, or business webapp, run the Next.js Webapp Implementation Preparation Gate before source changes.
 10. If matching `work/requirements/svg-input/WEB_SYS_*.svg` exists, run the Web SVG Layout Mode and validate `web-ui/` before source changes.
-10. Preserve artifacts under `work/<receipt-id>/`.
-11. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, boilerplate selection result, Next.js webapp preparation result, and handoff context as JSON where schemas exist.
+11. Preserve artifacts under `work/<receipt-id>/`.
+12. Record decisions, QA, risks, test evidence, RAG context references, specialist review references, boilerplate selection result, Next.js webapp preparation result, and handoff context as JSON where schemas exist.
 
 ## GaC / UaC GUI Mode Gate
 

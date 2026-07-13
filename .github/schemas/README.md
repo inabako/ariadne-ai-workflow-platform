@@ -1,4 +1,4 @@
-﻿# Shared Schemas
+# Shared Schemas
 
 このディレクトリは、Agent 間で情報を受け渡すための共通 schema を定義します。
 
@@ -37,7 +37,7 @@
 | `runtime-context.schema.json` | Context Firstでworkflow実行時のterminal、tool path、検証コマンド、Human Check条件を共有する構造定義 |
 | `runtime-metrics.schema.json` | Runtime Observabilityのworkflow / agent / token / context / cost / errorメトリクス |
 | `execution-plan.schema.json` | workflow間handoff前に、必要Context、停止条件、次commandを共有する実行計画 |
-| `realtime-iac-handoff.schema.json` | Robotics New System + IaCからRealtime IaCへ渡すShared Artifacts、validator結果、残リスク、次command |
+| `realtime-iac-handoff.schema.json` | Ariadne New System + IaCからRealtime IaCへ渡すShared Artifacts、validator結果、残リスク、次command |
 | `workflow-environment-profiles.schema.json` | `aiwfctl env` 用Environment Dispatcher registryの構造定義 |
 | `workspace-shared-artifact-validation.schema.json` | VSCode Environment workflowの必須artifact検証、条件、未解決QA |
 | `vscode-environment-state.schema.json` | VSCode Environment workflowのmode、対象workspace、必須artifact、初期化状態 |

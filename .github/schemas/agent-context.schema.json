@@ -33,9 +33,9 @@
         "name": {
           "type": "string",
           "enum": [
-            "new-robotics-system-development",
-            "robotics-maintenance-development",
-            "robotics-new-system-iac",
+            "ariadne-new-system-development",
+            "ariadne-feature-maintenance-development",
+            "ariadne-new-system-iac",
             "realtime-iac"
           ]
         },
@@ -46,7 +46,7 @@
         },
         "command": {
           "type": "string",
-          "description": "Source prompt command. Example: /new-robotics-system-development"
+          "description": "Source prompt command. Example: /ariadne-new-system-development"
         }
       }
     },

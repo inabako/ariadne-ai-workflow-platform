@@ -18,7 +18,7 @@ def make_repo(tmp_path: Path) -> Path:
 
 def make_args(repo: Path, **overrides: object) -> argparse.Namespace:
     values: dict[str, object] = {
-        "repository": "https://github.com/owner/robotics-target.git",
+        "repository": "https://github.com/owner/ariadne-target.git",
         "target_branch": "feature/issue-123",
         "work_id": "",
         "base_work_id": "",
@@ -259,7 +259,7 @@ def test_init_corrective_action_fix_run_with_argument_report_and_reuse_existing(
     result = init_corrective_action_fix.run(args)
 
     assert result["work_id"] == "issue-777"
-    assert result["repository"] == "https://github.com/owner/robotics-target.git"
+    assert result["repository"] == "https://github.com/owner/ariadne-target.git"
     assert result["report_resolution"] == "argument"
     work_dir = repo / result["work_dir"]
     agent = json.loads((work_dir / "context" / "agent-context.json").read_text(encoding="utf-8"))

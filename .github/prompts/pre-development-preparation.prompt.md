@@ -1,4 +1,4 @@
-﻿# Pre-development Preparation Flow
+# Pre-development Preparation Flow
 
 ## Output Language
 
@@ -170,11 +170,11 @@ feature/issue-<issue-number>
 
 代表例:
 
-- `/new-robotics-system-development`
-- `/robotics-new-system-iac`
-- `/robotics-maintenance-development`
-- `/robotics-safety-gates`
-- `/robotics-test-strategy`
+- `/ariadne-new-system-development`
+- `/ariadne-new-system-iac`
+- `/ariadne-feature-maintenance-development`
+- `/ariadne-safety-gates`
+- `/ariadne-test-strategy`
 
 ## Phase 7: Commit
 
@@ -191,7 +191,7 @@ Commit message rule:
 ```text
 feat: add remote gateway skeleton
 fix: correct telemetry timeout handling
-docs: update robotics safety gate
+docs: update target-system safety gate
 test: add communication loss regression
 ```
 

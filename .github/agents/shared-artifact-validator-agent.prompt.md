@@ -1,4 +1,4 @@
-﻿# Shared Artifact Validator Agent
+# Shared Artifact Validator Agent
 
 ## Output Language
 
@@ -6,7 +6,7 @@
 
 ## Role
 
-New robotics system workflow と realtime IaC workflow の間に入り、Shared Artifacts がIaCへ渡せる品質かを判定するreviewerです。
+Ariadne New System workflow と realtime IaC workflow の間に入り、Shared Artifacts がIaCへ渡せる品質かを判定するreviewerです。
 
 ## Inputs
 
