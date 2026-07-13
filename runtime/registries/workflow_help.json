@@ -643,10 +643,10 @@
       "skill": "realtime-iac",
       "skill_path": "skills/realtime-iac/SKILL.md",
       "prompt_path": ".github/prompts/realtime-iac.prompt.md",
-      "overview": "リアルタイムシステム向けIaCを設計、生成、レビュー、検証、文書化する。",
+      "overview": "リアルタイムシステム向けIaCまたはplatform infrastructureを設計、生成、レビュー、検証、文書化する。",
       "prerequisites": [
         "aiwfctl env select docker --work-id <work-id> を実行し、environment-selection.environment が docker である。",
-        "通信仕様、port定義、network boundary、ADR、安全traceabilityなどのShared Artifactsがある。",
+        "通信仕様、port定義、network boundary、ADR、安全traceability、またはplatform component inventoryなどのShared Artifactsがある。",
         "secretや.env実値は生成しない前提で進める。",
         "外部I/O、実機、network影響がある検証はHuman Gateに従う。"
       ],
@@ -654,7 +654,7 @@
         {
           "name": "shared_artifacts",
           "required": false,
-          "description": "通信仕様、port定義、network boundary、ADR、安全traceabilityなどのShared Artifactsが入ったwork directory。",
+          "description": "通信仕様、port定義、network boundary、ADR、安全traceability、platform component inventoryなどのShared Artifactsが入ったwork directory。",
           "examples": [
             "work/issue-12/shared-artifacts/"
           ]
@@ -662,8 +662,9 @@
       ],
       "details": [
         "IaC設計前に Context First gate で docker environment-selection を検証する。",
-        "requirements、network/security、runtime、observabilityを設計する。",
-        "Docker Compose、systemd、firewall、reverse proxy、logrotateなどを生成する。",
+        "requirements、network/security、runtime、observability、またはplatform component selectionを設計する。",
+        "realtime gateway infrastructureには realtime-gateway-infra-template、開発・CI/CD・監視platformには platform-infra-template を候補にする。",
+        "Terraform、Docker Compose、systemd、firewall、reverse proxy、logrotateなどを生成する。",
         "Docker Desktop、Linux runtime、integration testを検証する。",
         "secretや.env実値は生成しない。",
         "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."

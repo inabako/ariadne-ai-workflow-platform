@@ -122,7 +122,7 @@ The AI must not infer software components, port numbers, communication routes, p
    - `docker-compose-design.md`
    - `observability-design.md`
    - `monitoring-policy.md`
-8. Run the Boilerplate Template Selection Gate. If realtime gateway infrastructure matches `templates/boilerplates/realtime-gateway-infra-template/`, copy it to the target IaC destination and edit only the copy. If it does not match, record `decision: traditional-coding`.
+8. Run the Boilerplate Template Selection Gate. If realtime gateway infrastructure matches `templates/boilerplates/realtime-gateway-infra-template/`, or development / CI/CD / observability platform infrastructure matches `templates/boilerplates/platform-infra-template/`, copy the selected template to the target IaC destination and edit only the copy. If no template matches, record `decision: traditional-coding`.
 9. Generate IaC artifacts only from approved designs and the approved boilerplate selection result.
 10. For `precreated-new` repository mode, confirm the GitHub repository already exists, push the initial branch after human approval, create the GitHub Issue with `[IaC]` prefix, then create `feature/issue-<issue-number>` from the pushed initial branch.
 11. Run security review before local runtime tests.
@@ -140,14 +140,16 @@ Template candidate:
 | Target | Template path | Instruction |
 | --- | --- | --- |
 | Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
+| Development / CI/CD / observability platform infrastructure | `templates/boilerplates/platform-infra-template/` | `Platform_Infrastructure_Boilerplate_追加実装指示書.md` |
 
 Rules:
 
-- Inspect the infrastructure target and decide whether realtime gateway infrastructure applies.
+- Inspect the infrastructure target and decide whether realtime gateway infrastructure, platform infrastructure, both, or neither applies.
 - Check that the mapped template directory exists and contains root files, environment directories, modules, scripts, and docs before using it.
 - If the matching template exists, copy the template to the target IaC directory or `work/<receipt-id>/source/repository/` and edit only the copied destination.
 - Do not edit the boilerplate template itself during product implementation.
 - Preserve the template responsibility boundaries unless the approved design explicitly changes them.
+- For platform infrastructure, record Terraform component selection, Docker Compose profile, admin CIDR, secret source, backup / restore, and product-specific validation evidence.
 - Do not generate `.env`, real secrets, production passwords, or private keys.
 - Save the selection result under `work/<receipt-id>/process-report/boilerplate-template-selection.md`.
 

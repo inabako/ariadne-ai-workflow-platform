@@ -1,0 +1,38 @@
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:17.0.0-ce.0
+    container_name: ariadne-gitlab
+    hostname: gitlab.local
+    shm_size: "256m"
+    ports:
+      - "8080:80"
+      - "2222:22"
+    volumes:
+      - gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://localhost:8080'
+        gitlab_rails['gitlab_shell_ssh_port'] = 2222
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost/-/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+
+  gitlab-runner:
+    image: gitlab/gitlab-runner:alpine-v17.0.0
+    container_name: ariadne-gitlab-runner
+    depends_on:
+      - gitlab
+    volumes:
+      - gitlab_runner_config:/etc/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  gitlab_config:
+  gitlab_logs:
+  gitlab_data:
+  gitlab_runner_config:
+

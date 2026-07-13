@@ -1,0 +1,8 @@
+include:
+  - ../../gitlab/docker-compose/compose.yaml
+  - ../../jenkins/docker-compose/compose.yaml
+
+networks:
+  default:
+    name: ariadne-development-platform
+

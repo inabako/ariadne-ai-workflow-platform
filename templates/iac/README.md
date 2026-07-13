@@ -19,3 +19,4 @@
 - 共有成果物が不足する場合は `open-questions.md` を作成し、IaC生成を停止する。
 - Docker Desktopで検証できないLinux依存項目は Linux runtime validation へ移す。
 - Host設定変更やinstallが必要な検証は、人間承認前に実行しない。
+- 開発・CI/CD・監視platformを構築する場合は `templates/boilerplates/platform-infra-template/` を候補にし、Terraform component selection、Docker Compose profile、admin CIDR、secret source、backup / restore、product別validation evidenceを確認する。

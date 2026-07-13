@@ -1,0 +1,10 @@
+include:
+  - ../../gitlab/docker-compose/compose.yaml
+  - ../../jenkins/docker-compose/compose.yaml
+  - ../../grafana/docker-compose/compose.yaml
+  - ../../zabbix/docker-compose/compose.yaml
+
+networks:
+  default:
+    name: ariadne-full-platform
+

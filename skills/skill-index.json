@@ -98,7 +98,7 @@
       "delegated_prompt": "/realtime-iac",
       "prompt_path": ".github/prompts/realtime-iac.prompt.md",
       "workflow": "realtime-iac",
-      "description": "リアルタイムシステム向けIaCを、共有成果物確認、設計、生成、セキュリティレビュー、Docker Desktop検証、Linux検証、統合試験、ドキュメント化まで進める。"
+      "description": "リアルタイムシステム向けIaCまたはplatform infrastructureを、共有成果物確認、boilerplate選定、Terraform設計、Docker Compose検証、セキュリティレビュー、統合試験、ドキュメント化まで進める。"
     },
     {
       "slash_command": "/corrective-action-report",

@@ -10,7 +10,7 @@
 | `/ariadne-new-system` | 新しい対象システム、runtime、remote operation、device integrationを開始する | 完成版要件定義書 | `work/<receipt-id>/` |
 | `/ariadne-new-system-iac` | 新しい対象システムを設計し、Shared Artifactsを検証してからrealtime IaCへ渡す | 完成版要件定義書 | `work/<receipt-id>/`, validated Shared Artifacts, IaC artifacts |
 | `/ariadne-feature-maintenance` | 既存対象システムの新機能追加、bug fix、保守開発を行う | 完成版要件定義書 | `work/<receipt-id>/` |
-| `/realtime-iac` | リアルタイムシステム向けIaCを設計、生成、レビュー、検証、文書化する | 完成版要件定義書、共有通信/port/network成果物 | `work/<receipt-id>/`, IaC artifacts |
+| `/realtime-iac` | リアルタイムシステム向けIaC、または開発・CI/CD・監視platform基盤を設計、生成、レビュー、検証、文書化する | 完成版要件定義書、共有通信/port/network成果物、platform component inventory | `work/<receipt-id>/`, IaC artifacts |
 | `/corrective-action-report` | repository / branchをread-onlyで調査し、改善reportだけ作る | target repository, target branch | `rag/corrective-action-report/*.md` |
 | `/corrective-action-fix` | 改善reportからIssue、branch、修正、test、pushまで進める | target repository, target branch | `work/<branch>/`, `work/issue-<number>/` |
 | `/docs-sync` | 実装とdocsのズレを検出し、docsだけ修正する | target repository, target branch | `docs-drift-analysis.json`, issue branch |
@@ -39,7 +39,7 @@
 | 新しい対象システムを作る | [Ariadne New System](ariadne-new-system.md) |
 | 新しい対象システムを作り、そのままDocker Compose、systemd、firewall、監視などのIaCまで連携したい | [Ariadne New System + IaC](ariadne-new-system-iac.md) |
 | 既存対象システムへ機能追加、bug fix、保守対応をする | [Ariadne Feature Maintenance](ariadne-feature-maintenance.md) |
-| Docker Compose、systemd、firewall、reverse proxy、監視などのIaCを整備したい | [Realtime IaC](realtime-iac.md) |
+| Docker Compose、systemd、firewall、reverse proxy、監視、またはGitLab / Jenkins / Grafana / Zabbix基盤を整備したい | [Realtime IaC](realtime-iac.md) |
 | まず改善点を洗い出したいが、sourceは変更しない | [Corrective Action Report](corrective-action-report.md) |
 | 改善点の修正まで進めたい | [Corrective Action Fix](corrective-action-fix.md) |
 | codeは変えず、docsだけ実装に合わせたい | [Docs Sync](docs-sync.md) |

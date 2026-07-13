@@ -1,0 +1,23 @@
+services:
+  jenkins:
+    image: jenkins/jenkins:2.452.1-lts-jdk17
+    container_name: ariadne-jenkins
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - ../jenkins-casc:/var/jenkins_home/casc_configs:ro
+      - ../plugins/plugins.txt:/usr/share/jenkins/ref/plugins.txt:ro
+    environment:
+      CASC_JENKINS_CONFIG: /var/jenkins_home/casc_configs/jenkins.yaml
+      JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/login || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+
+volumes:
+  jenkins_home:
+
