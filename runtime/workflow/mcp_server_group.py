@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-if __package__ in {None, ""}:
+if __package__ in {None, ""}:  # pragma: no cover - direct script execution fallback
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
@@ -159,8 +159,8 @@ def copy_templates(repo_root: Path, work_dir: Path, components: list[str], *, fo
         copies.append(
             {
                 "component": component,
-                "source": relative_to_repo(source, repo_root),
-                "destination": relative_to_repo(destination, repo_root),
+                "source": relative_to_repo(repo_root, source),
+                "destination": relative_to_repo(repo_root, destination),
                 "status": status,
             }
         )
@@ -206,9 +206,9 @@ def write_outputs(repo_root: Path, work_dir: Path, context: dict[str, Any]) -> N
     report_path = work_dir / "reports" / "mcp-server-group-implementation-report.md"
     manifest_path = work_dir / "context" / "context-manifest.json"
     context["artifacts"] = {
-        "context": relative_to_repo(context_path, repo_root),
-        "report": relative_to_repo(report_path, repo_root),
-        "manifest": relative_to_repo(manifest_path, repo_root),
+        "context": relative_to_repo(repo_root, context_path),
+        "report": relative_to_repo(repo_root, report_path),
+        "manifest": relative_to_repo(repo_root, manifest_path),
     }
     write_json(context_path, context)
     report_path.parent.mkdir(parents=True, exist_ok=True)
@@ -249,7 +249,7 @@ def build_context(
         "stage": command,
         "status": "human-check-required" if any(item["status"] == "human-check-required" for item in checks) else "available",
         "work_id": work_id,
-        "work_dir": relative_to_repo(work_path, repo_root),
+        "work_dir": relative_to_repo(repo_root, work_path),
         "selected_components": selected,
         "unknown_components": unknown,
         "components": component_records(repo_root, selected),

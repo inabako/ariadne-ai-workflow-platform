@@ -194,6 +194,116 @@ def test_vscode_utf8_first_findings_reports_missing_contract_parts(tmp_path: Pat
     assert ".editorconfig" in findings
 
 
+def test_vscode_utf8_first_findings_reports_missing_or_invalid_settings(tmp_path: Path) -> None:
+    assert workflow_doctor.vscode_utf8_first_findings(tmp_path) == [".vscode/settings.json"]
+
+    settings = tmp_path / ".vscode" / "settings.json"
+    settings.parent.mkdir(parents=True)
+    settings.write_text("{invalid", encoding="utf-8")
+
+    invalid = workflow_doctor.vscode_utf8_first_findings(tmp_path)
+    assert invalid == [".vscode/settings.json invalid JSON: Expecting property name enclosed in double quotes"]
+
+    settings.write_text("[]", encoding="utf-8")
+
+    assert workflow_doctor.vscode_utf8_first_findings(tmp_path) == [".vscode/settings.json is not a JSON object"]
+
+
+def test_vscode_utf8_first_findings_reports_wrong_terminal_shapes_and_editorconfig_snippets(tmp_path: Path) -> None:
+    settings = tmp_path / ".vscode" / "settings.json"
+    settings.parent.mkdir(parents=True)
+    settings.write_text(
+        """{
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false,
+  "files.eol": "\\n",
+  "terminal.integrated.env.windows": [],
+  "terminal.integrated.profiles.windows": [
+    "PowerShell"
+  ]
+}
+""",
+        encoding="utf-8",
+    )
+    (tmp_path / ".editorconfig").write_text("root = true\n", encoding="utf-8")
+
+    findings = workflow_doctor.vscode_utf8_first_findings(tmp_path)
+
+    assert ".vscode/settings.json:terminal.integrated.env.windows" in findings
+    assert ".vscode/settings.json:terminal.integrated.profiles.windows" in findings
+    assert ".editorconfig:charset = utf-8" in findings
+    assert ".editorconfig:end_of_line = crlf" in findings
+
+
+def test_vscode_utf8_first_findings_ignores_non_powershell_profiles(tmp_path: Path) -> None:
+    settings = tmp_path / ".vscode" / "settings.json"
+    settings.parent.mkdir(parents=True)
+    settings.write_text(
+        """{
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false,
+  "files.eol": "\\n",
+  "terminal.integrated.env.windows": {
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "AIWF_TEXT_ENCODING": "utf-8"
+  },
+  "terminal.integrated.profiles.windows": {
+    "Command Prompt": {
+      "source": "Command Prompt",
+      "args": []
+    },
+    "Malformed": []
+  }
+}
+""",
+        encoding="utf-8",
+    )
+    (tmp_path / ".editorconfig").write_text(
+        """charset = utf-8
+end_of_line = lf
+[*.{bat,cmd}]
+charset = unset
+end_of_line = crlf
+""",
+        encoding="utf-8",
+    )
+
+    assert workflow_doctor.vscode_utf8_first_findings(tmp_path) == []
+
+
+def test_duckdb_read_model_findings_reports_missing_read_model_when_sources_exist(tmp_path: Path) -> None:
+    source_repo = tmp_path / workflow_doctor.duckdb_store.DEFAULT_SOURCE_REPO_PATH
+    source_dir = source_repo / "rag" / "normalized"
+    source_dir.mkdir(parents=True)
+    (source_dir / "doc.json").write_text("{}", encoding="utf-8")
+
+    findings = workflow_doctor.duckdb_read_model_findings(tmp_path)
+
+    assert findings == [
+        "missing:rag/duckdb/ariadne-knowledge.duckdb",
+        "source:work/db/ariadne-knowledge-platform",
+        "rebuild:aiwfctl knowledge rebuild --source-repo work/db/ariadne-knowledge-platform --reset",
+    ]
+
+
+def test_duckdb_read_model_findings_accepts_missing_sources_or_existing_db(tmp_path: Path) -> None:
+    assert workflow_doctor.duckdb_read_model_findings(tmp_path) == []
+
+    source_repo = tmp_path / workflow_doctor.duckdb_store.DEFAULT_SOURCE_REPO_PATH
+    source_repo.mkdir(parents=True)
+    assert workflow_doctor.duckdb_read_model_findings(tmp_path) == []
+
+    source_dir = source_repo / "rag" / "normalized"
+    source_dir.mkdir(parents=True)
+    (source_dir / "doc.json").write_text("{}", encoding="utf-8")
+    db_path = tmp_path / workflow_doctor.duckdb_store.DEFAULT_DB_PATH
+    db_path.parent.mkdir(parents=True)
+    db_path.write_bytes(b"duckdb")
+
+    assert workflow_doctor.duckdb_read_model_findings(tmp_path) == []
+
+
 def test_workflow_doctor_fail_on_warning_turns_warning_into_fail(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: ["work/issue-1/tmp.txt"])
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])

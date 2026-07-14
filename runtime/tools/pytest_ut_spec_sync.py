@@ -220,7 +220,7 @@ def _inline_inputs(function: ast.FunctionDef | ast.AsyncFunctionDef) -> tuple[st
 def function_info(runtime_root: Path, node_id: str) -> FunctionInfo:
     path_part, function_name, _ = split_node(node_id)
     source_path = runtime_root.parent / path_part
-    tree = ast.parse(source_path.read_text(encoding="utf-8"))
+    tree = ast.parse(source_path.read_text(encoding="utf-8-sig"))
     for item in ast.walk(tree):
         if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and item.name == function_name:
             arguments = tuple(arg.arg for arg in [*item.args.args, *item.args.kwonlyargs] if arg.arg not in {"self", "cls"})

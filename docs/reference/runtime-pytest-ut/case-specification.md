@@ -12,10 +12,10 @@ coverage推移と監査履歴は repository root の `Runtime pytest 分岐・CL
 
 | 項目 | 値 |
 | --- | ---: |
-| pytest files | 36 |
-| pytest test functions | 593 |
-| pytest collected cases | 606 |
-| pytest result | `606 passed` |
+| pytest files | 38 |
+| pytest test functions | 619 |
+| pytest collected cases | 632 |
+| pytest result | `632 passed` |
 | statement coverage | 99.66% |
 | total coverage | 99.48% |
 
@@ -51,7 +51,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_context_first.py](cases/test_context_first.md) | 34 |
 | [test_corrective_action_report.py](cases/test_corrective_action_report.md) | 6 |
 | [test_coverage_audit.py](cases/test_coverage_audit.md) | 6 |
-| [test_ctl_help.py](cases/test_ctl_help.md) | 34 |
+| [test_ctl_help.py](cases/test_ctl_help.md) | 35 |
 | [test_dispatcher_context.py](cases/test_dispatcher_context.md) | 12 |
 | [test_docs_sync_workflow.py](cases/test_docs_sync_workflow.md) | 11 |
 | [test_flutter_multiplatform.py](cases/test_flutter_multiplatform.md) | 16 |
@@ -60,6 +60,8 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_init_corrective_action_fix.py](cases/test_init_corrective_action_fix.md) | 9 |
 | [test_intake_requirements.py](cases/test_intake_requirements.md) | 8 |
 | [test_knowledge_capture.py](cases/test_knowledge_capture.md) | 7 |
+| [test_mcp_boilerplate_templates.py](cases/test_mcp_boilerplate_templates.md) | 2 |
+| [test_mcp_server_group_workflow.py](cases/test_mcp_server_group_workflow.md) | 12 |
 | [test_observability_metrics.py](cases/test_observability_metrics.md) | 17 |
 | [test_preflight.py](cases/test_preflight.md) | 27 |
 | [test_pytest_ut_spec_sync.py](cases/test_pytest_ut_spec_sync.md) | 20 |
@@ -74,13 +76,13 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_remaining_rag_scm_runtime.py](cases/test_remaining_rag_scm_runtime.md) | 10 |
 | [test_retrieval_runtime.py](cases/test_retrieval_runtime.md) | 23 |
 | [test_scm_runtime.py](cases/test_scm_runtime.md) | 53 |
-| [test_self_improvement_workflow.py](cases/test_self_improvement_workflow.md) | 8 |
 | [test_sdk_analysis.py](cases/test_sdk_analysis.md) | 11 |
-| [test_system_integration.py](cases/test_system_integration.md) | 15 |
+| [test_self_improvement_workflow.py](cases/test_self_improvement_workflow.md) | 14 |
 | [test_svg_layout_modes.py](cases/test_svg_layout_modes.md) | 19 |
+| [test_system_integration.py](cases/test_system_integration.md) | 15 |
 | [test_vscode_environment_workflow.py](cases/test_vscode_environment_workflow.md) | 10 |
 | [test_vscode_workspace.py](cases/test_vscode_workspace.md) | 2 |
-| [test_workflow_doctor.py](cases/test_workflow_doctor.md) | 20 |
+| [test_workflow_doctor.py](cases/test_workflow_doctor.md) | 25 |
 | [test_workflow_state_noise_validation.py](cases/test_workflow_state_noise_validation.md) | 21 |
 
 ## 更新ルール

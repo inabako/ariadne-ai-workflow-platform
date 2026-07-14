@@ -48,6 +48,27 @@ def test_init_and_create_feedback(tmp_path: Path) -> None:
     assert "High" in text
 
 
+def test_init_feedback_preserves_existing_readme_and_template_reader(tmp_path: Path) -> None:
+    readme = tmp_path / "work" / "feedback" / "README.md"
+    readme.parent.mkdir(parents=True)
+    readme.write_text("# Existing\n", encoding="utf-8")
+
+    result = self_improvement.run_init_feedback(argparse.Namespace(repo_root=str(tmp_path)))
+
+    assert result == {"feedback_readme": "work/feedback/README.md"}
+    assert readme.read_text(encoding="utf-8") == "# Existing\n"
+
+    template = tmp_path / self_improvement.TEMPLATE_DIR / "sample.md"
+    template.parent.mkdir(parents=True)
+    template.write_text("# Template\n", encoding="utf-8")
+
+    assert self_improvement.template_path(tmp_path, "sample.md") == template
+    assert self_improvement.read_template(tmp_path, "sample.md") == "# Template\n"
+
+    with pytest.raises(FileNotFoundError, match="Template does not exist"):
+        self_improvement.read_template(tmp_path, "missing.md")
+
+
 def test_review_feedback_updates_status_and_human_check(tmp_path: Path) -> None:
     feedback = tmp_path / "work" / "feedback" / "sample.md"
     feedback.parent.mkdir(parents=True)
@@ -72,6 +93,26 @@ def test_review_feedback_updates_status_and_human_check(tmp_path: Path) -> None:
     assert "Accepted" in text
     assert "Reviewer: Human" in text
     assert "改善価値がある" in text
+
+
+def test_review_feedback_requires_existing_feedback(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError, match="Feedback report does not exist"):
+        self_improvement.run_review_feedback(
+            argparse.Namespace(
+                repo_root=str(tmp_path),
+                feedback="work/feedback/missing.md",
+                decision="accepted",
+                reviewer="Human",
+                reason="OK",
+                next_action="Issue",
+            )
+        )
+
+
+def test_feedback_decision_accepts_human_check_or_defaults_to_proposed() -> None:
+    assert self_improvement.feedback_decision({"Human Check": "- Decision: rejected"}) == "rejected"
+    assert self_improvement.feedback_decision({"Human Check": "- Decision: deferred"}) == "deferred"
+    assert self_improvement.feedback_decision({}) == "proposed"
 
 
 def test_issue_body_requires_accepted_feedback_and_renders_fit_check(tmp_path: Path) -> None:
@@ -145,6 +186,49 @@ Docs
     assert "work/feedback/sample.md" in text
 
 
+def test_issue_body_requires_existing_feedback(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError, match="Feedback report does not exist"):
+        self_improvement.run_issue_body(
+            argparse.Namespace(
+                repo_root=str(tmp_path),
+                feedback="work/feedback/missing.md",
+                output="",
+                allow_unaccepted=False,
+            )
+        )
+
+
+def test_issue_body_can_render_unaccepted_feedback_to_explicit_output(tmp_path: Path) -> None:
+    feedback = tmp_path / "work" / "feedback" / "sample.md"
+    feedback.parent.mkdir(parents=True)
+    feedback.write_text(
+        """# Workflow Feedback
+
+## Proposed Improvement
+
+Keep draft feedback visible
+
+## Review Status
+
+Proposed
+""",
+        encoding="utf-8",
+    )
+
+    result = self_improvement.run_issue_body(
+        argparse.Namespace(
+            repo_root=str(tmp_path),
+            feedback="work/feedback/sample.md",
+            output="work/feedback/custom-issue.md",
+            allow_unaccepted=True,
+        )
+    )
+
+    assert result["issue_body"] == "work/feedback/custom-issue.md"
+    assert result["decision"] == "proposed"
+    assert "Keep-draft-feedback-visible" in result["recommended_title"]
+
+
 def test_evidence_scaffold_registers_artifact_index(tmp_path: Path) -> None:
     result = self_improvement.run_evidence_scaffold(argparse.Namespace(repo_root=str(tmp_path), work_id="issue-42"))
 
@@ -155,6 +239,23 @@ def test_evidence_scaffold_registers_artifact_index(tmp_path: Path) -> None:
 
     assert "SELF-IMPROVEMENT-PROCESS" in {item["id"] for item in data["artifacts"]}
     assert "artifact-index" in {item["type"] for item in manifest_data["contexts"]}
+
+
+def test_evidence_scaffold_updates_existing_artifact_index_without_rewriting_readmes(tmp_path: Path) -> None:
+    args = argparse.Namespace(repo_root=str(tmp_path), work_id="issue-42")
+    first = self_improvement.run_evidence_scaffold(args)
+    process_readme = tmp_path / first["process_report"] / "README.md"
+    evidence_readme = tmp_path / first["test_evidence"] / "README.md"
+    process_readme.write_text("# Keep process note\n", encoding="utf-8")
+    evidence_readme.write_text("# Keep evidence note\n", encoding="utf-8")
+
+    second = self_improvement.run_evidence_scaffold(args)
+
+    assert second["artifact_index"] == first["artifact_index"]
+    assert process_readme.read_text(encoding="utf-8") == "# Keep process note\n"
+    assert evidence_readme.read_text(encoding="utf-8") == "# Keep evidence note\n"
+    artifact_index = json.loads((tmp_path / second["artifact_index"]).read_text(encoding="utf-8"))
+    assert len(artifact_index["artifacts"]) == 2
 
 
 def test_main_prints_json(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:

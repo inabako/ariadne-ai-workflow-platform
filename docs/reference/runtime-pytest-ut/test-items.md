@@ -1,4 +1,4 @@
-﻿# Runtime pytest UTテスト項目表
+# Runtime pytest UTテスト項目表
 
 作成日: 2026-07-07
 
@@ -13,14 +13,14 @@
 | 項目 | 値 |
 | --- | ---: |
 | pytest対象ディレクトリ | `runtime/tests` |
-| pytest files | 36 |
-| pytest test functions | 593 |
-| pytest collected tests | 606 |
-| pytest result | `606 passed` |
-| statement coverage | 99.66% |
-| total coverage | 99.48% |
-| missing lines | 31 |
-| missing branches | 31 |
+| pytest files | 38 |
+| pytest test functions | 619 |
+| pytest collected tests | 632 |
+| pytest result | `632 passed` |
+| statement coverage | 96% |
+| total coverage | 96% |
+| missing lines | 397 |
+| missing branches | 189 |
 
 ## 実行コマンド
 
@@ -55,7 +55,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | RT-UT-003 | `runtime/tests/test_context_first.py` | 34 | 34 | `runtime/workflow/context_first.py`、関連workflow | context manifest、environment selection、test-evidence読取、dispatcher context、IaC handoff、各workflowのContext First登録 | workflow実行前に必要contextを固定し、AIの推測実行を減らす |
 | RT-UT-004 | `runtime/tests/test_corrective_action_report.py` | 6 | 6 | `runtime/workflow/corrective_action_report.py` | corrective action report context登録、front matter解析、section count、show/register CLI | 改善レポートを後続fix workflowへ渡せる構造にする |
 | RT-UT-005 | `runtime/tests/test_coverage_audit.py` | 6 | 6 | `runtime/tools/coverage_audit.py` | runtime module集計、CLI検出、coverage実行、JSON/Markdown出力、script path load | runtime品質を継続監査する自己診断を支える |
-| RT-UT-006 | `runtime/tests/test_ctl_help.py` | 34 | 34 | `runtime/ctl.py` | `aiwfctl help`、`aiwfctl doctor`、`aiwfctl knowledge`、env選択、検索、警告色、Context First初期化、registry参照 | 巨大化したworkflowをCLI索引から迷わず呼べるようにする |
+| RT-UT-006 | `runtime/tests/test_ctl_help.py` | 35 | 35 | `runtime/ctl.py` | `aiwfctl help`、`aiwfctl doctor`、`aiwfctl knowledge`、env選択、検索、警告色、Context First初期化、registry参照 | 巨大化したworkflowをCLI索引から迷わず呼べるようにする |
 | RT-UT-007 | `runtime/tests/test_dispatcher_context.py` | 12 | 12 | `runtime/workflow/dispatcher_context.py` | workflow/tool candidate scoring、human check、registry fallback、context生成 | Intentからworkflow/tool選定へ進むdispatcherの判断根拠を固定する |
 | RT-UT-008 | `runtime/tests/test_docs_sync_workflow.py` | 11 | 11 | `runtime/workflow/docs_sync.py` | docs-sync init、SCM context gate、analysis template、Issue body、CLI dispatch | 実装とdocs差分をdocs-only workflowとして安全に切り出す |
 | RT-UT-036 | `runtime/tests/test_flutter_multiplatform.py` | 16 | 16 | `runtime/workflow/flutter_multiplatform.py`、`runtime/ctl.py` | target未指定Human Check、yaml/CLI target読込、host OS別build可否、boilerplate展開、verify/build実行、evidence回収、WebDriver不足分類、finalize完了判定、aiwfctl入口 | Flutter multi-platform開発でtarget/platform/build環境を推測せず、実試験証跡と完了判定をContext Firstで後続workflowへ渡す |
@@ -78,13 +78,13 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | RT-UT-025 | `runtime/tests/test_remaining_rag_scm_runtime.py` | 10 | 10 | `runtime/rag/jsonize_rag_tree.py`、`runtime/scm/compare_requirements.py` | RAG tree jsonize、source削除、requirements比較、git diff、artifact出力 | RAG/SCMの残存重要moduleを横断的に守る |
 | RT-UT-026 | `runtime/tests/test_retrieval_runtime.py` | 16 | 23 | `runtime/retrieval/task_runner.py` | task plan検証、dependency、dry-run、parallel/sequential、logs、reports、CLI | agent task実行計画を依存関係つきで安全に動かす |
 | RT-UT-027 | `runtime/tests/test_scm_runtime.py` | 52 | 52 | `runtime/scm/*` | prepare repository、issue branch、push、commit、bootstrap、token askpass、dry-run/non-dry-run | Git操作をremote mutation前提でも安全にmock・dry-run検証する |
-| RT-UT-028 | `runtime/tests/test_self_improvement_workflow.py` | 8 | 8 | `runtime/workflow/self_improvement.py`、`skills/*/SKILL.md`、`runtime/registries/workflow_help.json` | feedback report作成、Human Review追記、Issue body生成、evidence scaffold、feedback出力契約、help registry契約 | Ariadne自身のworkflow改善候補を安全に保存し、採用判断から改善Issueへつなぐ |
+| RT-UT-028 | `runtime/tests/test_self_improvement_workflow.py` | 14 | 14 | `runtime/workflow/self_improvement.py`、`skills/*/SKILL.md`、`runtime/registries/workflow_help.json` | feedback report作成、Human Review追記、Issue body生成、evidence scaffold、feedback出力契約、help registry契約 | Ariadne自身のworkflow改善候補を安全に保存し、採用判断から改善Issueへつなぐ |
 | RT-UT-029 | `runtime/tests/test_sdk_analysis.py` | 11 | 11 | `runtime/workflow/sdk_analysis.py`、`runtime/ctl.py` | SDK入力skip、metadata抽出、AWS/GCP cloud metadata抽出、Stripe payment metadata抽出、Context First登録、Knowledge JSON候補、secret値非コピー、外部discovery候補生成、aiwfctl入口 | 要件定義工程でSDKプログラムを安全に前処理し、外部関連資料の確認観点と人間確認が必要な採用判断を見落とさない |
 | RT-UT-030 | `runtime/tests/test_system_integration.py` | 15 | 15 | `runtime/workflow/system_integration.py`、`runtime/ctl.py` | システム統合context生成、SDK cloud/payment metadata読取、エミュレータ候補分類、emulator template展開、emulator health/preflight、Integration Test runbook生成、Integration Test evidence/finalize確認、Context First登録、aiwfctl入口 | 生成・改修コードを対象システムへ自然に統合し、エミュレータと本番差分や起動前提の欠落、Integration Test手順の曖昧さ、完了判定の漏れを見落とさない |
 | RT-UT-031 | `runtime/tests/test_svg_layout_modes.py` | 19 | 19 | `runtime/workflow/gui_mode.py`、`web_svg_layout_mode.py` | SVG解析、input claim、PyQt/QTest候補、React/Playwright候補、validation、self-test | GUI/Web SVG入力から画面候補生成までをworkflow拡張として守る |
 | RT-UT-032 | `runtime/tests/test_vscode_environment_workflow.py` | 10 | 10 | `runtime/workflow/vscode_environment.py` | self-provision、draft/open questions、RAG template、requirements、validation、CLI | AI workflow実行環境をVSCode workspace as codeとして整える |
 | RT-UT-033 | `runtime/tests/test_vscode_workspace.py` | 2 | 2 | `.vscode/*`、`runtime/tools/aiwfctl.cmd` | aiwfctl PATH task、cmd usage | VSCodeから`aiwfctl`を迷わず呼べる導線を守る |
-| RT-UT-034 | `runtime/tests/test_workflow_doctor.py` | 17 | 17 | `runtime/workflow/workflow_doctor.py` | tracked policy、required files、human gate registry、close archive completeness、UT仕様書同期チェック、fail-on-warning | workflow repository自身の健康診断を自動化する |
+| RT-UT-034 | `runtime/tests/test_workflow_doctor.py` | 25 | 25 | `runtime/workflow/workflow_doctor.py` | tracked policy、required files、human gate registry、close archive completeness、UT仕様書同期チェック、fail-on-warning | workflow repository自身の健康診断を自動化する |
 | RT-UT-035 | `runtime/tests/test_workflow_state_noise_validation.py` | 20 | 20 | `runtime/workflow/workflow_state.py`、`noise_reduction.py`、`validate_output_language.py`、`validate_vscode_workspace.py` | workflow state、noise reduction、Japanese output guard、VSCode workspace JSON検証 | 要件定義前処理・状態管理・出力言語品質を守る |
 
 ## 観点別の対応範囲

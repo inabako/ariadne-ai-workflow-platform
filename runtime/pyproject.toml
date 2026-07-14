@@ -18,12 +18,6 @@ dev = [
 [tool.uv]
 package = false
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = [".."]
-cache_dir = ".pytest_cache"
-addopts = "-ra"
-
 [tool.coverage.run]
 branch = true
 source = ["."]
