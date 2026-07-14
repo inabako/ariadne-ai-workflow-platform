@@ -1,0 +1,5 @@
+retention:
+  checkpoints_days: 30
+  evidence_days: 90
+  logs_days: 14
+

@@ -1,0 +1,6 @@
+workers:
+  default:
+    concurrency: 1
+    heartbeat_seconds: 30
+    lease_seconds: 120
+

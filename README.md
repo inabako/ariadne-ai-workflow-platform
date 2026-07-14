@@ -47,6 +47,7 @@ Workflow を選ぶ場合:
 | SVGからPyQt6画面・QTest候補を作る | 親workflow内で自動実行 | [GaC / UaC GUI Mode](docs/workflows/gui-mode.md) |
 | Next.js画面機能の実装前に画面/API/auth/env/testを揃える | 親workflow内で実行 | [Next.js Webapp Implementation Prep](docs/workflows/nextjs-webapp-implementation-prep.md) |
 | SVGからWeb画面layout・React候補・Playwright候補を作る | 親workflow内で自動実行 | [Web SVG Layout Mode](docs/workflows/web-svg-layout-mode.md) |
+| MCP Server群をboilerplateから境界分離して実装準備する | `aiwfctl mcp-group` | [MCP Server Group Implementation](docs/workflows/mcp-server-group-implementation.md) |
 | Flutterアプリのmulti-platform target、環境、test、build計画を整理する | `/flutter-multiplatform` | [Flutter Multi-platform](docs/workflows/flutter-multiplatform.md) |
 | リアルタイムシステム向けIaC、開発・CI/CD・監視platform基盤、DB基盤、Redis middleware基盤、OpenLDAP identity基盤を設計、生成、検証、文書化する | `/realtime-iac` | [Realtime IaC](docs/workflows/realtime-iac.md) |
 | repository / branchをread-onlyで調査し、改善reportを作る | `/corrective-action-report` | [Corrective Action Report](docs/workflows/corrective-action-report.md) |
@@ -205,6 +206,7 @@ GITHUB_TOKEN=
 - 新機能 / 保守開発 workflow
 - Next.js webapp implementation preparation sub-workflow
 - Web SVG layout intake sub-workflow
+- MCP server group implementation workflow
 - リアルタイムシステム向けIaC / platform infrastructure / database infrastructure workflow
 - corrective action report / fix workflow
 - docs-sync workflow

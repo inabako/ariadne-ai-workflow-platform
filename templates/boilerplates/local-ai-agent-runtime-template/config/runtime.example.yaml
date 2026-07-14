@@ -1,0 +1,6 @@
+runtime:
+  workspace_root: workspace
+  max_runtime_seconds: 28800
+  checkpoint_on_step: true
+  require_completion_evidence: true
+

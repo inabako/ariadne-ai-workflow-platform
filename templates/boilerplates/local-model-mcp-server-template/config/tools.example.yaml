@@ -1,0 +1,12 @@
+tools:
+  health_check:
+    mutates_state: false
+  list_workspace_files:
+    mutates_state: false
+  read_workspace_file:
+    mutates_state: false
+  invoke_local_model:
+    mutates_state: false
+  write_output_artifact:
+    mutates_state: true
+

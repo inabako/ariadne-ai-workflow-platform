@@ -1005,6 +1005,52 @@
         "docs/workflows/web-svg-layout-mode.md",
         "docs/reference/environment-selection.md"
       ]
+    },
+    {
+      "name": "mcp-server-group-implementation",
+      "aliases": [
+        "mcp-group",
+        "mcp-boilerplate",
+        "mcp-server-group"
+      ],
+      "standalone_command": true,
+      "overview": "MCP Server, reusable MCP Client, Local AI Agent Runtime, and Discord Gateway boilerplates are selected, boundary-checked, and staged under work/<work-id>/implementation/mcp-server-group/.",
+      "prerequisites": [
+        "A parent workflow work id exists or has been chosen.",
+        "The intended MCP components are known: local-model-mcp-server, mcp-client, local-ai-agent-runtime, discord-gateway.",
+        "Service ownership boundaries are reviewed before generated templates are copied into target source."
+      ],
+      "trigger": "MCP server group implementation using repo-local boilerplates",
+      "input_directory": "templates/boilerplates",
+      "output": "work/<work-id>/implementation/mcp-server-group/",
+      "prefixes": [],
+      "parent_workflows": [
+        "ariadne-new-system",
+        "ariadne-feature-maintenance",
+        "corrective-action-fix"
+      ],
+      "details": [
+        "Run analyze first to create mcp-server-group-implementation-context.json and mcp-server-group-implementation-report.md.",
+        "Run init or run-workflow to copy selected boilerplates into the work directory.",
+        "The extension stops with human-check-required for unknown components or boundary violations.",
+        "Discord Gateway, Agent Runtime, MCP Client, and MCP Server state ownership must remain separated.",
+        "Generated templates remain work artifacts until the parent workflow review accepts them."
+      ],
+      "examples": [
+        "aiwfctl mcp-group analyze --work-id <work-id>",
+        "aiwfctl mcp-group init --work-id <work-id> --components local-model-mcp-server,mcp-client",
+        "aiwfctl mcp-group run-workflow --work-id <work-id> --components local-model-mcp-server,mcp-client,local-ai-agent-runtime,discord-gateway",
+        "aiwfctl help show mcp-group"
+      ],
+      "related_runtime": [
+        "runtime/workflow/mcp_server_group.py",
+        "runtime/workflow/context_first.py",
+        "runtime/ctl.py"
+      ],
+      "docs": [
+        "docs/workflows/mcp-server-group-implementation.md",
+        "docs/reference/templates.md"
+      ]
     }
   ]
 }

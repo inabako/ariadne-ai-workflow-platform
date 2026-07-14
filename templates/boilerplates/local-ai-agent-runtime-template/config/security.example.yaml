@@ -1,0 +1,10 @@
+security:
+  require_human_check_for:
+    - file_overwrite
+    - external_mutation
+    - ambiguous_completion
+  deny_commands:
+    - git push
+    - rm -rf
+    - Remove-Item -Recurse
+

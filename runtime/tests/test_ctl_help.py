@@ -453,7 +453,9 @@ def test_ctl_help_list_contains_workflow_commands() -> None:
     assert "## Workflow Extensions" in output
     assert "gac-uac-gui-mode" in output
     assert "web-svg-layout-mode" in output
+    assert "mcp-server-group-implementation" in output
     assert "docs/workflows/gui-mode.md" in output
+    assert "docs/workflows/mcp-server-group-implementation.md" in output
 
 
 def test_ctl_help_show_includes_arguments_and_details() -> None:
@@ -647,6 +649,19 @@ def test_ctl_help_show_includes_svg_extension_details() -> None:
     assert "FEAT_" in output
     assert "FIX_" in output
     assert "standalone command: `false`" in output
+
+
+def test_ctl_help_show_includes_mcp_group_extension_details() -> None:
+    args = ctl.build_parser().parse_args(["--repo-root", str(repo_root()), "help", "show", "mcp-group"])
+
+    code, output = ctl.run(args)
+
+    assert code == 0
+    assert "## mcp-server-group-implementation" in output
+    assert "workflow extension" in output
+    assert "standalone command: `true`" in output
+    assert "aiwfctl mcp-group analyze --work-id <work-id>" in output
+    assert "runtime/workflow/mcp_server_group.py" in output
 
 
 def test_ctl_help_markdown_writes_searchable_file(tmp_path: Path) -> None:

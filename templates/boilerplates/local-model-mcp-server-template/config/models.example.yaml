@@ -1,0 +1,6 @@
+models:
+  default:
+    provider: mock
+    model_id: mock-local-model
+    endpoint: ""
+

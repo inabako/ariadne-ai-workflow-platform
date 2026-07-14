@@ -28,6 +28,7 @@
 | GaC / UaC GUI Mode | 親workflow内でSVGをGUI設計・PyQt6・QTest候補へ変換する | `work/requirements/svg-input/<PREFIX>_*.svg` | `work/<issue-id>/gac-uac/` |
 | Next.js Webapp Implementation Prep | 親workflow内でNext.js画面機能の実装前準備を行う | requirements, UI/API contract, target app path | `work/<id>/process-report/nextjs-webapp-implementation-prep.md` |
 | Web SVG Layout Mode | 親workflow内でSVGをWeb layout・React候補・Playwright候補へ変換する | `work/requirements/svg-input/WEB_<PREFIX>_*.svg` | `work/<issue-id>/web-ui/` |
+| MCP Server Group Implementation | MCP Server群、MCP Client、Agent Runtime、Discord Gateway boilerplateを境界確認付きで展開する | `--components local-model-mcp-server,mcp-client,local-ai-agent-runtime,discord-gateway` | `work/<work-id>/implementation/mcp-server-group/` |
 | PyQt QTest Integration | PyQt / Qt GUIの結合疎通試験をテスト仕様書からQTestソースへ落とす | test case table | `src/tests/qt/test_<feature>_integration.py` |
 
 ## Decision Guide
@@ -56,6 +57,7 @@
 | SVGを渡して画面実装候補とQTest候補を作りたい | [GaC / UaC GUI Mode](gui-mode.md) |
 | Next.js画面機能を実装する前に、画面/API/auth/env/testを揃えたい | [Next.js Webapp Implementation Prep](nextjs-webapp-implementation-prep.md) |
 | SVGを渡してWeb画面のlayout、React候補、Playwright候補を作りたい | [Web SVG Layout Mode](web-svg-layout-mode.md) |
+| MCP Server群をboilerplateから境界分離した形で実装準備したい | [MCP Server Group Implementation](mcp-server-group-implementation.md) |
 
 ## Common Rules
 

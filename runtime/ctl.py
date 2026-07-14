@@ -14,6 +14,7 @@ if __package__ in {None, ""}:
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
 from runtime.workflow import flutter_multiplatform  # noqa: E402
+from runtime.workflow import mcp_server_group  # noqa: E402
 from runtime.workflow import sdk_analysis  # noqa: E402
 from runtime.workflow import system_integration  # noqa: E402
 from runtime.workflow import workflow_doctor  # noqa: E402
@@ -1036,6 +1037,20 @@ def build_parser() -> argparse.ArgumentParser:
     flutter_finalize.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
     flutter_finalize.add_argument("--json", action="store_true")
 
+    mcp_group_cmd = sub.add_parser("mcp-group", help="Prepare MCP server group implementation templates and boundary checks.")
+    mcp_group_sub = mcp_group_cmd.add_subparsers(dest="mcp_group_command")
+    for name in ["analyze", "init", "run-workflow"]:
+        mcp_group_item = mcp_group_sub.add_parser(name)
+        mcp_group_item.add_argument("--work-id", required=True)
+        mcp_group_item.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+        mcp_group_item.add_argument(
+            "--components",
+            default="",
+            help="Comma-separated components: local-model-mcp-server,mcp-client,local-ai-agent-runtime,discord-gateway",
+        )
+        mcp_group_item.add_argument("--force", action="store_true", help="Refresh copied template directories during init.")
+        mcp_group_item.add_argument("--json", action="store_true")
+
     integration_cmd = sub.add_parser("integration", help="Analyze or verify system integration quality.")
     integration_sub = integration_cmd.add_subparsers(dest="integration_command")
     integration_analyze = integration_sub.add_parser("analyze", help="Analyze system integration points and emulator candidates.")
@@ -1430,6 +1445,32 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
         if getattr(args, "json", False):
             return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
         return code, flutter_multiplatform.format_result(result) + "\n"
+
+    if command == "mcp-group":
+        mcp_group_command = getattr(args, "mcp_group_command", None)
+        if mcp_group_command is None:
+            return 1, (
+                "MCP Server Group Implementation\n\n"
+                "Usage:\n"
+                "  aiwfctl mcp-group analyze --work-id <work-id>\n"
+                "  aiwfctl mcp-group init --work-id <work-id> --components local-model-mcp-server,mcp-client\n"
+                "  aiwfctl mcp-group run-workflow --work-id <work-id> --components local-model-mcp-server,mcp-client,local-ai-agent-runtime,discord-gateway\n\n"
+                "Outputs:\n"
+                "  work/<work-id>/context/mcp-server-group-implementation-context.json\n"
+                "  work/<work-id>/reports/mcp-server-group-implementation-report.md\n"
+                "  work/<work-id>/implementation/mcp-server-group/<component>/\n"
+            )
+        try:
+            mcp_args = argparse.Namespace(**vars(args))
+            mcp_args.command = mcp_group_command
+            mcp_args.repo_root = str(repo_root)
+            result = mcp_server_group.run(mcp_args)
+        except Exception as exc:
+            return 1, f"MCP server group implementation failed: {exc}\n"
+        code = 0 if result.get("status") != "human-check-required" else 2
+        if getattr(args, "json", False):
+            return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        return code, mcp_server_group.format_result(result) + "\n"
 
     if command == "integration":
         integration_command = getattr(args, "integration_command", None)

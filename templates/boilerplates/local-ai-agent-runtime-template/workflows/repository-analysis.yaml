@@ -1,0 +1,15 @@
+name: repository-analysis
+steps:
+  - name: inspect
+    action: read repository structure
+    required: true
+  - name: summarize
+    action: summarize findings
+    required: true
+  - name: report
+    action: write analysis report
+    required: true
+    produces_artifact: analysis-report.md
+required_artifacts:
+  - analysis-report.md
+

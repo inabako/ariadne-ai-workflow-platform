@@ -1,0 +1,6 @@
+workflows:
+  - name: repository-analysis
+    required_artifacts:
+      - analysis-report.md
+    max_seconds: 28800
+

@@ -1,0 +1,6 @@
+authorization:
+  allowed_guild_ids: []
+  allowed_channel_ids: []
+  allowed_role_ids: []
+  deny_dm_by_default: true
+

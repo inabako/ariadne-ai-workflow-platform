@@ -1,0 +1,5 @@
+client:
+  default_timeout_seconds: 30
+  protocol_version: "2025-06-18"
+  require_connected_session: true
+

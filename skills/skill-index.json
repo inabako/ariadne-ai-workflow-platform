@@ -224,6 +224,21 @@
       "output": "work/<work-id>/context/flutter-development-context.json"
     },
     {
+      "name": "mcp-server-group-implementation",
+      "standalone_skill": false,
+      "prompt_path": ".github/prompts/mcp-server-group-implementation.prompt.md",
+      "doc_path": "docs/workflows/mcp-server-group-implementation.md",
+      "template_path": "templates/boilerplates/",
+      "runtime_path": "runtime/workflow/mcp_server_group.py",
+      "trigger": "MCP server group implementation using Local Model MCP Server, MCP Client, Agent Runtime, or Discord Gateway boilerplates",
+      "parent_workflows": [
+        "ariadne-new-system-development",
+        "ariadne-feature-maintenance-development",
+        "corrective-action-fix"
+      ],
+      "output": "work/<work-id>/context/mcp-server-group-implementation-context.json"
+    },
+    {
       "name": "noise-reduction-phase",
       "standalone_skill": false,
       "prompt_path": ".github/prompts/noise-reduction-phase.prompt.md",

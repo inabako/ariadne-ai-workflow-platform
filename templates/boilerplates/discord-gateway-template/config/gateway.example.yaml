@@ -1,0 +1,7 @@
+gateway:
+  name: discord-agent-gateway
+  mode: gateway
+  default_locale: ja-JP
+  defer_after_seconds: 2
+  activity: Local Agent Runtime
+

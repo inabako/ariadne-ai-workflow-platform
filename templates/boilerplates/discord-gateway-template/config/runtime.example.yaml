@@ -1,0 +1,6 @@
+runtime:
+  base_url: http://127.0.0.1:8787
+  timeout_seconds: 15
+  event_source: polling
+  poll_interval_seconds: 5
+

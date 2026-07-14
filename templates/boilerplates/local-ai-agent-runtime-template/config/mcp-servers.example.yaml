@@ -1,0 +1,6 @@
+mcp_servers:
+  local-model:
+    transport: stdio
+    command: python -m local_model_mcp.server
+    enabled: true
+

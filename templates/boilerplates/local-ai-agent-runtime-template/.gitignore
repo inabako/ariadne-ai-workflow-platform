@@ -1,0 +1,14 @@
+.env
+__pycache__/
+.pytest_cache/
+.venv/
+*.pyc
+workspace/work/*
+workspace/output/*
+workspace/checkpoints/*
+!workspace/work/.gitkeep
+!workspace/output/.gitkeep
+!workspace/checkpoints/.gitkeep
+evidence/*
+!evidence/.gitkeep
+

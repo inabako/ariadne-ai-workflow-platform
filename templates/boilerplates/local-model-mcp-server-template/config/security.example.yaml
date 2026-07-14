@@ -1,0 +1,14 @@
+workspace:
+  input_root: workspace/input
+  output_root: workspace/output
+  allow_absolute_paths: false
+  max_read_bytes: 1048576
+  max_write_bytes: 1048576
+secrets:
+  deny_name_fragments:
+    - .env
+    - secret
+    - token
+    - password
+    - id_rsa
+

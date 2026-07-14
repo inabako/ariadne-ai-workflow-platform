@@ -1,0 +1,10 @@
+resources:
+  workflow_definitions:
+    uri: workflow://definitions
+  project_context:
+    uri: project://context
+  model_information:
+    uri: model://information
+  artifact_outputs:
+    uri: artifact://outputs
+

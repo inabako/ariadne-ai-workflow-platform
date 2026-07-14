@@ -1,0 +1,10 @@
+.env
+__pycache__/
+.pytest_cache/
+.venv/
+*.pyc
+workspace/state/*
+!workspace/state/.gitkeep
+evidence/*
+!evidence/.gitkeep
+

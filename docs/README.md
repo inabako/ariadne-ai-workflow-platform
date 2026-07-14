@@ -67,6 +67,7 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 | [GaC / UaC GUI Mode](workflows/gui-mode.md) | 親workflow内でSVGをSemantic Layout、PyQt6候補、QTest候補へ変換する |
 | [Next.js Webapp Implementation Prep](workflows/nextjs-webapp-implementation-prep.md) | 親workflow内でNext.js画面機能の実装前準備を行う |
 | [Web SVG Layout Mode](workflows/web-svg-layout-mode.md) | 親workflow内でSVGをWeb layout、React候補、Playwright候補へ変換する |
+| [MCP Server Group Implementation](workflows/mcp-server-group-implementation.md) | MCP Server群、MCP Client、Agent Runtime、Discord Gateway boilerplateを境界確認付きで展開する |
 | [Flutter Multi-platform](workflows/flutter-multiplatform.md) | Flutterアプリの対象platform、環境、boilerplate、test、build計画、evidenceを整理する |
 | [Realtime IaC](workflows/realtime-iac.md) | リアルタイムシステム向けIaCを設計、生成、レビュー、検証、文書化する |
 | [Corrective Action Report](workflows/corrective-action-report.md) | repository / branchをread-onlyで調査し、改善reportを作る |

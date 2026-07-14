@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mcp-server-group-implementation-context.schema.json",
+  "title": "MCP Server Group Implementation Context",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "generated_at",
+    "stage",
+    "status",
+    "work_id",
+    "work_dir",
+    "selected_components",
+    "unknown_components",
+    "components",
+    "boundary_checks",
+    "human_checks",
+    "next_actions",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": {
+      "type": "string",
+      "const": "mcp-server-group-implementation-context"
+    },
+    "generated_at": { "type": "string" },
+    "stage": {
+      "type": "string",
+      "enum": ["analyze", "init", "run-workflow"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["available", "human-check-required"]
+    },
+    "work_id": { "type": "string" },
+    "work_dir": { "type": "string" },
+    "selected_components": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "local-model-mcp-server",
+          "mcp-client",
+          "local-ai-agent-runtime",
+          "discord-gateway"
+        ]
+      }
+    },
+    "unknown_components": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["component", "role", "template_path", "template_exists", "destination"],
+        "properties": {
+          "component": { "type": "string" },
+          "role": { "type": "string" },
+          "template_path": { "type": "string" },
+          "template_exists": { "type": "boolean" },
+          "destination": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "boundary_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["check", "status", "detail"],
+        "properties": {
+          "check": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pass", "planned", "human-check-required"]
+          },
+          "detail": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "template_copies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["component", "source", "destination", "status"],
+        "properties": {
+          "component": { "type": "string" },
+          "source": { "type": "string" },
+          "destination": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["copied", "exists", "missing-template"]
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "human_checks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "next_actions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "artifacts": { "type": "object" }
+  },
+  "additionalProperties": true
+}

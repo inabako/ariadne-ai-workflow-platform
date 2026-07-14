@@ -1,0 +1,13 @@
+prompts:
+  workflow_instruction:
+    required_arguments:
+      - objective
+      - constraints
+      - artifacts
+  repository_analysis:
+    required_arguments:
+      - repository
+  implementation_plan:
+    required_arguments:
+      - task
+
