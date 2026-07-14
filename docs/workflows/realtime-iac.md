@@ -121,13 +121,13 @@ IaC実装前に、承認済みdesignとshared artifactsに対して利用可能�
 
 候補:
 
-| 対象 | Template | 組み込み指示書 |
+| 対象 | Template | 詳細Docs |
 | --- | --- | --- |
-| Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
-| Development / CI/CD / observability platform infrastructure | `templates/boilerplates/platform-infra-template/` | `Platform_Infrastructure_Boilerplate_追加実装指示書.md` |
-| PostgreSQL / MySQL shared database infrastructure | `templates/boilerplates/database-infra-template/` | `Database_Infrastructure_Boilerplate_追加実装指示書.md` |
-| Redis shared middleware infrastructure | `templates/boilerplates/middleware-infra-template/` | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
-| OpenLDAP identity / directory infrastructure | `templates/boilerplates/identity-infra-template/` | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
+| Realtime gateway IaC / infrastructure | `templates/boilerplates/infrastructure/microservice-infra-template/` | `docs/workflows/realtime-iac.md` |
+| Development / CI/CD / observability platform infrastructure | `templates/boilerplates/infrastructure/platform-infra-template/` | `docs/workflows/realtime-iac.md` |
+| PostgreSQL / MySQL shared database infrastructure | `templates/boilerplates/infrastructure/database-infra-template/` | `docs/workflows/realtime-iac.md` |
+| Redis shared middleware infrastructure | `templates/boilerplates/infrastructure/middleware-infra-template/` | `docs/workflows/realtime-iac.md` |
+| OpenLDAP identity / directory infrastructure | `templates/boilerplates/infrastructure/identity-infra-template/` | `docs/workflows/realtime-iac.md` |
 
 出力:
 
@@ -137,7 +137,7 @@ work/<receipt-id>/process-report/boilerplate-template-selection.md
 
 ルール:
 
-- realtime gateway infrastructure が対象に含まれる場合は `realtime-gateway-infra-template/` を候補にします。
+- realtime gateway infrastructure が対象に含まれる場合は `microservice-infra-template/` を候補にします。
 - GitLab、Jenkins、Grafana、Zabbixなどの開発・CI/CD・監視platformが対象に含まれる場合は `platform-infra-template/` を候補にします。
 - PostgreSQL、MySQL、DB connection contract、backup / restore、migrationが対象に含まれる場合は `database-infra-template/` を候補にします。
 - Redis、cache、session、temporary state、Pub/Sub補助、middleware connection contract、TTL、eviction、persistence、backup / restoreが対象に含まれる場合は `middleware-infra-template/` を候補にします。

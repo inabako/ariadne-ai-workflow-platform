@@ -1,4 +1,4 @@
-{
+﻿{
   "schema_version": "1.0",
   "skills": [
     {
@@ -211,7 +211,7 @@
       "standalone_skill": true,
       "prompt_path": ".github/prompts/flutter-multiplatform.prompt.md",
       "doc_path": "docs/workflows/flutter-multiplatform.md",
-      "template_path": "templates/boilerplates/flutter/",
+      "template_path": "templates/boilerplates/apps/flutter-app-template/",
       "runtime_path": "runtime/workflow/flutter_multiplatform.py",
       "trigger": "Flutter requirement or work/<work-id>/requirements/flutter-targets.yaml",
       "parent_workflows": [
@@ -228,7 +228,7 @@
       "standalone_skill": false,
       "prompt_path": ".github/prompts/mcp-server-group-implementation.prompt.md",
       "doc_path": "docs/workflows/mcp-server-group-implementation.md",
-      "template_path": "templates/boilerplates/",
+      "template_path": "templates/boilerplates/mcp/",
       "runtime_path": "runtime/workflow/mcp_server_group.py",
       "trigger": "MCP server group implementation using Local Model MCP Server, MCP Client, Agent Runtime, or Discord Gateway boilerplates",
       "parent_workflows": [

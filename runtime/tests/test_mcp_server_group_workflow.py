@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 from pathlib import Path
@@ -8,7 +8,7 @@ from runtime.workflow import mcp_server_group
 
 
 def write_template(repo_root: Path, template_name: str) -> None:
-    template = repo_root / "templates" / "boilerplates" / template_name
+    template = repo_root / "templates" / "boilerplates" / "mcp" / template_name
     template.mkdir(parents=True)
     (template / "README.md").write_text(f"# {template_name}\n", encoding="utf-8")
     (template / "pyproject.toml").write_text("[project]\nname='template'\n", encoding="utf-8")
@@ -97,4 +97,3 @@ def test_ctl_parser_and_run_mcp_group_namespace(monkeypatch, tmp_path: Path) -> 
     assert captured["command"] == "init"
     assert captured["components"] == "mcp-client"
     assert "MCP Server Group Implementation" in output
-

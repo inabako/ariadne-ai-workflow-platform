@@ -1,4 +1,4 @@
-# Ariadne New System Skill Entrypoint
+﻿# Ariadne New System Skill Entrypoint
 
 ## Output Language
 
@@ -45,6 +45,6 @@ After intake succeeds, run `/pre-development-preparation`, then run `/rag-load`,
 Before implementation starts, run the Boilerplate Template Selection Gate from `/ariadne-new-system-development`.
 
 - If a matching template exists under `templates/boilerplates/`, copy it and implement only in the copied destination.
-- If the system includes realtime gateway IaC / infrastructure, consider `templates/boilerplates/realtime-gateway-infra-template/` and preserve the IaC gates for shared artifacts, software inventory, exposure, secrets, firewall policy, rollback, and Terraform validation.
+- If the system includes realtime gateway IaC / infrastructure, consider `templates/boilerplates/infrastructure/microservice-infra-template/` and preserve the IaC gates for shared artifacts, software inventory, exposure, secrets, firewall policy, rollback, and Terraform validation.
 - If no matching template exists, record the fallback reason and continue with traditional coding.
 - Record the result in `work/<receipt-id>/process-report/boilerplate-template-selection.md`.

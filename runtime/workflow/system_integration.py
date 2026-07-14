@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -150,7 +150,7 @@ def emulator_candidates(cloud: dict[str, Any], payment: dict[str, Any], *, with_
             {
                 "provider": "aws",
                 "emulator": "LocalStack",
-                "template_path": "templates/boilerplates/cloud-emulators/localstack",
+                "template_path": "templates/boilerplates/integration/cloud-emulators/localstack",
                 "recommended_work_path": "work/<work-id>/test-environment/emulator/localstack",
                 "activation": "manual-or-parent-workflow",
                 "required": with_emulator,
@@ -169,7 +169,7 @@ def emulator_candidates(cloud: dict[str, Any], payment: dict[str, Any], *, with_
             {
                 "provider": "gcp",
                 "emulator": "Google Cloud emulators / service-specific test doubles",
-                "template_path": "templates/boilerplates/cloud-emulators/gcp-emulators",
+                "template_path": "templates/boilerplates/integration/cloud-emulators/gcp-emulators",
                 "recommended_work_path": "work/<work-id>/test-environment/emulator/gcp-emulators",
                 "activation": "manual-or-parent-workflow",
                 "required": with_emulator,
@@ -187,7 +187,7 @@ def emulator_candidates(cloud: dict[str, Any], payment: dict[str, Any], *, with_
             {
                 "provider": "stripe",
                 "emulator": "Stripe CLI / test mode",
-                "template_path": "templates/boilerplates/cloud-emulators/stripe-cli",
+                "template_path": "templates/boilerplates/integration/cloud-emulators/stripe-cli",
                 "recommended_work_path": "work/<work-id>/test-environment/emulator/stripe-cli",
                 "activation": "manual-or-parent-workflow",
                 "required": with_emulator,

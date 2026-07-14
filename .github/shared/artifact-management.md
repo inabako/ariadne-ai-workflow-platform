@@ -1,4 +1,4 @@
-# Artifact Management
+﻿# Artifact Management
 
 ## Purpose
 
@@ -46,6 +46,11 @@ templates/
   test-specifications/
   noise-reduction/
   boilerplates/
+    apps/
+    services/
+    infrastructure/
+    integration/
+    mcp/
   web-svg-layout/
 ```
 
@@ -56,7 +61,12 @@ templates/
 | `templates/test-evidence/` | テスト証跡 |
 | `templates/test-specifications/` | テスト仕様書、テストケース表 |
 | `templates/noise-reduction/` | 要件定義前の未知用語、用語衝突、表記揺れ、資料矛盾、Human Interview、Glossary、Readiness |
-| `templates/boilerplates/` | 新規service / app / IaC生成用のboilerplate source |
+| `templates/boilerplates/` | 新規service / app / IaC / MCP生成用のboilerplate source root |
+| `templates/boilerplates/apps/` | Next.js / PyQt / Flutter app boilerplate |
+| `templates/boilerplates/services/` | service boilerplate |
+| `templates/boilerplates/infrastructure/` | realtime gateway / platform / database / middleware / identity IaC boilerplate |
+| `templates/boilerplates/integration/` | integration test / emulator boilerplate |
+| `templates/boilerplates/mcp/` | MCP Server / MCP Client / Agent Runtime / operation gateway boilerplate |
 | `templates/web-svg-layout/` | Web画面向けSVG入力、responsive layout、React候補、Playwright候補 |
 
 ## Standard Template Files
@@ -70,7 +80,7 @@ templates/
 | `templates/noise-reduction/` | `work/requirements/draft/<draft-stem>-noise-reduction/` | 要件review draft前にノイズ除去、Human Interview、Project Glossary、Readinessを作るとき |
 | `templates/process-report/boilerplate-template-selection-report-template.md` | `work/<採番ID>/process-report/` | 新システム実装前にboilerplate template採用可否を判断するとき |
 | `templates/web-svg-layout/` | `work/<採番ID>/web-ui/` | Web画面向けSVGからlayout / component / React / Playwright候補を作るとき |
-| `templates/boilerplates/realtime-gateway-infra-template/` | target repositoryのIaC directoryまたは `work/<採番ID>/source/repository/` | realtime gateway infrastructure をtemplateから生成するとき |
+| `templates/boilerplates/infrastructure/microservice-infra-template/` | target repositoryのIaC directoryまたは `work/<採番ID>/source/repository/` | realtime gateway infrastructure をtemplateから生成するとき |
 
 ## Artifact Quality Rule
 

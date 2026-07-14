@@ -86,7 +86,7 @@ feature/issue-<issue-number>
 work/issue-<issue-number>/process-report/nextjs-webapp-implementation-prep.md
 ```
 
-既存Next.js appでは `nextjs-webapp-template` はreference-onlyです。route、user action、API contract、auth/session、env/secret境界、typecheck、lint、unit、e2e、health、UI smoke、API connectivityが未整理なら実装へ進みません。
+既存Next.js appでは `nextjs-app-template` はreference-onlyです。route、user action、API contract、auth/session、env/secret境界、typecheck、lint、unit、e2e、health、UI smoke、API connectivityが未整理なら実装へ進みません。
 
 ## Web SVG Layout Mode
 

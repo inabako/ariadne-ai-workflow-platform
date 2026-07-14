@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import shutil
@@ -18,22 +18,22 @@ ARTIFACT_TYPE = "mcp-server-group-implementation-context"
 DEFAULT_SCHEMA = ".github/schemas/mcp-server-group-implementation-context.schema.json"
 COMPONENTS = {
     "local-model-mcp-server": {
-        "template_path": "templates/boilerplates/local-model-mcp-server-template",
+        "template_path": "templates/boilerplates/mcp/local-model-mcp-server-template",
         "destination": "local-model-mcp-server",
         "role": "MCP Server capability provider",
     },
     "mcp-client": {
-        "template_path": "templates/boilerplates/mcp-client-template",
+        "template_path": "templates/boilerplates/mcp/mcp-client-template",
         "destination": "mcp-client",
         "role": "Reusable MCP Client facade",
     },
     "local-ai-agent-runtime": {
-        "template_path": "templates/boilerplates/local-ai-agent-runtime-template",
+        "template_path": "templates/boilerplates/mcp/local-ai-agent-runtime-template",
         "destination": "local-ai-agent-runtime",
         "role": "Agent Runtime job/workflow engine",
     },
     "discord-gateway": {
-        "template_path": "templates/boilerplates/discord-gateway-template",
+        "template_path": "templates/boilerplates/mcp/discord-gateway-template",
         "destination": "discord-gateway",
         "role": "Discord operation gateway",
     },

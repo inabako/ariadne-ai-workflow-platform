@@ -1,4 +1,4 @@
-# Runtime Workflow
+﻿# Runtime Workflow
 
 `runtime/workflow/` は、workflow単位の補助CLIを置くディレクトリです。
 
@@ -294,7 +294,7 @@ work/<work-id>/reports/system-integration-final-report.md
 
 `integration-context.json` は Context First manifest に `system-integration` として登録されます。実クラウドや本番credentialは無条件に使わず、`emulator_verified`、`real_cloud_verification_required`、`unsupported_by_emulator` で検証境界を明示します。
 
-エミュレータ候補には `template_path` を含めます。必要な場合は `templates/boilerplates/cloud-emulators/` から `work/<work-id>/test-environment/emulator/` へコピーし、コピー先だけを編集します。
+エミュレータ候補には `template_path` を含めます。必要な場合は `templates/boilerplates/integration/cloud-emulators/` から `work/<work-id>/test-environment/emulator/` へコピーし、コピー先だけを編集します。
 
 `aiwfctl integration emulator prepare --work-id <work-id>` は候補templateをコピーし、`test-evidence/emulator/` と `emulator-context.json` を作成します。Dockerや実クラウドは起動しません。
 

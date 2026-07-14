@@ -1,4 +1,4 @@
-# Ariadne New System
+﻿# Ariadne New System
 
 新しい対象システム、runtime、remote operation、device integration、architecture-level launch を始めるworkflowです。
 
@@ -119,12 +119,12 @@ templates/boilerplates/
 
 現在の対応:
 
-| 対象 | Template | 組み込み指示書 |
+| 対象 | Template | 詳細Docs |
 | --- | --- | --- |
-| Go gateway service | `templates/boilerplates/gateway-template/` | `gateway-template_組み込み指示書.md` |
-| Next.js dashboard / admin webapp | `templates/boilerplates/nextjs-webapp-template/` | `Next.jsボイラーテンプレート作成_作業指示書.md` |
-| PyQt / Qt GUI app | `templates/boilerplates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
-| Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
+| Go gateway service | `templates/boilerplates/services/go-microservice-template/` | `docs/reference/templates.md` |
+| Next.js dashboard / admin webapp | `templates/boilerplates/apps/nextjs-app-template/` | `docs/workflows/nextjs-webapp-implementation-prep.md` |
+| PyQt / Qt GUI app | `templates/boilerplates/apps/pyqt-app-template/` | `docs/reference/templates.md` |
+| Realtime gateway IaC / infrastructure | `templates/boilerplates/infrastructure/microservice-infra-template/` | `docs/workflows/realtime-iac.md` |
 
 ルール:
 
@@ -150,7 +150,7 @@ work/<receipt-id>/process-report/nextjs-webapp-implementation-prep.md
 確認すること:
 
 - 新規webappか既存webapp拡張か
-- `nextjs-webapp-template` の採用可否
+- `nextjs-app-template` の採用可否
 - route、screen、user action、loading / empty / error state
 - API request / response / error response / auth
 - `.env.example`、`NEXT_PUBLIC_*`、server-only env、secret ownership

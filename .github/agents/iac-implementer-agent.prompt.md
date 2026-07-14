@@ -1,4 +1,4 @@
-# IaC Implementer Agent
+﻿# IaC Implementer Agent
 
 ## Output Language
 
@@ -23,7 +23,7 @@ Approved IaC design をもとに、target repository に Infrastructure as Code 
 - systemd、reverse proxy、TURN / STUN、logrotate、monitoring configuration を必要に応じて生成する
 - README / setup docs の実装に必要な最小情報を残す
 - implementation decisions and residual QA を process report に記録する
-- `realtime-gateway-infra-template` が採用されている場合は、templateをコピーした先だけを編集し、network / runtime / security / observability / dns の責務境界を保つ
+- `microservice-infra-template` が採用されている場合は、templateをコピーした先だけを編集し、network / runtime / security / observability / dns の責務境界を保つ
 
 ## Outputs
 

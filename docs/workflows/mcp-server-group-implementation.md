@@ -1,4 +1,4 @@
-# MCP Server Group Implementation
+﻿# MCP Server Group Implementation
 
 MCP Server Group Implementation は、Ariadne の MCP 系 boilerplate を使って、MCP Server 群、Reusable MCP Client、Local AI Agent Runtime、Discord Gateway を段階的に実装するための workflow extension です。
 
@@ -26,10 +26,10 @@ aiwfctl mcp-group run-workflow --work-id <work-id> --components local-model-mcp-
 
 | Component | Template | Destination |
 | --- | --- | --- |
-| `local-model-mcp-server` | `templates/boilerplates/local-model-mcp-server-template` | `work/<work-id>/implementation/mcp-server-group/local-model-mcp-server` |
-| `mcp-client` | `templates/boilerplates/mcp-client-template` | `work/<work-id>/implementation/mcp-server-group/mcp-client` |
-| `local-ai-agent-runtime` | `templates/boilerplates/local-ai-agent-runtime-template` | `work/<work-id>/implementation/mcp-server-group/local-ai-agent-runtime` |
-| `discord-gateway` | `templates/boilerplates/discord-gateway-template` | `work/<work-id>/implementation/mcp-server-group/discord-gateway` |
+| `local-model-mcp-server` | `templates/boilerplates/mcp/local-model-mcp-server-template` | `work/<work-id>/implementation/mcp-server-group/local-model-mcp-server` |
+| `mcp-client` | `templates/boilerplates/mcp/mcp-client-template` | `work/<work-id>/implementation/mcp-server-group/mcp-client` |
+| `local-ai-agent-runtime` | `templates/boilerplates/mcp/local-ai-agent-runtime-template` | `work/<work-id>/implementation/mcp-server-group/local-ai-agent-runtime` |
+| `discord-gateway` | `templates/boilerplates/mcp/discord-gateway-template` | `work/<work-id>/implementation/mcp-server-group/discord-gateway` |
 
 Default component は `local-model-mcp-server,mcp-client` です。
 

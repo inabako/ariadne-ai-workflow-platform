@@ -1,4 +1,4 @@
-# Ariadne Feature Maintenance
+﻿# Ariadne Feature Maintenance
 
 既存対象システムの新機能追加、bug fix、hardware replacement、network change、deployment change、field issue response、運用改善を扱うworkflowです。
 
@@ -117,7 +117,7 @@ High / critical finding がある場合は、Change DesignまたはTest Planへ�
 work/<receipt-id>/process-report/nextjs-webapp-implementation-prep.md
 ```
 
-既存appへの機能追加では `nextjs-webapp-template` はreference-onlyとし、既存routing、design system、test runner、env conventionを優先します。
+既存appへの機能追加では `nextjs-app-template` はreference-onlyとし、既存routing、design system、test runner、env conventionを優先します。
 
 確認すること:
 

@@ -1,4 +1,4 @@
----
+﻿---
 name: ariadne-new-system
 description: Start the Ariadne AI Workflow for creating a new target system, runtime, remote operation system, device integration, or architecture-level system launch. Use when the user selects /ariadne-new-system or asks to begin an Ariadne New System flow from a completed requirement document in work/requirements/.
 ---
@@ -114,12 +114,12 @@ templates/boilerplates/
 
 Current supported mappings:
 
-| Target | Template path | Instruction |
+| Target | Template path | Docs |
 | --- | --- | --- |
-| Go gateway service | `templates/boilerplates/gateway-template/` | `gateway-template_組み込み指示書.md` |
-| Next.js dashboard / admin webapp | `templates/boilerplates/nextjs-webapp-template/` | `Next.jsボイラーテンプレート作成_作業指示書.md` |
-| PyQt / Qt GUI app | `templates/boilerplates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
-| Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
+| Go gateway service | `templates/boilerplates/services/go-microservice-template/` | `docs/reference/templates.md` |
+| Next.js dashboard / admin webapp | `templates/boilerplates/apps/nextjs-app-template/` | `docs/workflows/nextjs-webapp-implementation-prep.md` |
+| PyQt / Qt GUI app | `templates/boilerplates/apps/pyqt-app-template/` | `docs/reference/templates.md` |
+| Realtime gateway IaC / infrastructure | `templates/boilerplates/infrastructure/microservice-infra-template/` | `docs/workflows/realtime-iac.md` |
 
 Rules:
 
@@ -158,8 +158,8 @@ work/<receipt-id>/process-report/nextjs-webapp-implementation-prep.md
 Rules:
 
 - Classify the work as `new-app`, `existing-app-feature`, or `corrective-fix`.
-- For `new-app`, evaluate `templates/boilerplates/nextjs-webapp-template/` as the copy source.
-- For existing apps, treat `nextjs-webapp-template` as reference-only and preserve existing routing, design system, test runner, and env conventions.
+- For `new-app`, evaluate `templates/boilerplates/apps/nextjs-app-template/` as the copy source.
+- For existing apps, treat `nextjs-app-template` as reference-only and preserve existing routing, design system, test runner, and env conventions.
 
 ## Web SVG Layout Mode Gate
 

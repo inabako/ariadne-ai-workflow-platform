@@ -1,4 +1,4 @@
----
+﻿---
 project:
 receipt_id:
 repository:
@@ -31,20 +31,25 @@ created_at:
 
 | Component | Type | Language / Framework | Template Candidate | Match |
 | --- | --- | --- | --- | --- |
-|  | Go gateway / Next.js webapp / PyQt GUI / realtime gateway IaC / platform infrastructure / database infrastructure / middleware infrastructure / identity infrastructure / other |  | gateway-template / nextjs-webapp-template / pyqt-template / realtime-gateway-infra-template / platform-infra-template / database-infra-template / middleware-infra-template / identity-infra-template / none | yes / no |
+|  | Go gateway / Next.js webapp / PyQt GUI / Flutter app / realtime gateway IaC / platform infrastructure / database infrastructure / middleware infrastructure / identity infrastructure / MCP server / MCP client / agent runtime / Discord gateway / other |  | go-microservice-template / nextjs-app-template / pyqt-app-template / flutter-app-template / microservice-infra-template / platform-infra-template / database-infra-template / middleware-infra-template / identity-infra-template / local-model-mcp-server-template / mcp-client-template / local-ai-agent-runtime-template / discord-gateway-template / none | yes / no |
 
 ## Template Availability
 
-| Template | Expected Path | Exists | Instruction |
+| Template | Expected Path | Exists | Docs |
 | --- | --- | --- | --- |
-| gateway-template | `templates/boilerplates/gateway-template/` | yes / no | `gateway-template_組み込み指示書.md` |
-| nextjs-webapp-template | `templates/boilerplates/nextjs-webapp-template/` | yes / no | `Next.jsボイラーテンプレート作成_作業指示書.md` |
-| pyqt-template | `templates/boilerplates/pyqt-template/` | yes / no | `pyqt-template_組み込み指示書.md` |
-| realtime-gateway-infra-template | `templates/boilerplates/realtime-gateway-infra-template/` | yes / no | `realtime-gateway-infra-template_実装指示書.md` |
-| platform-infra-template | `templates/boilerplates/platform-infra-template/` | yes / no | `Platform_Infrastructure_Boilerplate_追加実装指示書.md` |
-| database-infra-template | `templates/boilerplates/database-infra-template/` | yes / no | `Database_Infrastructure_Boilerplate_追加実装指示書.md` |
-| middleware-infra-template | `templates/boilerplates/middleware-infra-template/` | yes / no | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
-| identity-infra-template | `templates/boilerplates/identity-infra-template/` | yes / no | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
+| go-microservice-template | `templates/boilerplates/services/go-microservice-template/` | yes / no | `docs/reference/templates.md` |
+| nextjs-app-template | `templates/boilerplates/apps/nextjs-app-template/` | yes / no | `docs/workflows/nextjs-webapp-implementation-prep.md` |
+| pyqt-app-template | `templates/boilerplates/apps/pyqt-app-template/` | yes / no | `docs/reference/templates.md` |
+| flutter-app-template | `templates/boilerplates/apps/flutter-app-template/` | yes / no | `docs/workflows/flutter-multiplatform.md` |
+| microservice-infra-template | `templates/boilerplates/infrastructure/microservice-infra-template/` | yes / no | `docs/workflows/realtime-iac.md` |
+| platform-infra-template | `templates/boilerplates/infrastructure/platform-infra-template/` | yes / no | `docs/workflows/realtime-iac.md` |
+| database-infra-template | `templates/boilerplates/infrastructure/database-infra-template/` | yes / no | `docs/workflows/realtime-iac.md` |
+| middleware-infra-template | `templates/boilerplates/infrastructure/middleware-infra-template/` | yes / no | `docs/workflows/realtime-iac.md` |
+| identity-infra-template | `templates/boilerplates/infrastructure/identity-infra-template/` | yes / no | `docs/workflows/realtime-iac.md` |
+| local-model-mcp-server-template | `templates/boilerplates/mcp/local-model-mcp-server-template/` | yes / no | `docs/workflows/mcp-server-group-implementation.md` |
+| mcp-client-template | `templates/boilerplates/mcp/mcp-client-template/` | yes / no | `docs/workflows/mcp-server-group-implementation.md` |
+| local-ai-agent-runtime-template | `templates/boilerplates/mcp/local-ai-agent-runtime-template/` | yes / no | `docs/workflows/mcp-server-group-implementation.md` |
+| discord-gateway-template | `templates/boilerplates/mcp/discord-gateway-template/` | yes / no | `docs/workflows/mcp-server-group-implementation.md` |
 
 ## Decision
 
@@ -77,6 +82,7 @@ Use only when `decision: use-template`.
 | database engine / connection contract / migration / backup / restore |  |  | yes / no |  |
 | Redis purpose / TTL / eviction / persistence / backup / restore |  |  | yes / no |  |
 | OpenLDAP Base DN / OU / bind account / TLS / LDIF / backup / restore |  |  | yes / no |  |
+| MCP Server / MCP Client / Agent Runtime / Gateway ownership |  |  | yes / no |  |
 
 ## Required Tests
 
@@ -124,7 +130,7 @@ Use only when `decision: use-template`.
 
 - Template本体を直接編集しない。
 - コピー先service / app / IaC directoryのみ編集する。
-- 既存Next.js appへ画面機能を追加する場合、`nextjs-webapp-template` はreference-onlyとし、既存sourceへ丸ごと上書きしない。
+- 既存Next.js appへ画面機能を追加する場合、`nextjs-app-template` はreference-onlyとし、既存sourceへ丸ごと上書きしない。
 - Next.js webapp実装前は `templates/process-report/nextjs-webapp-implementation-prep-template.md` で画面契約、API契約、auth、env、testを確認する。
 - Architecture、protocol、port、safety behaviorを黙って変更しない。
 - STOP、communication loss、startup safe state、shutdown safe stateのtestを省略しない。

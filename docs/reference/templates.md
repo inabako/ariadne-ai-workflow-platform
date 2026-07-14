@@ -1,4 +1,4 @@
-# Templates
+﻿# Templates
 
 `templates/` は、workflow成果物のひな形を置く場所です。
 
@@ -18,6 +18,11 @@ templates/
   editorconfig/
   noise-reduction/
   boilerplates/
+    apps/
+    services/
+    infrastructure/
+    integration/
+    mcp/
   gui-mode/
   web-svg-layout/
   self-improvement/
@@ -37,7 +42,11 @@ templates/
 | `templates/iac/` | `software-inventory-template.md`, `communication-specification-template.md`, `realtime-iac-design-template.md`, `realtime-iac-test-specification-template.md` | リアルタイムシステム向けIaCの受領gate、設計、Docker Desktop / Linux / integration検証 |
 | `templates/editorconfig/` | `target-repository.editorconfig` | target repositoryのencoding / line ending補助 |
 | `templates/noise-reduction/` | `*-report-template.md`, `human-interview-sheet-template.md`, `project-glossary-template.md`, `readiness-report-template.md` | 要件定義前の未知用語、用語衝突、表記揺れ、資料矛盾、曖昧表現、Human Interview、Glossary、Readiness成果物 |
-| `templates/boilerplates/` | `gateway-template/`, `nextjs-webapp-template/`, `pyqt-template/`, `realtime-gateway-infra-template/`, `platform-infra-template/`, `database-infra-template/`, `middleware-infra-template/`, `identity-infra-template/`, `cloud-emulators/`, `flutter/`, `local-model-mcp-server-template/`, `mcp-client-template/`, `local-ai-agent-runtime-template/`, `discord-gateway-template/` | 新規Go gateway / Next.js webapp / PyQt GUI / realtime gateway IaC / platform infrastructure / database infrastructure / middleware infrastructure / identity infrastructure / cloud emulator / Flutter multi-platform / MCP server / MCP client / local agent runtime / Discord gateway環境をtemplateから生成するためのboilerplate置き場 |
+| `templates/boilerplates/apps/` | `nextjs-app-template/`, `pyqt-app-template/`, `flutter-app-template/` | Next.js webapp / PyQt GUI / Flutter multi-platform appをtemplateから生成するためのboilerplate置き場 |
+| `templates/boilerplates/services/` | `go-microservice-template/` | 新規Go gateway serviceをtemplateから生成するためのboilerplate置き場 |
+| `templates/boilerplates/infrastructure/` | `microservice-infra-template/`, `platform-infra-template/`, `database-infra-template/`, `middleware-infra-template/`, `identity-infra-template/` | realtime gateway IaC / platform infrastructure / database infrastructure / middleware infrastructure / identity infrastructureをtemplateから生成するためのboilerplate置き場 |
+| `templates/boilerplates/integration/` | `cloud-emulators/` | cloud emulator / external service emulator環境をtemplateから生成するためのboilerplate置き場 |
+| `templates/boilerplates/mcp/` | `local-model-mcp-server-template/`, `mcp-client-template/`, `local-ai-agent-runtime-template/`, `discord-gateway-template/` | MCP server / MCP client / local agent runtime / Discord gateway環境をtemplateから生成するためのboilerplate置き場 |
 | `templates/gui-mode/` | `README.md` | SVG入力、GaC / UaC生成、親workflowへの安全な返却方法 |
 | `templates/web-svg-layout/` | `README.md` | Web画面向けSVG入力、layout / React / Playwright候補、親workflowへの安全な返却方法 |
 | `templates/self-improvement/` | `workflow-feedback-template.md`, `self-improvement-issue-template.md`, `self-improvement-checklist.md` | workflow摩擦のFeedback report、Issue body、採用判断checklist |
@@ -58,17 +67,17 @@ templates/
 - 新システム実装では、`templates/boilerplates/` に一致するboilerplateがあるか確認し、採用または不採用の理由をprocess reportに残す。
 - Next.js画面機能を実装する場合、Implementation前に `templates/process-report/nextjs-webapp-implementation-prep-template.md` を使い、新規/既存分類、画面契約、API契約、auth、env、test evidenceを確認する。
 - Self-Improvement Workflowでは、Feedback reportを `work/feedback/` 直下に保存し、テンプレートは `templates/self-improvement/` を使う。
-- IaC工程では、realtime gateway infrastructure が対象に含まれる場合 `realtime-gateway-infra-template/` を候補にし、shared artifacts、software inventory、secret source、firewall policy、rollbackを確認してからコピーする。
-- IaC工程で開発基盤、CI/CD基盤、監視基盤が対象に含まれる場合 `platform-infra-template/` を候補にし、Terraform component selection、Docker Compose profile、admin CIDR、secret source、backup / restore、product別validation evidenceを確認してからコピーする。
-- IaC工程でPostgreSQL、MySQL、DB connection contract、backup / restore、migrationが対象に含まれる場合 `database-infra-template/` を候補にし、DB engine、DB version、database name、app user、connection source、persistence、backup / restore、migration、secret redaction、evidenceを確認してからコピーする。
-- IaC工程でRedis、cache、session、TTL、eviction、Pub/Sub補助、middleware connection contractが対象に含まれる場合 `middleware-infra-template/` を候補にし、Redis purpose、auth、maxmemory、persistence、backup / restore、secret redaction、evidenceを確認してからコピーする。
-- IaC工程でOpenLDAP、directory service、Base DN、OU、user / group、bind account、TLS、identity connection contractが対象に含まれる場合 `identity-infra-template/` を候補にし、DN設計、account separation、LDIF、backup / restore、secret redaction、evidenceを確認してからコピーする。
-- System Integration Quality workflowでクラウドまたは外部サービスSDKが検出された場合、`templates/boilerplates/cloud-emulators/` を候補にし、`work/<work-id>/test-environment/emulator/` へコピーしてから起動する。本番credentialは使わない。
-- Flutter Multi-platform workflowでは、`templates/boilerplates/flutter/` を候補にし、`work/<work-id>/implementation/flutter-project/` へコピーする。対象platform未指定時は全platform対応と推測しない。
-- Local Model MCP Serverを扱う場合は、`templates/boilerplates/local-model-mcp-server-template/` を候補にし、MCP ServerがAgent Runtime、Job Queue、Completion判定を持たないことを確認する。
-- Reusable MCP Clientを扱う場合は、`templates/boilerplates/mcp-client-template/` を候補にし、ClientがTool選択、Prompt選択、Agent Loopを持たないことを確認する。
-- Local AI Agent Runtimeを扱う場合は、`templates/boilerplates/local-ai-agent-runtime-template/` を候補にし、MCP Server / MCP Client / Discord Gatewayとの責務境界を分離したまま実装する。
-- Discord Gatewayを扱う場合は、`templates/boilerplates/discord-gateway-template/` を候補にし、Discord固有型、Bot Token、Slash Command、Human Check UI、Runtime Command DTOの境界を分離したまま実装する。
+- IaC工程では、realtime gateway infrastructure が対象に含まれる場合 `templates/boilerplates/infrastructure/microservice-infra-template/` を候補にし、shared artifacts、software inventory、secret source、firewall policy、rollbackを確認してからコピーする。
+- IaC工程で開発基盤、CI/CD基盤、監視基盤が対象に含まれる場合 `templates/boilerplates/infrastructure/platform-infra-template/` を候補にし、Terraform component selection、Docker Compose profile、admin CIDR、secret source、backup / restore、product別validation evidenceを確認してからコピーする。
+- IaC工程でPostgreSQL、MySQL、DB connection contract、backup / restore、migrationが対象に含まれる場合 `templates/boilerplates/infrastructure/database-infra-template/` を候補にし、DB engine、DB version、database name、app user、connection source、persistence、backup / restore、migration、secret redaction、evidenceを確認してからコピーする。
+- IaC工程でRedis、cache、session、TTL、eviction、Pub/Sub補助、middleware connection contractが対象に含まれる場合 `templates/boilerplates/infrastructure/middleware-infra-template/` を候補にし、Redis purpose、auth、maxmemory、persistence、backup / restore、secret redaction、evidenceを確認してからコピーする。
+- IaC工程でOpenLDAP、directory service、Base DN、OU、user / group、bind account、TLS、identity connection contractが対象に含まれる場合 `templates/boilerplates/infrastructure/identity-infra-template/` を候補にし、DN設計、account separation、LDIF、backup / restore、secret redaction、evidenceを確認してからコピーする。
+- System Integration Quality workflowでクラウドまたは外部サービスSDKが検出された場合、`templates/boilerplates/integration/cloud-emulators/` を候補にし、`work/<work-id>/test-environment/emulator/` へコピーしてから起動する。本番credentialは使わない。
+- Flutter Multi-platform workflowでは、`templates/boilerplates/apps/flutter-app-template/` を候補にし、`work/<work-id>/implementation/flutter-project/` へコピーする。対象platform未指定時は全platform対応と推測しない。
+- Local Model MCP Serverを扱う場合は、`templates/boilerplates/mcp/local-model-mcp-server-template/` を候補にし、MCP ServerがAgent Runtime、Job Queue、Completion判定を持たないことを確認する。
+- Reusable MCP Clientを扱う場合は、`templates/boilerplates/mcp/mcp-client-template/` を候補にし、ClientがTool選択、Prompt選択、Agent Loopを持たないことを確認する。
+- Local AI Agent Runtimeを扱う場合は、`templates/boilerplates/mcp/local-ai-agent-runtime-template/` を候補にし、MCP Server / MCP Client / Discord Gatewayとの責務境界を分離したまま実装する。
+- Discord Gatewayを扱う場合は、`templates/boilerplates/mcp/discord-gateway-template/` を候補にし、Discord固有型、Bot Token、Slash Command、Human Check UI、Runtime Command DTOの境界を分離したまま実装する。
 - テスト成果物の保存先は [Test Artifact Storage](test-artifact-storage.md) に従う。
 - 出力先は `work/<work-id>/` 配下の対応directoryにする。
 - 生成後は可能な限り `work/<work-id>/context/artifact-index.json` に登録する。

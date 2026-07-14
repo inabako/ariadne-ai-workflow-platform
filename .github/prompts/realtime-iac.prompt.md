@@ -1,8 +1,8 @@
-# Realtime IaC Workflow
+﻿# Realtime IaC Workflow
 
 ## Output Language
 
-既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` を確認して日本語で作成してください。
 
 ## Purpose
 
@@ -220,13 +220,13 @@ IaC実装前に、承認済みdesignとshared artifactsに対して利用可能�
 
 候補:
 
-| 対象 | Template | 組み込み指示書 |
+| 対象 | Template | 詳細Docs |
 | --- | --- | --- |
-| Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
-| Development / CI/CD / observability platform infrastructure | `templates/boilerplates/platform-infra-template/` | `Platform_Infrastructure_Boilerplate_追加実装指示書.md` |
-| PostgreSQL / MySQL shared database infrastructure | `templates/boilerplates/database-infra-template/` | `Database_Infrastructure_Boilerplate_追加実装指示書.md` |
-| Redis shared middleware infrastructure | `templates/boilerplates/middleware-infra-template/` | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
-| OpenLDAP identity / directory infrastructure | `templates/boilerplates/identity-infra-template/` | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
+| Realtime gateway IaC / infrastructure | `templates/boilerplates/infrastructure/microservice-infra-template/` | `docs/workflows/realtime-iac.md` |
+| Development / CI/CD / observability platform infrastructure | `templates/boilerplates/infrastructure/platform-infra-template/` | `docs/workflows/realtime-iac.md` |
+| PostgreSQL / MySQL shared database infrastructure | `templates/boilerplates/infrastructure/database-infra-template/` | `docs/workflows/realtime-iac.md` |
+| Redis shared middleware infrastructure | `templates/boilerplates/infrastructure/middleware-infra-template/` | `docs/workflows/realtime-iac.md` |
+| OpenLDAP identity / directory infrastructure | `templates/boilerplates/infrastructure/identity-infra-template/` | `docs/workflows/realtime-iac.md` |
 
 出力:
 
@@ -234,7 +234,7 @@ IaC実装前に、承認済みdesignとshared artifactsに対して利用可能�
 
 判定:
 
-- realtime gateway infrastructure が対象に含まれ、`realtime-gateway-infra-template/` が存在する場合は、templateをコピーしてコピー先だけを編集する。
+- realtime gateway infrastructure が対象に含まれ、`microservice-infra-template/` が存在する場合は、templateをコピーしてコピー先だけを編集する。
 - 開発・CI/CD・監視platformが対象に含まれ、`platform-infra-template/` が存在する場合は、templateをコピーしてコピー先だけを編集する。
 - PostgreSQL / MySQL shared database infrastructure が対象に含まれ、`database-infra-template/` が存在する場合は、templateをコピーしてコピー先だけを編集する。
 - Redis shared middleware infrastructure が対象に含まれ、`middleware-infra-template/` が存在する場合は、templateをコピーしてコピー先だけを編集する。

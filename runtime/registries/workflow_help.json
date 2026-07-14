@@ -1,4 +1,4 @@
-{
+﻿{
   "registry_version": "1.0",
   "description": "AI workflow prompt command help registry. aiwfctl help reads this file to show searchable terminal help.",
   "commands": [
@@ -88,7 +88,7 @@
         "対象repositoryのpackage、tests、docs/evidence、設定ファイル、Adapter / Port候補を静的に確認する。",
         "AWS/GCPなどのcloud metadataからLocalStack、Google Cloud emulator、service-specific test double候補を整理する。",
         "Stripeなどの外部サービスSDKはStripe CLI / test modeなど、専用test helper候補として整理する。",
-        "エミュレータ構築が必要な場合は templates/boilerplates/cloud-emulators/ から work/<work-id>/test-environment/emulator/ へコピーし、コピー先だけを編集する。",
+        "エミュレータ構築が必要な場合は templates/boilerplates/integration/cloud-emulators/ から work/<work-id>/test-environment/emulator/ へコピーし、コピー先だけを編集する。",
         "aiwfctl integration emulator prepare --work-id <work-id> で候補templateをwork配下へ展開し、work/<work-id>/context/emulator-context.json を生成する。",
         "aiwfctl integration emulator health --work-id <work-id> で展開済みtemplate、evidence directory、Docker CLI前提を起動前に確認し、work/<work-id>/context/emulator-health-context.json と health-summary.md を生成する。",
         "aiwfctl integration test-plan --work-id <work-id> でIntegration Testの実行順序、Human Check、証跡期待値をrunbook化し、work/<work-id>/context/integration-test-plan-context.json と integration-test-runbook.md を生成する。",
@@ -164,7 +164,7 @@
         "対象platform未指定時はHuman Checkで止め、全platform対応とは推測しない。",
         "Environment Dispatcher profileは aiwfctl env select flutter で確認する。",
         "Android/WebはWindows/macOS/Linux、iOS/macOSはmacOS、WindowsはWindows、LinuxはLinuxとしてbuild環境を判定する。",
-        "templates/boilerplates/flutter/ からFlutter boilerplateをwork/<work-id>/implementation/flutter-projectへ展開できる。",
+        "templates/boilerplates/apps/flutter-app-template/ からFlutter boilerplateをwork/<work-id>/implementation/flutter-projectへ展開できる。",
         "dart format、flutter analyze、flutter test、flutter test integration_test の検証計画を作る。--execute 指定時は実行し、stdout/stderr/summaryをevidenceへ保存する。",
         "Web targetのIntegration Testは flutter drive -d chrome を使う。chromedriver/WebDriverが無い場合は build-environment-required として分類する。",
         "flutter build apk/ios/web/windows/macos/linux のbuild dispatchをtarget別に生成する。--execute 指定時は実行可能targetだけ実行し、target別evidenceへ保存する。",
@@ -663,7 +663,7 @@
       "details": [
         "IaC設計前に Context First gate で docker environment-selection を検証する。",
         "requirements、network/security、runtime、observability、platform / database / middleware / identity component selectionを設計する。",
-        "realtime gateway infrastructureには realtime-gateway-infra-template、開発・CI/CD・監視platformには platform-infra-template、PostgreSQL / MySQL基盤には database-infra-template、Redis基盤には middleware-infra-template、OpenLDAP基盤には identity-infra-template を候補にする。",
+        "realtime gateway infrastructureには microservice-infra-template、開発・CI/CD・監視platformには platform-infra-template、PostgreSQL / MySQL基盤には database-infra-template、Redis基盤には middleware-infra-template、OpenLDAP基盤には identity-infra-template を候補にする。",
         "Terraform、Docker Compose、systemd、firewall、reverse proxy、logrotateなどを生成する。",
         "Docker Desktop、Linux runtime、integration testを検証する。",
         "secretや.env実値は生成しない。",
@@ -1021,7 +1021,7 @@
         "Service ownership boundaries are reviewed before generated templates are copied into target source."
       ],
       "trigger": "MCP server group implementation using repo-local boilerplates",
-      "input_directory": "templates/boilerplates",
+      "input_directory": "templates/boilerplates/mcp",
       "output": "work/<work-id>/implementation/mcp-server-group/",
       "prefixes": [],
       "parent_workflows": [

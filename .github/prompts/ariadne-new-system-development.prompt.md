@@ -1,8 +1,8 @@
-# Ariadne New System Development Flow
+﻿# Ariadne New System Development Flow
 
 ## Output Language
 
-既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` を確認して日本語で作成してください。
 
 ## Purpose
 
@@ -59,7 +59,7 @@ python runtime/workflow/gui_mode.py run --issue-id "<SYS-採番ID>"
 - SVGがある場合は`.github/prompts/gac-uac-gui-mode.prompt.md`に従い、`gac-uac/`の設計・PyQt6・QTest候補を生成する。
 - `runtime/workflow/gui_mode.py validate`が`pass`になるまで通常実装へ進まない。
 - generated配下は初期GUI architecture候補としてreviewし、MainWindow、主要Panel、責務分離、QTest初期構成の必要部分だけを取り込む。
-- Web画面向けSVGは`WEB_SYS_*.svg`として配置し、Next.js Webapp Implementation Prep後に`.github/prompts/web-svg-layout-mode.prompt.md`に従って`web-ui/`のlayout、React候補、Playwright候補を生成する。
+- Web画面向けSVGは`WEB_SYS_*.svg`として配置し、Next.js Webapp Implementation Prep後に`.github/prompts/web-svg-layout-mode.prompt.md`を確認して`web-ui/`のlayout、React候補、Playwright候補を生成する。
 
 ## Phase 1: Intent / Mission Definition
 
@@ -248,12 +248,12 @@ templates/boilerplates/
 
 現在の対応:
 
-| 対象 | Template | 組み込み指示書 |
+| 対象 | Template | 詳細Docs |
 | --- | --- | --- |
-| Go gateway service | `templates/boilerplates/gateway-template/` | `gateway-template_組み込み指示書.md` |
-| Next.js dashboard / admin webapp | `templates/boilerplates/nextjs-webapp-template/` | `Next.jsボイラーテンプレート作成_作業指示書.md` |
-| PyQt / Qt GUI app | `templates/boilerplates/pyqt-template/` | `pyqt-template_組み込み指示書.md` |
-| Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
+| Go gateway service | `templates/boilerplates/services/go-microservice-template/` | `docs/reference/templates.md` |
+| Next.js dashboard / admin webapp | `templates/boilerplates/apps/nextjs-app-template/` | `docs/workflows/nextjs-webapp-implementation-prep.md` |
+| PyQt / Qt GUI app | `templates/boilerplates/apps/pyqt-app-template/` | `docs/reference/templates.md` |
+| Realtime gateway IaC / infrastructure | `templates/boilerplates/infrastructure/microservice-infra-template/` | `docs/workflows/realtime-iac.md` |
 
 出力:
 
@@ -261,10 +261,10 @@ templates/boilerplates/
 
 判定:
 
-- 対象systemがGo gatewayを含み、`gateway-template/` が存在する場合は、`gateway-template_組み込み指示書.md` に従ってtemplateをコピーしてから実装する。
-- 対象systemがNext.js dashboard / admin webappを含み、`nextjs-webapp-template/` が存在する場合は、`Next.jsボイラーテンプレート作成_作業指示書.md` と `nextjs-webapp-implementation-prep` に従ってtemplate採用可否を判断する。
-- 対象systemがPyQt / Qt GUIを含み、`pyqt-template/` が存在する場合は、`pyqt-template_組み込み指示書.md` に従ってtemplateをコピーしてから実装する。
-- 対象systemがrealtime gateway IaC / infrastructureを含み、`realtime-gateway-infra-template/` が存在する場合は、`realtime-gateway-infra-template_実装指示書.md` に従ってtemplateをコピーしてからIaC実装する。
+- 対象systemがGo gatewayを含み、`go-microservice-template/` が存在する場合は、`docs/reference/templates.md` を確認してtemplateをコピーしてから実装する。
+- 対象systemがNext.js dashboard / admin webappを含み、`nextjs-app-template/` が存在する場合は、`docs/workflows/nextjs-webapp-implementation-prep.md` と `nextjs-webapp-implementation-prep` を確認してtemplate採用可否を判断する。
+- 対象systemがPyQt / Qt GUIを含み、`pyqt-app-template/` が存在する場合は、`docs/reference/templates.md` を確認してtemplateをコピーしてから実装する。
+- 対象systemがrealtime gateway IaC / infrastructureを含み、`microservice-infra-template/` が存在する場合は、`docs/workflows/realtime-iac.md` を確認してtemplateをコピーしてからIaC実装する。
 - 対応するtemplateが存在しない場合、`decision: traditional-coding` と理由を記録し、従来どおり小さく実装する。
 - template本体は直接編集しない。編集対象はコピー先service / appのみ。
 - template採用時も、STOP、communication loss、startup safe state、shutdown safe state、test case table、evidence planは省略しない。
@@ -288,7 +288,7 @@ work/<採番ID>/process-report/nextjs-webapp-implementation-prep.md
 確認:
 
 - 新規webappか既存webapp拡張か
-- `nextjs-webapp-template` の採用可否
+- `nextjs-app-template` の採用可否
 - route、screen、user action、loading / empty / error state
 - `WEB_SYS_*.svg` がある場合の `web-ui/` responsive layout、component mapping、Playwright候補
 - API request / response / error response / auth

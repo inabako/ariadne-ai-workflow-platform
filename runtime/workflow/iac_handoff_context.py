@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -107,7 +107,7 @@ def create_handoff(
             f"--work-dir work/{work_id} require-environment --environment docker",
             "/realtime-iac",
         ],
-        "boilerplate_template_expectation": "Check templates/boilerplates/realtime-gateway-infra-template/ when realtime gateway infrastructure is in scope.",
+        "boilerplate_template_expectation": "Check templates/boilerplates/infrastructure/microservice-infra-template/ when realtime gateway infrastructure is in scope.",
     }
 
 

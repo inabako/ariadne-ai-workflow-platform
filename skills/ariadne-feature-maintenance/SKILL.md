@@ -1,4 +1,4 @@
----
+﻿---
 name: ariadne-feature-maintenance
 description: Start the Ariadne AI Workflow for adding a new feature to an existing target system or performing maintenance development such as bug fix, hardware replacement, network change, deployment change, field issue response, or operational improvement. Use when the user selects /ariadne-feature-maintenance or asks to begin feature or maintenance work from a completed requirement document in work/requirements/.
 ---
@@ -115,7 +115,7 @@ work/<receipt-id>/process-report/nextjs-webapp-implementation-prep.md
 Rules:
 
 - Classify the work as `existing-app-feature` or `corrective-fix` unless a new app is explicitly required.
-- Treat `templates/boilerplates/nextjs-webapp-template/` as reference-only for existing apps.
+- Treat `templates/boilerplates/apps/nextjs-app-template/` as reference-only for existing apps.
 
 ## Web SVG Layout Mode Gate
 

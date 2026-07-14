@@ -1,6 +1,6 @@
-# Next.js Webapp Implementation Preparation
+﻿# Next.js Webapp Implementation Preparation
 
-Next.js 画面機能を実装する前に、対象が新規webappか既存webapp拡張かを分類し、`nextjs-webapp-template` の採用可否、画面契約、API契約、認証、環境変数、テスト方針を揃える準備サブフローです。
+Next.js 画面機能を実装する前に、対象が新規webappか既存webapp拡張かを分類し、`nextjs-app-template` の採用可否、画面契約、API契約、認証、環境変数、テスト方針を揃える準備サブフローです。
 
 独立したslash commandではありません。親workflowのImplementation前に実行します。
 
@@ -14,7 +14,7 @@ Next.js 画面機能を実装する前に、対象が新規webappか既存webapp
 
 - 新規Next.js dashboard / admin / monitoring / business webappを作る。
 - 既存Next.js webappへ画面、route、component、API接続、UI stateを追加する。
-- `templates/boilerplates/nextjs-webapp-template/` を採用するか判断する。
+- `templates/boilerplates/apps/nextjs-app-template/` を採用するか判断する。
 - 画面機能の要件はあるが、API、認証、テスト、環境変数の境界が未整理である。
 
 実行前に推奨環境を確認します。
@@ -41,7 +41,7 @@ boilerplate-template-selection report, when available
 ```text
 Parent workflow reaches implementation planning
   -> classify new-app / existing-app-feature / corrective-fix
-  -> inspect target app or select nextjs-webapp-template
+  -> inspect target app or select nextjs-app-template
   -> prepare nextjs-webapp-implementation-prep report
   -> check development environment and tool install needs
   -> run npm install after approval when dependencies are not installed
@@ -91,7 +91,7 @@ work/<receipt-id>/context/artifact-index.json
 
 | Mode | Use Case | Template Policy |
 | --- | --- | --- |
-| `new-app` | 新規Next.js webapp / microserviceを作る | `nextjs-webapp-template` をコピー候補にする |
+| `new-app` | 新規Next.js webapp / microserviceを作る | `nextjs-app-template` をコピー候補にする |
 | `existing-app-feature` | 既存Next.js appへ画面機能を追加する | templateはreference-only。既存構成を優先する |
 | `corrective-fix` | 既存画面のbug fix /改善 | templateはreference-only。最小変更と回帰防止を優先する |
 

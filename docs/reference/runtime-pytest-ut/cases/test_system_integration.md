@@ -1,4 +1,4 @@
-# test_system_integration.py
+﻿# test_system_integration.py
 
 このファイルは `runtime/tests/test_system_integration.py` のpytest node id単位UT仕様です。
 
@@ -87,7 +87,7 @@ runtime/tests/test_system_integration.py::test_system_integration_emulator_prepa
 - 確認内容: SDK解析contextから選定されたAWS/GCP/Stripeのemulator templateを `work/<work-id>/test-environment/emulator/` へコピーし、証跡ディレクトリ、`emulator-context.json`、Context First登録を生成することを確認します。
 - 入力値:
   - source: `runtime/tests/test_system_integration.py:115`
-  - repository rootの `templates/boilerplates/cloud-emulators/`
+  - repository rootの `templates/boilerplates/integration/cloud-emulators/`
   - `work/<work-id>/context/sdk-analysis-context.json`
   - `work/<work-id>/source/repository`
   - `work_dir=<tmp>/work/<work-id>`
@@ -131,7 +131,7 @@ runtime/tests/test_system_integration.py::test_aiwfctl_integration_emulator_prep
 - 入力値:
   - source: `runtime/tests/test_system_integration.py:165`
   - tmp_path repository with `.git`
-  - temporary `templates/boilerplates/cloud-emulators/*`
+  - temporary `templates/boilerplates/integration/cloud-emulators/*`
   - `work/<work-id>/context/sdk-analysis-context.json`
   - CLI args: `--repo-root <repo> integration emulator prepare --work-id <work-id>`
 - 期待結果:
@@ -151,7 +151,7 @@ runtime/tests/test_system_integration.py::test_system_integration_emulator_healt
 - 確認内容: `emulator prepare` 後にhealthを実行し、展開済みtemplate、evidence directory、Context First manifest登録、health summaryを確認します。
 - 入力値:
   - source: `runtime/tests/test_system_integration.py:196`
-  - repository rootの `templates/boilerplates/cloud-emulators/`
+  - repository rootの `templates/boilerplates/integration/cloud-emulators/`
   - `work/<work-id>/context/emulator-context.json`
   - prepared provider: `aws`, `gcp`, `stripe`
   - `work_dir=<tmp>/work/<work-id>`
@@ -196,7 +196,7 @@ runtime/tests/test_system_integration.py::test_aiwfctl_integration_emulator_heal
 - 入力値:
   - source: `runtime/tests/test_system_integration.py:241`
   - tmp_path repository with `.git`
-  - temporary `templates/boilerplates/cloud-emulators/*`
+  - temporary `templates/boilerplates/integration/cloud-emulators/*`
   - `aiwfctl integration emulator prepare --work-id <work-id>` 実行済み
   - CLI args: `--repo-root <repo> integration emulator health --work-id <work-id>`
 - 期待結果:
@@ -262,7 +262,7 @@ runtime/tests/test_system_integration.py::test_aiwfctl_integration_test_plan_com
 - 入力値:
   - source: `runtime/tests/test_system_integration.py:349`
   - tmp_path repository with `.git`
-  - temporary `templates/boilerplates/cloud-emulators/*`
+  - temporary `templates/boilerplates/integration/cloud-emulators/*`
   - `aiwfctl integration verify --work-id <work-id> --with-emulator` 実行済み
   - `aiwfctl integration emulator prepare --work-id <work-id>` 実行済み
   - `aiwfctl integration emulator health --work-id <work-id>` 実行済み

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from pathlib import Path
 
@@ -103,7 +103,7 @@ def test_mcp_layered_boilerplates_have_required_template_contract() -> None:
     missing: list[str] = []
     for template_name, relative_paths in expected.items():
         for relative_path in relative_paths:
-            path = BOILERPLATES / template_name / relative_path
+            path = BOILERPLATES / "mcp" / template_name / relative_path
             if not path.exists():
                 missing.append(str(path.relative_to(REPO_ROOT)))
 

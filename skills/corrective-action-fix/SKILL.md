@@ -1,4 +1,4 @@
----
+﻿---
 name: corrective-action-fix
 description: Create a corrective action report for a specified GitHub repository and branch, store the base branch under work/<branch>, build/load RAG, create a GitHub Issue, create a separate work/issue-XXX folder with feature/issue-XXX branch, implement fixes, test, request human startup/integration approval, then push. Use when the user selects /corrective-action-fix or asks to move from improvement report creation into corrective implementation.
 ---
@@ -454,7 +454,7 @@ templates/process-report/nextjs-webapp-implementation-prep-template.md
 Rules:
 
 - Classify the work as `existing-app-feature` or `corrective-fix` unless a new app is explicitly required by the Issue.
-- Treat `templates/boilerplates/nextjs-webapp-template/` as reference-only for existing apps.
+- Treat `templates/boilerplates/apps/nextjs-app-template/` as reference-only for existing apps.
 
 ### 7.8 Web SVG Layout Mode Gate
 

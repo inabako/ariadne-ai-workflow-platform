@@ -1,4 +1,4 @@
-# Localty Agent Prompts
+﻿# Localty Agent Prompts
 
 このディレクトリには、Ariadne Workflow で利用する Agent prompt を格納します。
 
@@ -145,7 +145,7 @@ Implementer は以下を黙って変更しません。
 
 新システム実装で `templates/boilerplates/` に対象templateが存在する場合、Implementer はtemplateをコピーしてコピー先だけを編集します。対象templateが存在しない組み合わせでは、選定reportに理由を残して従来どおりcodingします。
 
-IaC実装で realtime gateway infrastructure が対象に含まれる場合、Implementer は `realtime-gateway-infra-template/` を候補にし、採用時はコピー先だけを編集します。template採用時も、Shared Artifacts、software inventory、public exposure、secret source、firewall policy、rollback、Terraform validationを省略しません。
+IaC実装で realtime gateway infrastructure が対象に含まれる場合、Implementer は `microservice-infra-template/` を候補にし、採用時はコピー先だけを編集します。template採用時も、Shared Artifacts、software inventory、public exposure、secret source、firewall policy、rollback、Terraform validationを省略しません。
 
 ## RAG Capture Rule
 

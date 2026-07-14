@@ -1,4 +1,4 @@
----
+﻿---
 name: corrective-action-fix
 description: GitHub repository / branch と任意の corrective action report を受け取り、work/<branch> に原本を取得し、report作成または読込、RAG build/load、GitHub Issue、work/issue-XXX + feature/issue-XXX、修正、単体テスト、起動/結合確認、人間チェック、push まで進めます。
 argument-hint: "<target-repository> <target-branch> [report]"
@@ -84,7 +84,7 @@ Next.js Webapp Implementation Prep:
 templates/process-report/nextjs-webapp-implementation-prep-template.md
 ```
 
-既存Next.js appでは `nextjs-webapp-template` はreference-onlyです。画面route、user action、API contract、auth/session、env/secret境界、typecheck、lint、unit、e2e、health、UI smoke、API connectivityが未整理なら実装へ進みません。
+既存Next.js appでは `nextjs-app-template` はreference-onlyです。画面route、user action、API contract、auth/session、env/secret境界、typecheck、lint、unit、e2e、health、UI smoke、API connectivityが未整理なら実装へ進みません。
 
 Web SVG Layout Mode:
 

@@ -1,4 +1,4 @@
-# Ariadne Feature Maintenance Development Flow
+﻿# Ariadne Feature Maintenance Development Flow
 
 ## Output Language
 
@@ -220,7 +220,7 @@ Next.js画面機能を含む場合、Implementation前に `.github/prompts/nextj
 work/<採番ID>/process-report/nextjs-webapp-implementation-prep.md
 ```
 
-既存appへの機能追加では `nextjs-webapp-template` はreference-onlyとし、既存routing、design system、test runner、env conventionを優先します。
+既存appへの機能追加では `nextjs-app-template` はreference-onlyとし、既存routing、design system、test runner、env conventionを優先します。
 
 確認:
 

@@ -1,4 +1,4 @@
----
+﻿---
 name: nextjs-webapp-implementation-prep
 description: 親workflow内でNext.js画面機能の実装前に、新規/既存分類、boilerplate採用可否、画面契約、API契約、auth、env、testを整理します。
 argument-hint: "<work-id> [target-app-path]"
@@ -39,7 +39,7 @@ templates/process-report/nextjs-webapp-implementation-prep-template.md
 ## 流れ
 
 1. 作業modeを `new-app`、`existing-app-feature`、`corrective-fix` のどれかに分類する。
-2. `new-app` の場合、`templates/boilerplates/nextjs-webapp-template/` をcopy source候補として評価する。
+2. `new-app` の場合、`templates/boilerplates/apps/nextjs-app-template/` をcopy source候補として評価する。
 3. `existing-app-feature` または `corrective-fix` の場合、templateはreference-onlyとして扱い、既存appのrouting、layout、test runner、env規約を先に確認する。
 4. Node.js、npm、scripts、env files、port、Docker要否、tool install承認状態を確認する。
 5. `node_modules/` が無い、または依存関係が古い場合は、承認後に対象app directoryで `npm install` を実行する。
@@ -67,7 +67,7 @@ templates/process-report/nextjs-webapp-implementation-prep-template.md
 
 ## 守ること
 
-- 既存app source treeへ `nextjs-webapp-template` を丸ごとコピーしない。
+- 既存app source treeへ `nextjs-app-template` を丸ごとコピーしない。
 - backend contractが不足している状態でAPI request / responseを推測して固定しない。
 - `NEXT_PUBLIC_*` にsecretを置かない。
 - deployable webapp microserviceで `/api/health` を省略しない。

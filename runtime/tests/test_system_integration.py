@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 from pathlib import Path
@@ -60,9 +60,9 @@ def test_system_integration_analyze_registers_context_and_emulator_candidates(tm
     assert any(item["provider"] == "aws" for item in result["emulator_candidates"])
     assert any(item["provider"] == "gcp" for item in result["emulator_candidates"])
     assert any(item["provider"] == "stripe" for item in result["emulator_candidates"])
-    assert any(item["template_path"] == "templates/boilerplates/cloud-emulators/localstack" for item in result["emulator_candidates"])
-    assert any(item["template_path"] == "templates/boilerplates/cloud-emulators/gcp-emulators" for item in result["emulator_candidates"])
-    assert any(item["template_path"] == "templates/boilerplates/cloud-emulators/stripe-cli" for item in result["emulator_candidates"])
+    assert any(item["template_path"] == "templates/boilerplates/integration/cloud-emulators/localstack" for item in result["emulator_candidates"])
+    assert any(item["template_path"] == "templates/boilerplates/integration/cloud-emulators/gcp-emulators" for item in result["emulator_candidates"])
+    assert any(item["template_path"] == "templates/boilerplates/integration/cloud-emulators/stripe-cli" for item in result["emulator_candidates"])
     assert "system-integration" in result["manifest_contexts"]
     assert (work_dir / "reports" / "system-integration-report.md").exists()
     assert (work_dir / "context" / "integration-context.json").exists()
@@ -170,8 +170,8 @@ def test_aiwfctl_integration_emulator_prepare_command(tmp_path: Path) -> None:
         '{"commands": [], "extensions": []}',
         encoding="utf-8",
     )
-    source_templates = Path(__file__).resolve().parents[2] / "templates" / "boilerplates" / "cloud-emulators"
-    destination_templates = repo_root / "templates" / "boilerplates" / "cloud-emulators"
+    source_templates = Path(__file__).resolve().parents[2] / "templates" / "boilerplates" / "integration" / "cloud-emulators"
+    destination_templates = repo_root / "templates" / "boilerplates" / "integration" / "cloud-emulators"
     for template in ["localstack", "gcp-emulators", "stripe-cli"]:
         (destination_templates / template).mkdir(parents=True)
         (destination_templates / template / "docker-compose.yml").write_text("services: {}\n", encoding="utf-8")
@@ -246,7 +246,7 @@ def test_aiwfctl_integration_emulator_health_command(tmp_path: Path) -> None:
         '{"commands": [], "extensions": []}',
         encoding="utf-8",
     )
-    destination_templates = repo_root / "templates" / "boilerplates" / "cloud-emulators"
+    destination_templates = repo_root / "templates" / "boilerplates" / "integration" / "cloud-emulators"
     for template, health_doc in {
         "localstack": "healthcheck.md",
         "gcp-emulators": "healthcheck.md",
@@ -354,7 +354,7 @@ def test_aiwfctl_integration_test_plan_command(tmp_path: Path) -> None:
         '{"commands": [], "extensions": []}',
         encoding="utf-8",
     )
-    destination_templates = repo_root / "templates" / "boilerplates" / "cloud-emulators"
+    destination_templates = repo_root / "templates" / "boilerplates" / "integration" / "cloud-emulators"
     for template, health_doc in {
         "localstack": "healthcheck.md",
         "gcp-emulators": "healthcheck.md",
@@ -464,7 +464,7 @@ def test_aiwfctl_integration_finalize_command(tmp_path: Path) -> None:
         '{"commands": [], "extensions": []}',
         encoding="utf-8",
     )
-    destination_templates = repo_root / "templates" / "boilerplates" / "cloud-emulators"
+    destination_templates = repo_root / "templates" / "boilerplates" / "integration" / "cloud-emulators"
     for template, health_doc in {
         "localstack": "healthcheck.md",
         "gcp-emulators": "healthcheck.md",

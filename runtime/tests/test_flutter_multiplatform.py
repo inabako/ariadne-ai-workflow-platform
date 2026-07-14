@@ -27,7 +27,7 @@ def write_flutter_project(target: Path) -> None:
 
 
 def write_template(repo_root: Path) -> None:
-    template = repo_root / "templates" / "boilerplates" / "flutter" / "multi-platform"
+    template = repo_root / "templates" / "boilerplates" / "apps" / "flutter-app-template" / "multi-platform"
     (template / "lib").mkdir(parents=True)
     (template / "test").mkdir()
     (template / "integration_test").mkdir()

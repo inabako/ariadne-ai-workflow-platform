@@ -1,4 +1,4 @@
-# Flutter Multi-platform Workflow
+﻿# Flutter Multi-platform Workflow
 
 Flutterアプリの新規作成、既存改修、platform追加、test/build計画を扱うworkflowです。
 
@@ -78,7 +78,7 @@ requirements:
 
 ## Boilerplate
 
-templateは `templates/boilerplates/flutter/` にあります。
+templateは `templates/boilerplates/apps/flutter-app-template/` にあります。
 
 初期実装では、対象カテゴリの判定は残しつつ、実体は `multi-platform` baseを展開します。これにより、lib、test、integration_test、assets、pubspec.yaml、analysis_options.yaml、READMEが必ず揃います。
 

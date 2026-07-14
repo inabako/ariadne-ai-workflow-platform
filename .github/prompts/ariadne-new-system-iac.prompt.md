@@ -1,4 +1,4 @@
-# Ariadne New System + Realtime IaC Workflow
+﻿# Ariadne New System + Realtime IaC Workflow
 
 ## Output Language
 
@@ -140,7 +140,7 @@ Handoff fields:
 ## Phase 5: Realtime IaC Workflow
 
 `/realtime-iac` 側の Boilerplate Template Selection を必ず実行します。
-realtime gateway infrastructure、platform infrastructure、database infrastructure、Redis middleware infrastructure、OpenLDAP identity infrastructure が対象に含まれる場合は、それぞれ `templates/boilerplates/realtime-gateway-infra-template/`、`templates/boilerplates/platform-infra-template/`、`templates/boilerplates/database-infra-template/`、`templates/boilerplates/middleware-infra-template/`、`templates/boilerplates/identity-infra-template/` を候補にし、採用または不採用の理由を次に記録します。
+realtime gateway infrastructure、platform infrastructure、database infrastructure、Redis middleware infrastructure、OpenLDAP identity infrastructure が対象に含まれる場合は、それぞれ `templates/boilerplates/infrastructure/microservice-infra-template/`、`templates/boilerplates/infrastructure/platform-infra-template/`、`templates/boilerplates/infrastructure/database-infra-template/`、`templates/boilerplates/infrastructure/middleware-infra-template/`、`templates/boilerplates/infrastructure/identity-infra-template/` を候補にし、採用または不採用の理由を次に記録します。
 
 ```text
 work/<receipt-id>/process-report/boilerplate-template-selection.md

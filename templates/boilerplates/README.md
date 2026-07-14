@@ -4,23 +4,34 @@
 
 このディレクトリは、成果物ひな形ではなく、実装の出発点になるsource templateを置きます。
 
+## Category Layout
+
+| Category | Purpose |
+| --- | --- |
+| `apps/` | UI / app boilerplates such as Next.js, PyQt, and Flutter |
+| `services/` | Service boilerplates that are not tied to a specific UI or MCP layer |
+| `infrastructure/` | Realtime gateway, platform, database, middleware, and identity IaC boilerplates |
+| `integration/` | Test and emulator environments used by integration workflows |
+| `mcp/` | MCP Server, MCP Client, Agent Runtime, and operation gateway boilerplates |
+
 ## Supported Template Names
 
-| Template | Target | Instruction | Status |
+| Template | Target | Docs | Status |
 | --- | --- | --- | --- |
-| `gateway-template/` | Go gateway service | `gateway-template_組み込み指示書.md` | available |
-| `nextjs-webapp-template/` | Next.js dashboard / admin webapp | `Next.jsボイラーテンプレート作成_作業指示書.md` | available |
-| `pyqt-template/` | PyQt / Qt GUI app | `pyqt-template_組み込み指示書.md` | available |
-| `realtime-gateway-infra-template/` | Realtime gateway IaC / infrastructure | `realtime-gateway-infra-template_実装指示書.md` | available |
-| `platform-infra-template/` | GitLab / Jenkins / Grafana / Zabbix platform infrastructure | `Platform_Infrastructure_Boilerplate_追加実装指示書.md` | available |
-| `database-infra-template/` | PostgreSQL / MySQL shared database infrastructure | `Database_Infrastructure_Boilerplate_追加実装指示書.md` | available |
-| `middleware-infra-template/` | Redis shared middleware infrastructure | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` | available |
-| `identity-infra-template/` | OpenLDAP identity / directory infrastructure | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` | available |
-| `cloud-emulators/` | Local cloud / external service emulator environment | `docs/workflows/system-integration-quality.md` | available |
-| `local-model-mcp-server-template/` | Local model MCP server capability provider | `Local_Model_MCP_Server_Boilerplate_追加実装指示書.md` | available |
-| `mcp-client-template/` | Reusable MCP client facade / session manager | `Reusable_MCP_Client_Boilerplate_追加実装指示書.md` | available |
-| `local-ai-agent-runtime-template/` | Local AI agent runtime / job workflow engine | `Local_AI_Agent_Runtime_Boilerplate_追加実装指示書.md` | available |
-| `discord-gateway-template/` | Discord operation gateway for local Agent Runtime | `Discord_Gateway_Boilerplate_追加実装指示書.md` | available |
+| `services/go-microservice-template/` | Go gateway service | `docs/reference/templates.md` | available |
+| `apps/nextjs-app-template/` | Next.js dashboard / admin webapp | `docs/workflows/nextjs-webapp-implementation-prep.md` | available |
+| `apps/pyqt-app-template/` | PyQt / Qt GUI app | `docs/reference/templates.md` | available |
+| `apps/flutter-app-template/` | Flutter multi-platform app | `docs/workflows/flutter-multiplatform.md` | available |
+| `infrastructure/microservice-infra-template/` | Realtime gateway IaC / infrastructure | `docs/workflows/realtime-iac.md` | available |
+| `infrastructure/platform-infra-template/` | GitLab / Jenkins / Grafana / Zabbix platform infrastructure | `docs/workflows/realtime-iac.md` | available |
+| `infrastructure/database-infra-template/` | PostgreSQL / MySQL shared database infrastructure | `docs/workflows/realtime-iac.md` | available |
+| `infrastructure/middleware-infra-template/` | Redis shared middleware infrastructure | `docs/workflows/realtime-iac.md` | available |
+| `infrastructure/identity-infra-template/` | OpenLDAP identity / directory infrastructure | `docs/workflows/realtime-iac.md` | available |
+| `integration/cloud-emulators/` | Local cloud / external service emulator environment | `docs/workflows/system-integration-quality.md` | available |
+| `mcp/local-model-mcp-server-template/` | Local model MCP server capability provider | `docs/workflows/mcp-server-group-implementation.md` | available |
+| `mcp/mcp-client-template/` | Reusable MCP client facade / session manager | `docs/workflows/mcp-server-group-implementation.md` | available |
+| `mcp/local-ai-agent-runtime-template/` | Local AI agent runtime / job workflow engine | `docs/workflows/mcp-server-group-implementation.md` | available |
+| `mcp/discord-gateway-template/` | Discord operation gateway for local Agent Runtime | `docs/workflows/mcp-server-group-implementation.md` | available |
 
 ## Workflow Rule
 

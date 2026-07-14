@@ -25,7 +25,7 @@ Next.js 画面機能の実装前に、新規webapp作成か既存webapp拡張か
 
 - 新規のNext.js dashboard / admin / monitoring / business webappを作る。
 - 既存Next.js webappへ画面、route、component、API接続、UI stateを追加する。
-- `templates/boilerplates/nextjs-webapp-template/` を採用するか判断する。
+- `templates/boilerplates/apps/nextjs-app-template/` を採用するか判断する。
 
 ## Inputs
 
@@ -53,7 +53,7 @@ Next.js 画面機能の実装前に、新規webapp作成か既存webapp拡張か
 | Next.js detected | yes / no / not-applicable |
 | App Router detected | yes / no / unknown / not-applicable |
 | TypeScript detected | yes / no / unknown |
-| Template candidate | `templates/boilerplates/nextjs-webapp-template/` / none |
+| Template candidate | `templates/boilerplates/apps/nextjs-app-template/` / none |
 | Template decision | use-template / reference-only / traditional-coding / blocked |
 | Reason |  |
 
@@ -138,7 +138,7 @@ Use only when `Template decision` is `use-template`.
 
 | Source | Destination | Rename / Replace Rule | Keep Unchanged |
 | --- | --- | --- | --- |
-| `templates/boilerplates/nextjs-webapp-template/` |  |  |  |
+| `templates/boilerplates/apps/nextjs-app-template/` |  |  |  |
 
 ## Test Plan
 

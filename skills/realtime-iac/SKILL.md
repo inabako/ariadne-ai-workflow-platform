@@ -1,4 +1,4 @@
----
+﻿---
 name: realtime-iac
 description: Run the realtime-system Infrastructure as Code workflow for target systems, IoT, edge AI, video streaming, remote operation, or realtime gateway infrastructure. Use when the user selects /realtime-iac or asks to design, generate, review, test, and document IaC artifacts such as Docker Compose, systemd, firewall, reverse proxy, TURN/STUN, logrotate, monitoring, or runtime environment configuration.
 ---
@@ -122,7 +122,7 @@ The AI must not infer software components, port numbers, communication routes, p
    - `docker-compose-design.md`
    - `observability-design.md`
    - `monitoring-policy.md`
-8. Run the Boilerplate Template Selection Gate. If realtime gateway infrastructure matches `templates/boilerplates/realtime-gateway-infra-template/`, development / CI/CD / observability platform infrastructure matches `templates/boilerplates/platform-infra-template/`, PostgreSQL / MySQL shared database infrastructure matches `templates/boilerplates/database-infra-template/`, Redis shared middleware infrastructure matches `templates/boilerplates/middleware-infra-template/`, or OpenLDAP identity / directory infrastructure matches `templates/boilerplates/identity-infra-template/`, copy the selected template to the target IaC destination and edit only the copy. If no template matches, record `decision: traditional-coding`.
+8. Run the Boilerplate Template Selection Gate. If realtime gateway infrastructure matches `templates/boilerplates/infrastructure/microservice-infra-template/`, development / CI/CD / observability platform infrastructure matches `templates/boilerplates/infrastructure/platform-infra-template/`, PostgreSQL / MySQL shared database infrastructure matches `templates/boilerplates/infrastructure/database-infra-template/`, Redis shared middleware infrastructure matches `templates/boilerplates/infrastructure/middleware-infra-template/`, or OpenLDAP identity / directory infrastructure matches `templates/boilerplates/infrastructure/identity-infra-template/`, copy the selected template to the target IaC destination and edit only the copy. If no template matches, record `decision: traditional-coding`.
 9. Generate IaC artifacts only from approved designs and the approved boilerplate selection result.
 10. For `precreated-new` repository mode, confirm the GitHub repository already exists, push the initial branch after human approval, create the GitHub Issue with `[IaC]` prefix, then create `feature/issue-<issue-number>` from the pushed initial branch.
 11. Run security review before local runtime tests.
@@ -137,13 +137,13 @@ Run this gate after Network / Security Design, Runtime Design, Observability Des
 
 Template candidate:
 
-| Target | Template path | Instruction |
+| Target | Template path | Docs |
 | --- | --- | --- |
-| Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
-| Development / CI/CD / observability platform infrastructure | `templates/boilerplates/platform-infra-template/` | `Platform_Infrastructure_Boilerplate_追加実装指示書.md` |
-| PostgreSQL / MySQL shared database infrastructure | `templates/boilerplates/database-infra-template/` | `Database_Infrastructure_Boilerplate_追加実装指示書.md` |
-| Redis shared middleware infrastructure | `templates/boilerplates/middleware-infra-template/` | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
-| OpenLDAP identity / directory infrastructure | `templates/boilerplates/identity-infra-template/` | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
+| Realtime gateway IaC / infrastructure | `templates/boilerplates/infrastructure/microservice-infra-template/` | `docs/workflows/realtime-iac.md` |
+| Development / CI/CD / observability platform infrastructure | `templates/boilerplates/infrastructure/platform-infra-template/` | `docs/workflows/realtime-iac.md` |
+| PostgreSQL / MySQL shared database infrastructure | `templates/boilerplates/infrastructure/database-infra-template/` | `docs/workflows/realtime-iac.md` |
+| Redis shared middleware infrastructure | `templates/boilerplates/infrastructure/middleware-infra-template/` | `docs/workflows/realtime-iac.md` |
+| OpenLDAP identity / directory infrastructure | `templates/boilerplates/infrastructure/identity-infra-template/` | `docs/workflows/realtime-iac.md` |
 
 Rules:
 

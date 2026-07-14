@@ -1,4 +1,4 @@
-# システム統合品質向上ワークフロー
+﻿# システム統合品質向上ワークフロー
 
 このワークフローは、生成・改修したコードを「単体で動く成果物」ではなく、対象システムの構造、規約、試験、運用へ自然に統合された成果物として確認するためのゲートです。
 
@@ -62,7 +62,7 @@ unsupported_by_emulator
 恒久templateは次に置きます。
 
 ```text
-templates/boilerplates/cloud-emulators/
+templates/boilerplates/integration/cloud-emulators/
 ├─ localstack/
 ├─ gcp-emulators/
 └─ stripe-cli/

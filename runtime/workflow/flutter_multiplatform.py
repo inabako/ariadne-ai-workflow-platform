@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import platform
@@ -300,7 +300,7 @@ def select_boilerplate(targets: list[str]) -> dict[str, str]:
     return {
         "name": name,
         "template_name": template_name,
-        "template_path": f"templates/boilerplates/flutter/{template_name}",
+        "template_path": f"templates/boilerplates/apps/flutter-app-template/{template_name}",
         "destination": "work/<work-id>/implementation/flutter-project",
     }
 

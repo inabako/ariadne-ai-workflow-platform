@@ -1,4 +1,4 @@
-# /system-integration-quality
+﻿# /system-integration-quality
 
 You are running Ariadne's System Integration Quality workflow.
 
@@ -70,9 +70,9 @@ The workflow may plan emulator use and report required setup. It must not silent
 Use these boilerplate roots when emulator setup is needed:
 
 ```text
-templates/boilerplates/cloud-emulators/localstack/
-templates/boilerplates/cloud-emulators/gcp-emulators/
-templates/boilerplates/cloud-emulators/stripe-cli/
+templates/boilerplates/integration/cloud-emulators/localstack/
+templates/boilerplates/integration/cloud-emulators/gcp-emulators/
+templates/boilerplates/integration/cloud-emulators/stripe-cli/
 ```
 
 Copy them into `work/<work-id>/test-environment/emulator/` and edit only the copy. Store launch logs, health checks, and production differences under `work/<work-id>/test-evidence/emulator/`.
