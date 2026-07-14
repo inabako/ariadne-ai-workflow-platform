@@ -1,0 +1,13 @@
+environment         = "stg"
+compose_profile     = "openldap"
+organization_name   = "Example Organization"
+domain              = "stg.example.local"
+base_dn             = "dc=stg,dc=example,dc=local"
+tls_enabled         = true
+certificate_mode    = "provided"
+external_exposure   = false
+apply_ldif          = true
+enable_backup       = true
+enable_restore_test = true
+evidence_enabled    = true
+

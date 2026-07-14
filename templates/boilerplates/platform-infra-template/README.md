@@ -11,6 +11,8 @@
 | `realtime-gateway-infra-template/` | アプリケーション実行基盤、gateway runtime、port、network、observability |
 | `platform-infra-template/` | GitLab、Jenkins、Grafana、Zabbix などの開発・CI/CD・監視platform |
 | `database-infra-template/` | PostgreSQL、MySQL などの共通DB基盤。platform製品からも参照するが、このtemplate配下には実装しない |
+| `middleware-infra-template/` | Redis などの共通middleware基盤。platform製品から参照する場合も、このtemplate配下には実装しない |
+| `identity-infra-template/` | OpenLDAP などのidentity / directory基盤。GitLab、Jenkins、Grafana等から参照する場合も、このtemplate配下には実装しない |
 
 ## Terraform First
 

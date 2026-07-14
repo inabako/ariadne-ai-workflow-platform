@@ -1,0 +1,16 @@
+bind 0.0.0.0
+protected-mode yes
+port 6379
+timeout 0
+tcp-keepalive 300
+databases 16
+
+maxmemory 512mb
+maxmemory-policy allkeys-lru
+
+appendonly yes
+appendfilename "appendonly.aof"
+save 60 1
+
+dir /data
+loglevel notice

@@ -21,3 +21,5 @@
 - Host設定変更やinstallが必要な検証は、人間承認前に実行しない。
 - 開発・CI/CD・監視platformを構築する場合は `templates/boilerplates/platform-infra-template/` を候補にし、Terraform component selection、Docker Compose profile、admin CIDR、secret source、backup / restore、product別validation evidenceを確認する。
 - PostgreSQL / MySQLなどのDB基盤を構築する場合は `templates/boilerplates/database-infra-template/` を候補にし、connection contract、app user、persistence、backup / restore、migration、secret redaction、evidenceを確認する。
+- Redisなどのmiddleware基盤を構築する場合は `templates/boilerplates/middleware-infra-template/` を候補にし、purpose、auth、maxmemory、eviction policy、TTL、persistence、backup / restore、connection contract、secret redaction、evidenceを確認する。
+- OpenLDAPなどのidentity / directory基盤を構築する場合は `templates/boilerplates/identity-infra-template/` を候補にし、Base DN、OU、bind account separation、TLS、LDIF、backup / restore、identity connection contract、secret redaction、evidenceを確認する。

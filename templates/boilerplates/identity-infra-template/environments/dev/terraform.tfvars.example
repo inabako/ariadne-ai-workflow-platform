@@ -1,0 +1,13 @@
+environment         = "dev"
+compose_profile     = "openldap"
+organization_name   = "Example Organization"
+domain              = "dev.example.local"
+base_dn             = "dc=dev,dc=example,dc=local"
+tls_enabled         = false
+certificate_mode    = "generated-for-local"
+external_exposure   = false
+apply_ldif          = true
+enable_backup       = true
+enable_restore_test = true
+evidence_enabled    = true
+

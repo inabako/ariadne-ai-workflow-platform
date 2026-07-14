@@ -1,0 +1,16 @@
+environment = "stg"
+redis_purposes = [
+  "cache",
+  "session",
+  "pubsub",
+]
+compose_profile     = "redis"
+external_exposure   = false
+tls_enabled         = true
+max_memory          = "1gb"
+eviction_policy     = "volatile-lru"
+persistence_mode    = "rdb-aof"
+enable_backup       = true
+enable_restore_test = true
+evidence_enabled    = true
+

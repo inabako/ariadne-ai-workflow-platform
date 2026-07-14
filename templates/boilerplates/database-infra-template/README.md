@@ -13,6 +13,8 @@ PostgreSQL と MySQL を、アプリケーション基盤・リアルタイム�
 | `realtime-gateway-infra-template/` | application runtime infrastructure |
 | `platform-infra-template/` | GitLab / Jenkins / Grafana / Zabbix platform infrastructure |
 | `database-infra-template/` | PostgreSQL / MySQL shared database infrastructure |
+| `middleware-infra-template/` | Redis shared middleware infrastructure |
+| `identity-infra-template/` | OpenLDAP identity / directory infrastructure |
 
 ## Terraform First
 
@@ -70,4 +72,3 @@ template検証:
 - Read / Write、永続化、backup、restore、migration、evidenceまで確認する。
 - Evidenceへ secret または完全な接続文字列を出力しない。
 - PostgreSQL固有処理とMySQL固有処理を混在させない。
-

@@ -1,0 +1,33 @@
+services:
+  openldap:
+    image: osixia/openldap:${OPENLDAP_VERSION:-1.5.0}
+    restart: unless-stopped
+    env_file:
+      - ./env.example
+    environment:
+      LDAP_ORGANISATION: ${LDAP_ORGANISATION:-Example Organization}
+      LDAP_DOMAIN: ${LDAP_DOMAIN:-example.local}
+      LDAP_BASE_DN: ${LDAP_BASE_DN:-dc=example,dc=local}
+      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD:-replace-with-secret-store-value}
+      LDAP_CONFIG_PASSWORD: ${LDAP_CONFIG_PASSWORD:-replace-with-secret-store-value}
+      LDAP_TLS: ${LDAP_TLS:-false}
+    volumes:
+      - openldap_data:/var/lib/ldap
+      - openldap_config:/etc/ldap/slapd.d
+    command: ["--copy-service"]
+    networks:
+      - identity_internal
+    healthcheck:
+      test: ["CMD-SHELL", "ldapsearch -x -H ldap://localhost -b \"$${LDAP_BASE_DN}\" -D \"cn=admin,$${LDAP_BASE_DN}\" -w \"$${LDAP_ADMIN_PASSWORD}\" -s base dn >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+networks:
+  identity_internal:
+    internal: true
+
+volumes:
+  openldap_data:
+  openldap_config:

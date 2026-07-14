@@ -31,7 +31,7 @@ created_at:
 
 | Component | Type | Language / Framework | Template Candidate | Match |
 | --- | --- | --- | --- | --- |
-|  | Go gateway / Next.js webapp / PyQt GUI / realtime gateway IaC / platform infrastructure / database infrastructure / other |  | gateway-template / nextjs-webapp-template / pyqt-template / realtime-gateway-infra-template / platform-infra-template / database-infra-template / none | yes / no |
+|  | Go gateway / Next.js webapp / PyQt GUI / realtime gateway IaC / platform infrastructure / database infrastructure / middleware infrastructure / identity infrastructure / other |  | gateway-template / nextjs-webapp-template / pyqt-template / realtime-gateway-infra-template / platform-infra-template / database-infra-template / middleware-infra-template / identity-infra-template / none | yes / no |
 
 ## Template Availability
 
@@ -43,6 +43,8 @@ created_at:
 | realtime-gateway-infra-template | `templates/boilerplates/realtime-gateway-infra-template/` | yes / no | `realtime-gateway-infra-template_実装指示書.md` |
 | platform-infra-template | `templates/boilerplates/platform-infra-template/` | yes / no | `Platform_Infrastructure_Boilerplate_追加実装指示書.md` |
 | database-infra-template | `templates/boilerplates/database-infra-template/` | yes / no | `Database_Infrastructure_Boilerplate_追加実装指示書.md` |
+| middleware-infra-template | `templates/boilerplates/middleware-infra-template/` | yes / no | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
+| identity-infra-template | `templates/boilerplates/identity-infra-template/` | yes / no | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
 
 ## Decision
 
@@ -73,6 +75,8 @@ Use only when `decision: use-template`.
 | network / runtime / security / observability / dns |  |  | yes / no |  |
 | platform component / CI/CD / monitoring / backup / restore |  |  | yes / no |  |
 | database engine / connection contract / migration / backup / restore |  |  | yes / no |  |
+| Redis purpose / TTL / eviction / persistence / backup / restore |  |  | yes / no |  |
+| OpenLDAP Base DN / OU / bind account / TLS / LDIF / backup / restore |  |  | yes / no |  |
 
 ## Required Tests
 
@@ -101,6 +105,16 @@ Use only when `decision: use-template`.
 | database persistence | yes / no |  |  |
 | database backup / restore | yes / no |  |  |
 | database migration | yes / no |  |  |
+| Redis authenticated PING | yes / no |  |  |
+| Redis SET / GET / TTL | yes / no |  |  |
+| Redis maxmemory / eviction policy | yes / no |  |  |
+| Redis persistence / restart | yes / no |  |  |
+| Redis backup / restore | yes / no |  |  |
+| OpenLDAP administrator / application bind | yes / no |  |  |
+| OpenLDAP user / group / membership search | yes / no |  |  |
+| OpenLDAP LDIF apply / reapply | yes / no |  |  |
+| OpenLDAP TLS | yes / no |  |  |
+| OpenLDAP backup / restore | yes / no |  |  |
 | environment tfvars example review | yes / no |  |  |
 | firewall / exposure consistency | yes / no |  |  |
 | secret placeholder check | yes / no |  |  |
@@ -117,6 +131,8 @@ Use only when `decision: use-template`.
 - IaC template採用時は、shared artifacts、software inventory、public exposure、secret source、firewall policy、rollbackを省略しない。
 - platform infrastructure template採用時は、Terraform component selection、Docker Compose profile、admin CIDR、secret source、backup / restore、product別validation evidenceを省略しない。
 - database infrastructure template採用時は、DB engine、DB version、database name、app user、connection source、persistence、backup / restore、migration、connection contract、secret redaction、evidenceを省略しない。
+- middleware infrastructure template採用時は、Redis purpose、auth、maxmemory、eviction policy、TTL、persistence、backup / restore、connection contract、secret redaction、evidenceを省略しない。
+- identity infrastructure template採用時は、OpenLDAP Base DN、OU、bind account separation、TLS、LDIF、backup / restore、identity connection contract、secret redaction、evidenceを省略しない。
 - `.env`、real secret、production password、private keyを生成しない。
 - Templateが存在しない場合は、従来実装へ進む理由を記録する。
 

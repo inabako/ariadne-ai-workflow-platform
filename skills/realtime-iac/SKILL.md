@@ -122,7 +122,7 @@ The AI must not infer software components, port numbers, communication routes, p
    - `docker-compose-design.md`
    - `observability-design.md`
    - `monitoring-policy.md`
-8. Run the Boilerplate Template Selection Gate. If realtime gateway infrastructure matches `templates/boilerplates/realtime-gateway-infra-template/`, development / CI/CD / observability platform infrastructure matches `templates/boilerplates/platform-infra-template/`, or PostgreSQL / MySQL shared database infrastructure matches `templates/boilerplates/database-infra-template/`, copy the selected template to the target IaC destination and edit only the copy. If no template matches, record `decision: traditional-coding`.
+8. Run the Boilerplate Template Selection Gate. If realtime gateway infrastructure matches `templates/boilerplates/realtime-gateway-infra-template/`, development / CI/CD / observability platform infrastructure matches `templates/boilerplates/platform-infra-template/`, PostgreSQL / MySQL shared database infrastructure matches `templates/boilerplates/database-infra-template/`, Redis shared middleware infrastructure matches `templates/boilerplates/middleware-infra-template/`, or OpenLDAP identity / directory infrastructure matches `templates/boilerplates/identity-infra-template/`, copy the selected template to the target IaC destination and edit only the copy. If no template matches, record `decision: traditional-coding`.
 9. Generate IaC artifacts only from approved designs and the approved boilerplate selection result.
 10. For `precreated-new` repository mode, confirm the GitHub repository already exists, push the initial branch after human approval, create the GitHub Issue with `[IaC]` prefix, then create `feature/issue-<issue-number>` from the pushed initial branch.
 11. Run security review before local runtime tests.
@@ -142,16 +142,20 @@ Template candidate:
 | Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
 | Development / CI/CD / observability platform infrastructure | `templates/boilerplates/platform-infra-template/` | `Platform_Infrastructure_Boilerplate_追加実装指示書.md` |
 | PostgreSQL / MySQL shared database infrastructure | `templates/boilerplates/database-infra-template/` | `Database_Infrastructure_Boilerplate_追加実装指示書.md` |
+| Redis shared middleware infrastructure | `templates/boilerplates/middleware-infra-template/` | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
+| OpenLDAP identity / directory infrastructure | `templates/boilerplates/identity-infra-template/` | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
 
 Rules:
 
-- Inspect the infrastructure target and decide whether realtime gateway infrastructure, platform infrastructure, database infrastructure, multiple templates, or no template applies.
+- Inspect the infrastructure target and decide whether realtime gateway infrastructure, platform infrastructure, database infrastructure, middleware infrastructure, identity infrastructure, multiple templates, or no template applies.
 - Check that the mapped template directory exists and contains root files, environment directories, modules, scripts, and docs before using it.
 - If the matching template exists, copy the template to the target IaC directory or `work/<receipt-id>/source/repository/` and edit only the copied destination.
 - Do not edit the boilerplate template itself during product implementation.
 - Preserve the template responsibility boundaries unless the approved design explicitly changes them.
 - For platform infrastructure, record Terraform component selection, Docker Compose profile, admin CIDR, secret source, backup / restore, and product-specific validation evidence.
 - For database infrastructure, record DB engine, DB version, database name, app user, connection source, persistence, backup / restore, migration, connection contract, secret redaction, and evidence.
+- For middleware infrastructure, record Redis purpose, version, connection source, auth secret reference, maxmemory, eviction policy, TTL, persistence, backup / restore, connection contract, secret redaction, and evidence.
+- For identity infrastructure, record OpenLDAP version, organization, domain, Base DN, OU layout, bind account separation, TLS, LDIF, backup / restore, identity connection contract, secret redaction, and evidence.
 - Do not generate `.env`, real secrets, production passwords, or private keys.
 - Save the selection result under `work/<receipt-id>/process-report/boilerplate-template-selection.md`.
 

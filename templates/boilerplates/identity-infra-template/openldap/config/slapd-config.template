@@ -1,0 +1,7 @@
+# slapd configuration placeholder
+
+Base DN: ${LDAP_BASE_DN}
+Organization: ${LDAP_ORGANISATION}
+
+Use generated or provided certificates only after the certificate source is approved.
+

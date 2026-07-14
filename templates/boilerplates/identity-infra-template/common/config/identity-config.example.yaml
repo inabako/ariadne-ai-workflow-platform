@@ -1,0 +1,43 @@
+identity:
+  openldap:
+    boilerplate: identity-infra-template
+    enabled: true
+    version: selected-version
+    deployment_mode: docker-compose
+    organization:
+      name: Example Organization
+      domain: example.local
+      base_dn: dc=example,dc=local
+    directory_structure:
+      users_ou: ou=people
+      groups_ou: ou=groups
+      services_ou: ou=services
+      admins_ou: ou=admins
+    administrator:
+      bind_dn_secret_ref: ldap.admin.bind_dn
+      password_secret_ref: ldap.admin.password
+    application_bind:
+      enabled: true
+      bind_dn_secret_ref: ldap.application.bind_dn
+      password_secret_ref: ldap.application.password
+    search:
+      user_search_base: ou=people,dc=example,dc=local
+      group_search_base: ou=groups,dc=example,dc=local
+      user_id_attribute: uid
+      group_id_attribute: cn
+    tls:
+      enabled: true
+      certificate_mode: generated-for-local
+    persistence:
+      enabled: true
+      volume_name: openldap_data
+    bootstrap:
+      apply_ldif: true
+    backup:
+      enabled: true
+      retention_days: 7
+    restore_test:
+      enabled: true
+    evidence:
+      enabled: true
+

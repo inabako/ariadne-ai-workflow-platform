@@ -223,6 +223,10 @@ IaC実装前に、承認済みdesignとshared artifactsに対して利用可能�
 | 対象 | Template | 組み込み指示書 |
 | --- | --- | --- |
 | Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
+| Development / CI/CD / observability platform infrastructure | `templates/boilerplates/platform-infra-template/` | `Platform_Infrastructure_Boilerplate_追加実装指示書.md` |
+| PostgreSQL / MySQL shared database infrastructure | `templates/boilerplates/database-infra-template/` | `Database_Infrastructure_Boilerplate_追加実装指示書.md` |
+| Redis shared middleware infrastructure | `templates/boilerplates/middleware-infra-template/` | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
+| OpenLDAP identity / directory infrastructure | `templates/boilerplates/identity-infra-template/` | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
 
 出力:
 
@@ -231,6 +235,10 @@ IaC実装前に、承認済みdesignとshared artifactsに対して利用可能�
 判定:
 
 - realtime gateway infrastructure が対象に含まれ、`realtime-gateway-infra-template/` が存在する場合は、templateをコピーしてコピー先だけを編集する。
+- 開発・CI/CD・監視platformが対象に含まれ、`platform-infra-template/` が存在する場合は、templateをコピーしてコピー先だけを編集する。
+- PostgreSQL / MySQL shared database infrastructure が対象に含まれ、`database-infra-template/` が存在する場合は、templateをコピーしてコピー先だけを編集する。
+- Redis shared middleware infrastructure が対象に含まれ、`middleware-infra-template/` が存在する場合は、templateをコピーしてコピー先だけを編集する。
+- OpenLDAP identity / directory infrastructure が対象に含まれ、`identity-infra-template/` が存在する場合は、templateをコピーしてコピー先だけを編集する。
 - templateが対象に合わない場合は、`decision: traditional-coding` と理由を記録し、従来どおりIaCを生成する。
 - template本体は直接編集しない。
 - `.env`、real secret、production password、private keyは生成しない。

@@ -1,0 +1,16 @@
+dn: ou=people,dc=example,dc=local
+objectClass: organizationalUnit
+ou: people
+
+dn: ou=groups,dc=example,dc=local
+objectClass: organizationalUnit
+ou: groups
+
+dn: ou=services,dc=example,dc=local
+objectClass: organizationalUnit
+ou: services
+
+dn: ou=admins,dc=example,dc=local
+objectClass: organizationalUnit
+ou: admins
+

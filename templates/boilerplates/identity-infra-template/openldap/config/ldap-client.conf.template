@@ -1,0 +1,4 @@
+BASE ${LDAP_BASE_DN}
+URI ldap://openldap:389
+TLS_REQCERT demand
+

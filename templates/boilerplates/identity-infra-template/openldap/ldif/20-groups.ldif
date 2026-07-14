@@ -1,0 +1,10 @@
+dn: cn=developers,ou=groups,dc=example,dc=local
+objectClass: groupOfNames
+cn: developers
+member: uid=test-user,ou=people,dc=example,dc=local
+
+dn: cn=operators,ou=groups,dc=example,dc=local
+objectClass: groupOfNames
+cn: operators
+member: uid=test-user,ou=people,dc=example,dc=local
+

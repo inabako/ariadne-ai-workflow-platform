@@ -1,0 +1,48 @@
+services:
+  app-placeholder:
+    image: alpine:3.20
+    command: ["sh", "-c", "sleep 3600"]
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD_SECRET_REF: redis.password
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - middleware_internal
+
+  redis:
+    image: redis:${REDIS_VERSION:-7.2}
+    restart: unless-stopped
+    env_file:
+      - ../../redis/docker-compose/env.example
+    command:
+      - sh
+      - -c
+      - >
+        redis-server /usr/local/etc/redis/redis.conf
+        --requirepass "$${REDIS_PASSWORD}"
+        --maxmemory "$${REDIS_MAX_MEMORY}"
+        --maxmemory-policy "$${REDIS_EVICTION_POLICY}"
+        --appendonly "$${REDIS_APPENDONLY}"
+        --save "$${REDIS_SAVE_POLICY}"
+    volumes:
+      - redis_data:/data
+      - ../../redis/config/redis.conf.template:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - middleware_internal
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+
+networks:
+  middleware_internal:
+    internal: true
+
+volumes:
+  redis_data:
+

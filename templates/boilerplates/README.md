@@ -14,6 +14,8 @@
 | `realtime-gateway-infra-template/` | Realtime gateway IaC / infrastructure | `realtime-gateway-infra-template_実装指示書.md` | available |
 | `platform-infra-template/` | GitLab / Jenkins / Grafana / Zabbix platform infrastructure | `Platform_Infrastructure_Boilerplate_追加実装指示書.md` | available |
 | `database-infra-template/` | PostgreSQL / MySQL shared database infrastructure | `Database_Infrastructure_Boilerplate_追加実装指示書.md` | available |
+| `middleware-infra-template/` | Redis shared middleware infrastructure | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` | available |
+| `identity-infra-template/` | OpenLDAP identity / directory infrastructure | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` | available |
 | `cloud-emulators/` | Local cloud / external service emulator environment | `docs/workflows/system-integration-quality.md` | available |
 
 ## Workflow Rule
@@ -26,6 +28,8 @@
 - IaC template採用時も、shared artifacts、software inventory、public exposure、secret source、firewall policy、rollbackを省略しません。
 - platform infrastructure template採用時は、Terraform component selection、Docker Compose profile、admin CIDR、secret source、backup / restore、product別validation evidenceを省略しません。
 - database infrastructure template採用時は、DB engine、DB version、database name、app user、connection source、persistence、backup / restore、migration、connection contract、secret redaction、evidenceを省略しません。
+- middleware infrastructure template採用時は、Redis purpose、auth、maxmemory、eviction policy、TTL、persistence、backup / restore、connection contract、secret redaction、evidenceを省略しません。
+- identity infrastructure template採用時は、OpenLDAP Base DN、OU、bind account separation、TLS、LDIF、backup / restore、identity connection contract、secret redaction、evidenceを省略しません。
 - cloud emulator template採用時も、本番credentialを使わず、`work/<work-id>/test-environment/emulator/` へコピーしてから起動し、`test-evidence/emulator/` に本番差分とHuman Checkを残します。
 
 ## Expected Selection Report

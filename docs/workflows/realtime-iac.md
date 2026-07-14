@@ -126,6 +126,8 @@ IaC実装前に、承認済みdesignとshared artifactsに対して利用可能�
 | Realtime gateway IaC / infrastructure | `templates/boilerplates/realtime-gateway-infra-template/` | `realtime-gateway-infra-template_実装指示書.md` |
 | Development / CI/CD / observability platform infrastructure | `templates/boilerplates/platform-infra-template/` | `Platform_Infrastructure_Boilerplate_追加実装指示書.md` |
 | PostgreSQL / MySQL shared database infrastructure | `templates/boilerplates/database-infra-template/` | `Database_Infrastructure_Boilerplate_追加実装指示書.md` |
+| Redis shared middleware infrastructure | `templates/boilerplates/middleware-infra-template/` | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
+| OpenLDAP identity / directory infrastructure | `templates/boilerplates/identity-infra-template/` | `Redis _OpenLDAP_Infrastructure_Boilerplate_追加実装指示書.md` |
 
 出力:
 
@@ -138,12 +140,16 @@ work/<receipt-id>/process-report/boilerplate-template-selection.md
 - realtime gateway infrastructure が対象に含まれる場合は `realtime-gateway-infra-template/` を候補にします。
 - GitLab、Jenkins、Grafana、Zabbixなどの開発・CI/CD・監視platformが対象に含まれる場合は `platform-infra-template/` を候補にします。
 - PostgreSQL、MySQL、DB connection contract、backup / restore、migrationが対象に含まれる場合は `database-infra-template/` を候補にします。
+- Redis、cache、session、temporary state、Pub/Sub補助、middleware connection contract、TTL、eviction、persistence、backup / restoreが対象に含まれる場合は `middleware-infra-template/` を候補にします。
+- OpenLDAP、directory service、Base DN、OU、user / group、application bind account、identity connection contract、TLS、backup / restoreが対象に含まれる場合は `identity-infra-template/` を候補にします。
 - template directoryが存在する場合は、templateをコピーしてコピー先だけを編集します。
 - template本体は直接編集しません。
 - templateが対象に合わない場合は、`decision: traditional-coding` と理由を記録して従来どおりIaCを生成します。
 - template採用時も、shared artifacts、software inventory、public exposure、secret source、firewall policy、rollback、test case table、evidence planを省略しません。
 - platform infrastructure template採用時は、Terraform component selection、Docker Compose profile、admin CIDR、secret source、backup / restore、product別validation evidenceを記録します。
 - database infrastructure template採用時は、DB engine、DB version、database name、app user、connection source、persistence、backup / restore、migration、connection contract、secret redaction、evidenceを記録します。
+- middleware infrastructure template採用時は、Redis purpose、version、connection source、auth secret ref、maxmemory、eviction policy、TTL、persistence、backup / restore、connection contract、secret redaction、evidenceを記録します。
+- identity infrastructure template採用時は、OpenLDAP version、organization、domain、Base DN、OU layout、bind account separation、TLS、LDIF、backup / restore、identity connection contract、secret redaction、evidenceを記録します。
 - `.env`、real secret、production password、private keyは生成しません。
 
 選定結果が未記録の場合、IaC Implementationへ進みません。

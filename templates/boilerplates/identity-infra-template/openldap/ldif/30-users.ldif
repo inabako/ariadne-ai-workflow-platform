@@ -1,0 +1,18 @@
+dn: uid=test-user,ou=people,dc=example,dc=local
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+uid: test-user
+cn: Test User
+sn: User
+mail: test-user@example.local
+userPassword: {SSHA}replace-with-generated-test-hash
+
+dn: cn=webapp-bind,ou=services,dc=example,dc=local
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+cn: webapp-bind
+description: Application bind account for test integration
+userPassword: {SSHA}replace-with-generated-test-hash
+
