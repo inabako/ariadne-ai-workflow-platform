@@ -259,5 +259,5 @@ runtime/tests/test_rag_duckdb_store.py::test_duckdb_store_verify_references_writ
   - source: `runtime/tests/test_rag_duckdb_store.py:522`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: `evidence`, `manifest`
+  - inline input: `evidence`, `manifest`, `default_manifest`
 - 期待結果: 参照確認evidenceをJSONで保存し、検索0件のqueryがある場合は `human-check-required` として検出される。

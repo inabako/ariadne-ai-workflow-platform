@@ -98,28 +98,69 @@ def text_blob(command: dict[str, Any]) -> str:
     return json.dumps(command, ensure_ascii=False, sort_keys=True).lower()
 
 
-def search_commands(registry: dict[str, Any], keywords: list[str]) -> list[dict[str, Any]]:
-    terms = [term.lower() for term in keywords if term.strip()]
+def normalize_search_value(value: str) -> str:
+    return " ".join(value.strip().lower().split())
+
+
+def explicit_search_terms(item: dict[str, Any]) -> list[str]:
+    terms: list[str] = []
+    for key in ["search_terms", "_search_terms"]:
+        raw_terms = item.get(key, [])
+        if not isinstance(raw_terms, list):
+            continue
+        for raw in raw_terms:
+            if isinstance(raw, str):
+                term = normalize_search_value(raw)
+            elif isinstance(raw, dict):
+                term = normalize_search_value(str(raw.get("term", "")))
+            else:
+                term = ""
+            if term:
+                terms.append(term)
+    return terms
+
+
+def search_score(item: dict[str, Any], keywords: list[str]) -> int:
+    terms = [normalize_search_value(term) for term in keywords if term.strip()]
     if not terms:
+        return 1
+    query = normalize_search_value(" ".join(terms))
+    blob = text_blob(item)
+    score = 0
+    if all(term in blob for term in terms):
+        score += 40 + (10 * len(terms))
+    for search_term in explicit_search_terms(item):
+        if search_term == query:
+            score += 120
+        elif query and (query in search_term or search_term in query):
+            score += 90
+        elif all(term in search_term for term in terms):
+            score += 75
+        else:
+            score += 25 * sum(1 for term in terms if term in search_term)
+    return score
+
+
+def search_commands(registry: dict[str, Any], keywords: list[str]) -> list[dict[str, Any]]:
+    if not [term for term in keywords if term.strip()]:
         return sorted(registry.get("commands", []), key=command_key)
-    matches = []
+    matches: list[tuple[int, dict[str, Any]]] = []
     for command in registry.get("commands", []):
-        blob = text_blob(command)
-        if all(term in blob for term in terms):
-            matches.append(command)
-    return sorted(matches, key=command_key)
+        score = search_score(command, keywords)
+        if score > 0:
+            matches.append((score, command))
+    return [item for _, item in sorted(matches, key=lambda entry: (-entry[0], command_key(entry[1])))]
 
 
 def search_extensions(registry: dict[str, Any], keywords: list[str]) -> list[dict[str, Any]]:
-    terms = [term.lower() for term in keywords if term.strip()]
-    if not terms:
+    if not [term for term in keywords if term.strip()]:
         return sorted(registry.get("extensions", []), key=extension_key)
-    matches = []
+    matches: list[tuple[int, dict[str, Any]]] = []
     for extension in registry.get("extensions", []):
-        blob = text_blob(extension)
-        if all(term in blob for term in terms):
-            matches.append(extension)
-    return sorted(matches, key=extension_key)
+        score = search_score(extension, keywords)
+        if score > 0:
+            matches.append((score, extension))
+    return [item for _, item in sorted(matches, key=lambda entry: (-entry[0], extension_key(entry[1])))]
 
 
 def profile_key(profile: dict[str, Any]) -> str:
@@ -882,6 +923,52 @@ def format_index_markdown(
     return "\n".join(lines).rstrip() + "\n"
 
 
+def format_help_search_candidates(
+    commands: list[dict[str, Any]],
+    extensions: list[dict[str, Any]],
+    *,
+    keywords: list[str],
+) -> str:
+    query = " ".join(keyword for keyword in keywords if str(keyword).strip())
+    lines = [
+        "Workflow Help Search Candidates",
+        "",
+        f"Query: {query}",
+        "",
+    ]
+    if commands:
+        lines.append("Commands")
+        for index, command in enumerate(commands, start=1):
+            name = str(command.get("command", ""))
+            lines.extend(
+                [
+                    f"{index}. {name}",
+                    f"   overview: {command.get('overview', '')}",
+                    f"   show: aiwfctl help show {name}",
+                ]
+            )
+        lines.append("")
+    if extensions:
+        lines.append("Extensions")
+        for index, extension in enumerate(extensions, start=1):
+            name = str(extension.get("name", ""))
+            lines.extend(
+                [
+                    f"{index}. {name}",
+                    f"   overview: {extension.get('overview', '')}",
+                    f"   show: aiwfctl help show {name}",
+                ]
+            )
+        lines.append("")
+    lines.extend(
+        [
+            "Next:",
+            "  Run `aiwfctl help show <candidate>` to open the full help.",
+        ]
+    )
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="aiwfctl", description="Ariadne AI Workflow control helper.")
     parser.add_argument("--repo-root", default="")
@@ -1597,7 +1684,7 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
         extension_matches = search_extensions(registry, args.keywords)
         if not command_matches and not extension_matches:
             return 1, "該当するworkflow helpはありません。\n"
-        return 0, format_index_markdown(registry, repo_root, command_matches, extension_matches)
+        return 0, format_help_search_candidates(command_matches, extension_matches, keywords=args.keywords)
 
     if help_command == "open":
         keywords = getattr(args, "query", [])

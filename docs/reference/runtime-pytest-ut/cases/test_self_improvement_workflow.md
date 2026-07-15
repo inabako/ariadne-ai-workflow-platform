@@ -1,4 +1,4 @@
-# test_self_improvement_workflow.py
+﻿# test_self_improvement_workflow.py
 
 ??????? `runtime/tests/test_self_improvement_workflow.py` ?pytest node id??UT?????
 
@@ -19,7 +19,7 @@ runtime/tests/test_self_improvement_workflow.py::test_parser_and_branch_name
 - 確認内容: pytest case `parser and branch name` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_self_improvement_workflow.py:13`
+  - source: `runtime/tests/test_self_improvement_workflow.py:14`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -36,7 +36,7 @@ runtime/tests/test_self_improvement_workflow.py::test_init_and_create_feedback
 - 確認内容: pytest case `init and create feedback` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_self_improvement_workflow.py:24`
+  - source: `runtime/tests/test_self_improvement_workflow.py:25`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `text`
@@ -53,7 +53,7 @@ runtime/tests/test_self_improvement_workflow.py::test_init_feedback_preserves_ex
 - 確認内容: pytest case `init feedback preserves existing readme and template reader` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_self_improvement_workflow.py:51`
+  - source: `runtime/tests/test_self_improvement_workflow.py:52`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -70,7 +70,7 @@ runtime/tests/test_self_improvement_workflow.py::test_review_feedback_updates_st
 - 確認内容: pytest case `review feedback updates status and human check` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_self_improvement_workflow.py:72`
+  - source: `runtime/tests/test_self_improvement_workflow.py:73`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `text`
@@ -87,7 +87,7 @@ runtime/tests/test_self_improvement_workflow.py::test_review_feedback_requires_e
 - 確認内容: pytest case `review feedback requires existing feedback` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_self_improvement_workflow.py:98`
+  - source: `runtime/tests/test_self_improvement_workflow.py:99`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -104,7 +104,7 @@ runtime/tests/test_self_improvement_workflow.py::test_feedback_decision_accepts_
 - 確認内容: pytest case `feedback decision accepts human check or defaults to proposed` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_self_improvement_workflow.py:112`
+  - source: `runtime/tests/test_self_improvement_workflow.py:113`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -121,7 +121,7 @@ runtime/tests/test_self_improvement_workflow.py::test_issue_body_requires_accept
 - 確認内容: pytest case `issue body requires accepted feedback and renders fit check` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_self_improvement_workflow.py:118`
+  - source: `runtime/tests/test_self_improvement_workflow.py:119`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `text`
@@ -138,7 +138,7 @@ runtime/tests/test_self_improvement_workflow.py::test_issue_body_requires_existi
 - 確認内容: pytest case `issue body requires existing feedback` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_self_improvement_workflow.py:189`
+  - source: `runtime/tests/test_self_improvement_workflow.py:190`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -155,7 +155,7 @@ runtime/tests/test_self_improvement_workflow.py::test_issue_body_can_render_unac
 - 確認内容: pytest case `issue body can render unaccepted feedback to explicit output` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_self_improvement_workflow.py:201`
+  - source: `runtime/tests/test_self_improvement_workflow.py:202`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -172,7 +172,7 @@ runtime/tests/test_self_improvement_workflow.py::test_evidence_scaffold_register
 - 確認内容: pytest case `evidence scaffold registers artifact index` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_self_improvement_workflow.py:232`
+  - source: `runtime/tests/test_self_improvement_workflow.py:233`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `data`, `manifest_data`
@@ -189,7 +189,7 @@ runtime/tests/test_self_improvement_workflow.py::test_evidence_scaffold_updates_
 - 確認内容: pytest case `evidence scaffold updates existing artifact index without rewriting readmes` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_self_improvement_workflow.py:244`
+  - source: `runtime/tests/test_self_improvement_workflow.py:245`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `artifact_index`
@@ -206,7 +206,7 @@ runtime/tests/test_self_improvement_workflow.py::test_main_prints_json
 - 確認内容: pytest case `main prints json` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_self_improvement_workflow.py:261`
+  - source: `runtime/tests/test_self_improvement_workflow.py:262`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -223,7 +223,7 @@ runtime/tests/test_self_improvement_workflow.py::test_workflow_skills_declare_fe
 - 確認内容: pytest case `workflow skills declare feedback output contract` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_self_improvement_workflow.py:273`
+  - source: `runtime/tests/test_self_improvement_workflow.py:274`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `missing`, `text`, `required`
@@ -240,8 +240,8 @@ runtime/tests/test_self_improvement_workflow.py::test_workflow_help_declares_fee
 - 確認内容: pytest case `workflow help declares feedback capture for all commands` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_self_improvement_workflow.py:302`
+  - source: `runtime/tests/test_self_improvement_workflow.py:303`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: `registry`, `missing`
+  - inline input: `missing`
 - 期待結果: ??case?pass????runtime????????????????????????

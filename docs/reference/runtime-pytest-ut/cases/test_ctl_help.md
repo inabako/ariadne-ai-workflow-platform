@@ -1,4 +1,4 @@
-# test_ctl_help.py
+﻿# test_ctl_help.py
 
 ??????? `runtime/tests/test_ctl_help.py` ?pytest node id??UT?????
 
@@ -484,6 +484,23 @@ runtime/tests/test_ctl_help.py::test_workflow_help_registry_referenced_files_exi
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: ??case?pass????runtime????????????????????????
 
+#### RT-UT-CASE-634A
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_workflow_help_search_uses_intent_terms
+```
+
+- 確認内容: `aiwfctl help search` が検索補助語から該当workflow helpへ到達できることを確認する。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py:713`
+  - fixture/arg: なし
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- 期待結果: `新しく作る` が `/ariadne-new-system` を返す。
+
 #### RT-UT-CASE-635
 
 - pytest node id:
@@ -495,7 +512,7 @@ runtime/tests/test_ctl_help.py::test_environment_profile_registry_referenced_doc
 - 確認内容: pytest case `environment profile registry referenced docs exist` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:713`
+  - source: `runtime/tests/test_ctl_help.py:723`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -512,7 +529,7 @@ runtime/tests/test_ctl_help.py::test_ctl_registry_and_search_helper_edge_cases
 - 確認内容: pytest case `ctl registry and search helper edge cases` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:735`
+  - source: `runtime/tests/test_ctl_help.py:745`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `registry`
@@ -529,7 +546,7 @@ runtime/tests/test_ctl_help.py::test_ctl_environment_selection_mapping_branches
 - 確認内容: pytest case `ctl environment selection mapping branches` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:776`
+  - source: `runtime/tests/test_ctl_help.py:786`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `registry`
@@ -546,7 +563,7 @@ runtime/tests/test_ctl_help.py::test_ctl_environment_formatting_and_context_warn
 - 確認内容: pytest case `ctl environment formatting and context warning helpers` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:815`
+  - source: `runtime/tests/test_ctl_help.py:825`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `profile`, `context`, `record`, `registry`
@@ -563,7 +580,7 @@ runtime/tests/test_ctl_help.py::test_ctl_help_formatting_empty_lists_and_open_se
 - 確認内容: pytest case `ctl help formatting empty lists and open search paths` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:949`
+  - source: `runtime/tests/test_ctl_help.py:959`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `registry`, `open_args`, `markdown_args`, `search_args`
@@ -580,7 +597,7 @@ runtime/tests/test_ctl_help.py::test_ctl_color_mode_and_main_output
 - 確認内容: pytest case `ctl color mode and main output` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:995`
+  - source: `runtime/tests/test_ctl_help.py:1005`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -597,7 +614,7 @@ runtime/tests/test_ctl_help.py::test_ctl_run_manual_error_and_json_branches
 - 確認内容: pytest case `ctl run manual error and json branches` ?????runtime?????????????error boundary???????
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1021`
+  - source: `runtime/tests/test_ctl_help.py:1031`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル

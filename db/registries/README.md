@@ -14,6 +14,7 @@ work/db/ariadne-knowledge-platform/registries/
 | --- | --- |
 | `workflow_help_commands` | AI workflow prompt commands shown and searched by `aiwfctl help` |
 | `workflow_help_extensions` | Workflow extension help shown by `aiwfctl help` |
+| `workflow_help_search_terms` | Natural-language intent and synonym terms linked to help commands/extensions |
 | `tool_candidates` | Tool candidate records used by Context First Tool Dispatcher |
 | `human_gates` | Runtime operations that require Human Check |
 | `workflow_environments` | Public environment names shown by `aiwfctl env` |

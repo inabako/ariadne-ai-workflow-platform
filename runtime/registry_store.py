@@ -40,6 +40,7 @@ def init_schema(db_path: Path) -> None:
         conn.execute("DROP TABLE IF EXISTS registry_metadata")
         conn.execute("DROP TABLE IF EXISTS workflow_help_commands")
         conn.execute("DROP TABLE IF EXISTS workflow_help_extensions")
+        conn.execute("DROP TABLE IF EXISTS workflow_help_search_terms")
         conn.execute("DROP TABLE IF EXISTS tool_candidates")
         conn.execute("DROP TABLE IF EXISTS human_gates")
         conn.execute("DROP TABLE IF EXISTS workflow_environments")
@@ -75,6 +76,19 @@ def init_schema(db_path: Path) -> None:
                 name VARCHAR NOT NULL,
                 payload_json TEXT NOT NULL,
                 PRIMARY KEY (name)
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE workflow_help_search_terms (
+                sort_order INTEGER NOT NULL,
+                item_type VARCHAR NOT NULL,
+                item_key VARCHAR NOT NULL,
+                term VARCHAR NOT NULL,
+                locale VARCHAR,
+                kind VARCHAR,
+                payload_json TEXT NOT NULL
             )
             """
         )
@@ -159,6 +173,58 @@ def metadata_for(payload: dict[str, Any], excluded_keys: set[str]) -> dict[str, 
     return {key: value for key, value in payload.items() if key not in excluded_keys}
 
 
+def workflow_search_terms(item: dict[str, Any]) -> list[dict[str, str]]:
+    terms: list[dict[str, str]] = []
+    raw_terms = item.get("search_terms", [])
+    if not isinstance(raw_terms, list):
+        return terms
+    for raw in raw_terms:
+        if isinstance(raw, str):
+            term = raw.strip()
+            if term:
+                terms.append({"term": term, "locale": "", "kind": "keyword"})
+            continue
+        if not isinstance(raw, dict):
+            continue
+        term = str(raw.get("term", "")).strip()
+        if not term:
+            continue
+        terms.append(
+            {
+                "term": term,
+                "locale": str(raw.get("locale", "")).strip(),
+                "kind": str(raw.get("kind", "keyword")).strip() or "keyword",
+            }
+        )
+    return terms
+
+
+def insert_workflow_search_terms(
+    conn: Any,
+    item_type: str,
+    item_key: str,
+    terms: list[dict[str, str]],
+    *,
+    start_index: int,
+) -> int:
+    next_index = start_index
+    for term in terms:
+        conn.execute(
+            "INSERT INTO workflow_help_search_terms VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [
+                next_index,
+                item_type,
+                item_key,
+                term["term"],
+                term.get("locale", ""),
+                term.get("kind", ""),
+                json_dumps(term),
+            ],
+        )
+        next_index += 1
+    return next_index
+
+
 def insert_metadata(conn: Any, registry_name: str, metadata: dict[str, Any], source_path: Path, repo_root: Path) -> None:
     conn.execute(
         "INSERT INTO registry_metadata VALUES (?, ?, ?, ?, ?)",
@@ -190,6 +256,7 @@ def build_registry_read_model(repo_root: Path, source_dir: Path, db_path: Path) 
             source_dir / "workflow_help.json",
             repo_root,
         )
+        search_term_count = 0
         for index, item in enumerate(workflow_help.get("commands", [])):
             conn.execute(
                 "INSERT INTO workflow_help_commands VALUES (?, ?, ?, ?, ?)",
@@ -201,10 +268,24 @@ def build_registry_read_model(repo_root: Path, source_dir: Path, db_path: Path) 
                     json_dumps(item),
                 ],
             )
+            search_term_count = insert_workflow_search_terms(
+                conn,
+                "command",
+                str(item.get("command", "")),
+                workflow_search_terms(item),
+                start_index=search_term_count,
+            )
         for index, item in enumerate(workflow_help.get("extensions", [])):
             conn.execute(
                 "INSERT INTO workflow_help_extensions VALUES (?, ?, ?)",
                 [index, str(item.get("name", "")), json_dumps(item)],
+            )
+            search_term_count = insert_workflow_search_terms(
+                conn,
+                "extension",
+                str(item.get("name", "")),
+                workflow_search_terms(item),
+                start_index=search_term_count,
             )
 
         insert_metadata(
@@ -264,6 +345,7 @@ def build_registry_read_model(repo_root: Path, source_dir: Path, db_path: Path) 
         "tables": [
             "workflow_help_commands",
             "workflow_help_extensions",
+            "workflow_help_search_terms",
             "tool_candidates",
             "human_gates",
             "workflow_environments",
@@ -273,6 +355,7 @@ def build_registry_read_model(repo_root: Path, source_dir: Path, db_path: Path) 
         "counts": {
             "workflow_help_commands": len(workflow_help.get("commands", [])),
             "workflow_help_extensions": len(workflow_help.get("extensions", [])),
+            "workflow_help_search_terms": search_term_count,
             "tool_candidates": len(tool_candidates_payload.get("tools", [])),
             "human_gates": len(human_gates_payload.get("gates", [])),
             "workflow_environments": len(environments_payload.get("environments", [])),
@@ -295,6 +378,29 @@ def load_payloads(conn: Any, table: str) -> list[dict[str, Any]]:
     return [json.loads(row[0]) for row in rows]
 
 
+def attach_workflow_search_terms(conn: Any, data: dict[str, Any]) -> None:
+    rows = conn.execute(
+        """
+        SELECT item_type, item_key, payload_json
+        FROM workflow_help_search_terms
+        ORDER BY sort_order
+        """
+    ).fetchall()
+    grouped: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for item_type, item_key, payload_json in rows:
+        value = json.loads(payload_json)
+        if isinstance(value, dict):
+            grouped.setdefault((str(item_type), str(item_key)), []).append(value)
+    for command in data.get("commands", []):
+        key = ("command", str(command.get("command", "")))
+        if key in grouped:
+            command["_search_terms"] = grouped[key]
+    for extension in data.get("extensions", []):
+        key = ("extension", str(extension.get("name", "")))
+        if key in grouped:
+            extension["_search_terms"] = grouped[key]
+
+
 def load_from_duckdb(repo_root: Path, registry_name: str) -> dict[str, Any]:
     db_path = registry_db_path(repo_root)
     if not db_path.exists():
@@ -304,6 +410,7 @@ def load_from_duckdb(repo_root: Path, registry_name: str) -> dict[str, Any]:
             data = load_metadata(conn, registry_name)
             data["commands"] = load_payloads(conn, "workflow_help_commands")
             data["extensions"] = load_payloads(conn, "workflow_help_extensions")
+            attach_workflow_search_terms(conn, data)
             return data
         if registry_name == "tool_candidates":
             data = load_metadata(conn, registry_name)
@@ -411,6 +518,7 @@ def run_summary(args: argparse.Namespace) -> dict[str, Any]:
             for table in [
                 "workflow_help_commands",
                 "workflow_help_extensions",
+                "workflow_help_search_terms",
                 "tool_candidates",
                 "human_gates",
                 "workflow_environments",

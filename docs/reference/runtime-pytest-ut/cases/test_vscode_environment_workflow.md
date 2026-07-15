@@ -53,7 +53,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_draft
 - 確認内容: pytest case `vscode environment draft template and discovery` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_vscode_environment_workflow.py:64`
+  - source: `runtime/tests/test_vscode_environment_workflow.py:70`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -70,7 +70,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_open_
 - 確認内容: pytest case `vscode environment open questions records drafts` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_vscode_environment_workflow.py:82`
+  - source: `runtime/tests/test_vscode_environment_workflow.py:88`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `open_questions`, `state`
@@ -87,7 +87,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_rag_f
 - 確認内容: pytest case `vscode environment rag filename and template` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_vscode_environment_workflow.py:101`
+  - source: `runtime/tests/test_vscode_environment_workflow.py:107`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -104,7 +104,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_write
 - 確認内容: pytest case `vscode environment write rag template requires repo local source dir` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_vscode_environment_workflow.py:121`
+  - source: `runtime/tests/test_vscode_environment_workflow.py:127`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -121,7 +121,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_requi
 - 確認内容: pytest case `vscode environment requirements and validation templates` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_vscode_environment_workflow.py:153`
+  - source: `runtime/tests/test_vscode_environment_workflow.py:159`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `requirements`, `validation_json`, `validation_md`
@@ -138,7 +138,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_valid
 - 確認内容: pytest case `vscode environment validation markdown empty lists` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_vscode_environment_workflow.py:176`
+  - source: `runtime/tests/test_vscode_environment_workflow.py:187`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -155,7 +155,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_main_
 - 確認内容: pytest case `vscode environment main dispatch success and error` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_vscode_environment_workflow.py:189`
+  - source: `runtime/tests/test_vscode_environment_workflow.py:200`
   - fixture/arg: `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -172,7 +172,7 @@ runtime/tests/test_vscode_environment_workflow.py::test_vscode_environment_main_
 - 確認内容: pytest case `vscode environment main dispatches remaining commands and script load` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_vscode_environment_workflow.py:204`
+  - source: `runtime/tests/test_vscode_environment_workflow.py:215`
   - fixture/arg: `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `commands`

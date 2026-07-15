@@ -1,4 +1,4 @@
-# test_system_integration.py
+﻿# test_system_integration.py
 
 このファイルは `runtime/tests/test_system_integration.py` のpytest node id単位UT仕様です。
 
@@ -19,12 +19,11 @@ runtime/tests/test_system_integration.py::test_system_integration_analyze_regist
 
 - 確認内容: SDK解析contextを入力として、システム統合品質workflowが統合context、レポート、Context First manifest登録、AWS/GCP/Stripeのエミュレータ候補を生成することを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_system_integration.py:47`
-  - `work/issue-123/context/sdk-analysis-context.json`
-  - cloud provider: `multiple`
-  - cloud services: `s3`, `pubsub`, `unknown-service`
-  - payment vendor: `stripe`
-  - target repository under `work/issue-123/source/repository`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果:
   - `artifact_type == "system-integration-context"`
   - target repository exists
@@ -44,10 +43,11 @@ runtime/tests/test_system_integration.py::test_system_integration_verify_with_em
 
 - 確認内容: `--with-emulator` 相当のverifyで、既知サービスを `emulator_verified`、未登録サービスを `real_cloud_verification_required` として分類し、Integration Test evidence状態を記録することを確認します。
 - 入力値:
-  - source: `runtime/tests/test_system_integration.py:68`
-  - `work/issue-456/context/sdk-analysis-context.json`
-  - target repository with tests and docs/evidence
-  - `with_emulator=True`
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_system_integration.py:71`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果:
   - `s3` が `emulator_verified`
   - `pubsub` が `emulator_verified`
@@ -65,12 +65,11 @@ runtime/tests/test_system_integration.py::test_aiwfctl_integration_verify_comman
 
 - 確認内容: `aiwfctl integration verify --work-id <work-id> --with-emulator` からsystem integration runtimeを呼び出し、CLI出力に生成context pathが表示されることを確認します。
 - 入力値:
-  - source: `runtime/tests/test_system_integration.py:88`
-  - tmp_path repository with `.git`
-  - `db/registries/registry.duckdb`
-  - `work/issue-789/context/sdk-analysis-context.json`
-  - target repository under `work/issue-789/source/repository`
-  - CLI args: `--repo-root <repo> integration verify --work-id issue-789 --with-emulator`
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_system_integration.py:92`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `args`
 - 期待結果:
   - exit codeが0または2
   - CLI outputに `System Integration Quality` が含まれる
@@ -86,11 +85,11 @@ runtime/tests/test_system_integration.py::test_system_integration_emulator_prepa
 
 - 確認内容: SDK解析contextから選定されたAWS/GCP/Stripeのemulator templateを `work/<work-id>/test-environment/emulator/` へコピーし、証跡ディレクトリ、`emulator-context.json`、Context First登録を生成することを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_system_integration.py:115`
-  - repository rootの `templates/boilerplates/integration/cloud-emulators/`
-  - `work/<work-id>/context/sdk-analysis-context.json`
-  - `work/<work-id>/source/repository`
-  - `work_dir=<tmp>/work/<work-id>`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `work_id`
 - 期待結果:
   - `artifact_type == "emulator-setup-context"`
   - statusが `prepared`
@@ -110,10 +109,11 @@ runtime/tests/test_system_integration.py::test_system_integration_emulator_prepa
 
 - 確認内容: 既にコピー済みのemulator work directoryがある場合、既定では上書きせず `existing` として記録し、ローカル変更を保持することを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_system_integration.py:141`
-  - existing path: `work/<work-id>/test-environment/emulator/localstack/`
-  - marker file: `local-only.txt`
-  - `force=False`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `work_id`
 - 期待結果:
   - aws/localstackのprepare statusが `existing`
   - marker fileの内容が保持される
@@ -129,11 +129,11 @@ runtime/tests/test_system_integration.py::test_aiwfctl_integration_emulator_prep
 
 - 確認内容: `aiwfctl integration emulator prepare --work-id <work-id>` からemulator prepare runtimeを呼び出し、CLI出力に生成context pathが表示され、templateがwork配下へコピーされることを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_system_integration.py:165`
-  - tmp_path repository with `.git`
-  - temporary `templates/boilerplates/integration/cloud-emulators/*`
-  - `work/<work-id>/context/sdk-analysis-context.json`
-  - CLI args: `--repo-root <repo> integration emulator prepare --work-id <work-id>`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `work_id`, `args`
 - 期待結果:
   - exit codeが0
   - CLI outputに `System Integration Emulator Prepare` が含まれる
@@ -150,11 +150,11 @@ runtime/tests/test_system_integration.py::test_system_integration_emulator_healt
 
 - 確認内容: `emulator prepare` 後にhealthを実行し、展開済みtemplate、evidence directory、Context First manifest登録、health summaryを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_system_integration.py:196`
-  - repository rootの `templates/boilerplates/integration/cloud-emulators/`
-  - `work/<work-id>/context/emulator-context.json`
-  - prepared provider: `aws`, `gcp`, `stripe`
-  - `work_dir=<tmp>/work/<work-id>`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `work_id`
 - 期待結果:
   - `artifact_type == "emulator-health-context"`
   - statusが `ready`、`warning`、`human-check-required` のいずれか
@@ -174,9 +174,11 @@ runtime/tests/test_system_integration.py::test_system_integration_emulator_healt
 
 - 確認内容: `emulator-context.json` が未生成の場合、healthがHuman Check requiredとして停止理由と証跡を出力することを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_system_integration.py:226`
-  - empty `work/<work-id>/`
-  - `aiwfctl integration emulator prepare` 未実行
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `work_id`
 - 期待結果:
   - `artifact_type == "emulator-health-context"`
   - statusが `human-check-required`
@@ -194,11 +196,11 @@ runtime/tests/test_system_integration.py::test_aiwfctl_integration_emulator_heal
 
 - 確認内容: `aiwfctl integration emulator health --work-id <work-id>` からhealth runtimeを呼び出し、CLI出力と生成artifactを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_system_integration.py:241`
-  - tmp_path repository with `.git`
-  - temporary `templates/boilerplates/integration/cloud-emulators/*`
-  - `aiwfctl integration emulator prepare --work-id <work-id>` 実行済み
-  - CLI args: `--repo-root <repo> integration emulator health --work-id <work-id>`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `work_id`, `prepare_args`, `args`
 - 期待結果:
   - exit codeが0または2
   - CLI outputに `System Integration Emulator Health` が含まれる
@@ -215,11 +217,11 @@ runtime/tests/test_system_integration.py::test_system_integration_test_plan_crea
 
 - 確認内容: integration context、emulator setup、emulator healthを前提に、Integration Test plan context、runbook、Context First manifest登録を生成することを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_system_integration.py:284`
-  - `work/<work-id>/context/integration-context.json`
-  - `work/<work-id>/context/emulator-context.json`
-  - `work/<work-id>/context/emulator-health-context.json`
-  - target repository under `work/<work-id>/source/repository`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `work_id`
 - 期待結果:
   - `artifact_type == "integration-test-plan-context"`
   - statusが `planned` または `human-check-required`
@@ -239,10 +241,11 @@ runtime/tests/test_system_integration.py::test_system_integration_test_plan_requ
 
 - 確認内容: 事前contextが未生成の場合、Integration Test planがHuman Check requiredとして不足contextと証跡を出力することを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_system_integration.py:334`
-  - empty `work/<work-id>/`
-  - `integration-context.json` 未生成
-  - `emulator-health-context.json` 未生成
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `work_id`
 - 期待結果:
   - `artifact_type == "integration-test-plan-context"`
   - statusが `human-check-required`
@@ -260,13 +263,11 @@ runtime/tests/test_system_integration.py::test_aiwfctl_integration_test_plan_com
 
 - 確認内容: `aiwfctl integration test-plan --work-id <work-id>` からIntegration Test plan runtimeを呼び出し、CLI出力と生成artifactを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_system_integration.py:349`
-  - tmp_path repository with `.git`
-  - temporary `templates/boilerplates/integration/cloud-emulators/*`
-  - `aiwfctl integration verify --work-id <work-id> --with-emulator` 実行済み
-  - `aiwfctl integration emulator prepare --work-id <work-id>` 実行済み
-  - `aiwfctl integration emulator health --work-id <work-id>` 実行済み
-  - CLI args: `--repo-root <repo> integration test-plan --work-id <work-id>`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `work_id`, `verify_args`, `prepare_args`, `health_args`, `args`
 - 期待結果:
   - exit codeが0または2
   - CLI outputに `System Integration Test Plan` が含まれる
@@ -283,13 +284,11 @@ runtime/tests/test_system_integration.py::test_system_integration_finalize_colle
 
 - 確認内容: Integration Test後のEvidenceを収集し、完了条件、違和感、Context First manifest登録、最終レポートを生成することを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_system_integration.py:402`
-  - `integration-context.json`
-  - `emulator-health-context.json`
-  - `integration-test-plan-context.json`
-  - `test-evidence/integration-test/unit-pytest.log`
-  - `test-evidence/integration-test/integration-test-result.md`
-  - `test-evidence/integration-test/regression-report.md`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `work_id`
 - 期待結果:
   - `artifact_type == "integration-finalization-context"`
   - statusが `complete`、`complete-with-warnings`、`incomplete`、`human-check-required` のいずれか
@@ -309,11 +308,11 @@ runtime/tests/test_system_integration.py::test_system_integration_finalize_requi
 
 - 確認内容: finalizeに必要な事前contextが未生成の場合、Human Check requiredとして不足contextと最終証跡を出力することを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_system_integration.py:443`
-  - empty `work/<work-id>/`
-  - `integration-context.json` 未生成
-  - `emulator-health-context.json` 未生成
-  - `integration-test-plan-context.json` 未生成
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `work_id`
 - 期待結果:
   - `artifact_type == "integration-finalization-context"`
   - statusが `human-check-required`
@@ -330,14 +329,11 @@ runtime/tests/test_system_integration.py::test_aiwfctl_integration_finalize_comm
 
 - 確認内容: `aiwfctl integration finalize --work-id <work-id>` からfinalize runtimeを呼び出し、CLI出力と生成artifactを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_system_integration.py:459`
-  - tmp_path repository with `.git`
-  - `aiwfctl integration verify --work-id <work-id> --with-emulator` 実行済み
-  - `aiwfctl integration emulator prepare --work-id <work-id>` 実行済み
-  - `aiwfctl integration emulator health --work-id <work-id>` 実行済み
-  - `aiwfctl integration test-plan --work-id <work-id>` 実行済み
-  - `test-evidence/integration-test/integration-test-result.md`
-  - CLI args: `--repo-root <repo> integration finalize --work-id <work-id>`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `work_id`, `args`
 - 期待結果:
   - exit codeが0または2
   - CLI outputに `System Integration Finalization` が含まれる

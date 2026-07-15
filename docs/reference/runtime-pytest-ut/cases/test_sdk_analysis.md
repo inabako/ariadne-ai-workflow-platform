@@ -1,4 +1,4 @@
-# test_sdk_analysis.py
+﻿# test_sdk_analysis.py
 
 このファイルは `runtime/tests/test_sdk_analysis.py` のpytest node id単位UT仕様です。
 
@@ -23,10 +23,11 @@ runtime/tests/test_sdk_analysis.py::test_sdk_analysis_skips_when_sdk_input_is_mi
 
 - 確認内容: `work/requirements/sdk/` が無い場合、SDK事前解析が `skipped` として終了し、要件定義workflowを止めないことを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_sdk_analysis.py:10`
-  - tmp_path repository
-  - `work_id="issue-123"`
-  - `write_knowledge=False`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果:
   - `status == "skipped"`
   - `skip_reason == "missing-or-empty-sdk-input"`
@@ -43,10 +44,11 @@ runtime/tests/test_sdk_analysis.py::test_sdk_analysis_writes_context_report_requ
 
 - 確認内容: SDKプログラム内のREADME、package metadata、source fileを解析し、SDK名、version、license、auth/network/test観点、Context First登録、Knowledge JSON候補を生成することを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_sdk_analysis.py:21`
-  - `work/requirements/sdk/README.md`
-  - `work/requirements/sdk/package.json`
-  - `work/requirements/sdk/src/client.ts`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `context`, `knowledge`
 - 期待結果:
   - `status == "available"`
   - SDK name/version/licenseを抽出する
@@ -66,9 +68,11 @@ runtime/tests/test_sdk_analysis.py::test_sdk_analysis_detects_secret_like_litera
 
 - 確認内容: SDKプログラムにsecret-like literalが含まれていても、値そのものをcontext/report/Knowledgeへコピーせず、検出事実だけをHuman Checkへ渡すことを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_sdk_analysis.py:58`
-  - `work/requirements/sdk/README.md`
-  - `api_key = "sk_live_abcdefghijklmnopqrstuvwxyz"`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `context_text`
 - 期待結果:
   - `status == "human-check-required"`
   - `secret_findings` に対象fileとredaction方針が入る
@@ -84,10 +88,11 @@ runtime/tests/test_sdk_analysis.py::test_aiwfctl_sdk_analyze_command
 
 - 確認内容: `aiwfctl sdk analyze --work-id <work-id>` からSDK事前解析runtimeを呼び出し、CLI出力に生成context pathが表示されることを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_sdk_analysis.py:80`
-  - tmp_path repository with `.git`
-  - `work/requirements/sdk/pyproject.toml`
-  - CLI args: `--repo-root <repo> sdk analyze --work-id issue-9`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `args`
 - 期待結果:
   - exit codeが0
   - CLI outputに `SDK Analysis` が含まれる
@@ -103,9 +108,11 @@ runtime/tests/test_sdk_analysis.py::test_sdk_discovery_skips_when_sdk_program_in
 
 - 確認内容: `work/requirements/sdk/` が無い場合でもSDK外部discoveryがskip contextを生成し、親workflowを止めないことを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_sdk_analysis.py:98`
-  - tmp_path repository
-  - `work_id="issue-404"`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果:
   - `status == "skipped"`
   - `artifact_type == "sdk-external-discovery"`
@@ -122,12 +129,11 @@ runtime/tests/test_sdk_analysis.py::test_sdk_discovery_generates_external_candid
 
 - 確認内容: SDKプログラムからpackage registry、homepage、repository、README内URL、security確認queryを生成し、Context First manifestへ `sdk-external-discovery` を登録することを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_sdk_analysis.py:109`
-  - `work/requirements/sdk/README.md`
-  - `work/requirements/sdk/package.json`
-  - package name: `@example/robot-sdk`
-  - homepage: `https://example.invalid/robot-sdk`
-  - repository: `https://github.com/example/robot-sdk`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果:
   - `status == "available"`
   - npm registry候補URLが生成される
@@ -146,11 +152,11 @@ runtime/tests/test_sdk_analysis.py::test_sdk_analysis_detects_aws_and_gcp_cloud_
 
 - 確認内容: AWS SDKとGCP SDKが同一SDKプログラム入力に含まれる場合、providerを `multiple` として扱い、services、region/project要件、Human Check前提、file inventoryを生成することを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_sdk_analysis.py:144`
-  - `work/requirements/sdk/package.json`
-  - `@aws-sdk/client-s3`
-  - `@google-cloud/pubsub`
-  - `work/requirements/sdk/README.md`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `inventory`
 - 期待結果:
   - `cloud.provider == "multiple"`
   - `cloud.providers` に `aws` と `gcp` が含まれる
@@ -169,10 +175,11 @@ runtime/tests/test_sdk_analysis.py::test_sdk_discovery_carries_cloud_sdk_metadat
 
 - 確認内容: `requirements.txt` からAWS/GCP Python packageを検出し、外部discovery contextへcloud metadataと公式docs検索queryを引き継ぐことを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_sdk_analysis.py:180`
-  - `work/requirements/sdk/requirements.txt`
-  - `boto3==1.34.0`
-  - `google-cloud-storage==2.16.0`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果:
   - `cloud.provider == "multiple"`
   - `cloud.providers` に `aws` と `gcp` が含まれる
@@ -189,12 +196,11 @@ runtime/tests/test_sdk_analysis.py::test_sdk_analysis_detects_stripe_payment_sdk
 
 - 確認内容: Stripe SDKがSDKプログラム入力に含まれる場合、paymentカテゴリとしてvendor、services、secret / webhook / idempotency / test modeのHuman Checkを生成することを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_sdk_analysis.py:197`
-  - `work/requirements/sdk/package.json`
-  - `stripe`
-  - `@stripe/stripe-js`
-  - `work/requirements/sdk/README.md`
-  - README text includes Checkout, PaymentIntent, webhook signature verification, test mode, idempotency keys
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果:
   - `payment.vendor == "stripe"`
   - `payment.vendors == ["stripe"]`
@@ -214,9 +220,11 @@ runtime/tests/test_sdk_analysis.py::test_sdk_discovery_carries_stripe_payment_sd
 
 - 確認内容: `requirements.txt` からStripe Python packageを検出し、外部discovery contextへpayment metadataとStripe公式docs / webhook確認queryを引き継ぐことを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_sdk_analysis.py:233`
-  - `work/requirements/sdk/requirements.txt`
-  - `stripe==9.12.0`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果:
   - `payment.vendor == "stripe"`
   - `payment.vendors == ["stripe"]`
@@ -234,10 +242,11 @@ runtime/tests/test_sdk_analysis.py::test_aiwfctl_sdk_discover_command
 
 - 確認内容: `aiwfctl sdk discover --work-id <work-id>` からSDK外部discovery runtimeを呼び出し、CLI出力に生成context pathが表示されることを確認します。
 - 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_sdk_analysis.py:248`
-  - tmp_path repository with `.git`
-  - `work/requirements/sdk/pyproject.toml`
-  - CLI args: `--repo-root <repo> sdk discover --work-id issue-10`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `args`
 - 期待結果:
   - exit codeが0
   - CLI outputに `SDK External Discovery` が含まれる

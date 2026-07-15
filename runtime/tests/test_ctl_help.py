@@ -631,9 +631,13 @@ def test_ctl_help_search_finds_svg_gui_workflows() -> None:
     code, output = ctl.run(args)
 
     assert code == 0
+    assert "Workflow Help Search Candidates" in output
     assert "/ariadne-new-system" in output
     assert "/corrective-action-fix" in output
     assert "gac-uac-gui-mode" in output
+    assert "show: aiwfctl help show /ariadne-new-system" in output
+    assert "show: aiwfctl help show gac-uac-gui-mode" in output
+    assert "## Details" not in output
 
 
 def test_ctl_help_show_includes_svg_extension_details() -> None:
@@ -708,6 +712,25 @@ def test_workflow_help_registry_referenced_files_exist() -> None:
             assert (root / value).exists(), f"{extension['name']} references missing {value}"
         for value in extension.get("related_runtime", []):
             assert (root / value).exists(), f"{extension['name']} references missing {value}"
+
+
+def test_workflow_help_search_uses_intent_terms() -> None:
+    root = repo_root()
+    registry = ctl.load_registry(root)
+
+    commands = ctl.search_commands(registry, ["新しく作る"])
+
+    assert commands
+    assert commands[0]["command"] == "/ariadne-new-system"
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(root), "help", "search", "新しく作る"])
+    code, output = ctl.run(args)
+
+    assert code == 0
+    assert "Workflow Help Search Candidates" in output
+    assert "1. /ariadne-new-system" in output
+    assert "show: aiwfctl help show /ariadne-new-system" in output
+    assert "## Details" not in output
 
 
 def test_environment_profile_registry_referenced_docs_exist() -> None:
@@ -1015,7 +1038,7 @@ def test_ctl_color_mode_and_main_output(monkeypatch, capsys) -> None:
     code = ctl.main(["--repo-root", str(repo_root()), "help", "search", "svg"])
     captured = capsys.readouterr()
     assert code == 0
-    assert "# AI Workflow Help" in captured.out
+    assert "Workflow Help Search Candidates" in captured.out
 
 
 def test_ctl_run_manual_error_and_json_branches(monkeypatch, tmp_path: Path) -> None:

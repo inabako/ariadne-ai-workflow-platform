@@ -1,4 +1,4 @@
-# test_github_runtime.py
+﻿# test_github_runtime.py
 
 このファイルは `runtime/tests/test_github_runtime.py` のpytest node id単位UT仕様です。
 

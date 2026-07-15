@@ -104,7 +104,7 @@ runtime/tests/test_rag_pipeline_units.py::test_normalize_documents_missing_sourc
 - 確認内容: pytest case `normalize documents missing source and main paths` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:219`
+  - source: `runtime/tests/test_rag_pipeline_units.py:237`
   - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -121,7 +121,7 @@ runtime/tests/test_rag_pipeline_units.py::test_normalize_documents_module_can_be
 - 確認内容: pytest case `normalize documents module can be loaded as script path` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:249`
+  - source: `runtime/tests/test_rag_pipeline_units.py:267`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -138,7 +138,7 @@ runtime/tests/test_rag_pipeline_units.py::test_discover_sources_ignores_readme
 - 確認内容: pytest case `discover sources ignores readme` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:255`
+  - source: `runtime/tests/test_rag_pipeline_units.py:273`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -155,7 +155,7 @@ runtime/tests/test_rag_pipeline_units.py::test_split_content_validates_chunk_set
 - 確認内容: pytest case `split content validates chunk settings` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:265`
+  - source: `runtime/tests/test_rag_pipeline_units.py:283`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -172,7 +172,7 @@ runtime/tests/test_rag_pipeline_units.py::test_chunk_documents_parser_and_headin
 - 確認内容: pytest case `chunk documents parser and heading path edges` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:273`
+  - source: `runtime/tests/test_rag_pipeline_units.py:291`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -189,7 +189,7 @@ runtime/tests/test_rag_pipeline_units.py::test_split_content_short_empty_and_ove
 - 確認内容: pytest case `split content short empty and overlap edges` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:305`
+  - source: `runtime/tests/test_rag_pipeline_units.py:323`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -206,7 +206,7 @@ runtime/tests/test_rag_pipeline_units.py::test_split_content_defensive_fallback_
 - 確認内容: pytest case `split content defensive fallback preserves text when splitter yields no parts` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:322`
+  - source: `runtime/tests/test_rag_pipeline_units.py:340`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -223,7 +223,7 @@ runtime/tests/test_rag_pipeline_units.py::test_chunk_document_writes_chunk_with_
 - 確認内容: pytest case `chunk document writes chunk with heading path` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:337`
+  - source: `runtime/tests/test_rag_pipeline_units.py:355`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -240,7 +240,7 @@ runtime/tests/test_rag_pipeline_units.py::test_chunk_document_rejects_non_object
 - 確認内容: pytest case `chunk document rejects non object json` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:366`
+  - source: `runtime/tests/test_rag_pipeline_units.py:384`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -257,7 +257,7 @@ runtime/tests/test_rag_pipeline_units.py::test_discover_documents_errors_and_sor
 - 確認内容: pytest case `discover documents errors and sorts recursively` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:381`
+  - source: `runtime/tests/test_rag_pipeline_units.py:399`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -274,7 +274,7 @@ runtime/tests/test_rag_pipeline_units.py::test_chunk_documents_run_cleans_output
 - 確認内容: pytest case `chunk documents run cleans output and supports absolute dirs` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:399`
+  - source: `runtime/tests/test_rag_pipeline_units.py:417`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -291,7 +291,7 @@ runtime/tests/test_rag_pipeline_units.py::test_chunk_documents_main_paths
 - 確認内容: pytest case `chunk documents main paths` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:442`
+  - source: `runtime/tests/test_rag_pipeline_units.py:473`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -308,7 +308,7 @@ runtime/tests/test_rag_pipeline_units.py::test_build_index_writes_document_and_c
 - 確認内容: pytest case `build index writes document and chunk jsonl` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:463`
+  - source: `runtime/tests/test_rag_pipeline_units.py:494`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `documents`, `chunks`
@@ -325,7 +325,7 @@ runtime/tests/test_rag_pipeline_units.py::test_build_index_parser_invalid_rows_e
 - 確認内容: pytest case `build index parser invalid rows empty discovery main and script` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:513`
+  - source: `runtime/tests/test_rag_pipeline_units.py:544`
   - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `parsed`
@@ -342,7 +342,7 @@ runtime/tests/test_rag_pipeline_units.py::test_embed_chunks_is_deterministic_and
 - 確認内容: pytest case `embed chunks is deterministic and validates dimensions` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:571`
+  - source: `runtime/tests/test_rag_pipeline_units.py:602`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `row`
@@ -359,7 +359,7 @@ runtime/tests/test_rag_pipeline_units.py::test_embed_chunks_parser_jsonl_edges_a
 - 確認内容: pytest case `embed chunks parser jsonl edges and empty embedding` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:592`
+  - source: `runtime/tests/test_rag_pipeline_units.py:623`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -376,7 +376,7 @@ runtime/tests/test_rag_pipeline_units.py::test_embed_chunks_run_writes_jsonl
 - 確認内容: pytest case `embed chunks run writes jsonl` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:630`
+  - source: `runtime/tests/test_rag_pipeline_units.py:661`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -393,7 +393,7 @@ runtime/tests/test_rag_pipeline_units.py::test_embed_chunks_main_success_error_a
 - 確認内容: pytest case `embed chunks main success error and script load` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_pipeline_units.py:653`
+  - source: `runtime/tests/test_rag_pipeline_units.py:684`
   - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル

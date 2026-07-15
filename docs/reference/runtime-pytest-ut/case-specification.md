@@ -1,16 +1,16 @@
-# Runtime pytest 単体試験仕様書（606ケース）
+﻿# Runtime pytest 蜊倅ｽ楢ｩｦ鬨謎ｻ墓ｧ俶嶌・・06繧ｱ繝ｼ繧ｹ・・
 
-作成日: 2026-07-07
+菴懈・譌･: 2026-07-07
 
-この文書は、`runtime/tests` 配下で収集されるpytest nodeを、単体試験仕様として1ケースずつ列挙したものです。
-上位のUT項目表は [Runtime pytest UT Test Items](test-items.md) を参照します。
-coverage推移と監査履歴は repository root の `Runtime pytest 分岐・CLI・coverage監査レポート.md` を参照します。
+縺薙・譁・嶌縺ｯ縲～runtime/tests` 驟堺ｸ九〒蜿朱寔縺輔ｌ繧却ytest node繧偵∝腰菴楢ｩｦ鬨謎ｻ墓ｧ倥→縺励※1繧ｱ繝ｼ繧ｹ縺壹▽蛻玲嫌縺励◆繧ゅ・縺ｧ縺吶・
+荳贋ｽ阪・UT鬆・岼陦ｨ縺ｯ [Runtime pytest UT Test Items](test-items.md) 繧貞盾辣ｧ縺励∪縺吶・
+coverage謗ｨ遘ｻ縺ｨ逶｣譟ｻ螻･豁ｴ縺ｯ repository root 縺ｮ `Runtime pytest 蛻・ｲ舌・CLI繝ｻcoverage逶｣譟ｻ繝ｬ繝昴・繝・md` 繧貞盾辣ｧ縺励∪縺吶・
 
-この仕様書では、長い `pytest node id` でMarkdownプレビューが横に広がらないよう、ケース一覧を表ではなくブロック形式で記載します。
+縺薙・莉墓ｧ俶嶌縺ｧ縺ｯ縲・聞縺・`pytest node id` 縺ｧMarkdown繝励Ξ繝薙Η繝ｼ縺梧ｨｪ縺ｫ蠎・′繧峨↑縺・ｈ縺・√こ繝ｼ繧ｹ荳隕ｧ繧定｡ｨ縺ｧ縺ｯ縺ｪ縺上ヶ繝ｭ繝・け蠖｢蠑上〒險倩ｼ峨＠縺ｾ縺吶・
 
-## サマリ
+## 繧ｵ繝槭Μ
 
-| 項目 | 値 |
+| 鬆・岼 | 蛟､ |
 | --- | ---: |
 | pytest files | 38 |
 | pytest test functions | 619 |
@@ -19,30 +19,30 @@ coverage推移と監査履歴は repository root の `Runtime pytest 分岐・CL
 | statement coverage | 99.66% |
 | total coverage | 99.48% |
 
-## 共通前提
+## 蜈ｱ騾壼燕謠・
 
-- 実行起点は `C:\github\ariadne-ai-workflow-platform\runtime` です。
-- pytest / coverage は `runtime/pyproject.toml` の `dev` dependency groupで管理します。
-- 外部I/O、GitHub API、Git操作、Docker、MSYS2、Go、VSCode task runnerは、原則mock、dry-run、または明示的なmissing検出として検証します。
-- 期待結果は、pytest assertionがすべて成功し、対象runtimeが意図したJSON、Markdown、context、manifest、error boundaryを返すことです。
+- 螳溯｡瑚ｵｷ轤ｹ縺ｯ `C:\github\ariadne-ai-workflow-platform\runtime` 縺ｧ縺吶・
+- pytest / coverage 縺ｯ `runtime/pyproject.toml` 縺ｮ `dev` dependency group縺ｧ邂｡逅・＠縺ｾ縺吶・
+- 螟夜ΚI/O縲；itHub API縲；it謫堺ｽ懊．ocker縲｀SYS2縲；o縲〃SCode task runner縺ｯ縲∝次蜑㍊ock縲‥ry-run縲√∪縺溘・譏守､ｺ逧・↑missing讀懷・縺ｨ縺励※讀懆ｨｼ縺励∪縺吶・
+- 譛溷ｾ・ｵ先棡縺ｯ縲｝ytest assertion縺後☆縺ｹ縺ｦ謌仙粥縺励∝ｯｾ雎｡runtime縺梧э蝗ｳ縺励◆JSON縲｀arkdown縲…ontext縲［anifest縲‘rror boundary繧定ｿ斐☆縺薙→縺ｧ縺吶・
 
-## 実行コマンド
+## 螳溯｡後さ繝槭Φ繝・
 
 ```powershell
 cd C:\github\ariadne-ai-workflow-platform\runtime
 .\tools\uv.cmd run --project . --group dev pytest tests -q
 ```
 
-収集ケースを確認する場合:
+蜿朱寔繧ｱ繝ｼ繧ｹ繧堤｢ｺ隱阪☆繧句ｴ蜷・
 
 ```powershell
 cd C:\github\ariadne-ai-workflow-platform\runtime
 .\tools\uv.cmd run --project . --group dev pytest --collect-only -q tests
 ```
 
-## ケース一覧
+## 繧ｱ繝ｼ繧ｹ荳隕ｧ
 
-ケース本文はsource fileごとに cases/ 配下へ分離しています。同期チェックでは、この索引ファイルと cases/*.md を結合してpytest収集結果と照合します。
+繧ｱ繝ｼ繧ｹ譛ｬ譁・・source file縺斐→縺ｫ cases/ 驟堺ｸ九∈蛻・屬縺励※縺・∪縺吶ょ酔譛溘メ繧ｧ繝・け縺ｧ縺ｯ縲√％縺ｮ邏｢蠑輔ヵ繧｡繧､繝ｫ縺ｨ cases/*.md 繧堤ｵ仙粋縺励※pytest蜿朱寔邨先棡縺ｨ辣ｧ蜷医＠縺ｾ縺吶・
 
 | Source | Cases |
 | --- | ---: |
@@ -51,7 +51,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_context_first.py](cases/test_context_first.md) | 34 |
 | [test_corrective_action_report.py](cases/test_corrective_action_report.md) | 6 |
 | [test_coverage_audit.py](cases/test_coverage_audit.md) | 6 |
-| [test_ctl_help.py](cases/test_ctl_help.md) | 35 |
+| [test_ctl_help.py](cases/test_ctl_help.md) | 36 |
 | [test_dispatcher_context.py](cases/test_dispatcher_context.md) | 12 |
 | [test_docs_sync_workflow.py](cases/test_docs_sync_workflow.md) | 11 |
 | [test_flutter_multiplatform.py](cases/test_flutter_multiplatform.md) | 16 |
@@ -85,11 +85,11 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_workflow_doctor.py](cases/test_workflow_doctor.md) | 25 |
 | [test_workflow_state_noise_validation.py](cases/test_workflow_state_noise_validation.md) | 21 |
 
-## 更新ルール
+## 譖ｴ譁ｰ繝ｫ繝ｼ繝ｫ
 
-- この文書は `pytest --collect-only -q tests` の収集結果を正として更新します。
-- 同期確認は `cd runtime && .\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py --spec ..\docs\reference\runtime-pytest-ut\case-specification.md --runtime-root . check` で実行します。
-- 入力値欄の再生成は `cd runtime && .\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py --spec ..\docs\reference\runtime-pytest-ut\case-specification.md --runtime-root . fix-inputs` で実行します。
-- テスト関数を追加、削除、renameした場合は、この606ケース仕様書も更新します。
-- `pytest.mark.parametrize` によって1つのtest functionから複数caseが収集される場合は、pytest node idのparameter表記まで仕様として残します。
-- 個別caseの詳細な入力値やfixtureは、該当pytest sourceを正とします。
+- 縺薙・譁・嶌縺ｯ `pytest --collect-only -q tests` 縺ｮ蜿朱寔邨先棡繧呈ｭ｣縺ｨ縺励※譖ｴ譁ｰ縺励∪縺吶・
+- 蜷梧悄遒ｺ隱阪・ `cd runtime && .\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py --spec ..\docs\reference\runtime-pytest-ut\case-specification.md --runtime-root . check` 縺ｧ螳溯｡後＠縺ｾ縺吶・
+- 蜈･蜉帛､谺・・蜀咲函謌舌・ `cd runtime && .\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py --spec ..\docs\reference\runtime-pytest-ut\case-specification.md --runtime-root . fix-inputs` 縺ｧ螳溯｡後＠縺ｾ縺吶・
+- 繝・せ繝磯未謨ｰ繧定ｿｽ蜉縲∝炎髯､縲〉ename縺励◆蝣ｴ蜷医・縲√％縺ｮ606繧ｱ繝ｼ繧ｹ莉墓ｧ俶嶌繧よ峩譁ｰ縺励∪縺吶・
+- `pytest.mark.parametrize` 縺ｫ繧医▲縺ｦ1縺､縺ｮtest function縺九ｉ隍・焚case縺悟庶髮・＆繧後ｋ蝣ｴ蜷医・縲｝ytest node id縺ｮparameter陦ｨ險倥∪縺ｧ莉墓ｧ倥→縺励※谿九＠縺ｾ縺吶・
+- 蛟句挨case縺ｮ隧ｳ邏ｰ縺ｪ蜈･蜉帛､繧・ixture縺ｯ縲∬ｩｲ蠖菟ytest source繧呈ｭ｣縺ｨ縺励∪縺吶・
