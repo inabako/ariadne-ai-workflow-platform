@@ -26,7 +26,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Evaluate RAG chunk candidates before indexing and embedding.")
     parser.add_argument("--chunks-dir", default="rag/chunks")
     parser.add_argument("--output-dir", default="rag/optimized-chunks")
-    parser.add_argument("--evidence-dir", default="rag/evidence/ingestion")
+    parser.add_argument("--evidence-dir", default="db/rag/evidence/ingestion")
     parser.add_argument("--policy", default=str(DEFAULT_POLICY_PATH))
     parser.add_argument("--repo-root", default=None)
     parser.add_argument("--clean-output", action="store_true")

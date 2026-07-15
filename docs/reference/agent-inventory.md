@@ -1,4 +1,4 @@
-﻿# Agent Inventory
+# Agent Inventory
 
 このページは、既存Agentの責務、RAG利用、外部Web RAG利用、専門性の不足を棚卸しするための一覧です。
 
@@ -57,7 +57,7 @@
 | `remote-gateway-implementer-agent.prompt.md` | implementer | 実装 | 承認済みarchitectureとboilerplate selectionに基づく実装 | Issue scopeとRAG contextを参照 | unknown implementation areaのsupporting referenceとして参照 | 承認済み範囲の実装。architecture/protocol/template責務境界変更は不可 | Go runtime / Python runtime / Network / GStreamer専門Agentへ | source, tests, `implementation-report.md` |
 | `documentation-writer-agent.prompt.md` | knowledge | docs化 | decision record、troubleshooting、再利用可能な知識化 | 実施済みwork artifactをRAG候補化 | 外部Webはsupporting referenceとして引用/要約 | docs draft作成。仕様確定は不可 | docs taxonomyやRAG schema変更は人間/architect確認 | docs, troubleshooting, RAG notes |
 | `knowledge-capture-agent.prompt.md` | knowledge | 完了後整理 | PR資料、証跡整理、RAG/docs候補抽出、archive準備 | process/test/evidenceから内部RAG候補を抽出 | 外部WebRAG利用箇所をsupporting referenceとして記録 | push/archive/RAG登録は人間承認後 | RAG登録自動化はruntime/skill側へ | PR docs, `knowledge-capture-report.md` |
-| `workflow-help-curator-agent.prompt.md` | knowledge | help maintenance / self-improvement | aiwfctl help registry、schema、docs、testsを同期し、workflow入口不足やhelp driftをFeedback reportへ整理する | 過去のhelp drift、workflow変更、運用ルールを補助参照 | 原則不要。外部仕様名の説明補助に限定 | help contractの更新案、registry/docs/tests変更案、Feedback reportとIssue body候補の整理まで。採用判断とGitHub mutationは不可 | command追加やruntime仕様変更が必要な場合はworkflow ownerへ戻す | `workflow-help-curation-report.md`, `runtime/registries/workflow_help.json`, `work/feedback/*.md` |
+| `workflow-help-curator-agent.prompt.md` | knowledge | help maintenance / self-improvement | aiwfctl help registry、schema、docs、testsを同期し、workflow入口不足やhelp driftをFeedback reportへ整理する | 過去のhelp drift、workflow変更、運用ルールを補助参照 | 原則不要。外部仕様名の説明補助に限定 | help contractの更新案、registry/docs/tests変更案、Feedback reportとIssue body候補の整理まで。採用判断とGitHub mutationは不可 | command追加やruntime仕様変更が必要な場合はworkflow ownerへ戻す | `workflow-help-curation-report.md`, `db/registries/registry.duckdb`, `work/feedback/*.md` |
 | `external-web-source-reviewer-agent.prompt.md` | external-web | 知見不足調査 | 外部Web一次情報をclaims/metadataへ圧縮 | 内部RAGと矛盾しないか確認 | 主担当。公式docs/RFC/vendor docsを精査 | claims作成まで。project findingや設計決定は不可 | Python/Go/Networkなどは専門source reviewer候補へ分化 | `rag/external-web/<category>/*.md` |
 | `external-web-rag-dispatcher-agent.prompt.md` | external-web | RAG dispatch | 蓄積済み外部WebRAGを検索・集約 | 内部RAGより弱い補助contextとして扱う | 主担当。カテゴリ別に集約 | aggregate作成まで。Critical itemやfinding確定は不可 | 大規模化時はcategory workerへ分割 | `rag/external-web/retrieval/*-aggregate.md` |
 | `python-runtime-specialist-agent.prompt.md` | specialist reviewer | specialist review | Python runtime / PyQt / pytest / socket lifecycle / pyqt-app-template適用の専門review | Python関連の過去finding、test gap、review escapeを参照 | Python公式docs等をsupporting referenceとして参照 | review finding、required tests、trusted external knowledgeの提示まで | architecture変更や実装は担当Agentへ戻す | `specialist-review-python-runtime.md` |

@@ -17,6 +17,10 @@ work/db/**
 # Ariadne本体側の rag/ はDuckDB、evidence、retrieval等のlocal生成workspaceとして追跡しない。
 rag/**
 
+# Generated database read models
+db/rag/**
+db/registries/registry.duckdb
+
 # Python cache
 __pycache__/
 *.py[cod]
@@ -28,3 +32,4 @@ htmlcov/
 runtime/.coverage_html/
 runtime/.coverage.json
 runtime/logs/
+.gitignore

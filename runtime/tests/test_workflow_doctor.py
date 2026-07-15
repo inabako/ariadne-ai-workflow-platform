@@ -281,7 +281,7 @@ def test_duckdb_read_model_findings_reports_missing_read_model_when_sources_exis
     findings = workflow_doctor.duckdb_read_model_findings(tmp_path)
 
     assert findings == [
-        "missing:rag/duckdb/ariadne-knowledge.duckdb",
+        "missing:db/rag/ariadne-knowledge.duckdb",
         "source:work/db/ariadne-knowledge-platform",
         "rebuild:aiwfctl knowledge rebuild --source-repo work/db/ariadne-knowledge-platform --reset",
     ]
@@ -327,14 +327,14 @@ def test_workflow_doctor_run_reports_all_warning_types(monkeypatch, tmp_path: Pa
     monkeypatch.setattr(
         workflow_doctor,
         "human_gate_registry_findings",
-        lambda repo_root: ["runtime/registries/human_gates.json contains $schema"],
+        lambda repo_root: ["human_gates registry contains $schema"],
     )
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: ["work/close/improvement/issue-1"])
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [".vscode/settings.json:files.encoding"])
     monkeypatch.setattr(
         workflow_doctor,
         "duckdb_read_model_findings",
-        lambda repo_root: ["missing:rag/duckdb/ariadne-knowledge.duckdb"],
+        lambda repo_root: ["missing:db/rag/ariadne-knowledge.duckdb"],
     )
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: ["missing: runtime/tests/test_new.py::test_new"])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=False)

@@ -65,7 +65,7 @@ python runtime/rag/chunk_documents.py `
 python runtime/rag/ingestion_optimizer.py `
   --chunks-dir rag/chunks `
   --output-dir rag/optimized-chunks `
-  --evidence-dir rag/evidence/ingestion `
+  --evidence-dir db/rag/evidence/ingestion `
   --clean-output
 
 python runtime/rag/build_index.py `

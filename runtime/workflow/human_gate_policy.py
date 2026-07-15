@@ -9,15 +9,16 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import find_repo_root, read_json, relative_to_repo  # noqa: E402
+from runtime import registry_store  # noqa: E402
+from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
 
 
 def registry_path(repo_root: Path) -> Path:
-    return repo_root / "runtime" / "registries" / "human_gates.json"
+    return registry_store.registry_db_path(repo_root)
 
 
 def load_registry(repo_root: Path) -> dict[str, Any]:
-    data = read_json(registry_path(repo_root), default={}) or {}
+    data = registry_store.load_human_gates(repo_root)
     data.setdefault("registry_version", "1.0")
     data.setdefault("gates", [])
     return data

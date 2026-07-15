@@ -5,7 +5,7 @@
 責任分離を明確にするため、実体ファイルと構造定義ファイルは分けます。
 
 ```text
-runtime/registries/human_gates.json
+db/registries/registry.duckdb
 ```
 
 上記はruntimeが読むregistry実体です。ここには承認ゲートの一覧だけを置きます。
@@ -42,6 +42,6 @@ python runtime/workflow/human_gate_policy.py check --gate close-prune --human-ch
 
 - 承認値は原則 `approved` とします。
 - `削除承認` などの会話上の承認は、実行CLIでは `--human-check approved` として記録します。
-- 承認が必要な操作をruntimeへ追加した場合は、この文書、`runtime/registries/human_gates.json`、必要に応じて `.github/schemas/human-gates.schema.json` を同時に更新します。
-- schema責務の混在を避けるため、`human_gates.json` には `$schema` と `schema_version` を置きません。
+- 承認が必要な操作をruntimeへ追加した場合は、この文書、`db/registries/registry.duckdb`、必要に応じて `.github/schemas/human-gates.schema.json` を同時に更新します。
+- schema責務の混在を避けるため、`registry.duckdb` の `human_gates` registry payload には `$schema` と `schema_version` を置きません。
 - `workflow_doctor.py` はこの責任境界を検査します。

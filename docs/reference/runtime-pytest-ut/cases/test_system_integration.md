@@ -1,4 +1,4 @@
-﻿# test_system_integration.py
+# test_system_integration.py
 
 このファイルは `runtime/tests/test_system_integration.py` のpytest node id単位UT仕様です。
 
@@ -67,7 +67,7 @@ runtime/tests/test_system_integration.py::test_aiwfctl_integration_verify_comman
 - 入力値:
   - source: `runtime/tests/test_system_integration.py:88`
   - tmp_path repository with `.git`
-  - `runtime/registries/workflow_help.json`
+  - `db/registries/registry.duckdb`
   - `work/issue-789/context/sdk-analysis-context.json`
   - target repository under `work/issue-789/source/repository`
   - CLI args: `--repo-root <repo> integration verify --work-id issue-789 --with-emulator`

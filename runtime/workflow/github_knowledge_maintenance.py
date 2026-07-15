@@ -203,7 +203,7 @@ def github_tool_selection(
             if item["human_check_required"]
         ],
         "source": {
-            "registry": "runtime/registries/workflow_help.json",
+            "registry": "db/registries/registry.duckdb",
             "schema": ".github/schemas/tool-selection.schema.json",
         },
     }

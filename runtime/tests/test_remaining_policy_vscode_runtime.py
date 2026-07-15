@@ -75,7 +75,7 @@ def test_human_gate_policy_list_returns_registry_path_and_gates(tmp_path: Path) 
     result = human_gate_policy.run_list(args)
 
     assert result["status"] == "ok"
-    assert result["registry"] == "runtime/registries/human_gates.json"
+    assert result["registry"] == "db/registries/registry.duckdb"
     assert result["gates"][0]["id"] == "close-prune"
 
 
@@ -134,7 +134,7 @@ def test_human_gate_policy_main_list_prints_json(tmp_path: Path, capsys: pytest.
     captured = capsys.readouterr()
     assert code == 0
     assert '"status": "ok"' in captured.out
-    assert "runtime/registries/human_gates.json" in captured.out
+    assert "db/registries/registry.duckdb" in captured.out
     assert "close-prune" in captured.out
 
 

@@ -11,6 +11,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+from runtime import registry_store  # noqa: E402
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
 from runtime.workflow import flutter_multiplatform  # noqa: E402
@@ -26,26 +27,26 @@ ANSI_RESET = "\033[0m"
 
 
 def registry_path(repo_root: Path) -> Path:
-    return repo_root / "runtime" / "registries" / "workflow_help.json"
+    return registry_store.registry_db_path(repo_root)
 
 
 def environment_registry_path(repo_root: Path) -> Path:
-    return repo_root / "runtime" / "registries" / "workflow_environment_profiles.json"
+    return registry_store.registry_db_path(repo_root)
 
 
 def load_registry(repo_root: Path) -> dict[str, Any]:
-    data = read_json(registry_path(repo_root), default={})
+    data = registry_store.load_workflow_help(repo_root)
     if not isinstance(data, dict):
-        raise ValueError("workflow help registry must be a JSON object.")
+        raise ValueError("workflow help registry must be an object.")
     data.setdefault("commands", [])
     data.setdefault("extensions", [])
     return data
 
 
 def load_environment_registry(repo_root: Path) -> dict[str, Any]:
-    data = read_json(environment_registry_path(repo_root), default={})
+    data = registry_store.load_environment_profiles(repo_root)
     if not isinstance(data, dict):
-        raise ValueError("workflow environment profiles registry must be a JSON object.")
+        raise ValueError("workflow environment profiles registry must be an object.")
     data.setdefault("environments", [])
     data.setdefault("profiles", [])
     data.setdefault("mappings", [])
@@ -496,7 +497,7 @@ def environment_context_record(
         "preflight_profile": profile.get("preflight_profile", ""),
         "context_path": f"work/{work_id}/context/environment-selection.json",
         "source": {
-            "registry": "runtime/registries/workflow_environment_profiles.json",
+            "registry": registry_store.REGISTRY_DB_PATH.as_posix(),
             "schema": ".github/schemas/environment-selection.schema.json",
         },
         "initialization": record.get("initialization", {}),
@@ -1199,7 +1200,7 @@ def format_knowledge_usage() -> str:
             "  aiwfctl knowledge ingest --file rag/optimized-chunks/<id>.json",
             "  aiwfctl knowledge search --query \"PyQt GUI smoke test\" --limit 10",
             "  aiwfctl knowledge export-context --query \"PyQt GUI smoke test\" --output work/<work-id>/context/knowledge.json",
-            "  aiwfctl knowledge verify --query workflow --query runtime --work-dir rag/evidence/duckdb --work-id duckdb-reference-check",
+            "  aiwfctl knowledge verify --query workflow --query runtime --work-dir db/rag/evidence --work-id duckdb-reference-check",
             "",
             "DuckDBファイルは生成read modelです。source of truthはfile-based RAG artifactです。",
             "外部Knowledge正本は ariadne-knowledge-platform を work/db/ariadne-knowledge-platform にcloneして使います。",

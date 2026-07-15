@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from runtime import registry_store
 from runtime.workflow import self_improvement
 
 
@@ -301,7 +302,7 @@ def test_workflow_skills_declare_feedback_output_contract() -> None:
 
 def test_workflow_help_declares_feedback_capture_for_all_commands() -> None:
     root = Path(__file__).resolve().parents[2]
-    registry = json.loads((root / "runtime" / "registries" / "workflow_help.json").read_text(encoding="utf-8-sig"))
+    registry = registry_store.load_workflow_help(root)
     missing: list[str] = []
 
     for command in registry["commands"]:

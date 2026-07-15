@@ -11,6 +11,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime import registry_store  # noqa: E402
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
@@ -19,15 +20,15 @@ TOKEN_RE = re.compile(r"[A-Za-z0-9]+|[\u3040-\u30ff\u3400-\u9fff]+")
 
 
 def workflow_help_registry_path(repo_root: Path) -> Path:
-    return repo_root / "runtime" / "registries" / "workflow_help.json"
+    return registry_store.registry_db_path(repo_root)
 
 
 def tool_candidate_registry_path(repo_root: Path) -> Path:
-    return repo_root / "runtime" / "registries" / "tool_candidates.json"
+    return registry_store.registry_db_path(repo_root)
 
 
 def load_workflow_help_registry(repo_root: Path) -> dict[str, Any]:
-    data = read_json(workflow_help_registry_path(repo_root), default={})
+    data = registry_store.load_workflow_help(repo_root)
     if not isinstance(data, dict):
         return {"commands": [], "extensions": []}
     data.setdefault("commands", [])
@@ -36,7 +37,7 @@ def load_workflow_help_registry(repo_root: Path) -> dict[str, Any]:
 
 
 def load_tool_candidate_registry(repo_root: Path) -> dict[str, Any]:
-    data = read_json(tool_candidate_registry_path(repo_root), default={})
+    data = registry_store.load_tool_candidates(repo_root)
     if not isinstance(data, dict):
         return {"tools": []}
     data.setdefault("tools", [])

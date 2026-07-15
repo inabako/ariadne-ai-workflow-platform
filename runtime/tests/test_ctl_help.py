@@ -219,16 +219,16 @@ def test_ctl_knowledge_usage_and_search_export_context(tmp_path: Path) -> None:
             "--query",
             "DuckDB context",
             "--output",
-            "rag/evidence/duckdb/reference-check.json",
+            "db/rag/evidence/reference-check.json",
         ]
     )
     code, output = ctl.run(args)
     assert code == 0
     assert "Knowledge Reference Check" in output
     assert "Status       : completed" in output
-    assert "Manifest     : rag/evidence/duckdb/context/context-manifest.json" in output
-    assert (root / "rag" / "evidence" / "duckdb" / "reference-check.json").exists()
-    manifest = json.loads((root / "rag" / "evidence" / "duckdb" / "context" / "context-manifest.json").read_text(encoding="utf-8"))
+    assert "Manifest     : db/rag/evidence/context/context-manifest.json" in output
+    assert (root / "db" / "rag" / "evidence" / "reference-check.json").exists()
+    manifest = json.loads((root / "db" / "rag" / "evidence" / "context" / "context-manifest.json").read_text(encoding="utf-8"))
     assert manifest["work_id"] == "duckdb-reference-check"
     assert "rag-duckdb-reference-check" in {item["type"] for item in manifest["contexts"]}
 
@@ -339,7 +339,7 @@ def test_ctl_env_select_writes_workflow_context(tmp_path: Path) -> None:
     runtime_dir.mkdir(parents=True)
     schema_runtime.mkdir(parents=True)
     (runtime_dir / "workflow_environment_profiles.json").write_text(
-        (source / "runtime" / "registries" / "workflow_environment_profiles.json").read_text(encoding="utf-8"),
+        json.dumps(ctl.load_environment_registry(source), ensure_ascii=False),
         encoding="utf-8",
     )
     (root / "runtime" / "workflow").mkdir(parents=True)
@@ -386,7 +386,7 @@ def test_ctl_env_select_warns_before_overwriting_different_context(tmp_path: Pat
     runtime_dir.mkdir(parents=True)
     runtime_tools.mkdir(parents=True)
     (runtime_dir / "workflow_environment_profiles.json").write_text(
-        (source / "runtime" / "registries" / "workflow_environment_profiles.json").read_text(encoding="utf-8"),
+        json.dumps(ctl.load_environment_registry(source), ensure_ascii=False),
         encoding="utf-8",
     )
     (root / "runtime" / "workflow").mkdir(parents=True)
@@ -411,7 +411,7 @@ def test_ctl_env_select_warns_before_overwriting_different_context(tmp_path: Pat
                 "human_check_required": False,
                 "context_path": "work/issue-123/context/environment-selection.json",
                 "source": {
-                    "registry": "runtime/registries/workflow_environment_profiles.json",
+                    "registry": "db/registries/registry.duckdb",
                     "schema": ".github/schemas/environment-selection.schema.json",
                 },
             },

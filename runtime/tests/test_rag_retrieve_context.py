@@ -28,7 +28,7 @@ def make_args(**overrides):
         "category": "",
         "trust_level": "",
         "backend": "file",
-        "duckdb_path": "rag/duckdb/ariadne-knowledge.duckdb",
+        "duckdb_path": "db/rag/ariadne-knowledge.duckdb",
         "semantic_hint": "",
         "document_type": "",
         "environment": "",
@@ -408,7 +408,7 @@ def test_run_can_retrieve_from_duckdb_backend(tmp_path: Path) -> None:
         ),
         encoding="utf-8",
     )
-    db = repo / "rag" / "duckdb" / "knowledge.duckdb"
+    db = repo / "db" / "rag" / "knowledge.duckdb"
     policy = duckdb_store.ingestion_optimizer.load_policy(
         Path(__file__).resolve().parents[2],
         "runtime/rag/policies/knowledge-ingestion-policy.json",
@@ -437,7 +437,7 @@ def test_run_can_retrieve_from_duckdb_backend(tmp_path: Path) -> None:
     assert result["candidate_count"] == 1
     assert result["selected_chunk_count"] == 1
     assert retrieval_result["backend"] == "duckdb"
-    assert retrieval_result["duckdb_path"] == "rag/duckdb/knowledge.duckdb"
+    assert retrieval_result["duckdb_path"] == "db/rag/knowledge.duckdb"
     assert retrieval_result["selected_chunks"][0]["chunk_id"] == "duckdb-knowledge"
     assert context_pack["compression"]["backend"] == "duckdb"
     assert "DuckDB backend retrieval" in context_pack["context"]

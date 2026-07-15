@@ -1,4 +1,4 @@
-﻿# Context First Architecture
+# Context First Architecture
 
 Context First Architecture は、Workflow / Agent が毎回 Environment、Tool、Runtime を推論する状態を避けるための設計方針です。
 
@@ -156,7 +156,7 @@ Medium対象Workflowは、全面停止ではなく条件付きでContextを必�
 
 ### Tool Candidate Scoring
 
-Tool Dispatcher は `runtime/registries/tool_candidates.json` を参照し、Workflow / Intent / 明示tool入力からtool候補をscore化します。
+Tool Dispatcher は `db/registries/registry.duckdb` を参照し、Workflow / Intent / 明示tool入力からtool候補をscore化します。
 
 `tool-selection.json` には次を記録します。
 

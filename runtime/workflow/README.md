@@ -1,4 +1,4 @@
-﻿# Runtime Workflow
+# Runtime Workflow
 
 `runtime/workflow/` は、workflow単位の補助CLIを置くディレクトリです。
 
@@ -213,7 +213,7 @@ python runtime/workflow/workflow_state.py --work-dir work/issue-11 set `
 
 ## `human_gate_policy.py`
 
-人間承認が必要な操作を `runtime/registries/human_gates.json` で管理します。
+人間承認が必要な操作を `db/registries/registry.duckdb` で管理します。
 
 ```powershell
 python runtime/workflow/human_gate_policy.py list

@@ -1,4 +1,4 @@
-﻿# Runtime
+# Runtime
 
 このディレクトリは、workflow を実行・補助するための runtime 機能を格納します。
 
@@ -62,7 +62,7 @@ runtime/rag/standardize_corrective_report_names.py
 
 `preflight.py` は、workflow や target repository の作業前に必要な executable / Python module / Python package / MSYS2 package / fallback support repository を確認し、不足時は install list を `work/<id>/process-report/` に出力します。`--install --human-check approved` が指定された場合のみ install を実行します。Localty の MSYS2 profile では公開済み `localty-system-protocol>=0.1.0` を優先し、取得できない場合だけ `localty-system-protocol` repository を support repository として準備します。
 
-`aiwfctl env` は、preflight の前段で実行環境を選択する Environment Dispatcher です。source of truth は `runtime/registries/workflow_environment_profiles.json` です。利用者は `gui-mode`、`web-svg`、`docker` などの目的ベースEnvironment名を指定し、`windows-msys2-gui`、`wsl-ubuntu-web`、`docker-compose` などの内部Backend名は表示情報として扱います。判断不能時はHuman Checkへ戻し、`--work-id` 指定時は `work/<work-id>/context/environment-selection.json` と `work/<work-id>/context/context-manifest.json` を後続Workflow用contextとして書き込みます。
+`aiwfctl env` は、preflight の前段で実行環境を選択する Environment Dispatcher です。source of truth は `db/registries/registry.duckdb` です。利用者は `gui-mode`、`web-svg`、`docker` などの目的ベースEnvironment名を指定し、`windows-msys2-gui`、`wsl-ubuntu-web`、`docker-compose` などの内部Backend名は表示情報として扱います。判断不能時はHuman Checkへ戻し、`--work-id` 指定時は `work/<work-id>/context/environment-selection.json` と `work/<work-id>/context/context-manifest.json` を後続Workflow用contextとして書き込みます。
 
 `context_first.py` は、Context First Architecture の manifest を確認する補助CLIです。必須Dispatcher Contextがない場合は `human-check-required` を返します。
 

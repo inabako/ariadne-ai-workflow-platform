@@ -56,7 +56,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--chunks-index", default="rag/indexes/chunks.jsonl")
     parser.add_argument("--embeddings-index", default="rag/embeddings/chunks-embeddings.jsonl")
     parser.add_argument("--retrieval-backend", default="file", choices=["file", "duckdb"])
-    parser.add_argument("--duckdb-path", default="rag/duckdb/ariadne-knowledge.duckdb")
+    parser.add_argument("--duckdb-path", default="db/rag/ariadne-knowledge.duckdb")
     parser.add_argument("--semantic-hint", default="")
     parser.add_argument("--document-type", default="")
     parser.add_argument("--environment", default="")
@@ -540,7 +540,7 @@ def retrieval_command(args: argparse.Namespace, query_item: dict[str, Any]) -> l
         "--backend",
         getattr(args, "retrieval_backend", "file"),
         "--duckdb-path",
-        getattr(args, "duckdb_path", "rag/duckdb/ariadne-knowledge.duckdb"),
+        getattr(args, "duckdb_path", "db/rag/ariadne-knowledge.duckdb"),
         "--output-dir",
         args.output_dir,
         "--search-mode",

@@ -50,7 +50,7 @@ source report
 
 ## Evidence
 
-標準出力先は `rag/evidence/ingestion` です。
+標準出力先は `db/rag/evidence/ingestion` です。
 
 | File | 内容 |
 | --- | --- |

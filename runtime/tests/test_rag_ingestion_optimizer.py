@@ -58,7 +58,7 @@ def make_args(repo: Path, **overrides: object) -> argparse.Namespace:
         "repo_root": str(repo),
         "chunks_dir": "rag/chunks",
         "output_dir": "rag/optimized-chunks",
-        "evidence_dir": "rag/evidence/ingestion",
+        "evidence_dir": "db/rag/evidence/ingestion",
         "policy": "runtime/rag/policies/knowledge-ingestion-policy.json",
         "clean_output": False,
     }
@@ -99,7 +99,7 @@ def test_ingestion_optimizer_rewrites_noise_then_accepts(tmp_path: Path) -> None
 
     assert result["accepted_chunk_count"] == 1
     assert result["rewritten_chunk_count"] == 1
-    rewritten_rows = (repo / "rag" / "evidence" / "ingestion" / "rewritten-chunks.jsonl").read_text(encoding="utf-8")
+    rewritten_rows = (repo / "db" / "rag" / "evidence" / "ingestion" / "rewritten-chunks.jsonl").read_text(encoding="utf-8")
     assert "removed-noise-line" in rewritten_rows
 
 
@@ -116,7 +116,7 @@ def test_ingestion_optimizer_routes_governance_conflict_to_human_check(tmp_path:
     assert result["accepted_chunk_count"] == 0
     assert result["human_check_required"] is True
     assert result["human_check_required_count"] == 1
-    human_rows = (repo / "rag" / "evidence" / "ingestion" / "human-check-required.jsonl").read_text(encoding="utf-8")
+    human_rows = (repo / "db" / "rag" / "evidence" / "ingestion" / "human-check-required.jsonl").read_text(encoding="utf-8")
     assert "high-risk-topic" in human_rows
 
 
@@ -131,7 +131,7 @@ def test_ingestion_optimizer_rejects_duplicates_and_credentials(tmp_path: Path) 
 
     assert result["accepted_chunk_count"] == 1
     assert result["rejected_chunk_count"] == 2
-    rejected = (repo / "rag" / "evidence" / "ingestion" / "rejected-chunks.jsonl").read_text(encoding="utf-8")
+    rejected = (repo / "db" / "rag" / "evidence" / "ingestion" / "rejected-chunks.jsonl").read_text(encoding="utf-8")
     assert "duplicate-content-hash" in rejected
     assert "reject-pattern" in rejected
 
@@ -268,7 +268,7 @@ def test_ingestion_optimizer_clean_output_empty_run_and_invalid_chunk_specimens(
     repo = make_repo(tmp_path)
     chunks_dir = repo / "rag" / "chunks"
     output_dir = repo / "rag" / "optimized-chunks"
-    evidence_dir = repo / "rag" / "evidence" / "ingestion"
+    evidence_dir = repo / "db" / "rag" / "evidence" / "ingestion"
     chunks_dir.mkdir(parents=True)
     output_dir.mkdir(parents=True)
     evidence_dir.mkdir(parents=True)
@@ -284,10 +284,10 @@ def test_ingestion_optimizer_clean_output_empty_run_and_invalid_chunk_specimens(
     assert not stale_chunk.exists()
     assert stale_evidence.read_text(encoding="utf-8") == ""
 
-    protected_duckdb = repo / "rag" / "duckdb"
-    protected_duckdb.mkdir(parents=True)
+    protected_duckdb = repo / "db" / "rag"
+    protected_duckdb.mkdir(parents=True, exist_ok=True)
     with pytest.raises(ValueError, match="Refusing to clean protected RAG path"):
-        ingestion_optimizer.run(make_args(repo, output_dir="rag/duckdb", clean_output=True))
+        ingestion_optimizer.run(make_args(repo, output_dir="db/rag", clean_output=True))
 
     invalid_direct = chunks_dir / "invalid-direct.json"
     invalid_direct.write_text("[]", encoding="utf-8")

@@ -5,10 +5,9 @@ from pathlib import Path
 from runtime.common import relative_to_repo
 
 
-DEFAULT_DUCKDB_PATH = Path("rag/duckdb/ariadne-knowledge.duckdb")
+DEFAULT_DUCKDB_PATH = Path("db/rag/ariadne-knowledge.duckdb")
 PROTECTED_RAG_CLEANUP_DIRS = (
-    Path("rag"),
-    Path("rag/duckdb"),
+    Path("db/rag"),
 )
 
 

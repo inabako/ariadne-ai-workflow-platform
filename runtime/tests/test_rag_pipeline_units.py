@@ -215,14 +215,14 @@ def test_normalize_documents_run_cleans_json_output_and_accepts_absolute_paths(t
     assert not old_json.exists()
     assert old_text.exists()
 
-    protected = repo / "rag" / "duckdb"
+    protected = repo / "db" / "rag"
     protected.mkdir(parents=True)
     with pytest.raises(ValueError, match="Refusing to clean protected RAG path"):
         normalize_documents.run(
             argparse.Namespace(
                 repo_root=str(repo),
                 source_dir=str(source_dir),
-                output_dir="rag/duckdb",
+                output_dir="db/rag",
                 document_type="note",
                 project="ariadne",
                 repository="repo",
@@ -456,7 +456,7 @@ def test_chunk_documents_run_cleans_output_and_supports_absolute_dirs(tmp_path: 
     assert result["output_dir"] == str(output_dir)
     assert Path(result["chunks"][0]).exists()
 
-    protected = repo / "rag"
+    protected = repo / "db" / "rag"
     with pytest.raises(ValueError, match="Refusing to clean protected RAG path"):
         chunk_documents.run(
             argparse.Namespace(

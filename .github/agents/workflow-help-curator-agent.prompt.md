@@ -31,7 +31,7 @@ AIワークフローは増え続けます。
 必要に応じて次を読みます。
 
 ```text
-runtime/registries/workflow_help.json
+db/registries/registry.duckdb
 .github/schemas/workflow-help.schema.json
 runtime/ctl.py
 runtime/tests/test_ctl_help.py
@@ -53,7 +53,7 @@ runtime/scm/*.py
 
 ### 1. Help Registry の正確性確認
 
-`runtime/registries/workflow_help.json` を確認し、各commandまたはextensionについて次を検証します。
+`db/registries/registry.duckdb` を確認し、各commandまたはextensionについて次を検証します。
 
 - `command` または `name`
 - `overview`
@@ -149,7 +149,7 @@ SVG GUI / Web SVG のような拡張は、standalone command として扱わな�
 workflow help を更新した場合、原則として次も確認します。
 
 ```text
-runtime/registries/workflow_help.json
+db/registries/registry.duckdb
 .github/schemas/workflow-help.schema.json
 docs/reference/workflow-help.md
 runtime/tests/test_ctl_help.py

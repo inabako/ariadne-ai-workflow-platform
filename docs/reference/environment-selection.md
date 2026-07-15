@@ -1,4 +1,4 @@
-﻿# 実行環境選択
+# 実行環境選択
 
 AI workflowを実行する前に、OS、shell、runtime、toolの違いによる失敗を避けるため、`aiwfctl env` で実行環境を選択します。
 
@@ -39,7 +39,7 @@ PATHが未反映の場合は、repo-local wrapperから直接呼びます。
 source of truthは次です。
 
 ```text
-runtime/registries/workflow_environment_profiles.json
+db/registries/registry.duckdb
 ```
 
 schemaは次です。

@@ -10,6 +10,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime import registry_store  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
 from runtime.tools import pytest_ut_spec_sync  # noqa: E402
@@ -60,11 +61,8 @@ def missing_required_files(repo_root: Path) -> list[str]:
         ".github/prompts/runtime-health-check.prompt.md",
         ".github/agents/runtime-quality-gate-agent.prompt.md",
         "docs/workflows/runtime-health-check.md",
-        "runtime/registries/README.md",
-        "runtime/registries/human_gates.json",
-        "runtime/registries/workflow_help.json",
-        "runtime/registries/tool_candidates.json",
-        "runtime/registries/workflow_environment_profiles.json",
+        "db/registries/README.md",
+        "db/registries/registry.duckdb",
         ".github/schemas/human-gates.schema.json",
         ".github/schemas/workflow-help.schema.json",
         ".github/schemas/tool-candidates.schema.json",
@@ -97,17 +95,23 @@ def missing_required_files(repo_root: Path) -> list[str]:
 
 
 def human_gate_registry_findings(repo_root: Path) -> list[str]:
-    registry_path = repo_root / "runtime" / "registries" / "human_gates.json"
-    if not registry_path.exists():
+    db_path = registry_store.registry_db_path(repo_root)
+    legacy_path = registry_store.legacy_registry_dir(repo_root) / "human_gates.json"
+    if not db_path.exists() and not legacy_path.exists():
         return []
-    data = json.loads(registry_path.read_text(encoding="utf-8"))
+    try:
+        data = registry_store.load_registry(repo_root, "human_gates", {})
+    except Exception as exc:
+        return [f"{registry_store.REGISTRY_DB_PATH.as_posix()} could not load human_gates: {exc}"]
+    if not isinstance(data, dict):
+        return ["human_gates registry must be an object"]
     findings: list[str] = []
     if "$schema" in data:
-        findings.append("runtime/registries/human_gates.json contains $schema")
+        findings.append("human_gates registry contains $schema")
     if "schema_version" in data:
-        findings.append("runtime/registries/human_gates.json contains schema_version")
+        findings.append("human_gates registry contains schema_version")
     if "registry_version" not in data:
-        findings.append("runtime/registries/human_gates.json does not contain registry_version")
+        findings.append("human_gates registry does not contain registry_version")
     return findings
 
 

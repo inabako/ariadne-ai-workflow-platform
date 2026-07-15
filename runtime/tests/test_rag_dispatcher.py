@@ -53,7 +53,7 @@ def make_args(**overrides) -> argparse.Namespace:
         "chunks_index": "rag/indexes/chunks.jsonl",
         "embeddings_index": "rag/embeddings/chunks-embeddings.jsonl",
         "retrieval_backend": "file",
-        "duckdb_path": "rag/duckdb/ariadne-knowledge.duckdb",
+        "duckdb_path": "db/rag/ariadne-knowledge.duckdb",
         "semantic_hint": "",
         "document_type": "",
         "environment": "",
@@ -172,7 +172,7 @@ def test_dispatcher_duckdb_backend_command_and_index_gate(tmp_path: Path) -> Non
     repo.mkdir()
     args = make_args(
         retrieval_backend="duckdb",
-        duckdb_path="rag/duckdb/knowledge.duckdb",
+        duckdb_path="db/rag/knowledge.duckdb",
         semantic_hint="dispatcher context",
         document_type="rag-knowledge",
         environment="windows",
@@ -204,7 +204,7 @@ def test_dispatcher_duckdb_backend_command_and_index_gate(tmp_path: Path) -> Non
 
     assert "--backend" in command
     assert command[command.index("--backend") + 1] == "duckdb"
-    assert command[command.index("--duckdb-path") + 1] == "rag/duckdb/knowledge.duckdb"
+    assert command[command.index("--duckdb-path") + 1] == "db/rag/knowledge.duckdb"
     assert "--semantic-hint" in command
     assert "--document-type" in command
     assert "--environment" in command

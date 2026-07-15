@@ -8,7 +8,7 @@ DuckDBファイルはsource of truthではありません。
 
 AriadneのRAG source of truthは、引き続きMarkdown、JSON、JSONLなどのfile-based artifactです。DuckDBはそれらを検索・集計・監査しやすくするための生成read modelとして扱います。
 
-そのため、標準のDuckDBファイルは `rag/duckdb/ariadne-knowledge.duckdb` に生成しますが、`rag/**` は `.gitignore` でGit管理外です。再生成できる生成物として扱います。
+そのため、標準のDuckDBファイルは `db/rag/ariadne-knowledge.duckdb` に生成しますが、`db/rag/**` は `.gitignore` でGit管理外です。再生成できる生成物として扱います。
 
 ## Phase 1の対象
 
@@ -68,7 +68,7 @@ uv run --project runtime python runtime/rag/duckdb_store.py migrate --source rag
 
 指定ディレクトリ配下のJSONを再帰的に登録します。
 
-壊れたJSONや `content` 欠損recordがあっても、移行処理全体は止めません。エラーは `rag/duckdb/migration-errors.jsonl` に出力し、summaryの `failed_count` と `errors` に残します。
+壊れたJSONや `content` 欠損recordがあっても、移行処理全体は止めません。エラーは `db/rag/migration-errors.jsonl` に出力し、summaryの `failed_count` と `errors` に残します。
 
 ### search
 
@@ -140,10 +140,10 @@ flowchart TD
     E --> F[normalize / chunk / optimize<br/>JSON source materialを作成]
     F --> G[ariadne-knowledge-platformへcommit / push]
     G --> H[aiwfctl knowledge rebuild]
-    H --> I[rag/duckdb/ariadne-knowledge.duckdb]
+    H --> I[db/rag/ariadne-knowledge.duckdb]
     I --> J[aiwfctl knowledge verify]
-    J --> K[rag/evidence/duckdb/reference-check.json]
-    J --> L[rag/evidence/duckdb/context/context-manifest.json]
+    J --> K[db/rag/evidence/reference-check.json]
+    J --> L[db/rag/evidence/context/context-manifest.json]
     K --> M[後続workflow / Agentが参照]
     L --> M
 ```
@@ -204,7 +204,7 @@ aiwfctl knowledge rebuild `
 生成されるDuckDBは検索用のread modelです。
 
 ```text
-rag/duckdb/ariadne-knowledge.duckdb
+db/rag/ariadne-knowledge.duckdb
 ```
 
 このファイルはsource of truthではありません。削除されてもknowledge sourceから再生成できます。
@@ -224,8 +224,8 @@ aiwfctl knowledge verify `
 `--work-id` / `--work-dir` を省略した場合、汎用のDuckDB reference checkとして次へ集約します。
 
 ```text
-rag/evidence/duckdb/reference-check.json
-rag/evidence/duckdb/context/context-manifest.json
+db/rag/evidence/reference-check.json
+db/rag/evidence/context/context-manifest.json
 ```
 
 後続workflow / Agentは、このmanifestからDuckDB参照可否を確認できます。
@@ -255,8 +255,8 @@ aiwfctl knowledge export-context `
 | `work/db/ariadne-knowledge-platform/rag/normalized` | DuckDB rebuild対象の正規化済みknowledge record | knowledge source側で管理 |
 | `work/db/ariadne-knowledge-platform/rag/chunks` | DuckDB rebuild対象のchunk record | knowledge source側で管理 |
 | `work/db/ariadne-knowledge-platform/rag/optimized-chunks` | ingestion optimizationでACCEPTされたchunk | knowledge source側で管理 |
-| `rag/duckdb/ariadne-knowledge.duckdb` | 生成DuckDB read model | Ariadne本体では追跡しない |
-| `rag/evidence/duckdb/` | rebuild / verifyの実行証跡 | Ariadne本体では追跡しない |
+| `db/rag/ariadne-knowledge.duckdb` | 生成DuckDB read model | Ariadne本体では追跡しない |
+| `db/rag/evidence/` | rebuild / verifyの実行証跡 | Ariadne本体では追跡しない |
 
 ## 後続Phase候補
 
@@ -270,7 +270,7 @@ Phase 3では、既存file-based retrievalを維持したまま、`retrieve_cont
 uv run --project runtime python runtime/rag/retrieve_context.py `
   "PyQt GUI smoke test" `
   --backend duckdb `
-  --duckdb-path rag/duckdb/ariadne-knowledge.duckdb `
+  --duckdb-path db/rag/ariadne-knowledge.duckdb `
   --tag gui `
   --max-chars 4000
 ```
@@ -281,7 +281,7 @@ Dispatcherから利用する場合:
 uv run --project runtime python runtime/rag/rag_dispatcher.py `
   --task "PyQt GUI smoke test" `
   --retrieval-backend duckdb `
-  --duckdb-path rag/duckdb/ariadne-knowledge.duckdb `
+  --duckdb-path db/rag/ariadne-knowledge.duckdb `
   --tag gui
 ```
 
@@ -292,16 +292,16 @@ Phase 4では、`rag-build` の成果物としてDuckDB migration evidenceを残
 ```powershell
 uv run --project runtime python runtime/rag/rag_build.py `
   --duckdb-migrate `
-  --duckdb-path rag/duckdb/ariadne-knowledge.duckdb
+  --duckdb-path db/rag/ariadne-knowledge.duckdb
 ```
 
 `--duckdb-migrate` を指定した場合だけ、RAG build完了後にDuckDB read modelを再生成します。標準では以下を出力します。
 
 | Artifact | Path |
 | --- | --- |
-| DuckDB read model | `rag/duckdb/ariadne-knowledge.duckdb` |
-| Migration evidence | `rag/evidence/duckdb/migration-summary.json` |
-| Error log | `rag/duckdb/migration-errors.jsonl` |
+| DuckDB read model | `db/rag/ariadne-knowledge.duckdb` |
+| Migration evidence | `db/rag/evidence/migration-summary.json` |
+| Error log | `db/rag/migration-errors.jsonl` |
 
 `work-id` または `work-dir` が指定されている場合、Context First manifestへ以下を登録します。
 
@@ -350,7 +350,7 @@ source repo内では、次の標準RAG JSONソースを探索します。
 
 `--reset` を指定した場合、既存の生成DuckDBファイルを削除してから再投入します。DuckDBファイルは生成物なので、Git管理対象にはしません。
 
-`rag/` cleanupを行う場合でも、`rag/duckdb/ariadne-knowledge.duckdb` は運用上のread model実体です。削除された場合は正本source repoから再生成できますが、workflow実行前には `workflow_doctor` / `aiwfctl doctor` が欠落を警告します。
+`db/rag/` cleanupを行う場合でも、`db/rag/ariadne-knowledge.duckdb` は運用上のread model実体です。削除された場合は正本source repoから再生成できますが、workflow実行前には `workflow_doctor` / `aiwfctl doctor` が欠落を警告します。
 
 ```powershell
 aiwfctl doctor --fail-on-warning
@@ -367,7 +367,7 @@ aiwfctl knowledge verify `
   --query runtime `
   --query RAG `
   --source-repo work/db/ariadne-knowledge-platform `
-  --work-dir rag/evidence/duckdb `
+  --work-dir db/rag/evidence `
   --work-id duckdb-reference-check
 ```
 
@@ -375,9 +375,9 @@ aiwfctl knowledge verify `
 
 | Artifact | Path |
 | --- | --- |
-| DuckDB read model | `rag/duckdb/ariadne-knowledge.duckdb` |
-| Migration error log | `rag/duckdb/migration-errors.jsonl` |
-| Reference check evidence | `rag/evidence/duckdb/reference-check.json` |
+| DuckDB read model | `db/rag/ariadne-knowledge.duckdb` |
+| Migration error log | `db/rag/migration-errors.jsonl` |
+| Reference check evidence | `db/rag/evidence/reference-check.json` |
 
 reference checkは、各queryについて検索件数、上位結果、score、source pathを保存します。1つでも `min-results` を満たさないqueryがある場合、statusは `human-check-required` になります。
 
@@ -386,7 +386,7 @@ reference checkは、各queryについて検索件数、上位結果、score、s
 汎用のDuckDB smoke / reference checkは、特定workflowの作業ではなくRAG read modelの実行証跡なので、標準では次へ倒します。
 
 ```text
-rag/evidence/duckdb/context/context-manifest.json
+db/rag/evidence/context/context-manifest.json
 ```
 
 一方、特定Issueや後続workflowに紐づく確認では、従来通り `--work-id <work-id>` を指定し、`work/<work-id>/context/context-manifest.json` に登録します。
@@ -395,9 +395,9 @@ rag/evidence/duckdb/context/context-manifest.json
 aiwfctl knowledge verify `
   --query "PyQt GUI" `
   --min-results 1 `
-  --output rag/evidence/duckdb/reference-check.json `
+  --output db/rag/evidence/reference-check.json `
   --source-repo work/db/ariadne-knowledge-platform `
-  --work-dir rag/evidence/duckdb `
+  --work-dir db/rag/evidence `
   --work-id duckdb-reference-check
 ```
 

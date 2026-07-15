@@ -1,4 +1,4 @@
-﻿# Runtime
+# Runtime
 
 `runtime/` は、workflow を実行・補助するための処理機能を置く場所です。
 
@@ -20,7 +20,7 @@
 | Script | Responsibility |
 | --- | --- |
 | `runtime/ctl.py` | `runtime/tools/aiwfctl.cmd` から呼び出される `aiwfctl help` / `aiwfctl env` の実体。help検索、Environment Dispatcher、`work/<work-id>/context/environment-selection.json` 作成を行う |
-| `runtime/registries/workflow_environment_profiles.json` | `aiwfctl env` が参照する利用者向けEnvironmentと内部Backend profile registry |
+| `db/registries/registry.duckdb` | `aiwfctl env` が参照する利用者向けEnvironmentと内部Backend profile registry |
 | `runtime/intake/intake_requirements.py` | `work/requirements/` の要件定義書を受付ID単位で移動し、初期contextを作る |
 | `runtime/environment/preflight.py` | 必要tool / packageを確認し、install listを作る |
 | `runtime/scm/prepare_repository.py` | target repository / branchを取得し、`scm-state.json` を作る |

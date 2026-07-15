@@ -180,7 +180,7 @@ aiwfctl help markdown --output work/help/ai-workflow-help.md
 ヘルプ本体は次のregistryに置きます。
 
 ```text
-runtime/registries/workflow_help.json
+db/registries/registry.duckdb
 ```
 
 構造定義は次に置きます。
@@ -189,7 +189,7 @@ runtime/registries/workflow_help.json
 .github/schemas/workflow-help.schema.json
 ```
 
-`runtime/registries/` はruntime横断で参照するregistry実体、`.github/schemas/` は構造定義専用です。
+`db/registries/` はruntime横断で参照するregistry実体、`.github/schemas/` は構造定義専用です。
 
 ## 更新ルール
 
@@ -197,7 +197,7 @@ runtime/registries/workflow_help.json
 
 workflow prompt commandを追加、削除、引数変更した場合は、次を更新します。
 
-1. `runtime/registries/workflow_help.json`
+1. `db/registries/registry.duckdb`
 2. `.github/schemas/workflow-help.schema.json` が必要なら更新
 3. `docs/reference/workflow-help.md`
 4. `runtime/tests/test_ctl_help.py`

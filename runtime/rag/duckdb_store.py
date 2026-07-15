@@ -19,10 +19,10 @@ from runtime.rag import ingestion_optimizer  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
-DEFAULT_DB_PATH = Path("rag/duckdb/ariadne-knowledge.duckdb")
-DEFAULT_ERROR_LOG = Path("rag/duckdb/migration-errors.jsonl")
-DEFAULT_REFERENCE_CHECK_OUTPUT = Path("rag/evidence/duckdb/reference-check.json")
-DEFAULT_REFERENCE_CHECK_WORK_DIR = Path("rag/evidence/duckdb")
+DEFAULT_DB_PATH = Path("db/rag/ariadne-knowledge.duckdb")
+DEFAULT_ERROR_LOG = Path("db/rag/migration-errors.jsonl")
+DEFAULT_REFERENCE_CHECK_OUTPUT = Path("db/rag/evidence/reference-check.json")
+DEFAULT_REFERENCE_CHECK_WORK_DIR = Path("db/rag/evidence")
 DEFAULT_REFERENCE_CHECK_WORK_ID = "duckdb-reference-check"
 DEFAULT_SOURCE_REPO_URL = "https://github.com/inabako/ariadne-knowledge-platform.git"
 DEFAULT_SOURCE_REPO_PATH = Path("work/db/ariadne-knowledge-platform")

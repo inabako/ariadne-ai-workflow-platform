@@ -232,7 +232,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             argparse.Namespace(
                 chunks_dir=args.chunks_dir,
                 output_dir=getattr(args, "optimized_chunks_dir", "rag/optimized-chunks"),
-                evidence_dir=getattr(args, "ingestion_evidence_dir", "rag/evidence/ingestion"),
+                evidence_dir=getattr(args, "ingestion_evidence_dir", "db/rag/evidence/ingestion"),
                 policy=getattr(args, "ingestion_policy", "runtime/rag/policies/knowledge-ingestion-policy.json"),
                 repo_root=str(repo_root),
                 clean_output=args.clean_output,
@@ -289,7 +289,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
         evidence_path = resolve_repo_path(
             repo_root,
-            getattr(args, "duckdb_evidence_output", "rag/evidence/duckdb/migration-summary.json"),
+            getattr(args, "duckdb_evidence_output", "db/rag/evidence/migration-summary.json"),
         ).resolve()
         duckdb_migration_result = write_duckdb_migration_evidence(
             repo_root,
@@ -334,14 +334,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--indexes-dir", default="rag/indexes")
     parser.add_argument("--embeddings-output", default="rag/embeddings/chunks-embeddings.jsonl")
     parser.add_argument("--output", default="rag/retrieval/rag-build-run-latest.json")
-    parser.add_argument("--ingestion-evidence-dir", default="rag/evidence/ingestion")
+    parser.add_argument("--ingestion-evidence-dir", default="db/rag/evidence/ingestion")
     parser.add_argument("--ingestion-policy", default="runtime/rag/policies/knowledge-ingestion-policy.json")
     parser.add_argument("--skip-optimization", action="store_true")
     parser.add_argument("--duckdb-migrate", action="store_true")
     parser.add_argument("--duckdb-path", default=str(duckdb_store.DEFAULT_DB_PATH))
     parser.add_argument("--duckdb-source-dir", default="")
     parser.add_argument("--duckdb-error-log", default=str(duckdb_store.DEFAULT_ERROR_LOG))
-    parser.add_argument("--duckdb-evidence-output", default="rag/evidence/duckdb/migration-summary.json")
+    parser.add_argument("--duckdb-evidence-output", default="db/rag/evidence/migration-summary.json")
     parser.add_argument("--duckdb-policy", default="")
     parser.add_argument("--project", default="")
     parser.add_argument("--repository", default="")

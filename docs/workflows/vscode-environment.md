@@ -1,4 +1,4 @@
-﻿# VSCode Environment
+# VSCode Environment
 
 `/vscode-environment` は、VSCode Workspace-as-Code 環境を整備し、AIさんと人間が同じ手順で workflow、terminal、task、debug、検証、evidence を再現できるようにする workflow です。
 
@@ -23,7 +23,7 @@
 - target: current repository / workspace root
 - 目的: このAI workflow repository自身を、AIさんが実行しやすいVSCode環境にする
 - 記入済み草案: 不要
-- 判断材料: `.vscode/`, `runtime/tools/`, `runtime/workflow/`, `runtime/registries/`, docs, prompts, tests
+- 判断材料: `.vscode/`, `runtime/tools/`, `runtime/workflow/`, `db/registries/`, docs, prompts, tests
 
 ### 2. target-workspace mode
 

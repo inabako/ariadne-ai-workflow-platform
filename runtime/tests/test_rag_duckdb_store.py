@@ -164,7 +164,7 @@ def test_duckdb_store_cli_and_fallback_paths(tmp_path: Path, monkeypatch, capsys
     parser = duckdb_store.build_parser()
     args = parser.parse_args(["--repo-root", str(repo), "migrate", "--source", "rag/optimized-chunks"])
     assert isinstance(args, argparse.Namespace)
-    assert duckdb_store.resolve_repo_path(repo, "rag/duckdb/x.duckdb") == repo / "rag" / "duckdb" / "x.duckdb"
+    assert duckdb_store.resolve_repo_path(repo, "db/rag/x.duckdb") == repo / "db" / "rag" / "x.duckdb"
     assert duckdb_store.source_kind_from_path(repo / "rag" / "jsonized" / "a.json") == "jsonized-artifact"
     assert duckdb_store.deterministic_id("a.json", "content") == duckdb_store.deterministic_id(
         "a.json", "content"
@@ -229,11 +229,11 @@ def test_duckdb_store_run_migrate_and_empty_error_log(tmp_path: Path) -> None:
     )
     args = argparse.Namespace(
         repo_root=str(repo),
-        db="rag/duckdb/run.duckdb",
+        db="db/rag/run.duckdb",
         command="migrate",
         source="rag/optimized-chunks",
         policy="runtime/rag/policies/knowledge-ingestion-policy.json",
-        error_log="rag/duckdb/migration-errors.jsonl",
+        error_log="db/rag/migration-errors.jsonl",
     )
 
     result = duckdb_store.run(args)
@@ -570,7 +570,7 @@ def test_duckdb_store_verify_references_writes_evidence(tmp_path: Path) -> None:
             db=str(db),
             command="verify",
             query=["Reference verification"],
-            output="rag/evidence/duckdb/default-reference-check.json",
+            output="db/rag/evidence/default-reference-check.json",
             min_results=1,
             limit=3,
             work_id="",
@@ -579,8 +579,8 @@ def test_duckdb_store_verify_references_writes_evidence(tmp_path: Path) -> None:
         )
     )
 
-    assert default_result["context_manifest"] == "rag/evidence/duckdb/context/context-manifest.json"
+    assert default_result["context_manifest"] == "db/rag/evidence/context/context-manifest.json"
     default_manifest = json.loads(
-        (repo / "rag" / "evidence" / "duckdb" / "context" / "context-manifest.json").read_text(encoding="utf-8")
+        (repo / "db" / "rag" / "evidence" / "context" / "context-manifest.json").read_text(encoding="utf-8")
     )
     assert default_manifest["work_id"] == "duckdb-reference-check"
