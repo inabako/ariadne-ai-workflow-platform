@@ -146,7 +146,7 @@ work/<receipt-id>/process-report/nextjs-webapp-implementation-prep.md
 Template:
 
 ```text
-templates/process-report/nextjs-webapp-implementation-prep-template.md
+templates/artifacts/process-report/nextjs-webapp-implementation-prep-template.md
 ```
 
 When a screen layout is provided as SVG, use the repository workflow to convert it into reviewed layout candidates before implementation:

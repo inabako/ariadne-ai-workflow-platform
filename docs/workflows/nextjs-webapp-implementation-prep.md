@@ -66,7 +66,7 @@ work/<receipt-id>/process-report/nextjs-webapp-implementation-prep.md
 Template:
 
 ```text
-templates/process-report/nextjs-webapp-implementation-prep-template.md
+templates/artifacts/process-report/nextjs-webapp-implementation-prep-template.md
 ```
 
 Web画面向けSVGがある場合は、次のサブフロー成果物も参照します。

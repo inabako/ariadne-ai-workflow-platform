@@ -56,30 +56,30 @@ templates/
 
 | Template Directory | Purpose |
 | --- | --- |
-| `templates/design-document/` | 設計書 |
-| `templates/process-report/` | プロセス毎のレポート |
-| `templates/test-evidence/` | テスト証跡 |
-| `templates/test-specifications/` | テスト仕様書、テストケース表 |
-| `templates/noise-reduction/` | 要件定義前の未知用語、用語衝突、表記揺れ、資料矛盾、Human Interview、Glossary、Readiness |
+| `templates/artifacts/design-document/` | 設計書 |
+| `templates/artifacts/process-report/` | プロセス毎のレポート |
+| `templates/artifacts/test-evidence/` | テスト証跡 |
+| `templates/artifacts/test-specifications/` | テスト仕様書、テストケース表 |
+| `templates/workflows/noise-reduction/` | 要件定義前の未知用語、用語衝突、表記揺れ、資料矛盾、Human Interview、Glossary、Readiness |
 | `templates/boilerplates/` | 新規service / app / IaC / MCP生成用のboilerplate source root |
 | `templates/boilerplates/apps/` | Next.js / PyQt / Flutter app boilerplate |
 | `templates/boilerplates/services/` | service boilerplate |
 | `templates/boilerplates/infrastructure/` | realtime gateway / platform / database / middleware / identity IaC boilerplate |
 | `templates/boilerplates/integration/` | integration test / emulator boilerplate |
 | `templates/boilerplates/mcp/` | MCP Server / MCP Client / Agent Runtime / operation gateway boilerplate |
-| `templates/web-svg-layout/` | Web画面向けSVG入力、responsive layout、React候補、Playwright候補 |
+| `templates/workflows/web-svg-layout/` | Web画面向けSVG入力、responsive layout、React候補、Playwright候補 |
 
 ## Standard Template Files
 
 | Template | Output Directory | Required Use |
 | --- | --- | --- |
-| `templates/design-document/ariadne-design-document-template.md` | `work/<採番ID>/design-document/` | architecture、responsibility boundary、safety design、test strategy を定義するとき |
-| `templates/process-report/ariadne-process-report-template.md` | `work/<採番ID>/process-report/` | Agent / tool / review / comparison / implementation の工程結果を残すとき |
-| `templates/test-evidence/ariadne-test-evidence-template.md` | `work/<採番ID>/test-evidence/` | test execution の条件、結果、証跡、pass / fail 判断を残すとき |
-| `templates/test-specifications/ariadne-test-specification-template.md` | `work/<採番ID>/test-specifications/` | test strategy、test case table、entry / exit criteria を定義するとき |
-| `templates/noise-reduction/` | `work/requirements/draft/<draft-stem>-noise-reduction/` | 要件review draft前にノイズ除去、Human Interview、Project Glossary、Readinessを作るとき |
-| `templates/process-report/boilerplate-template-selection-report-template.md` | `work/<採番ID>/process-report/` | 新システム実装前にboilerplate template採用可否を判断するとき |
-| `templates/web-svg-layout/` | `work/<採番ID>/web-ui/` | Web画面向けSVGからlayout / component / React / Playwright候補を作るとき |
+| `templates/artifacts/design-document/ariadne-design-document-template.md` | `work/<採番ID>/design-document/` | architecture、responsibility boundary、safety design、test strategy を定義するとき |
+| `templates/artifacts/process-report/ariadne-process-report-template.md` | `work/<採番ID>/process-report/` | Agent / tool / review / comparison / implementation の工程結果を残すとき |
+| `templates/artifacts/test-evidence/ariadne-test-evidence-template.md` | `work/<採番ID>/test-evidence/` | test execution の条件、結果、証跡、pass / fail 判断を残すとき |
+| `templates/artifacts/test-specifications/ariadne-test-specification-template.md` | `work/<採番ID>/test-specifications/` | test strategy、test case table、entry / exit criteria を定義するとき |
+| `templates/workflows/noise-reduction/` | `work/requirements/draft/<draft-stem>-noise-reduction/` | 要件review draft前にノイズ除去、Human Interview、Project Glossary、Readinessを作るとき |
+| `templates/artifacts/process-report/boilerplate-template-selection-report-template.md` | `work/<採番ID>/process-report/` | 新システム実装前にboilerplate template採用可否を判断するとき |
+| `templates/workflows/web-svg-layout/` | `work/<採番ID>/web-ui/` | Web画面向けSVGからlayout / component / React / Playwright候補を作るとき |
 | `templates/boilerplates/infrastructure/microservice-infra-template/` | target repositoryのIaC directoryまたは `work/<採番ID>/source/repository/` | realtime gateway infrastructure をtemplateから生成するとき |
 
 ## Artifact Quality Rule

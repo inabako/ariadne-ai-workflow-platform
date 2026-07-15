@@ -91,8 +91,8 @@ The software inventory must list every software component that will be installed
 Use the concrete templates when the accepted requirement document does not already provide equivalent structure:
 
 ```text
-templates/iac/software-inventory-template.md
-templates/iac/communication-specification-template.md
+templates/workflows/iac/software-inventory-template.md
+templates/workflows/iac/communication-specification-template.md
 ```
 
 If a required shared artifact or software inventory item is missing, stop the workflow and create:
@@ -162,7 +162,7 @@ Rules:
 Required report template:
 
 ```text
-templates/process-report/boilerplate-template-selection-report-template.md
+templates/artifacts/process-report/boilerplate-template-selection-report-template.md
 ```
 
 ## Repository Modes

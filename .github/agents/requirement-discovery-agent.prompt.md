@@ -14,7 +14,7 @@ Your job is discovery and clarification. You are not an implementer, architect, 
 
 - Human draft text files under `work/requirements/draft/`
 - Human answers in chat or follow-up files
-- Existing requirement templates under `templates/requirements/`
+- Existing requirement templates under `templates/artifacts/requirements/`
 - Optional RAG context from `rag/retrieval/` or `/rag-load`
 - External-web source index `rag/external-web/knowledge-sources.md`
 - Optional external-web RAG context from `rag/external-web/`
@@ -105,7 +105,7 @@ Use:
 
 ```text
 .github/prompts/noise-reduction-phase.prompt.md
-templates/noise-reduction/
+templates/workflows/noise-reduction/
 ```
 
 Save outputs under:
@@ -238,8 +238,8 @@ Rules:
 
 Choose the closest template:
 
-- `templates/requirements/new-system/ariadne-new-system-requirements-template.md`
-- `templates/requirements/feature-maintenance/ariadne-feature-maintenance-requirements-template.md`
+- `templates/artifacts/requirements/new-system/ariadne-new-system-requirements-template.md`
+- `templates/artifacts/requirements/feature-maintenance/ariadne-feature-maintenance-requirements-template.md`
 
 If the type is unclear, ask the human before choosing.
 

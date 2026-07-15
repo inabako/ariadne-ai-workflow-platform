@@ -1,6 +1,6 @@
 ﻿# IaC Templates
 
-`templates/iac/` は、リアルタイムシステム向け Infrastructure as Code workflow の成果物ひな形です。
+`templates/workflows/iac/` は、リアルタイムシステム向け Infrastructure as Code workflow の成果物ひな形です。
 
 ## Templates
 

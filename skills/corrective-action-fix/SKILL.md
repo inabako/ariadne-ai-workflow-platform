@@ -401,7 +401,7 @@ Procedure:
 
 1. If mojibake is found in the read-only base checkout, do not edit the base branch. Record it in the corrective action report or issue body.
 2. After the issue branch exists, check whether the target repository already has `.editorconfig` at its repository root.
-3. If it does not, add `.editorconfig` from `templates/editorconfig/target-repository.editorconfig` into `work/issue-<issue-number>/source/repository/.editorconfig`.
+3. If it does not, add `.editorconfig` from `templates/repository/editorconfig/target-repository.editorconfig` into `work/issue-<issue-number>/source/repository/.editorconfig`.
 4. Preserve `.bat` / `.cmd` Shift_JIS operation by keeping `charset = unset` and `end_of_line = crlf` for those files.
 5. Ask the user to reload the editor/session for the target repository after adding `.editorconfig`.
 6. Re-read the affected files after reload before continuing implementation. Do not rely on previously garbled buffers.
@@ -448,7 +448,7 @@ Use:
 
 ```text
 .github/prompts/nextjs-webapp-implementation-prep.prompt.md
-templates/process-report/nextjs-webapp-implementation-prep-template.md
+templates/artifacts/process-report/nextjs-webapp-implementation-prep-template.md
 ```
 
 Rules:
@@ -469,7 +469,7 @@ Use:
 ```text
 .github/prompts/web-svg-layout-mode.prompt.md
 runtime/workflow/web_svg_layout_mode.py
-templates/web-svg-layout/
+templates/workflows/web-svg-layout/
 ```
 
 Output:
@@ -507,7 +507,7 @@ Before running unit tests, startup checks, or integration / communication checks
 Use:
 
 ```text
-templates/test-specifications/ariadne-test-specification-template.md
+templates/artifacts/test-specifications/ariadne-test-specification-template.md
 ```
 
 Save the issue-specific test specification under:

@@ -26,7 +26,7 @@ from runtime.workflow.context_first import register_context  # noqa: E402
 
 
 VALID_DECISIONS = {"accepted", "rejected", "deferred"}
-TEMPLATE_DIR = Path("templates/self-improvement")
+TEMPLATE_DIR = Path("templates/workflows/self-improvement")
 
 
 def build_parser() -> argparse.ArgumentParser:

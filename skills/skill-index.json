@@ -182,7 +182,7 @@
       "standalone_skill": false,
       "prompt_path": ".github/prompts/nextjs-webapp-implementation-prep.prompt.md",
       "doc_path": "docs/workflows/nextjs-webapp-implementation-prep.md",
-      "template_path": "templates/process-report/nextjs-webapp-implementation-prep-template.md",
+      "template_path": "templates/artifacts/process-report/nextjs-webapp-implementation-prep-template.md",
       "trigger": "Next.js dashboard/admin/monitoring/business webapp implementation before source changes",
       "parent_workflows": [
         "ariadne-new-system-development",
@@ -196,7 +196,7 @@
       "standalone_skill": false,
       "prompt_path": ".github/prompts/web-svg-layout-mode.prompt.md",
       "doc_path": "docs/workflows/web-svg-layout-mode.md",
-      "template_path": "templates/web-svg-layout/",
+      "template_path": "templates/workflows/web-svg-layout/",
       "runtime_path": "runtime/workflow/web_svg_layout_mode.py",
       "trigger": "work/requirements/svg-input/{WEB_SYS,WEB_FEAT,WEB_FIX}_*.svg",
       "parent_workflows": [
@@ -243,7 +243,7 @@
       "standalone_skill": false,
       "prompt_path": ".github/prompts/noise-reduction-phase.prompt.md",
       "doc_path": "docs/workflows/noise-reduction-phase.md",
-      "template_path": "templates/noise-reduction/",
+      "template_path": "templates/workflows/noise-reduction/",
       "trigger": "requirement discovery before requirement review draft creation",
       "parent_workflows": [
         "requirement-discovery"

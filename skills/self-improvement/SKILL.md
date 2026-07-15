@@ -19,7 +19,7 @@ description: Collect workflow feedback from Ariadne AI Workflow Platform runs, a
 
 ```text
 work/feedback/
-templates/self-improvement/
+templates/workflows/self-improvement/
 work/<work-id>/process-report/self-improvement/
 work/<work-id>/test-evidence/self-improvement/
 ```

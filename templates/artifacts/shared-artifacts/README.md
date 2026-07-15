@@ -16,6 +16,6 @@ They are the single source of truth for IaC. The IaC workflow must not invent mi
 Related templates:
 
 ```text
-templates/iac/communication-specification-template.md
-templates/iac/software-inventory-template.md
+templates/workflows/iac/communication-specification-template.md
+templates/workflows/iac/software-inventory-template.md
 ```

@@ -119,8 +119,8 @@ software inventoryで確認すること:
 要件定義書に同等の構造が無い場合は、次のテンプレートを使って不足項目を洗い出す。
 
 ```text
-templates/iac/software-inventory-template.md
-templates/iac/communication-specification-template.md
+templates/workflows/iac/software-inventory-template.md
+templates/workflows/iac/communication-specification-template.md
 ```
 
 ## Phase 2: Requirements Organization

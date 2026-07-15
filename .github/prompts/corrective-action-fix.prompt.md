@@ -81,7 +81,7 @@ Next.js Webapp Implementation Prep:
 
 ```text
 .github/prompts/nextjs-webapp-implementation-prep.prompt.md
-templates/process-report/nextjs-webapp-implementation-prep-template.md
+templates/artifacts/process-report/nextjs-webapp-implementation-prep-template.md
 ```
 
 既存Next.js appでは `nextjs-app-template` はreference-onlyです。画面route、user action、API contract、auth/session、env/secret境界、typecheck、lint、unit、e2e、health、UI smoke、API connectivityが未整理なら実装へ進みません。

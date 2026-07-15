@@ -86,8 +86,8 @@ IaC設計や生成へ進む前に、次の共有成果物が必要です。
 要件定義書に同等の構造が無い場合は、次のテンプレートを使います。
 
 ```text
-templates/iac/software-inventory-template.md
-templates/iac/communication-specification-template.md
+templates/workflows/iac/software-inventory-template.md
+templates/workflows/iac/communication-specification-template.md
 ```
 
 不足している場合、AIは推測で補完せず、`work/<receipt-id>/design-document/open-questions.md` を作成して停止します。

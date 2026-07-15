@@ -119,12 +119,12 @@ uv run --project runtime python runtime/workflow/context_first.py `
 ## Templates
 
 ```text
-templates/shared-artifacts/shared-artifacts-index-template.md
-templates/shared-artifacts/port-definition-template.md
-templates/shared-artifacts/network-boundary-definition-template.md
-templates/shared-artifacts/architecture-decision-record-template.md
-templates/iac/communication-specification-template.md
-templates/iac/software-inventory-template.md
+templates/artifacts/shared-artifacts/shared-artifacts-index-template.md
+templates/artifacts/shared-artifacts/port-definition-template.md
+templates/artifacts/shared-artifacts/network-boundary-definition-template.md
+templates/artifacts/shared-artifacts/architecture-decision-record-template.md
+templates/workflows/iac/communication-specification-template.md
+templates/workflows/iac/software-inventory-template.md
 ```
 
 ## Source Skills

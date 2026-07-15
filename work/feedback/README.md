@@ -4,7 +4,7 @@
 
 細かい `inbox/`、`aggregated/`、`processed/`、`icebox/` は作りません。各Feedback reportに `Review Status` と `Human Check` を追記し、採用 / 不採用 / 保留を同じファイルで管理します。
 
-永続テンプレートは `templates/self-improvement/` に置きます。
+永続テンプレートは `templates/workflows/self-improvement/` に置きます。
 
 ```powershell
 python runtime/workflow/self_improvement.py create-feedback `

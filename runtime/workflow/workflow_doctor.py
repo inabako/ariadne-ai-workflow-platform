@@ -85,7 +85,7 @@ def missing_required_files(repo_root: Path) -> list[str]:
         ".github/schemas/rag-dispatch-plan.schema.json",
         ".github/schemas/rag-load-dispatch.schema.json",
         "runtime/workflow/gui_mode.py",
-        "templates/noise-reduction/README.md",
+        "templates/workflows/noise-reduction/README.md",
         "docs/reference/human-gates.md",
         "docs/reference/context-first-architecture.md",
         "docs/reference/environment-selection.md",

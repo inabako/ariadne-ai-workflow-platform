@@ -100,7 +100,7 @@ Use:
 
 ```text
 .github/prompts/noise-reduction-phase.prompt.md
-templates/noise-reduction/
+templates/workflows/noise-reduction/
 ```
 
 Runtime helper:

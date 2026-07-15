@@ -37,7 +37,7 @@ work/feedback/
 永続テンプレートは次に置きます。
 
 ```text
-templates/self-improvement/
+templates/workflows/self-improvement/
 ```
 
 ## Flow

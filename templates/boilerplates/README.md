@@ -60,18 +60,18 @@ work/<receipt-id>/process-report/boilerplate-template-selection.md
 Report template:
 
 ```text
-templates/process-report/boilerplate-template-selection-report-template.md
+templates/artifacts/process-report/boilerplate-template-selection-report-template.md
 ```
 
 Next.js webappを採用または参照する場合は、実装前に次の準備reportも作成します。
 
 ```text
-templates/process-report/nextjs-webapp-implementation-prep-template.md
+templates/artifacts/process-report/nextjs-webapp-implementation-prep-template.md
 ```
 
 Web画面向けSVGレイアウト案がある場合は、`WEB_SYS_*.svg`、`WEB_FEAT_*.svg`、`WEB_FIX_*.svg` として `work/requirements/svg-input/` に配置し、次のサブフローで `web-ui/` 候補を作成します。
 
 ```text
 docs/workflows/web-svg-layout-mode.md
-templates/web-svg-layout/
+templates/workflows/web-svg-layout/
 ```

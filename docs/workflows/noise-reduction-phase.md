@@ -61,7 +61,7 @@ readiness-report.md
 Templates:
 
 ```text
-templates/noise-reduction/
+templates/workflows/noise-reduction/
 ```
 
 ## Readiness

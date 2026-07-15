@@ -33,7 +33,7 @@ work/<work-id>/process-report/nextjs-webapp-implementation-prep.md
 次のtemplateを使います。
 
 ```text
-templates/process-report/nextjs-webapp-implementation-prep-template.md
+templates/artifacts/process-report/nextjs-webapp-implementation-prep-template.md
 ```
 
 ## 流れ

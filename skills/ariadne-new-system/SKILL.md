@@ -135,7 +135,7 @@ Rules:
 Required report template:
 
 ```text
-templates/process-report/boilerplate-template-selection-report-template.md
+templates/artifacts/process-report/boilerplate-template-selection-report-template.md
 ```
 
 ## Next.js Webapp Implementation Preparation Gate
@@ -146,7 +146,7 @@ Use:
 
 ```text
 .github/prompts/nextjs-webapp-implementation-prep.prompt.md
-templates/process-report/nextjs-webapp-implementation-prep-template.md
+templates/artifacts/process-report/nextjs-webapp-implementation-prep-template.md
 ```
 
 Save the preparation result under:
@@ -170,7 +170,7 @@ Use:
 ```text
 .github/prompts/web-svg-layout-mode.prompt.md
 runtime/workflow/web_svg_layout_mode.py
-templates/web-svg-layout/
+templates/workflows/web-svg-layout/
 ```
 
 Input:

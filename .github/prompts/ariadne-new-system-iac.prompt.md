@@ -78,12 +78,12 @@ work/<receipt-id>/design-document/software-inventory.md
 Templates:
 
 ```text
-templates/shared-artifacts/shared-artifacts-index-template.md
-templates/iac/communication-specification-template.md
-templates/shared-artifacts/port-definition-template.md
-templates/shared-artifacts/network-boundary-definition-template.md
-templates/shared-artifacts/architecture-decision-record-template.md
-templates/iac/software-inventory-template.md
+templates/artifacts/shared-artifacts/shared-artifacts-index-template.md
+templates/workflows/iac/communication-specification-template.md
+templates/artifacts/shared-artifacts/port-definition-template.md
+templates/artifacts/shared-artifacts/network-boundary-definition-template.md
+templates/artifacts/shared-artifacts/architecture-decision-record-template.md
+templates/workflows/iac/software-inventory-template.md
 ```
 
 Shared Artifactsは、アプリケーションworkflowとIaC workflowのsingle source of truthです。AIはport、protocol、network boundary、software inventory、repository modeを推測で補完しません。

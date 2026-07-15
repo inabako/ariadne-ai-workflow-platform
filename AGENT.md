@@ -204,7 +204,7 @@ templates/
   test-specifications/
 ```
 
-`templates/requirements/` の要件定義書には `Repository Control` 欄を設けます。
+`templates/artifacts/requirements/` の要件定義書には `Repository Control` 欄を設けます。
 
 `work/requirements/draft/` は未完成の箇条書き草案置き場です。`/requirement-discovery` では、Critical items が未確定の場合に設計や実装案を推測せず、人間へ質問してください。完成版は人間レビュー OK 後にのみ `work/requirements/` へ保存します。
 

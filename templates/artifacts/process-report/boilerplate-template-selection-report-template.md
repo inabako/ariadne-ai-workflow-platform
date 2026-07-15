@@ -131,7 +131,7 @@ Use only when `decision: use-template`.
 - Template本体を直接編集しない。
 - コピー先service / app / IaC directoryのみ編集する。
 - 既存Next.js appへ画面機能を追加する場合、`nextjs-app-template` はreference-onlyとし、既存sourceへ丸ごと上書きしない。
-- Next.js webapp実装前は `templates/process-report/nextjs-webapp-implementation-prep-template.md` で画面契約、API契約、auth、env、testを確認する。
+- Next.js webapp実装前は `templates/artifacts/process-report/nextjs-webapp-implementation-prep-template.md` で画面契約、API契約、auth、env、testを確認する。
 - Architecture、protocol、port、safety behaviorを黙って変更しない。
 - STOP、communication loss、startup safe state、shutdown safe stateのtestを省略しない。
 - IaC template採用時は、shared artifacts、software inventory、public exposure、secret source、firewall policy、rollbackを省略しない。
