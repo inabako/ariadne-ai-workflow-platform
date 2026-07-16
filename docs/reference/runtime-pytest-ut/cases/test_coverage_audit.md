@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 6 |
+| cases | 11 |
 
 ## ケース一覧
 
@@ -109,3 +109,88 @@ runtime/tests/test_coverage_audit.py::test_coverage_audit_render_main_and_script
   - parameter: names=なし, case=なし
   - inline input: `audit`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
+
+#### RT-UT-CASE-072-A
+
+- pytest node id:
+
+```text
+runtime/tests/test_coverage_audit.py::test_text_encoding_guard_does_not_flag_saved_mojibake_without_dataset
+```
+
+- 確認内容: text encoding guard が直指定markerを使わず、UTF-8として保存済みの文字化け候補を固定パターンだけで断定しないことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_coverage_audit.py:234`
+  - fixture/arg: `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
+  - parameter: names=なし, case=なし
+  - inline input: `scan`
+- 期待結果: `scan` は `ok` を返し、固定marker由来のfindingを作らない。
+
+#### RT-UT-CASE-072-B
+
+- pytest node id:
+
+```text
+runtime/tests/test_coverage_audit.py::test_text_encoding_convert_inspects_and_converts_cp932_to_utf8
+```
+
+- 確認内容: text encoding convert が CP932 / Shift_JIS / UTF-8 の候補をstrict decodeで検査し、CP932文書をUTF-8へ安全に変換することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_coverage_audit.py:262`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `inspected`, `args`, `result`
+- 期待結果: `inspect` が CP932 をpreferred encodingにし、`convert --write` が `.encoding-bak` を残してUTF-8本文へ変換する。
+
+#### RT-UT-CASE-072-C
+
+- pytest node id:
+
+```text
+runtime/tests/test_coverage_audit.py::test_text_encoding_convert_preview_shows_hex_and_decode_candidates
+```
+
+- 確認内容: text encoding convert の preview がhex bytes、encoding別decode preview、UTF-8保存済み文字化け候補と非UTF-8候補の分類を出力することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_coverage_audit.py:285`
+  - fixture/arg: `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
+  - parameter: names=なし, case=なし
+  - inline input: `preview`, `by_path`
+- 期待結果: UTF-8保存済み文字化け候補は `utf8-compatible-with-other-decoders`、CP932文書は `non-utf8-candidate` と分類され、CLIも `text-encoding-preview` を出力する。
+
+#### RT-UT-CASE-072-D
+
+- pytest node id:
+
+```text
+runtime/tests/test_coverage_audit.py::test_text_encoding_convert_blocks_unsafe_cp932_conversion_for_utf8_file
+```
+
+- 確認内容: text encoding convert が既にUTF-8として読める文書をCP932扱いで変換しようとした場合に、安全側でブロックすることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_coverage_audit.py:334`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `args`, `result`
+- 期待結果: 変換は blocked となり、backupは作成されず、対象ファイルのUTF-8本文は維持される。
+
+#### RT-UT-CASE-072-E
+
+- pytest node id:
+
+```text
+runtime/tests/test_coverage_audit.py::test_text_encoding_guard_reports_lossy_damage_without_writing
+```
+
+- 確認内容: text encoding guard が連続した疑問符のような不可逆な欠落を検出し、自動修復せず blocked として報告することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_coverage_audit.py:344`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `scan`
+- 期待結果: lossy-marker finding が記録され、対象ファイルは書き換えられない。

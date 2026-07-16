@@ -14,9 +14,9 @@ pytest node id 単位の詳細な単体試験仕様は [Runtime pytest 単体試
 | --- | ---: |
 | pytest対象ディレクトリ | `runtime/tests` |
 | pytest files | 39 |
-| pytest test functions | 628 |
-| pytest collected tests | 641 |
-| pytest result | `641 passed` |
+| pytest test functions | 633 |
+| pytest collected tests | 646 |
+| pytest result | `646 passed` |
 | statement coverage | 96% |
 | total coverage | 96% |
 | missing lines | 397 |
@@ -54,7 +54,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | RT-UT-002 | `runtime/tests/test_common_runtime.py` | 10 | 10 | `runtime/common/*` | slug、repo root、artifact index、JSON/Markdown、env、repository設定抽出 | 全workflowが共有する基礎関数を安定させる |
 | RT-UT-003 | `runtime/tests/test_context_first.py` | 34 | 34 | `runtime/workflow/context_first.py`、関連workflow | context manifest、environment selection、test-evidence読取、dispatcher context、IaC handoff、各workflowのContext First登録 | workflow実行前に必要contextを固定し、AIの推測実行を減らす |
 | RT-UT-004 | `runtime/tests/test_corrective_action_report.py` | 6 | 6 | `runtime/workflow/corrective_action_report.py` | corrective action report context登録、front matter解析、section count、show/register CLI | 改善レポートを後続fix workflowへ渡せる構造にする |
-| RT-UT-005 | `runtime/tests/test_coverage_audit.py` | 6 | 6 | `runtime/tools/coverage_audit.py` | runtime module集計、CLI検査、coverage実行、JSON/Markdown出力、script path load | runtime品質を継続監査する自己診断を支える |
+| RT-UT-005 | `runtime/tests/test_coverage_audit.py` | 11 | 11 | `runtime/tools/coverage_audit.py`, `runtime/tools/text_encoding_convert.py`, `runtime/tools/text_encoding_guard.py` | runtime module集計、CLI検査、coverage実行、JSON/Markdown出力、script path load、encoding候補検査・hex preview・SJIS/CP932からUTF-8への安全変換、decode error・不可逆欠落検出 | runtime品質を継続監査する自己診断を支える |
 | RT-UT-006 | `runtime/tests/test_ctl_help.py` | 36 | 36 | `runtime/ctl.py` | `aiwfctl help`、`aiwfctl doctor`、`aiwfctl knowledge`、env選択、検索、警告表示、Context First初期化、registry参照 | 肥大化したworkflowをCLI索引から迷わず呼べるようにする |
 | RT-UT-007 | `runtime/tests/test_dispatcher_context.py` | 12 | 12 | `runtime/workflow/dispatcher_context.py` | workflow/tool candidate scoring、Human Check、registry fallback、context生成 | Intentからworkflow/tool選定へ進むdispatcherの判断根拠を固定する |
 | RT-UT-008 | `runtime/tests/test_docs_sync_workflow.py` | 11 | 11 | `runtime/workflow/docs_sync.py` | docs-sync init、SCM context gate、analysis template、Issue body、CLI dispatch | 実装とdocs差分をdocs-only workflowとして安全に切り出す |

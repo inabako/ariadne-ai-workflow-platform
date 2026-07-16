@@ -56,6 +56,8 @@ runtime/rag/retrieve_context.py
 runtime/rag/rag_dispatcher.py
 runtime/rag/jsonize_rag_tree.py
 runtime/rag/standardize_corrective_report_names.py
+runtime/tools/text_encoding_convert.py
+runtime/tools/text_encoding_guard.py
 ```
 
 `intake_requirements.py` は、要件定義書を `work/<採番ID>/design-document/` へ移動し、`context/*.json` を初期化します。
@@ -110,6 +112,10 @@ runtime/rag/standardize_corrective_report_names.py
 
 `jsonize_rag_tree.py` は、`rag/` 配下の非UUID JSON、JSONL、Markdown、text artifact を UUID名の JSON wrapper に変換します。
 `standardize_corrective_report_names.py` は、`rag/corrective-action-report/` 配下のMarkdown reportを `YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md` に統一します。
+
+`text_encoding_convert.py` は、Markdown / JSON / Python などのtext fileを指定encodingでstrict decodeし、UTF-8へ安全に変換します。`preview` はhex bytesとencoding別decode previewを表示し、`inspect` は `cp932` / `shift_jis` / `utf-8` などの候補が読めるかだけを報告します。`convert` は `--write` 指定時のみ `.encoding-bak` を残して書き換えます。
+
+`text_encoding_guard.py` は、UTF-8として読んだtextのdecode errorと、連続した疑問符のような不可逆欠落を検出します。固定のmojibake marker判定は行わず、保存済み文字化けの切り分けは `text_encoding_convert.py preview` に寄せます。
 
 ## Intake Role
 

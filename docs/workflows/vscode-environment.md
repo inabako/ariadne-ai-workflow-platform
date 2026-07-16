@@ -183,6 +183,22 @@ chcp 65001 > $null
 
 これにより、AIさんが日本語行を読み間違えたり、PowerShell表示だけを根拠に文字化けと誤判定したりするリスクを下げます。
 
+文字化けの疑いがある場合は、PowerShell表示だけで判断せず、repo-local toolで実ファイルを検査します。
+
+```powershell
+uv run --project runtime python runtime/tools/text_encoding_convert.py --repo-root . preview --paths docs --extensions .md --bytes 160 --chars 120
+uv run --project runtime python runtime/tools/text_encoding_convert.py --repo-root . inspect --paths docs --extensions .md
+uv run --project runtime python runtime/tools/text_encoding_guard.py --repo-root . scan --paths docs --extensions .md --fail-on-finding
+```
+
+PowerShell由来のShift_JIS / CP932文書をUTF-8へ寄せる場合は、`inspect` の推奨encodingを確認してから変換します。
+
+```powershell
+uv run --project runtime python runtime/tools/text_encoding_convert.py --repo-root . convert --paths docs --extensions .md --from-encoding cp932 --write
+```
+
+保存済み文字化け候補は、固定markerでは断定せず、`preview` のhex bytesとencoding別previewで確認します。連続した疑問符のように情報が失われた箇所は自動復元対象にしません。
+
 ただし、`.bat` / `.cmd` をShift_JISやCP932で保持するrepositoryでは、その境界を `.editorconfig` で例外化し、無理にUTF-8へ変換しません。
 
 通常のPowerShellやWindows Terminalからも `aiwfctl` を使う必要がある場合、VSCode provisioning taskとして次を実行します。

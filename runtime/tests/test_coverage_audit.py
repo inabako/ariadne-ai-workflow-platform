@@ -4,7 +4,7 @@ import json
 import runpy
 from pathlib import Path
 
-from runtime.tools import coverage_audit
+from runtime.tools import coverage_audit, text_encoding_convert, text_encoding_guard
 
 
 def test_static_runtime_audit_counts_cli_and_branch_markers(tmp_path: Path) -> None:
@@ -229,3 +229,128 @@ def test_coverage_audit_render_main_and_script_load_paths(monkeypatch, tmp_path:
 
     namespace = runpy.run_path(str(Path(coverage_audit.__file__)))
     assert namespace["build_parser"]
+
+
+def test_text_encoding_guard_does_not_flag_saved_mojibake_without_dataset(tmp_path: Path, capsys) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "docs"
+    docs.mkdir(parents=True)
+    original = "\u3053\u308c\u306f\u65e5\u672c\u8a9e\u3067\u3059\n"
+    damaged = original.encode("utf-8").decode("latin1")
+    target = docs / "guide.md"
+    target.write_text(damaged, encoding="utf-8")
+
+    scan = text_encoding_guard.scan_files(repo, ["docs"], {".md"})
+
+    assert scan["status"] == "ok"
+    assert scan["findings"] == []
+    assert text_encoding_guard.main(["--repo-root", str(repo), "scan", "--paths", "docs", "--fail-on-finding"]) == 0
+    capsys.readouterr()
+    assert target.read_text(encoding="utf-8") == damaged
+
+
+def test_text_encoding_convert_inspects_and_converts_cp932_to_utf8(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "docs"
+    docs.mkdir(parents=True)
+    original = "\u65e5\u672c\u8a9e\u306e\u8aac\u660e\u3067\u3059\n"
+    target = docs / "sjis.md"
+    target.write_bytes(original.encode("cp932"))
+
+    inspected = text_encoding_convert.inspect_files(repo, ["docs"], {".md"}, ("cp932", "shift_jis", "utf-8"))
+
+    assert inspected["status"] == "ok"
+    assert inspected["files"][0]["preferred_encoding"] == "cp932"
+    args = text_encoding_convert.build_parser().parse_args(
+        ["--repo-root", str(repo), "convert", "--paths", "docs", "--from-encoding", "cp932", "--write"]
+    )
+    result = text_encoding_convert.convert_files(args)
+
+    assert result["status"] == "converted"
+    assert result["converted"][0]["written"] is True
+    assert (docs / "sjis.md.encoding-bak").exists()
+    assert target.read_text(encoding="utf-8") == original
+
+
+def test_text_encoding_convert_preview_shows_hex_and_decode_candidates(tmp_path: Path, capsys) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "docs"
+    docs.mkdir(parents=True)
+    original = "\u3053\u308c\u306f\u65e5\u672c\u8a9e\u3067\u3059\n"
+    saved_mojibake = original.encode("utf-8").decode("latin1")
+    mojibake_path = docs / "mojibake.md"
+    cp932_path = docs / "sjis.md"
+    mojibake_path.write_text(saved_mojibake, encoding="utf-8")
+    cp932_path.write_bytes(original.encode("cp932"))
+
+    preview = text_encoding_convert.preview_files(
+        repo,
+        ["docs"],
+        {".md"},
+        ("cp932", "utf-8", "latin1"),
+        max_bytes=12,
+        max_chars=8,
+    )
+
+    by_path = {item["path"]: item for item in preview["files"]}
+    assert preview["status"] == "ok"
+    assert by_path["docs/mojibake.md"]["classification"] == "utf8-compatible-with-other-decoders"
+    assert by_path["docs/mojibake.md"]["hex_truncated"] is True
+    assert by_path["docs/sjis.md"]["classification"] == "non-utf8-candidate"
+    assert by_path["docs/sjis.md"]["preferred_encoding"] == "cp932"
+    assert any(item["encoding"] == "utf-8" and item["ok"] for item in by_path["docs/mojibake.md"]["previews"])
+
+    assert (
+        text_encoding_convert.main(
+            [
+                "--repo-root",
+                str(repo),
+                "preview",
+                "--paths",
+                "docs",
+                "--extensions",
+                ".md",
+                "--bytes",
+                "12",
+                "--chars",
+                "8",
+            ]
+        )
+        == 0
+    )
+    assert '"artifact_type": "text-encoding-preview"' in capsys.readouterr().out
+
+
+def test_text_encoding_convert_blocks_unsafe_cp932_conversion_for_utf8_file(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "docs"
+    docs.mkdir(parents=True)
+    original = "\u3053\u308c\u306fUTF-8\u306e\u672c\u6587\u3067\u3059\n"
+    target = docs / "utf8.md"
+    target.write_text(original, encoding="utf-8")
+
+    args = text_encoding_convert.build_parser().parse_args(
+        ["--repo-root", str(repo), "convert", "--paths", "docs", "--from-encoding", "cp932", "--write"]
+    )
+    result = text_encoding_convert.convert_files(args)
+
+    assert result["status"] == "blocked"
+    assert result["converted"] == []
+    assert not (docs / "utf8.md.encoding-bak").exists()
+    assert target.read_text(encoding="utf-8") == original
+
+
+def test_text_encoding_guard_reports_lossy_damage_without_writing(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "docs"
+    docs.mkdir(parents=True)
+    target = docs / "broken.md"
+    lossy_text = "missing text " + "?" * 3 + "\n"
+    target.write_text(lossy_text, encoding="utf-8")
+
+    scan = text_encoding_guard.scan_files(repo, ["docs"], {".md"})
+
+    assert scan["status"] == "finding"
+    assert scan["findings"][0]["kind"] == "lossy-marker"
+    assert text_encoding_guard.main(["--repo-root", str(repo), "scan", "--paths", "docs", "--fail-on-finding"]) == 1
+    assert target.read_text(encoding="utf-8") == lossy_text

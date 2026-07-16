@@ -48,6 +48,8 @@
 | `runtime/workflow/human_gate_policy.py` | 人間承認が必要な操作をregistryで確認する |
 | `runtime/workflow/workflow_doctor.py` | workflow repositoryの軽量診断を行う |
 | `runtime/workflow/validate_output_language.py` | 生成済みMarkdownが英語主体になっていないか検出する |
+| `runtime/tools/text_encoding_convert.py` | Markdown / JSON / Python などのtext fileをhex preview / encoding別decode previewで確認し、指定encodingでstrict decodeしてUTF-8へ安全変換する |
+| `runtime/tools/text_encoding_guard.py` | UTF-8として読んだtextのdecode errorと不可逆欠落を検出する。固定の文字化けmarker判定は行わない |
 | `runtime/rag/rag_dispatcher.py` | 複数queryのRAG loadを計画・実行・集約する |
 
 ## Environment Files
