@@ -13,7 +13,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import find_repo_root, local_timestamp, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.common import find_repo_root, load_env, local_timestamp, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -87,6 +87,22 @@ def path_check(path: Path, *, check_id: str, label: str, required: bool, install
         detected=str(path) if path.exists() else "",
         install_hint=install_hint,
         install_command=install_command,
+    )
+
+
+def env_path_check(repo_root: Path, key: str, *, label: str, required: bool, install_hint: str) -> Check:
+    settings = load_env(repo_root)
+    value = settings.get(key, "").strip()
+    path = Path(value) if value else None
+    ok = bool(path and path.is_file())
+    return Check(
+        id=f"env-path:{key}",
+        label=label,
+        kind="env-path",
+        required=required,
+        ok=ok,
+        detected=str(path) if ok and path else "",
+        install_hint=install_hint,
     )
 
 
@@ -376,6 +392,13 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
             install_command="winget install --id Docker.DockerDesktop -e",
         ))
         checks.append(docker_compose_check(required=True))
+        checks.append(env_path_check(
+            repo_root,
+            "AIWF_TERRAFORM_EXE",
+            label="AIWF_TERRAFORM_EXE",
+            required=True,
+            install_hint="Set AIWF_TERRAFORM_EXE in repo .env or process ENV to the full terraform.exe path.",
+        ))
 
     if args.profile == "flutter":
         checks.append(which_check(

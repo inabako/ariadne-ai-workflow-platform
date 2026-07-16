@@ -122,3 +122,37 @@ def test_boilerplate_index_lists_mcp_layered_templates() -> None:
     ]:
         assert template_name in index
         assert template_name in reference
+
+
+def test_opentelemetry_collector_boilerplate_has_required_template_contract() -> None:
+    template = BOILERPLATES / "infrastructure" / "opentelemetry-collector-template"
+    required = [
+        "README.md",
+        "VERSION",
+        ".env.example",
+        "Makefile",
+        "config/base.yaml",
+        "distribution/builder-config.yaml",
+        "manifests/catalog.yaml",
+        "manifests/component.schema.json",
+        "manifests/selection.schema.json",
+        "receivers/otlp/manifest.yaml",
+        "processors/memory-limiter/manifest.yaml",
+        "processors/batch/manifest.yaml",
+        "exporters/debug/manifest.yaml",
+        "extensions/health-check/manifest.yaml",
+        "examples/minimal/selection.yaml",
+        "terraform/versions.tf",
+        "terraform/main.tf",
+        "terraform/modules/collector/main.tf",
+        "scripts/otel_template.py",
+        "tests/unit/test_template_contract.py",
+        "docs/security.md",
+    ]
+
+    missing = [relative_path for relative_path in required if not (template / relative_path).exists()]
+
+    assert missing == []
+    base_config = (template / "config" / "base.yaml").read_text(encoding="utf-8")
+    for term in ["otlp", "memory_limiter", "batch", "debug", "health_check", "pipelines"]:
+        assert term in base_config

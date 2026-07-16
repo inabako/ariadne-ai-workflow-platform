@@ -62,6 +62,23 @@ def test_basic_checks_report_detected_state(monkeypatch: pytest.MonkeyPatch, tmp
     assert missing_path.to_dict()["detected"] == ""
 
 
+def test_env_path_check_reads_repo_env(tmp_path: Path) -> None:
+    terraform = tmp_path / "terraform.exe"
+    terraform.write_text("", encoding="utf-8")
+    (tmp_path / ".env").write_text(f"AIWF_TERRAFORM_EXE={terraform}\n", encoding="utf-8")
+
+    check = preflight.env_path_check(
+        tmp_path,
+        "AIWF_TERRAFORM_EXE",
+        label="AIWF_TERRAFORM_EXE",
+        required=True,
+        install_hint="set env",
+    )
+
+    assert check.ok is True
+    assert check.detected == str(terraform)
+
+
 def test_python_module_check_uses_current_interpreter(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[list[str]] = []
 
@@ -217,14 +234,19 @@ def test_docker_compose_profile_declares_required_docker_checks(monkeypatch: pyt
         msys2_root=r"C:\msys64",
         work_id="issue-1",
     )
+    terraform = tmp_path / "terraform.exe"
+    terraform.write_text("", encoding="utf-8")
+    (tmp_path / ".env").write_text(f"AIWF_TERRAFORM_EXE={terraform}\n", encoding="utf-8")
 
     checks = preflight.build_checks(args, tmp_path)
 
     ids = {check.id for check in checks}
     assert "exe:docker" in ids
     assert "docker-plugin:compose" in ids
+    assert "env-path:AIWF_TERRAFORM_EXE" in ids
     assert next(check for check in checks if check.id == "exe:docker").required is True
     assert next(check for check in checks if check.id == "docker-plugin:compose").required is True
+    assert next(check for check in checks if check.id == "env-path:AIWF_TERRAFORM_EXE").detected == str(terraform)
 
 
 @pytest.mark.parametrize(

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpenTelemetry Collector Component Manifest",
+  "type": "object",
+  "required": ["schema_version", "component", "distribution", "signals", "pipeline", "files"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "component": {
+      "type": "object",
+      "required": ["id", "collector_type", "collector_name", "display_name"],
+      "properties": {
+        "id": {"type": "string"},
+        "collector_type": {"enum": ["receiver", "processor", "exporter", "connector", "extension"]},
+        "collector_name": {"type": "string"},
+        "display_name": {"type": "string"},
+        "description": {"type": "string"}
+      }
+    },
+    "distribution": {
+      "type": "object",
+      "required": ["required", "custom_build_required"],
+      "properties": {
+        "required": {"enum": ["core", "contrib", "custom"]},
+        "custom_build_required": {"type": "boolean"}
+      }
+    },
+    "signals": {"type": "object"},
+    "pipeline": {"type": "object"},
+    "files": {"type": "object"}
+  }
+}

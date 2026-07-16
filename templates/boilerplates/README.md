@@ -10,7 +10,7 @@
 | --- | --- |
 | `apps/` | UI / app boilerplates such as Next.js, PyQt, and Flutter |
 | `services/` | Service boilerplates that are not tied to a specific UI or MCP layer |
-| `infrastructure/` | Realtime gateway, platform, database, middleware, and identity IaC boilerplates |
+| `infrastructure/` | Realtime gateway, platform, database, middleware, identity, and observability collector IaC boilerplates |
 | `integration/` | Test and emulator environments used by integration workflows |
 | `mcp/` | MCP Server, MCP Client, Agent Runtime, and operation gateway boilerplates |
 
@@ -27,6 +27,7 @@
 | `infrastructure/database-infra-template/` | PostgreSQL / MySQL shared database infrastructure | `docs/workflows/realtime-iac.md` | available |
 | `infrastructure/middleware-infra-template/` | Redis shared middleware infrastructure | `docs/workflows/realtime-iac.md` | available |
 | `infrastructure/identity-infra-template/` | OpenLDAP identity / directory infrastructure | `docs/workflows/realtime-iac.md` | available |
+| `infrastructure/opentelemetry-collector-template/` | OpenTelemetry Collector receiver / processor / exporter infrastructure | `docs/workflows/realtime-iac.md` | available |
 | `integration/cloud-emulators/` | Local cloud / external service emulator environment | `docs/workflows/system-integration-quality.md` | available |
 | `mcp/local-model-mcp-server-template/` | Local model MCP server capability provider | `docs/workflows/mcp-server-group-implementation.md` | available |
 | `mcp/mcp-client-template/` | Reusable MCP client facade / session manager | `docs/workflows/mcp-server-group-implementation.md` | available |
@@ -45,6 +46,7 @@
 - database infrastructure template採用時は、DB engine、DB version、database name、app user、connection source、persistence、backup / restore、migration、connection contract、secret redaction、evidenceを省略しません。
 - middleware infrastructure template採用時は、Redis purpose、auth、maxmemory、eviction policy、TTL、persistence、backup / restore、connection contract、secret redaction、evidenceを省略しません。
 - identity infrastructure template採用時は、OpenLDAP Base DN、OU、bind account separation、TLS、LDIF、backup / restore、identity connection contract、secret redaction、evidenceを省略しません。
+- OpenTelemetry Collector template採用時は、Receiver / Processor / Exporter / Connector / Extensionの選択、Distribution互換性、Custom Distribution Human Check、OTLP port、health endpoint、telemetry smoke evidenceを省略しません。
 - cloud emulator template採用時も、本番credentialを使わず、`work/<work-id>/test-environment/emulator/` へコピーしてから起動し、`test-evidence/emulator/` に本番差分とHuman Checkを残します。
 - MCP server template採用時は、MCP ServerをAgent Runtimeとして扱わず、Prompts / Resources / Tools、workspace境界、local model adapter、secret拒否を確認します。
 - MCP client template採用時は、利用側から `server_id` とcapability名を明示し、ClientがTool選択やAgent Loopを持たないことを確認します。

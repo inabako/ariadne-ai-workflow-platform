@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Generated Collector Configuration Marker",
+  "type": "object",
+  "required": ["receivers", "processors", "exporters", "service"],
+  "properties": {
+    "receivers": {"type": "object"},
+    "processors": {"type": "object"},
+    "exporters": {"type": "object"},
+    "extensions": {"type": "object"},
+    "service": {"type": "object"}
+  }
+}

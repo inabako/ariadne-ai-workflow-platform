@@ -1,14 +1,14 @@
-﻿# test_self_improvement_workflow.py
+# test_self_improvement_workflow.py
 
-??????? `runtime/tests/test_self_improvement_workflow.py` ?pytest node id??UT?????
+このファイルは `runtime/tests/test_self_improvement_workflow.py` の pytest node id 単位UT仕様です。
 
-| ?? | ? |
+| 項目 | 値 |
 | --- | ---: |
 | cases | 14 |
 
-## ?????
+## ケース一覧
 
-#### RT-UT-CASE-656
+#### RT-UT-CASE-SELF-001
 
 - pytest node id:
 
@@ -16,16 +16,16 @@
 runtime/tests/test_self_improvement_workflow.py::test_parser_and_branch_name
 ```
 
-- 確認内容: pytest case `parser and branch name` ?????runtime?????????????error boundary???????
+- 確認内容: self-improvement workflowのparserとbranch name生成を確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_self_improvement_workflow.py:14`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- 期待結果: ??case?pass????runtime????????????????????????
+- 期待結果: CLI parserが期待するsubcommandを受け取り、Issue branch名が安定して生成される。
 
-#### RT-UT-CASE-657
+#### RT-UT-CASE-SELF-002
 
 - pytest node id:
 
@@ -33,16 +33,16 @@ runtime/tests/test_self_improvement_workflow.py::test_parser_and_branch_name
 runtime/tests/test_self_improvement_workflow.py::test_init_and_create_feedback
 ```
 
-- 確認内容: pytest case `init and create feedback` ?????runtime?????????????error boundary???????
+- 確認内容: feedback workspace初期化とfeedback report作成を確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_self_improvement_workflow.py:25`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: `args`, `text`
-- 期待結果: ??case?pass????runtime????????????????????????
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- 期待結果: feedback用README、report、Context First artifactが生成される。
 
-#### RT-UT-CASE-658
+#### RT-UT-CASE-SELF-003
 
 - pytest node id:
 
@@ -50,16 +50,16 @@ runtime/tests/test_self_improvement_workflow.py::test_init_and_create_feedback
 runtime/tests/test_self_improvement_workflow.py::test_init_feedback_preserves_existing_readme_and_template_reader
 ```
 
-- 確認内容: pytest case `init feedback preserves existing readme and template reader` ?????runtime?????????????error boundary???????
+- 確認内容: 既存READMEを壊さず、template readerからfeedback初期化できることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_self_improvement_workflow.py:52`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- 期待結果: ??case?pass????runtime????????????????????????
+  - inline input: existing README and template specimen
+- 期待結果: 既存READMEが保持され、template由来のfeedback scaffoldが生成される。
 
-#### RT-UT-CASE-659
+#### RT-UT-CASE-SELF-004
 
 - pytest node id:
 
@@ -67,16 +67,16 @@ runtime/tests/test_self_improvement_workflow.py::test_init_feedback_preserves_ex
 runtime/tests/test_self_improvement_workflow.py::test_review_feedback_updates_status_and_human_check
 ```
 
-- 確認内容: pytest case `review feedback updates status and human check` ?????runtime?????????????error boundary???????
+- 確認内容: feedback reviewがstatusとHuman Check欄を更新することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_self_improvement_workflow.py:73`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: `text`
-- 期待結果: ??case?pass????runtime????????????????????????
+  - inline input: feedback report specimen
+- 期待結果: review結果がfeedback reportへ追記され、human review decisionが残る。
 
-#### RT-UT-CASE-660
+#### RT-UT-CASE-SELF-005
 
 - pytest node id:
 
@@ -84,16 +84,16 @@ runtime/tests/test_self_improvement_workflow.py::test_review_feedback_updates_st
 runtime/tests/test_self_improvement_workflow.py::test_review_feedback_requires_existing_feedback
 ```
 
-- 確認内容: pytest case `review feedback requires existing feedback` ?????runtime?????????????error boundary???????
+- 確認内容: review対象のfeedbackが存在しない場合にエラーとして扱うことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_self_improvement_workflow.py:99`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- 期待結果: ??case?pass????runtime????????????????????????
+  - inline input: missing feedback specimen
+- 期待結果: 存在しないfeedback reviewを成功扱いにせず、必要な入力不足として検出する。
 
-#### RT-UT-CASE-661
+#### RT-UT-CASE-SELF-006
 
 - pytest node id:
 
@@ -101,16 +101,16 @@ runtime/tests/test_self_improvement_workflow.py::test_review_feedback_requires_e
 runtime/tests/test_self_improvement_workflow.py::test_feedback_decision_accepts_human_check_or_defaults_to_proposed
 ```
 
-- 確認内容: pytest case `feedback decision accepts human check or defaults to proposed` ?????runtime?????????????error boundary???????
+- 確認内容: feedback decisionがHuman Check入力を優先し、未指定時はproposedへfallbackすることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_self_improvement_workflow.py:113`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- 期待結果: ??case?pass????runtime????????????????????????
+  - inline input: decision specimens
+- 期待結果: human decisionとdefault proposed decisionが期待どおり解釈される。
 
-#### RT-UT-CASE-662
+#### RT-UT-CASE-SELF-007
 
 - pytest node id:
 
@@ -118,16 +118,16 @@ runtime/tests/test_self_improvement_workflow.py::test_feedback_decision_accepts_
 runtime/tests/test_self_improvement_workflow.py::test_issue_body_requires_accepted_feedback_and_renders_fit_check
 ```
 
-- 確認内容: pytest case `issue body requires accepted feedback and renders fit check` ?????runtime?????????????error boundary???????
+- 確認内容: accepted feedbackからIssue bodyを生成し、fit checkを描画することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_self_improvement_workflow.py:119`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: `text`
-- 期待結果: ??case?pass????runtime????????????????????????
+  - inline input: accepted feedback specimen
+- 期待結果: accepted statusのfeedbackだけが標準Issue bodyとして生成される。
 
-#### RT-UT-CASE-663
+#### RT-UT-CASE-SELF-008
 
 - pytest node id:
 
@@ -135,16 +135,16 @@ runtime/tests/test_self_improvement_workflow.py::test_issue_body_requires_accept
 runtime/tests/test_self_improvement_workflow.py::test_issue_body_requires_existing_feedback
 ```
 
-- 確認内容: pytest case `issue body requires existing feedback` ?????runtime?????????????error boundary???????
+- 確認内容: Issue body生成時にfeedback reportの存在を必須にすることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_self_improvement_workflow.py:190`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- 期待結果: ??case?pass????runtime????????????????????????
+  - inline input: missing feedback specimen
+- 期待結果: feedbackが存在しない場合はIssue bodyを生成しない。
 
-#### RT-UT-CASE-664
+#### RT-UT-CASE-SELF-009
 
 - pytest node id:
 
@@ -152,16 +152,16 @@ runtime/tests/test_self_improvement_workflow.py::test_issue_body_requires_existi
 runtime/tests/test_self_improvement_workflow.py::test_issue_body_can_render_unaccepted_feedback_to_explicit_output
 ```
 
-- 確認内容: pytest case `issue body can render unaccepted feedback to explicit output` ?????runtime?????????????error boundary???????
+- 確認内容: 未accepted feedbackでも明示output指定時には確認用Issue bodyを生成できることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_self_improvement_workflow.py:202`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- 期待結果: ??case?pass????runtime????????????????????????
+  - inline input: unaccepted feedback and explicit output
+- 期待結果: 標準flowを壊さず、明示outputにreview用bodyが生成される。
 
-#### RT-UT-CASE-665
+#### RT-UT-CASE-SELF-010
 
 - pytest node id:
 
@@ -169,16 +169,16 @@ runtime/tests/test_self_improvement_workflow.py::test_issue_body_can_render_unac
 runtime/tests/test_self_improvement_workflow.py::test_evidence_scaffold_registers_artifact_index
 ```
 
-- 確認内容: pytest case `evidence scaffold registers artifact index` ?????runtime?????????????error boundary???????
+- 確認内容: evidence scaffold生成時にartifact indexへ登録されることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_self_improvement_workflow.py:233`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: `data`, `manifest_data`
-- 期待結果: ??case?pass????runtime????????????????????????
+  - inline input: evidence scaffold specimen
+- 期待結果: evidence directoryとartifact index entryが生成される。
 
-#### RT-UT-CASE-666
+#### RT-UT-CASE-SELF-011
 
 - pytest node id:
 
@@ -186,16 +186,16 @@ runtime/tests/test_self_improvement_workflow.py::test_evidence_scaffold_register
 runtime/tests/test_self_improvement_workflow.py::test_evidence_scaffold_updates_existing_artifact_index_without_rewriting_readmes
 ```
 
-- 確認内容: pytest case `evidence scaffold updates existing artifact index without rewriting readmes` ?????runtime?????????????error boundary???????
+- 確認内容: 既存artifact index更新時にREADMEを不用意に書き換えないことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_self_improvement_workflow.py:245`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: `args`, `artifact_index`
-- 期待結果: ??case?pass????runtime????????????????????????
+  - inline input: existing artifact index and README specimen
+- 期待結果: artifact indexは更新され、既存READMEは保持される。
 
-#### RT-UT-CASE-667
+#### RT-UT-CASE-SELF-012
 
 - pytest node id:
 
@@ -203,16 +203,16 @@ runtime/tests/test_self_improvement_workflow.py::test_evidence_scaffold_updates_
 runtime/tests/test_self_improvement_workflow.py::test_main_prints_json
 ```
 
-- 確認内容: pytest case `main prints json` ?????runtime?????????????error boundary???????
+- 確認内容: self-improvement CLI mainがJSON出力を返すことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_self_improvement_workflow.py:262`
-  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
+  - fixture/arg: `monkeypatch`, `capsys`
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- 期待結果: ??case?pass????runtime????????????????????????
+  - inline input: patched command result
+- 期待結果: mainがJSONをstdoutへ出力し、期待するexit codeを返す。
 
-#### RT-UT-CASE-668
+#### RT-UT-CASE-SELF-013
 
 - pytest node id:
 
@@ -220,16 +220,16 @@ runtime/tests/test_self_improvement_workflow.py::test_main_prints_json
 runtime/tests/test_self_improvement_workflow.py::test_workflow_skills_declare_feedback_output_contract
 ```
 
-- 確認内容: pytest case `workflow skills declare feedback output contract` ?????runtime?????????????error boundary???????
+- 確認内容: workflow skill群がfeedback output contractを宣言していることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_self_improvement_workflow.py:274`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: `missing`, `text`, `required`
-- 期待結果: ??case?pass????runtime????????????????????????
+  - inline input: skill files
+- 期待結果: 対象skillにfeedback出力契約が含まれる。
 
-#### RT-UT-CASE-669
+#### RT-UT-CASE-SELF-014
 
 - pytest node id:
 
@@ -237,11 +237,11 @@ runtime/tests/test_self_improvement_workflow.py::test_workflow_skills_declare_fe
 runtime/tests/test_self_improvement_workflow.py::test_workflow_help_declares_feedback_capture_for_all_commands
 ```
 
-- 確認内容: pytest case `workflow help declares feedback capture for all commands` ?????runtime?????????????error boundary???????
+- 確認内容: workflow helpが各commandのfeedback captureを宣言していることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_self_improvement_workflow.py:303`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: `missing`
-- 期待結果: ??case?pass????runtime????????????????????????
+  - inline input: workflow help registry
+- 期待結果: help registry上の対象commandにfeedback capture説明が含まれる。

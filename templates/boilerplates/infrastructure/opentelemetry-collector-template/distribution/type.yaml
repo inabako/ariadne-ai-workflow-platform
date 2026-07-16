@@ -1,0 +1,9 @@
+schema_version: "1.0.0"
+default_distribution: "contrib"
+supported:
+  - core
+  - contrib
+  - custom
+human_gate:
+  custom_distribution_required: true
+  reason: "Custom Collector binaries change the executable supply chain."

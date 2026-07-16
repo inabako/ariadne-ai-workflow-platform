@@ -42,6 +42,18 @@ docs-sync用の作業フォルダ初期化、ドキュメント差分JSONのひ�
 
 このCLI単体では、GitHub Issue作成、docs変更、branch push、RAG登録、close archive準備は行いません。
 
+## `iac_template.py`
+
+Infrastructure boilerplateを `work/<work-id>/source/infrastructure/` へコピーし、非破壊のhealth checkとContext First evidenceを生成します。
+
+```powershell
+python runtime/workflow/iac_template.py list
+python runtime/workflow/iac_template.py prepare --template opentelemetry-collector --work-id issue-123
+python runtime/workflow/iac_template.py health --template opentelemetry-collector --work-id issue-123
+```
+
+このCLI単体では、Terraform apply、Docker起動、Collector起動、Custom Distribution buildは行いません。展開後のtemplate側で `make generate`、`make validate`、`make smoke`、`make terraform-plan` を実行します。
+
 ## `self_improvement.py`
 
 Self-Improvement Workflow用に、`work/feedback/` の初期化、Feedback report作成、Human Review結果追記、Accepted feedbackからのIssue body生成、標準branch名生成、evidence scaffold作成を行います。

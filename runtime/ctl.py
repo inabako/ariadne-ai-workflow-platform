@@ -15,6 +15,7 @@ from runtime import registry_store  # noqa: E402
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
 from runtime.workflow import flutter_multiplatform  # noqa: E402
+from runtime.workflow import iac_template  # noqa: E402
 from runtime.workflow import mcp_server_group  # noqa: E402
 from runtime.workflow import sdk_analysis  # noqa: E402
 from runtime.workflow import system_integration  # noqa: E402
@@ -1139,6 +1140,25 @@ def build_parser() -> argparse.ArgumentParser:
         mcp_group_item.add_argument("--force", action="store_true", help="Refresh copied template directories during init.")
         mcp_group_item.add_argument("--json", action="store_true")
 
+    iac_cmd = sub.add_parser("iac", help="Prepare and inspect infrastructure boilerplate templates.")
+    iac_sub = iac_cmd.add_subparsers(dest="iac_command")
+    iac_template_cmd = iac_sub.add_parser("template", help="List, copy, or health-check IaC templates.")
+    iac_template_sub = iac_template_cmd.add_subparsers(dest="iac_template_command", required=True)
+    iac_template_list = iac_template_sub.add_parser("list", help="List available IaC templates.")
+    iac_template_list.add_argument("--json", action="store_true")
+    iac_template_prepare = iac_template_sub.add_parser("prepare", help="Copy an IaC template to work/<work-id>.")
+    iac_template_prepare.add_argument("--template", default="opentelemetry-collector")
+    iac_template_prepare.add_argument("--work-id", required=True)
+    iac_template_prepare.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    iac_template_prepare.add_argument("--force", action="store_true", help="Refresh an existing copied template directory.")
+    iac_template_prepare.add_argument("--json", action="store_true")
+    iac_template_health = iac_template_sub.add_parser("health", help="Check a copied IaC template without starting services.")
+    iac_template_health.add_argument("--template", default="opentelemetry-collector")
+    iac_template_health.add_argument("--work-id", required=True)
+    iac_template_health.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    iac_template_health.add_argument("--probe-tools", action="store_true", help="Run non-mutating tool version checks.")
+    iac_template_health.add_argument("--json", action="store_true")
+
     integration_cmd = sub.add_parser("integration", help="Analyze or verify system integration quality.")
     integration_sub = integration_cmd.add_subparsers(dest="integration_command")
     integration_analyze = integration_sub.add_parser("analyze", help="Analyze system integration points and emulator candidates.")
@@ -1559,6 +1579,64 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
         if getattr(args, "json", False):
             return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
         return code, mcp_server_group.format_result(result) + "\n"
+
+    if command == "iac":
+        iac_command = getattr(args, "iac_command", None)
+        if iac_command != "template":
+            return 1, (
+                "IaC Template\n\n"
+                "Usage:\n"
+                "  aiwfctl iac template list\n"
+                "  aiwfctl iac template prepare --template opentelemetry-collector --work-id <work-id>\n"
+                "  aiwfctl iac template health --template opentelemetry-collector --work-id <work-id>\n\n"
+                "Outputs:\n"
+                "  work/<work-id>/source/infrastructure/opentelemetry-collector/\n"
+                "  work/<work-id>/context/iac-template-context.json\n"
+                "  work/<work-id>/context/iac-template-health-context.json\n"
+                "  work/<work-id>/test-evidence/infrastructure/opentelemetry-collector/health-summary.md\n"
+            )
+        template_command = getattr(args, "iac_template_command", None)
+        try:
+            if template_command == "list":
+                result = iac_template.list_templates(repo_root)
+            elif template_command == "prepare":
+                result = iac_template.prepare_template(
+                    repo_root,
+                    template=args.template,
+                    work_id=args.work_id,
+                    work_dir=args.work_dir,
+                    force=args.force,
+                )
+            elif template_command == "health":
+                result = iac_template.health_template(
+                    repo_root,
+                    template=args.template,
+                    work_id=args.work_id,
+                    work_dir=args.work_dir,
+                    probe_tools=args.probe_tools,
+                )
+            else:
+                return 1, f"Unknown IaC template command: {template_command}\n"
+        except Exception as exc:
+            return 1, f"IaC template failed: {exc}\n"
+        code = 0 if result.get("status") not in {"human-check-required", "missing-template"} else 2
+        if getattr(args, "json", False):
+            return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        lines = ["IaC Template", "", f"Status   : {result.get('status', 'available')}", f"Template : {result.get('template', '')}"]
+        artifacts = result.get("artifacts", {})
+        if artifacts:
+            lines.extend(["", "Artifacts"])
+            lines.extend(f"  - {key}: {value}" for key, value in artifacts.items())
+        prepared = result.get("prepared", {})
+        if prepared:
+            lines.extend(["", f"Destination: {prepared.get('destination', '')}"])
+        for item in result.get("templates", []):
+            lines.append(f"  - {item.get('name', '')}: {item.get('template_path', '')} exists={item.get('exists', False)}")
+        human_checks = result.get("human_checks", [])
+        if human_checks:
+            lines.extend(["", "Human Check"])
+            lines.extend(f"  - {item}" for item in human_checks)
+        return code, "\n".join(lines).rstrip() + "\n"
 
     if command == "integration":
         integration_command = getattr(args, "integration_command", None)

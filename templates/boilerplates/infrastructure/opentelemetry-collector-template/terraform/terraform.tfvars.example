@@ -1,0 +1,8 @@
+collector_name        = "ariadne-otel-collector"
+collector_image       = "otel/opentelemetry-collector-contrib:0.156.0"
+collector_config_path = "../config/generated/collector.yaml"
+network_name          = "ariadne_observability"
+otlp_grpc_port        = 4317
+otlp_http_port        = 4318
+health_check_port     = 13133
+environment_variables = {}

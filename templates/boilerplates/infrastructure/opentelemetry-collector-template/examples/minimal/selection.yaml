@@ -1,0 +1,41 @@
+schema_version: "1.0.0"
+collector:
+  name: "ariadne-otel-collector"
+  distribution: "contrib"
+  version: "0.156.0"
+selection:
+  receivers:
+    - "otlp-receiver"
+  processors:
+    - "memory-limiter-processor"
+    - "batch-processor"
+  exporters:
+    - "debug-exporter"
+  connectors: []
+  extensions:
+    - "health-check-extension"
+pipelines:
+  traces:
+    receivers:
+      - "otlp"
+    processors:
+      - "memory_limiter"
+      - "batch"
+    exporters:
+      - "debug"
+  metrics:
+    receivers:
+      - "otlp"
+    processors:
+      - "memory_limiter"
+      - "batch"
+    exporters:
+      - "debug"
+  logs:
+    receivers:
+      - "otlp"
+    processors:
+      - "memory_limiter"
+      - "batch"
+    exporters:
+      - "debug"

@@ -52,6 +52,16 @@ uv run --project runtime python runtime/workflow/context_first.py `
 
 `environment-selection.environment` が `docker` ではない場合、IaC設計へ進まずHuman Checkへ戻します。
 
+Terraform の実行ファイルpathはソースへ固定せず、repo `.env` またはprocess ENVの `AIWF_TERRAFORM_EXE` で管理します。
+プロビジョニング / preflight 実行時に次を確認し、`AIWF_TERRAFORM_EXE` が未設定または実ファイルを指していない場合は Human Check に戻します。
+
+```powershell
+uv run --project runtime python runtime/environment/preflight.py `
+  --repo-root . `
+  --profile docker-compose `
+  --work-id <receipt-id>
+```
+
 ## Shared Artifact Gate
 
 IaC設計や生成へ進む前に、次の共有成果物が必要です。
@@ -128,6 +138,7 @@ IaC実装前に、承認済みdesignとshared artifactsに対して利用可能�
 | PostgreSQL / MySQL shared database infrastructure | `templates/boilerplates/infrastructure/database-infra-template/` | `docs/workflows/realtime-iac.md` |
 | Redis shared middleware infrastructure | `templates/boilerplates/infrastructure/middleware-infra-template/` | `docs/workflows/realtime-iac.md` |
 | OpenLDAP identity / directory infrastructure | `templates/boilerplates/infrastructure/identity-infra-template/` | `docs/workflows/realtime-iac.md` |
+| OpenTelemetry Collector infrastructure | `templates/boilerplates/infrastructure/opentelemetry-collector-template/` | `docs/workflows/realtime-iac.md` |
 
 出力:
 
@@ -142,6 +153,7 @@ work/<receipt-id>/process-report/boilerplate-template-selection.md
 - PostgreSQL、MySQL、DB connection contract、backup / restore、migrationが対象に含まれる場合は `database-infra-template/` を候補にします。
 - Redis、cache、session、temporary state、Pub/Sub補助、middleware connection contract、TTL、eviction、persistence、backup / restoreが対象に含まれる場合は `middleware-infra-template/` を候補にします。
 - OpenLDAP、directory service、Base DN、OU、user / group、application bind account、identity connection contract、TLS、backup / restoreが対象に含まれる場合は `identity-infra-template/` を候補にします。
+- OpenTelemetry Collector、OTLP、Receiver、Processor、Exporter、Connector、Extension、telemetry pipelineが対象に含まれる場合は `opentelemetry-collector-template/` を候補にします。
 - template directoryが存在する場合は、templateをコピーしてコピー先だけを編集します。
 - template本体は直接編集しません。
 - templateが対象に合わない場合は、`decision: traditional-coding` と理由を記録して従来どおりIaCを生成します。
@@ -150,6 +162,7 @@ work/<receipt-id>/process-report/boilerplate-template-selection.md
 - database infrastructure template採用時は、DB engine、DB version、database name、app user、connection source、persistence、backup / restore、migration、connection contract、secret redaction、evidenceを記録します。
 - middleware infrastructure template採用時は、Redis purpose、version、connection source、auth secret ref、maxmemory、eviction policy、TTL、persistence、backup / restore、connection contract、secret redaction、evidenceを記録します。
 - identity infrastructure template採用時は、OpenLDAP version、organization、domain、Base DN、OU layout、bind account separation、TLS、LDIF、backup / restore、identity connection contract、secret redaction、evidenceを記録します。
+- OpenTelemetry Collector template採用時は、Collector version、Distribution、component selection、OTLP ports、health endpoint、Custom Distribution Human Check、config generation report、telemetry smoke evidenceを記録します。
 - `.env`、real secret、production password、private keyは生成しません。
 
 選定結果が未記録の場合、IaC Implementationへ進みません。
