@@ -233,6 +233,92 @@ def test_ctl_knowledge_usage_and_search_export_context(tmp_path: Path) -> None:
     assert "rag-duckdb-reference-check" in {item["type"] for item in manifest["contexts"]}
 
 
+def test_ctl_github_knowledge_sync_apply_dry_run_updates_analysis(tmp_path: Path) -> None:
+    root = tmp_path
+    (root / ".git").mkdir()
+    context_dir = root / "work" / "github-knowledge-repo-recent" / "context"
+    context_dir.mkdir(parents=True)
+    gate_path = context_dir / "github-operation-gate.json"
+    tool_path = context_dir / "tool-selection.json"
+    analysis_path = context_dir / "github-knowledge-analysis.json"
+    gate_path.write_text(json.dumps({"mutation_allowed": True, "human_check_required": True}), encoding="utf-8")
+    tool_path.write_text(json.dumps({"human_check_required": True}), encoding="utf-8")
+    analysis_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "workflow": "github-knowledge-maintenance",
+                "work_id": "github-knowledge-repo-recent",
+                "repository": "owner/repo",
+                "target_branch": "main",
+                "scan_mode": ["recent"],
+                "repair_mode": "apply",
+                "summary": "",
+                "guardrails": [],
+                "metadata_sources": [],
+                "knowledge_assets": [],
+                "narrative_gaps": [],
+                "repair_proposals": [],
+                "history_rewrite_candidates": [],
+                "github_sync_actions": [
+                    {
+                        "id": "SYNC-1",
+                        "target_type": "issue",
+                        "target_id": "1",
+                        "operation": "comment",
+                        "draft_command": "gh issue comment 1 --body-file note.md",
+                        "approval_status": "approved",
+                    }
+                ],
+                "knowledge_db_candidates": [],
+                "rag_candidates": [],
+                "open_questions": [],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    (context_dir / "context-manifest.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "contexts": [
+                    {
+                        "type": "github-operation-gate",
+                        "path": "work/github-knowledge-repo-recent/context/github-operation-gate.json",
+                    },
+                    {"type": "tool-selection", "path": "work/github-knowledge-repo-recent/context/tool-selection.json"},
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "github-knowledge",
+            "sync-apply",
+            "--work-id",
+            "github-knowledge-repo-recent",
+            "--action-id",
+            "SYNC-1",
+            "--human-check",
+            "approved",
+            "--dry-run",
+            "--json",
+        ]
+    )
+    code, output = ctl.run(args)
+
+    assert code == 0
+    assert '"action_id": "SYNC-1"' in output
+    updated = json.loads(analysis_path.read_text(encoding="utf-8"))
+    assert updated["github_sync_actions"][0]["execution_status"] == "dry-run"
+
+
 def test_ctl_env_select_gui_mode_returns_windows_msys2_profile() -> None:
     args = ctl.build_parser().parse_args(["--repo-root", str(repo_root()), "env", "select", "gui-mode"])
 

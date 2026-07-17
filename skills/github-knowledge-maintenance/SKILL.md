@@ -15,6 +15,10 @@ GitHub Repositoryを、未来のAI workflowとRAGが再利用できるKnowledge 
 
 This workflow does not erase Git history or make historical evidence disappear. If commit semantic subjects, commit bodies, PR titles, PR bodies, or source documentation are missing, vague, or misleading, record the gap, prepare a reviewed repair proposal, and route the learned content to RAG. Existing commit rewriting is a separate high-risk action and requires explicit item-level approval plus before/after SHA mapping.
 
+Small rebase maintenance for 1-3 file commit leakage is also a high-risk repair path. Run it in four stages: detect commit leakage, calculate the rebase execution plan, output the plan report, and execute rebase only after Human Check approval.
+
+Do not complete a useless or accidental commit by inventing a strange Issue reference, PR story, or commit message after the fact. The rebase repair must either absorb the files into the proper semantic commit, split them into a real independent responsibility, drop an empty/noise commit, or explicitly keep it with existing evidence.
+
 Semantic commit quality is part of the repair target. The commit subject shown in the GitHub commit list must carry useful meaning by itself, using `type(scope): responsibility/result`, and the body must preserve intent, scope, decision, impact, and reusable maintenance knowledge.
 
 ## Required Inputs
@@ -43,6 +47,7 @@ Primary artifacts:
 ```text
 work/<work-id>/context/github-knowledge-analysis.json
 work/<work-id>/process-report/github-knowledge-repair-plan-*.md
+work/<work-id>/process-report/github-history-rebase-plan-*.md
 work/<work-id>/process-report/github-documentation-sync-plan-*.md
 work/<work-id>/process-report/github-knowledge-rag-candidate-*.md
 ```
@@ -225,6 +230,16 @@ Extract:
 - Pull Request Title Gap
 
 Record findings in `github-knowledge-analysis.json`.
+For 1-3 file commit leakage, run detection before planning:
+
+```powershell
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py detect-rebase-candidates `
+  --work-id "<work-id>" `
+  --base "HEAD~30" `
+  --head "HEAD"
+```
+
+This writes candidates to `history_rewrite_candidates` with `approval_status: pending`. Candidate records include `file_paths`, `suspect_commits`, `expected_commit`, `repair_goal`, `independent_responsibility`, `evidence_refs`, `recommended_action`, `reason`, `approval_status`, `completion_criteria`, `before_after_sha_mapping`, `rollback_plan`, `draft_commands`, and `verification_commands`.
 
 ### 6. Narrative Analysis
 
@@ -257,7 +272,41 @@ uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py
   --work-id "<work-id>"
 ```
 
+Create the high-risk rebase review plan for 1-3 file commit leakage:
+
+```powershell
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rebase-plan `
+  --work-id "<work-id>"
+```
+
 This is a proposal. It does not mutate GitHub.
+
+After Human Check approval, execute only an approved candidate:
+
+```powershell
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rebase-apply `
+  --work-id "<work-id>" `
+  --candidate-id "<candidate-id>" `
+  --human-check approved
+```
+
+`rebase-apply` requires both CLI-level Human Check approval and `approval_status: approved` in `github-knowledge-analysis.json`.
+
+The rebase plan includes a legend for candidate disposition:
+
+- `approval_status: pending`: incomplete, do not run GitHub sync apply yet.
+- approved absorb/split/drop repair goals: incomplete until rebase is applied and verified.
+- `keep-with-evidence`: resolved only when independent responsibility and existing evidence are recorded.
+- `no-rewrite`: resolved when the reason is recorded.
+- `rejected`: resolved, do not rebase.
+
+Run order:
+
+- If no rebase candidates are detected, continue to GitHub sync after Human Check.
+- If any rebase candidate is unresolved, do not run GitHub sync apply.
+- Resolve rebase candidates first with `rebase-plan`, Human Check, `rebase-apply`, and verification.
+- Approved absorb/split/drop candidates remain unresolved until `execution_status: verified`.
+- `keep-with-evidence`, `no-rewrite`, and `rejected` candidates can unblock GitHub sync when the required evidence/reason is recorded.
 
 ### 8. Human Review Gate
 
@@ -270,6 +319,7 @@ Before any GitHub mutation, the human must confirm:
 - whether the action is additive repair or approved commit-message/source correction
 - whether the proposed semantic subject is meaningful in GitHub commit list view
 - for any commit rewrite, the before/after SHA mapping and rollback plan
+- for 1-3 file commit leakage rebase, the target file list, suspect commits, expected commit, exact rebase/amend commands, before/after SHA mapping, rollback plan, and verification commands
 - exact Git / GitHub CLI/API command
 
 ### 9. GitHub Documentation Sync
@@ -287,6 +337,15 @@ uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py
   --work-id "<work-id>"
 ```
 
+Execute one approved GitHub sync action through ctl/runtime:
+
+```powershell
+aiwfctl github-knowledge sync-apply `
+  --work-id "<work-id>" `
+  --action-id "<action-id>" `
+  --human-check approved
+```
+
 Allowed operations after item-level approval:
 
 ```text
@@ -297,7 +356,7 @@ gh pr comment
 gh api
 ```
 
-Do not execute commands marked `pending`.
+Do not execute commands marked `pending`. Do not execute GitHub sync commands manually; use `github-sync-apply` / `aiwfctl github-knowledge sync-apply` so approval status, command shape, and execution result are recorded.
 
 ### 10. Knowledge DB / RAG Candidate Generation
 
@@ -353,9 +412,12 @@ Keep the initial `Review Status` as `Proposed`. Do not run `/self-improvement` a
 - For commit message repair, propose both a GitHub-list-readable subject and a body that records intent, scope, decision, impact, and reusable maintenance knowledge.
 - Prefer additive repair first: PR body, follow-up documentation commit, README/docs supplement, CAR supplement, or RAG candidate.
 - Existing commit-message/source correction with `git rebase`, `git commit --amend`, or force push is allowed only when the human explicitly approves that high-risk path and a before/after SHA mapping is recorded.
+- 1-3 file commit leakage rebase is allowed only after `detect-rebase-candidates`, `rebase-plan`, item-level approval, before/after SHA mapping, rollback plan, and verification commands.
+- Do not mark rebase maintenance complete by attaching a new Issue/message to a useless commit. Completion requires absorb/split/drop/no-rewrite/keep-with-evidence disposition and reviewed evidence.
 - Do not change source code.
 - Do not clone by default.
 - Do not mutate GitHub without explicit human approval.
+- Do not manually run approved GitHub sync actions outside ctl/runtime. Use `github-sync-apply` so the result is written back to `github-knowledge-analysis.json`.
 - Do not install missing tools silently. For missing `gh`, record the install command `winget install --id GitHub.cli`, get human approval, then verify with `gh --version`.
 - Do not convert a free-form observation into a GitHub update; write it to `github-knowledge-analysis.json` first.
 - Do not run RAG publication without explicit human approval.

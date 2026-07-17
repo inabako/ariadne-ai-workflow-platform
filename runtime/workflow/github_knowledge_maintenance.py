@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 import json
 import secrets
+import shlex
 import string
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Sequence
@@ -76,6 +78,42 @@ def build_parser() -> argparse.ArgumentParser:
     repair_parser.add_argument("--output", default="")
     repair_parser.add_argument("--repo-root", default=None)
 
+    detect_rebase_parser = subparsers.add_parser(
+        "detect-rebase-candidates",
+        help="Detect small commit-history leakage candidates and write them to analysis JSON.",
+    )
+    detect_rebase_parser.add_argument("--work-id", required=True)
+    detect_rebase_parser.add_argument("--analysis-path", default="")
+    detect_rebase_parser.add_argument("--git-repo", default="")
+    detect_rebase_parser.add_argument("--base", default="HEAD~30")
+    detect_rebase_parser.add_argument("--head", default="HEAD")
+    detect_rebase_parser.add_argument("--max-commits", type=int, default=80)
+    detect_rebase_parser.add_argument("--max-files", type=int, default=3)
+    detect_rebase_parser.add_argument("--append", action="store_true")
+    detect_rebase_parser.add_argument("--repo-root", default=None)
+
+    rebase_parser = subparsers.add_parser(
+        "rebase-plan",
+        help="Create a high-risk review plan for small commit-history rebase repairs.",
+    )
+    rebase_parser.add_argument("--work-id", required=True)
+    rebase_parser.add_argument("--analysis-path", default="")
+    rebase_parser.add_argument("--output", default="")
+    rebase_parser.add_argument("--repo-root", default=None)
+
+    rebase_apply_parser = subparsers.add_parser(
+        "rebase-apply",
+        help="Execute approved small commit-history rebase commands after human approval.",
+    )
+    rebase_apply_parser.add_argument("--work-id", required=True)
+    rebase_apply_parser.add_argument("--candidate-id", required=True)
+    rebase_apply_parser.add_argument("--analysis-path", default="")
+    rebase_apply_parser.add_argument("--git-repo", default="")
+    rebase_apply_parser.add_argument("--human-check", choices=["pending", "approved"], default="pending")
+    rebase_apply_parser.add_argument("--allow-interactive", action="store_true")
+    rebase_apply_parser.add_argument("--dry-run", action="store_true")
+    rebase_apply_parser.add_argument("--repo-root", default=None)
+
     sync_parser = subparsers.add_parser(
         "github-sync-plan", help="Create an approval-gated GitHub CLI/API sync plan from analysis JSON."
     )
@@ -83,6 +121,17 @@ def build_parser() -> argparse.ArgumentParser:
     sync_parser.add_argument("--analysis-path", default="")
     sync_parser.add_argument("--output", default="")
     sync_parser.add_argument("--repo-root", default=None)
+
+    sync_apply_parser = subparsers.add_parser(
+        "github-sync-apply",
+        help="Execute one approved GitHub sync action after Human Check.",
+    )
+    sync_apply_parser.add_argument("--work-id", required=True)
+    sync_apply_parser.add_argument("--action-id", required=True)
+    sync_apply_parser.add_argument("--analysis-path", default="")
+    sync_apply_parser.add_argument("--human-check", choices=["pending", "approved"], default="pending")
+    sync_apply_parser.add_argument("--dry-run", action="store_true")
+    sync_apply_parser.add_argument("--repo-root", default=None)
 
     rag_parser = subparsers.add_parser("rag-candidate", help="Create a RAG candidate note from analysis JSON.")
     rag_parser.add_argument("--work-id", required=True)
@@ -448,6 +497,7 @@ def default_analysis(work_dir: Path) -> dict[str, Any]:
         "knowledge_assets": [],
         "narrative_gaps": [],
         "repair_proposals": [],
+        "history_rewrite_candidates": [],
         "github_sync_actions": [],
         "knowledge_db_candidates": [],
         "rag_candidates": [],
@@ -530,6 +580,19 @@ def markdown_list(items: list[str]) -> str:
 
 
 FIELD_LABELS = {
+    "file_paths": "target files",
+    "suspect_commits": "suspect commits",
+    "expected_commit": "expected commit",
+    "repair_goal": "repair goal",
+    "independent_responsibility": "independent responsibility",
+    "evidence_refs": "evidence refs",
+    "completion_criteria": "completion criteria",
+    "recommended_action": "recommended Git action",
+    "approval_status": "approval status",
+    "before_after_sha_mapping": "before/after SHA mapping",
+    "rollback_plan": "rollback plan",
+    "draft_commands": "draft commands",
+    "verification_commands": "verification commands",
     "asset_ref": "知識資産",
     "gap_type": "不足種別",
     "severity": "重要度",
@@ -580,6 +643,237 @@ def field_list(items: list[dict[str, Any]], fields: list[str]) -> str:
     return "\n".join(lines).rstrip()
 
 
+def git_output(repo_path: Path, args: list[str]) -> str:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=repo_path,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        capture_output=True,
+        check=True,
+    )
+    return result.stdout
+
+
+def parse_commit_log(raw_log: str) -> list[dict[str, Any]]:
+    commits: list[dict[str, Any]] = []
+    current: dict[str, Any] | None = None
+    for raw_line in raw_log.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if "\x1f" in line:
+            commit_hash, subject = line.split("\x1f", 1)
+            current = {"hash": commit_hash, "subject": subject, "files": []}
+            commits.append(current)
+            continue
+        if current is not None:
+            current["files"].append(line)
+    return commits
+
+
+def collect_commit_summaries(repo_path: Path, base: str, head: str, max_commits: int) -> list[dict[str, Any]]:
+    revision = f"{base}..{head}" if base else head
+    command = [
+        "log",
+        "--name-only",
+        "--format=%H%x1f%s",
+        f"--max-count={max(1, max_commits)}",
+        revision,
+    ]
+    try:
+        raw_log = git_output(repo_path, command)
+    except subprocess.CalledProcessError:
+        if not base:
+            raise
+        command[-1] = head
+        raw_log = git_output(repo_path, command)
+    return parse_commit_log(raw_log)
+
+
+def commit_subject_is_weak(subject: str) -> bool:
+    normalized = subject.strip().lower()
+    if not normalized:
+        return True
+    weak_terms = ["update", "fix", "wip", "tmp", "temp", "misc", "cleanup", "対応", "修正", "更新"]
+    if normalized in weak_terms:
+        return True
+    if any(normalized.startswith(f"{term}:") for term in weak_terms):
+        return True
+    if "(" not in normalized.split(":", 1)[0] and ":" not in normalized:
+        return True
+    return False
+
+
+def path_affinity_score(left_files: list[str], right_files: list[str]) -> int:
+    left_roots = {path.split("/", 1)[0] for path in left_files if path}
+    right_roots = {path.split("/", 1)[0] for path in right_files if path}
+    left_dirs = {str(Path(path).parent).replace("\\", "/") for path in left_files if "/" in path or "\\" in path}
+    right_dirs = {str(Path(path).parent).replace("\\", "/") for path in right_files if "/" in path or "\\" in path}
+    left_suffixes = {Path(path).suffix for path in left_files if Path(path).suffix}
+    right_suffixes = {Path(path).suffix for path in right_files if Path(path).suffix}
+    return (
+        len(left_roots & right_roots) * 2
+        + len(left_dirs & right_dirs) * 3
+        + len(left_suffixes & right_suffixes)
+    )
+
+
+def nearest_semantic_commit(
+    commits: list[dict[str, Any]], index: int, candidate_files: list[str]
+) -> dict[str, Any] | None:
+    best: tuple[int, int, dict[str, Any]] | None = None
+    for other_index, commit in enumerate(commits):
+        if other_index == index or commit_subject_is_weak(str(commit.get("subject", ""))):
+            continue
+        score = path_affinity_score(candidate_files, commit.get("files", []) or [])
+        if score <= 0:
+            continue
+        distance = abs(other_index - index)
+        current = (score, -distance, commit)
+        if best is None or current > best:
+            best = current
+    return best[2] if best else None
+
+
+def short_commit(commit: dict[str, Any]) -> str:
+    commit_hash = str(commit.get("hash", ""))
+    subject = str(commit.get("subject", ""))
+    return f"{commit_hash[:7]} {subject}".strip()
+
+
+def build_detected_history_candidate(
+    commit: dict[str, Any],
+    expected_commit: dict[str, Any] | None,
+    index: int,
+) -> dict[str, Any]:
+    commit_hash = str(commit.get("hash", ""))
+    expected = short_commit(expected_commit) if expected_commit else ""
+    candidate_id = f"HISTORY-DETECT-{index + 1:03d}"
+    draft_commands = [f"git branch backup/{candidate_id.lower()} HEAD"]
+    if commit_hash:
+        draft_commands.append(f"git rebase -i {commit_hash[:12]}^")
+    return {
+        "id": candidate_id,
+        "file_paths": commit.get("files", []) or [],
+        "suspect_commits": [short_commit(commit)],
+        "expected_commit": expected,
+        "repair_goal": "absorb-into-existing-commit" if expected else "no-rewrite",
+        "independent_responsibility": "",
+        "evidence_refs": [f"git show --stat {commit_hash}"] if commit_hash else [],
+        "completion_criteria": [
+            "The suspect files are either absorbed into the correct semantic commit or the candidate is rejected.",
+            "No new Issue, PR story, or commit message is invented solely to justify the leaked commit.",
+            "The final git log and affected file history match the approved plan.",
+        ],
+        "recommended_action": "interactive-rebase" if expected else "no-rewrite",
+        "reason": "Detected a 1-3 file commit with weak or suspicious history context.",
+        "before_summary": short_commit(commit),
+        "after_summary": f"Candidate should be reviewed against {expected}." if expected else "No safe target commit was detected.",
+        "approval_status": "pending",
+        "before_after_sha_mapping": [],
+        "rollback_plan": f"git reset --hard {commit_hash}" if commit_hash else "",
+        "draft_commands": draft_commands,
+        "verification_commands": [
+            "git log --format=\"%H %s\" --max-count=20",
+            "git diff --stat",
+        ],
+    }
+
+
+def detect_history_rewrite_candidates(
+    *,
+    repo_path: Path,
+    base: str,
+    head: str,
+    max_commits: int,
+    max_files: int,
+) -> list[dict[str, Any]]:
+    commits = collect_commit_summaries(repo_path, base, head, max_commits)
+    candidates: list[dict[str, Any]] = []
+    for commit_index, commit in enumerate(commits):
+        files = commit.get("files", []) or []
+        if not 1 <= len(files) <= max_files:
+            continue
+        expected_commit = nearest_semantic_commit(commits, commit_index, files)
+        if not commit_subject_is_weak(str(commit.get("subject", ""))) and expected_commit is None:
+            continue
+        candidates.append(build_detected_history_candidate(commit, expected_commit, len(candidates)))
+    return candidates
+
+
+def history_rewrite_candidates(analysis: dict[str, Any]) -> list[dict[str, Any]]:
+    candidates = analysis.get("history_rewrite_candidates", []) or []
+    return [candidate for candidate in candidates if isinstance(candidate, dict)]
+
+
+def validate_history_rewrite_candidates(candidates: list[dict[str, Any]]) -> list[str]:
+    errors: list[str] = []
+    for candidate in candidates:
+        candidate_id = str(candidate.get("id", "HISTORY-XXX"))
+        file_paths = candidate.get("file_paths", []) or []
+        if not isinstance(file_paths, list) or not 1 <= len(file_paths) <= 3:
+            errors.append(f"{candidate_id}: file_paths must contain 1 to 3 files.")
+        repair_goal = str(candidate.get("repair_goal", ""))
+        if repair_goal and repair_goal not in {
+            "absorb-into-existing-commit",
+            "drop-empty-or-noise-commit",
+            "split-into-independent-commit",
+            "keep-with-evidence",
+            "no-rewrite",
+        }:
+            errors.append(f"{candidate_id}: repair_goal is not supported.")
+        approval_status = str(candidate.get("approval_status", "pending"))
+        if approval_status not in {"pending", "approved", "rejected"}:
+            errors.append(f"{candidate_id}: approval_status must be pending, approved, or rejected.")
+        if approval_status == "approved":
+            if not repair_goal:
+                errors.append(f"{candidate_id}: approved rebase repair requires repair_goal.")
+            if repair_goal == "absorb-into-existing-commit" and not candidate.get("expected_commit"):
+                errors.append(f"{candidate_id}: absorb repair requires expected_commit.")
+            if repair_goal == "keep-with-evidence" and not candidate.get("independent_responsibility"):
+                errors.append(f"{candidate_id}: keep repair requires independent_responsibility.")
+            if repair_goal == "keep-with-evidence" and not candidate.get("evidence_refs"):
+                errors.append(f"{candidate_id}: keep repair requires evidence_refs.")
+            if not candidate.get("completion_criteria"):
+                errors.append(f"{candidate_id}: approved rebase repair requires completion_criteria.")
+            if not candidate.get("before_after_sha_mapping"):
+                errors.append(f"{candidate_id}: approved rebase repair requires before_after_sha_mapping.")
+            if not candidate.get("rollback_plan"):
+                errors.append(f"{candidate_id}: approved rebase repair requires rollback_plan.")
+            if not candidate.get("draft_commands"):
+                errors.append(f"{candidate_id}: approved rebase repair requires draft_commands.")
+            if not candidate.get("verification_commands"):
+                errors.append(f"{candidate_id}: approved rebase repair requires verification_commands.")
+    return errors
+
+
+def history_rewrite_candidate_is_resolved(candidate: dict[str, Any]) -> bool:
+    approval_status = str(candidate.get("approval_status", "pending"))
+    repair_goal = str(candidate.get("repair_goal", ""))
+    execution_status = str(candidate.get("execution_status", "pending"))
+    if approval_status == "rejected":
+        return True
+    if approval_status == "pending":
+        return False
+    if repair_goal == "no-rewrite":
+        return bool(candidate.get("reason"))
+    if repair_goal == "keep-with-evidence":
+        return bool(candidate.get("independent_responsibility") and candidate.get("evidence_refs"))
+    if repair_goal in {"absorb-into-existing-commit", "drop-empty-or-noise-commit", "split-into-independent-commit"}:
+        return execution_status == "verified"
+    return False
+
+
+def unresolved_history_rewrite_candidates(analysis: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        candidate
+        for candidate in history_rewrite_candidates(analysis)
+        if not history_rewrite_candidate_is_resolved(candidate)
+    ]
+
+
 def load_analysis(repo_root: Path, work_id: str, raw_path: str) -> tuple[Path, Path, dict[str, Any]]:
     work_dir = repo_root / "work" / work_id
     if not work_dir.exists():
@@ -591,6 +885,120 @@ def load_analysis(repo_root: Path, work_id: str, raw_path: str) -> tuple[Path, P
     if not isinstance(analysis, dict):
         raise ValueError(f"GitHub knowledge analysis must be a JSON object: {path}")
     return work_dir, path, analysis
+
+
+def create_detect_rebase_candidates(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    work_dir, analysis_path, analysis = load_analysis(repo_root, args.work_id, args.analysis_path)
+    git_repo = Path(args.git_repo).resolve() if args.git_repo else repo_root
+    detected = detect_history_rewrite_candidates(
+        repo_path=git_repo,
+        base=args.base,
+        head=args.head,
+        max_commits=args.max_commits,
+        max_files=args.max_files,
+    )
+    existing = history_rewrite_candidates(analysis) if args.append else []
+    analysis["history_rewrite_candidates"] = existing + detected
+    write_json(analysis_path, analysis)
+    register_artifact(
+        repo_root,
+        work_dir,
+        "GITHUB-KNOWLEDGE-ANALYSIS",
+        "GitHub Knowledge Analysis",
+        analysis_path,
+        "report",
+    )
+    return {
+        "analysis_path": relative_to_repo(repo_root, analysis_path),
+        "git_repo": str(git_repo),
+        "candidate_count": len(detected),
+        "total_candidate_count": len(analysis["history_rewrite_candidates"]),
+    }
+
+
+def find_history_rewrite_candidate(analysis: dict[str, Any], candidate_id: str) -> dict[str, Any]:
+    for candidate in history_rewrite_candidates(analysis):
+        if candidate.get("id") == candidate_id:
+            return candidate
+    raise ValueError(f"History rewrite candidate not found: {candidate_id}")
+
+
+def is_interactive_git_command(command: str) -> bool:
+    normalized = " ".join(command.strip().lower().split())
+    return " rebase -i " in f" {normalized} " or " rebase --interactive " in f" {normalized} "
+
+
+def run_rebase_command(repo_path: Path, command: str, *, allow_interactive: bool, dry_run: bool) -> dict[str, Any]:
+    stripped = command.strip()
+    if not stripped.startswith("git "):
+        raise ValueError(f"Only git commands can be executed by rebase-apply: {command}")
+    if is_interactive_git_command(stripped) and not allow_interactive:
+        raise ValueError("Interactive rebase command requires --allow-interactive.")
+    if dry_run:
+        return {"command": stripped, "skipped": True, "returncode": 0, "stdout": "", "stderr": ""}
+    result = subprocess.run(
+        stripped,
+        cwd=repo_path,
+        shell=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        capture_output=True,
+        check=False,
+    )
+    return {
+        "command": stripped,
+        "skipped": False,
+        "returncode": result.returncode,
+        "stdout": result.stdout,
+        "stderr": result.stderr,
+    }
+
+
+def create_rebase_apply(args: argparse.Namespace) -> dict[str, Any]:
+    if args.human_check != "approved":
+        raise PermissionError("rebase-apply requires --human-check approved.")
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    work_dir, analysis_path, analysis = load_analysis(repo_root, args.work_id, args.analysis_path)
+    require_github_operation_gate(repo_root, work_dir, require_mutation_gate=True)
+    candidate = find_history_rewrite_candidate(analysis, args.candidate_id)
+    if candidate.get("approval_status") != "approved":
+        raise PermissionError(f"{args.candidate_id} is not approved.")
+    validation_errors = validate_history_rewrite_candidates([candidate])
+    if validation_errors:
+        raise ValueError("Approved rebase candidate is not executable: " + " ".join(validation_errors))
+    if candidate.get("repair_goal") == "no-rewrite":
+        raise ValueError(f"{args.candidate_id} has repair_goal no-rewrite.")
+    git_repo = Path(args.git_repo).resolve() if args.git_repo else repo_root
+    commands = [str(command) for command in candidate.get("draft_commands", [])]
+    results = [
+        run_rebase_command(git_repo, command, allow_interactive=args.allow_interactive, dry_run=args.dry_run)
+        for command in commands
+    ]
+    failed = [result for result in results if result["returncode"] != 0]
+    if failed:
+        candidate["execution_status"] = "failed"
+        candidate["executed_at"] = utc_now_iso()
+        candidate["execution_result"] = failed[0]
+        write_json(analysis_path, analysis)
+        raise RuntimeError("rebase-apply command failed: " + failed[0]["command"])
+    candidate["execution_status"] = "dry-run" if args.dry_run else "applied"
+    candidate["executed_at"] = utc_now_iso()
+    candidate["execution_result"] = {
+        "commands": results,
+        "verification_required": not bool(args.dry_run),
+    }
+    write_json(analysis_path, analysis)
+    return {
+        "candidate_id": args.candidate_id,
+        "analysis_path": relative_to_repo(repo_root, analysis_path),
+        "git_repo": str(git_repo),
+        "dry_run": bool(args.dry_run),
+        "executed_count": 0 if args.dry_run else len(results),
+        "planned_count": len(results),
+        "results": results,
+    }
 
 
 def require_github_operation_gate(
@@ -643,6 +1051,7 @@ def require_github_operation_gate(
 def build_repair_plan(analysis: dict[str, Any]) -> str:
     proposals = analysis.get("repair_proposals", []) or []
     gaps = analysis.get("narrative_gaps", []) or []
+    rewrite_candidates = history_rewrite_candidates(analysis)
     return "\n".join(
         [
             "# GitHub ナレッジ修復計画",
@@ -650,6 +1059,13 @@ def build_repair_plan(analysis: dict[str, Any]) -> str:
             "## 意図",
             "",
             analysis.get("summary", "Maintain GitHub repository knowledge assets."),
+            "",
+            "## Workflow Stages",
+            "",
+            "1. `detect-rebase-candidates` detects 1-3 file commit leakage and writes pending candidates.",
+            "2. `rebase-plan` calculates and reports the execution plan.",
+            "3. Human Check approves or rejects each candidate.",
+            "4. `rebase-apply --human-check approved` executes only approved candidates.",
             "",
             "## Repository",
             "",
@@ -690,6 +1106,30 @@ def build_repair_plan(analysis: dict[str, Any]) -> str:
             "",
             "Human Review では、subject/title が GitHub list view だけで意味を持つか確認します。",
             "",
+            "## 1-3 file commit漏れ / Rebase候補",
+            "",
+            field_list(
+                rewrite_candidates,
+                [
+                    "file_paths",
+                    "suspect_commits",
+                    "expected_commit",
+                    "repair_goal",
+                    "independent_responsibility",
+                    "evidence_refs",
+                    "recommended_action",
+                    "reason",
+                    "completion_criteria",
+                    "approval_status",
+                    "before_after_sha_mapping",
+                    "rollback_plan",
+                ],
+            ),
+            "",
+            "このsectionは提案のみです。`git rebase`、`git commit --amend`、force pushは実行しません。",
+            "対象fileは1-3件に限定し、source差分の意味が1つのcommit責務に自然に収まる場合だけ候補化します。",
+            "無駄なcommitに後付けIssueやmessageを付けるだけのrepairは完了扱いにしません。吸収、分割、drop、または独立責務の根拠付き維持を明示します。",
+            "",
             "## Human Review チェックリスト",
             "",
             "- 各修復理由を確認する。",
@@ -701,6 +1141,7 @@ def build_repair_plan(analysis: dict[str, Any]) -> str:
             "- PR title が GitHub PR list だけで意味を持つことを確認する。",
             "- commit source や対象 repository の source file を変更しないことを確認する。",
             "- 既存 commit message/body を直接修正する場合は、明示承認、before/after SHA mapping、rollback plan を確認する。",
+            "- 1-3 filesのcommit漏れrebase整備では、対象file一覧、suspect commit、本来まとめるcommit、before/after SHA mapping、rollback plan、verification commandを確認する。",
             "- rewrite 後は `git log --format=\"%H %s\"` または GitHub API で subject 表示を確認する。",
             "- 実行前に正確な Git / GitHub CLI/API command を確認する。",
         ]
@@ -721,6 +1162,123 @@ def create_repair_plan(args: argparse.Namespace) -> dict[str, Any]:
         "repair_plan": relative_to_repo(repo_root, output_path),
         "analysis_path": relative_to_repo(repo_root, analysis_path),
         "proposal_count": len(analysis.get("repair_proposals", []) or []),
+    }
+
+
+def build_rebase_plan(analysis: dict[str, Any]) -> str:
+    candidates = history_rewrite_candidates(analysis)
+    validation_errors = validate_history_rewrite_candidates(candidates)
+    return "\n".join(
+        [
+            "# Git Commit History Rebase Review Plan",
+            "",
+            "## Workflow Stages",
+            "",
+            "1. `detect-rebase-candidates` detects 1-3 file commit leakage and writes pending candidates.",
+            "2. `rebase-plan` calculates and reports the execution plan.",
+            "3. Human Check approves or rejects each candidate.",
+            "4. `rebase-apply --human-check approved` executes only approved candidates.",
+            "",
+            "この計画書は、1-3 files の不自然なコミット履歴やコミット漏れをrebaseで整えるためのHuman Review資料です。",
+            "このworkflow helperはGit操作を実行しません。",
+            "",
+            "## Repository",
+            "",
+            f"- Repository: `{analysis.get('repository', '')}`",
+            f"- Target branch: `{analysis.get('target_branch', '')}`",
+            f"- Repair mode: `{analysis.get('repair_mode', 'proposal')}`",
+            "",
+            "## Review Legend",
+            "",
+            "| Field / Value | Human Review Meaning | GitHub sync gating |",
+            "| --- | --- | --- |",
+            "| `approval_status: pending` | Not reviewed yet. | Incomplete. Run no GitHub sync apply. |",
+            "| `approval_status: approved` + `repair_goal: absorb-into-existing-commit` | Rebase/amend is approved. | Incomplete until rebase is applied and verified. |",
+            "| `approval_status: approved` + `repair_goal: split-into-independent-commit` | Commit split is approved. | Incomplete until split is applied and verified. |",
+            "| `approval_status: approved` + `repair_goal: drop-empty-or-noise-commit` | Dropping an empty/noise commit is approved. | Incomplete until drop is applied and verified. |",
+            "| `repair_goal: keep-with-evidence` | Keep as a legitimate independent change. | Complete only when `independent_responsibility` and `evidence_refs` are recorded. |",
+            "| `repair_goal: no-rewrite` | Human decided no history rewrite is needed. | Complete when the reason is recorded. |",
+            "| `approval_status: rejected` | Human rejected the candidate. | Complete; do not rebase. |",
+            "",
+            "Use `keep-with-evidence` when the detected diff is legitimate and should remain as-is. Do not leave it as `pending`.",
+            "Use `no-rewrite` when the candidate is a false positive or rebase is intentionally unnecessary.",
+            "",
+            "## Candidates",
+            "",
+            field_list(
+                candidates,
+                [
+                    "file_paths",
+                    "suspect_commits",
+                    "expected_commit",
+                    "repair_goal",
+                    "independent_responsibility",
+                    "evidence_refs",
+                    "recommended_action",
+                    "reason",
+                    "before_summary",
+                    "after_summary",
+                    "completion_criteria",
+                    "approval_status",
+                    "before_after_sha_mapping",
+                    "rollback_plan",
+                    "draft_commands",
+                    "verification_commands",
+                ],
+            ),
+            "",
+            "## Validation",
+            "",
+            markdown_list(validation_errors),
+            "",
+            "## Required Human Approval",
+            "",
+            "- 対象fileが1-3件であること。",
+            "- rebase対象commitと、巻き込まれるcommit範囲が明示されていること。",
+            "- 変更責務が1つのsemantic commitとして自然であること。",
+            "- 無駄なcommitをIssue名やmessageで飾って残すのではなく、吸収、分割、drop、または根拠付き維持のどれかを明示すること。",
+            "- `keep-with-evidence` の場合は、独立した責務と既存証跡が説明できること。",
+            "- before/after SHA mappingが記録されていること。",
+            "- rollback planが記録されていること。",
+            "- `git log --format=\"%H %s\"` などでrebase後のsubject表示を確認すること。",
+            "- force pushが必要な場合は、対象remote/branchとコマンドをitem単位で承認すること。",
+            "",
+            "## Stop Rules",
+            "",
+            "- `approval_status: pending` の候補は実行しない。",
+            "- file_pathsが0件または4件以上の候補は、このsmall rebase整備では扱わない。",
+            "- repair_goalがないapproved候補は実行しない。",
+            "- 独立責務や既存証跡のないcommitを後付けIssue/messageだけで完了扱いにしない。",
+            "- before/after SHA mappingまたはrollback planがないapproved候補は実行しない。",
+            "- source codeの内容変更が必要な場合は、このworkflowではなく通常のfeature/fix workflowへ戻す。",
+        ]
+    )
+
+
+def create_rebase_plan(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    work_dir, analysis_path, analysis = load_analysis(repo_root, args.work_id, args.analysis_path)
+    output_path = (
+        Path(args.output).resolve()
+        if args.output
+        else work_dir / "process-report" / f"github-history-rebase-plan-{local_timestamp()}.md"
+    )
+    candidates = history_rewrite_candidates(analysis)
+    validation_errors = validate_history_rewrite_candidates(candidates)
+    write_markdown_bom(output_path, build_rebase_plan(analysis))
+    register_artifact(
+        repo_root,
+        work_dir,
+        "GITHUB-HISTORY-REBASE-PLAN",
+        "GitHub History Rebase Review Plan",
+        output_path,
+        "report",
+    )
+    return {
+        "rebase_plan": relative_to_repo(repo_root, output_path),
+        "analysis_path": relative_to_repo(repo_root, analysis_path),
+        "candidate_count": len(candidates),
+        "validation_errors": validation_errors,
     }
 
 
@@ -769,12 +1327,130 @@ def build_sync_plan(analysis: dict[str, Any]) -> str:
             "",
             "- `pending` の command は実行しない。",
             "- この GitHub documentation sync plan では commit message rewrite を実行しない。",
+            "- 1-3 filesのcommit漏れrebase整備は `rebase-plan` のHuman Review後に別途実行する。",
             "- `git rebase`、`git commit --amend`、force push は、別の commit-message rewrite review plan で明示承認された場合だけ扱う。",
             "- commit message rewrite を扱う場合は、semantic subject の GitHub commit-list 表示を別途検証する。",
             "- 対象または command がこの計画と異なる場合は、analysis JSON を更新して再レビューする。",
         ]
     )
     return "\n".join(lines)
+
+
+def github_sync_actions(analysis: dict[str, Any]) -> list[dict[str, Any]]:
+    actions = analysis.get("github_sync_actions", []) or []
+    return [action for action in actions if isinstance(action, dict)]
+
+
+def find_github_sync_action(analysis: dict[str, Any], action_id: str) -> dict[str, Any]:
+    for action in github_sync_actions(analysis):
+        if action.get("id") == action_id:
+            return action
+    raise ValueError(f"GitHub sync action not found: {action_id}")
+
+
+def parse_github_sync_command(command: str) -> list[str]:
+    stripped = command.strip()
+    if not stripped:
+        raise ValueError("GitHub sync action requires draft_command.")
+    if any(token in stripped for token in ["\n", "\r", "&&", "||", "|", ">", "<", ";"]):
+        raise ValueError("GitHub sync action command must be a single gh command without shell chaining.")
+    try:
+        parts = shlex.split(stripped, posix=True)
+    except ValueError as exc:
+        raise ValueError(f"GitHub sync action command could not be parsed: {exc}") from exc
+    if not parts or parts[0] != "gh":
+        raise ValueError("GitHub sync action command must start with gh.")
+    return parts
+
+
+def validate_github_sync_command(action: dict[str, Any], command_parts: list[str]) -> None:
+    action_id = str(action.get("id", "SYNC-XXX"))
+    target_type = str(action.get("target_type", ""))
+    operation = str(action.get("operation", ""))
+    if len(command_parts) < 3:
+        raise ValueError(f"{action_id}: GitHub sync command is incomplete.")
+    family = command_parts[1]
+    verb = command_parts[2]
+    allowed = {
+        ("issue", "edit"),
+        ("issue", "comment"),
+        ("pr", "edit"),
+        ("pr", "comment"),
+    }
+    if (family, verb) in allowed:
+        expected_target = "issue" if family == "issue" else "pull-request"
+        expected_comment_target = "issue-comment" if family == "issue" else "pr-comment"
+        if target_type not in {expected_target, expected_comment_target}:
+            raise ValueError(f"{action_id}: command target does not match target_type.")
+        if operation != verb:
+            raise ValueError(f"{action_id}: command verb does not match operation.")
+        return
+    if family == "api":
+        endpoint = command_parts[2]
+        if target_type != "api" or operation != "api":
+            raise ValueError(f"{action_id}: gh api requires target_type api and operation api.")
+        if not endpoint.lstrip("/").startswith("repos/"):
+            raise ValueError(f"{action_id}: gh api endpoint must be scoped under repos/.")
+        return
+    raise ValueError(f"{action_id}: unsupported GitHub sync command.")
+
+
+def run_github_sync_command(command_parts: list[str], *, dry_run: bool) -> dict[str, Any]:
+    if dry_run:
+        return {"command": " ".join(command_parts), "skipped": True, "returncode": 0, "stdout": "", "stderr": ""}
+    result = subprocess.run(
+        command_parts,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        capture_output=True,
+        check=False,
+    )
+    return {
+        "command": " ".join(command_parts),
+        "skipped": False,
+        "returncode": result.returncode,
+        "stdout": result.stdout[:4000],
+        "stderr": result.stderr[:4000],
+    }
+
+
+def create_sync_apply(args: argparse.Namespace) -> dict[str, Any]:
+    if args.human_check != "approved":
+        raise PermissionError("github-sync-apply requires --human-check approved.")
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    work_dir, analysis_path, analysis = load_analysis(repo_root, args.work_id, args.analysis_path)
+    context_gate = require_github_operation_gate(repo_root, work_dir, require_mutation_gate=True)
+    unresolved_candidates = unresolved_history_rewrite_candidates(analysis)
+    if unresolved_candidates:
+        unresolved_ids = ", ".join(str(candidate.get("id", "HISTORY-XXX")) for candidate in unresolved_candidates)
+        raise RuntimeError(
+            "github-sync-apply is blocked until rebase candidates are resolved: " + unresolved_ids
+        )
+    action = find_github_sync_action(analysis, args.action_id)
+    if action.get("approval_status") != "approved":
+        raise PermissionError(f"{args.action_id} is not approved.")
+    command_parts = parse_github_sync_command(str(action.get("draft_command", "")))
+    validate_github_sync_command(action, command_parts)
+    result = run_github_sync_command(command_parts, dry_run=bool(args.dry_run))
+    if result["returncode"] != 0:
+        action["execution_status"] = "failed"
+        action["executed_at"] = utc_now_iso()
+        action["execution_result"] = result
+        write_json(analysis_path, analysis)
+        raise RuntimeError(f"github-sync-apply command failed: {result['command']}")
+    action["execution_status"] = "dry-run" if args.dry_run else "applied"
+    action["executed_at"] = utc_now_iso()
+    action["execution_result"] = result
+    write_json(analysis_path, analysis)
+    return {
+        "action_id": args.action_id,
+        "analysis_path": relative_to_repo(repo_root, analysis_path),
+        "dry_run": bool(args.dry_run),
+        "executed": not bool(args.dry_run),
+        "context_gate": context_gate,
+        "result": result,
+    }
 
 
 def create_sync_plan(args: argparse.Namespace) -> dict[str, Any]:
@@ -877,8 +1553,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         return create_analysis_template(args)
     if args.command == "repair-plan":
         return create_repair_plan(args)
+    if args.command == "detect-rebase-candidates":
+        return create_detect_rebase_candidates(args)
+    if args.command == "rebase-plan":
+        return create_rebase_plan(args)
+    if args.command == "rebase-apply":
+        return create_rebase_apply(args)
     if args.command == "github-sync-plan":
         return create_sync_plan(args)
+    if args.command == "github-sync-apply":
+        return create_sync_apply(args)
     if args.command == "rag-candidate":
         return create_rag_candidate(args)
     raise ValueError(f"Unsupported command: {args.command}")

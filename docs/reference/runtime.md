@@ -31,7 +31,7 @@
 | `runtime/github/pull_request_manager.py` | Issue branch push後にPull Request draft / createを行う |
 | `runtime/scm/bootstrap_repository.py` | precreated-new repository modeで初期git repository化、initial branch push recordを作る |
 | `runtime/workflow/docs_sync.py` | docs-syncのcontext、analysis scaffold、Issue bodyを作る |
-| `runtime/workflow/github_knowledge_maintenance.py` | GitHub knowledge maintenanceのcontext、analysis scaffold、repair plan、GitHub sync plan、RAG candidateを作る |
+| `runtime/workflow/github_knowledge_maintenance.py` | GitHub knowledge maintenanceのcontext、analysis scaffold、repair plan、small rebase detection / plan / approved apply、GitHub sync plan / approved apply、RAG candidateを作る |
 | `runtime/workflow/init_corrective_action_fix.py` | corrective-action-fixのbase / issue work folderを初期化する |
 | `runtime/workflow/vscode_environment.py` | VSCode Environment workflowのwork folder、requirements scaffold、validation scaffoldを作る |
 | `runtime/workflow/gui_mode.py` | `work/requirements/svg-input/<PREFIX>_*.svg`をIssueへ取り込み、GUI設計、PyQt6候補、QTest候補を`gac-uac/`へ生成・検証する |

@@ -17,6 +17,7 @@ You create repair proposals for missing or weak repository knowledge explanation
 - README supplement
 - Docs supplement
 - ADR supplement
+- Small rebase review plan for 1-3 file commit leakage
 
 ## Responsibilities
 
@@ -26,6 +27,8 @@ You create repair proposals for missing or weak repository knowledge explanation
 - Detect weak semantic commit subjects. The subject shown in GitHub commit list must be meaningful by itself and should follow `type(scope): responsibility/result`.
 - Avoid weak subjects such as repository-name-only scopes, file-name-only changes, "対応", "修正", "更新", or broad product names when the source diff reveals a more precise responsibility scope.
 - For commit message repair proposals, include a proposed semantic subject and body. The body must explain intent, scope, decision, impact, safety/deployment/protocol boundaries when relevant, and future AI workflow value.
+- For 1-3 file commit leakage, use detected `history_rewrite_candidates` as the source for a rebase execution plan. The flow is detection, plan report, Human Check approval, then approved execution.
+- Do not justify a useless or accidental commit by inventing a strange Issue reference or commit message. Choose one disposition: absorb into the proper commit, split into a real independent responsibility, drop empty/noise commit, no rewrite, or keep with existing evidence.
 - Prefer additive repair first: PR body, follow-up documentation commit, README/docs supplement, CAR supplement, or RAG candidate.
 - If the requested repair requires rewriting existing commit messages, mark it as high risk and require explicit human approval, before/after SHA mapping, and rollback plan.
 - Keep proposals traceable to evidence.
@@ -47,6 +50,7 @@ Update:
 
 ```text
 repair_proposals
+history_rewrite_candidates
 open_questions
 ```
 
@@ -62,3 +66,12 @@ Then generate:
 uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py repair-plan `
   --work-id "<work-id>"
 ```
+
+For small rebase candidates, also generate:
+
+```powershell
+uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rebase-plan `
+  --work-id "<work-id>"
+```
+
+Do not execute the plan. Execution belongs to `rebase-apply` after Human Check approval and `approval_status: approved`.

@@ -23,8 +23,8 @@
 | `github-metadata-collector-agent.prompt.md` | GitHub CLI/APIによるIssue、PR、comment、label、release収集 | `metadata_sources` |
 | `knowledge-asset-discovery-agent.prompt.md` | Intent、Scope、Design Decision、Maintenance Knowledge、RAG候補抽出 | `knowledge_assets`, `rag_candidates` |
 | `narrative-analyzer-agent.prompt.md` | Issue -> PR -> Review -> Comment -> Documentation の整合性検査 | `narrative_gaps` |
-| `documentation-repair-agent.prompt.md` | Issue/PR/CAR/README/docs/ADR補足案作成 | `github-knowledge-repair-plan-*.md` |
-| `github-documentation-sync-agent.prompt.md` | 承認済みrepairのGitHub CLI/API sync plan作成 | `github-documentation-sync-plan-*.md` |
+| `documentation-repair-agent.prompt.md` | Issue/PR/CAR/README/docs/ADR補足案とsmall rebase検出後の実行計画整理 | `github-knowledge-repair-plan-*.md`, `github-history-rebase-plan-*.md` |
+| `github-documentation-sync-agent.prompt.md` | 承認済みrepairのGitHub CLI/API sync plan作成とctl apply誘導 | `github-documentation-sync-plan-*.md` |
 | `knowledge-db-registrar-agent.prompt.md` | Knowledge DB候補とRAG候補生成 | `github-knowledge-rag-candidate-*.md` |
 | `workspace-requirements-analyst-agent.prompt.md` | VSCode workspace要件、tool、extension、terminal、task整理 | `workspace-requirements.md` |
 | `workspace-shared-artifact-validator-agent.prompt.md` | VSCode環境構築前の必須artifact検証 | `workspace-shared-artifact-validation.json`, `workspace-shared-artifact-validation.md` |

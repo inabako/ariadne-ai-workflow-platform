@@ -1,4 +1,4 @@
-# test_ctl_help.py
+﻿# test_ctl_help.py
 
 このファイルは `runtime/tests/test_ctl_help.py` の pytest node id 単位UT仕様です。
 
@@ -94,6 +94,23 @@ runtime/tests/test_ctl_help.py::test_ctl_knowledge_usage_and_search_export_conte
 - 期待結果: knowledge系commandが期待する出力、context file、manifest登録を生成する。
 
 #### RT-UT-CASE-CTL-006
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_github_knowledge_sync_apply_dry_run_updates_analysis
+```
+
+- 確認内容: `aiwfctl github-knowledge sync-apply` が承認済みGitHub sync actionをruntime経由でdry-runし、analysis JSONへ結果を戻すことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py:236`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `args`, `updated`
+- 期待結果: pytest case pass。`execution_status: dry-run` が `github_sync_actions` に記録される。
+
+#### RT-UT-CASE-CTL-006A
 
 - pytest node id:
 
@@ -226,7 +243,7 @@ runtime/tests/test_ctl_help.py::test_ctl_env_select_writes_workflow_context
   - source: `runtime/tests/test_ctl_help.py:334`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: `args`
+  - inline input: `args`, `data`, `manifest`
 - 期待結果: work配下にenvironment-selection context、process report、context manifestが書き込まれる。
 
 #### RT-UT-CASE-CTL-014
@@ -243,7 +260,7 @@ runtime/tests/test_ctl_help.py::test_ctl_env_select_warns_before_overwriting_dif
   - source: `runtime/tests/test_ctl_help.py:381`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: `existing_context`, `args`
+  - inline input: `args`, `data`
 - 期待結果: context差分のwarningが記録され、上書き前提が可視化される。
 
 #### RT-UT-CASE-CTL-015
@@ -260,7 +277,7 @@ runtime/tests/test_ctl_help.py::test_ctl_help_list_contains_workflow_commands
   - source: `runtime/tests/test_ctl_help.py:437`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+  - inline input: `args`
 - 期待結果: 主要workflow commandが一覧に含まれる。
 
 #### RT-UT-CASE-CTL-016
@@ -377,9 +394,9 @@ runtime/tests/test_ctl_help.py::test_ctl_doctor_runs_workflow_doctor
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_ctl_help.py:564`
-  - fixture/arg: `monkeypatch`, `tmp_path` (temporary filesystem)
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: patched workflow_doctor result
+  - inline input: `args`
 - 期待結果: doctor結果がCLI outputとexit codeに反映される。
 
 #### RT-UT-CASE-CTL-023
@@ -394,9 +411,9 @@ runtime/tests/test_ctl_help.py::test_defensive_specimen_ctl_doctor_formats_warni
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_ctl_help.py:592`
-  - fixture/arg: `monkeypatch`, `tmp_path` (temporary filesystem)
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: warning path specimen
+  - inline input: `args`
 - 期待結果: warning pathがCLIで確認しやすい形に整形される。
 
 #### RT-UT-CASE-CTL-024
@@ -464,7 +481,7 @@ runtime/tests/test_ctl_help.py::test_ctl_help_markdown_writes_searchable_file
   - source: `runtime/tests/test_ctl_help.py:671`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: `args`, output path
+  - inline input: `args`, `text`
 - 期待結果: workflow helpのMarkdown出力が生成され、検索語を含む。
 
 #### RT-UT-CASE-CTL-028
@@ -481,7 +498,7 @@ runtime/tests/test_ctl_help.py::test_workflow_help_registry_referenced_files_exi
   - source: `runtime/tests/test_ctl_help.py:695`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: registry references
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: registry内の参照pathが欠落していない。
 
 #### RT-UT-CASE-CTL-029
@@ -498,7 +515,7 @@ runtime/tests/test_ctl_help.py::test_workflow_help_search_uses_intent_terms
   - source: `runtime/tests/test_ctl_help.py:717`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: search terms
+  - inline input: `args`
 - 期待結果: 検索語に対応するworkflow候補が返る。
 
 #### RT-UT-CASE-CTL-030
@@ -515,7 +532,7 @@ runtime/tests/test_ctl_help.py::test_environment_profile_registry_referenced_doc
   - source: `runtime/tests/test_ctl_help.py:736`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: environment profile registry references
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: profile docs referenceに欠落がない。
 
 #### RT-UT-CASE-CTL-031
@@ -532,7 +549,7 @@ runtime/tests/test_ctl_help.py::test_ctl_registry_and_search_helper_edge_cases
   - source: `runtime/tests/test_ctl_help.py:758`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: temporary registry data
+  - inline input: `registry`
 - 期待結果: 空/未知/候補ありの検索境界が期待どおり処理される。
 
 #### RT-UT-CASE-CTL-032
@@ -549,7 +566,7 @@ runtime/tests/test_ctl_help.py::test_ctl_environment_selection_mapping_branches
   - source: `runtime/tests/test_ctl_help.py:799`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: mapping specimens
+  - inline input: `registry`
 - 期待結果: explicit mapping、keyword mapping、複数候補、未知入力が期待どおり分類される。
 
 #### RT-UT-CASE-CTL-033
@@ -566,7 +583,7 @@ runtime/tests/test_ctl_help.py::test_ctl_environment_formatting_and_context_warn
   - source: `runtime/tests/test_ctl_help.py:838`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: formatting specimens, context warning specimens
+  - inline input: `profile`, `context`, `record`, `registry`
 - 期待結果: environment detail、Human Check表示、context warningが期待どおり整形される。
 
 #### RT-UT-CASE-CTL-034
@@ -583,7 +600,7 @@ runtime/tests/test_ctl_help.py::test_ctl_help_formatting_empty_lists_and_open_se
   - source: `runtime/tests/test_ctl_help.py:972`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: empty registry specimens, search/open args
+  - inline input: `registry`, `open_args`, `markdown_args`, `search_args`
 - 期待結果: 空listや未検索時でもCLI outputが崩れず、open/search結果が扱える。
 
 #### RT-UT-CASE-CTL-035
@@ -598,9 +615,9 @@ runtime/tests/test_ctl_help.py::test_ctl_color_mode_and_main_output
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_ctl_help.py:1018`
-  - fixture/arg: `monkeypatch`, `capsys`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
-  - inline input: environment color settings, CLI args
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: color modeとmain outputが設定に従って切り替わる。
 
 #### RT-UT-CASE-CTL-036
@@ -615,7 +632,7 @@ runtime/tests/test_ctl_help.py::test_ctl_run_manual_error_and_json_branches
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_ctl_help.py:1044`
-  - fixture/arg: `monkeypatch`, `tmp_path` (temporary filesystem)
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: manual error specimens, json branch args
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: error時のexit codeとmessage、JSON出力分岐が期待どおり返る。

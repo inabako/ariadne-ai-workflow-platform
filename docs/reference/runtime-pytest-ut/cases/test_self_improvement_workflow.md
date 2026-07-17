@@ -1,4 +1,4 @@
-# test_self_improvement_workflow.py
+﻿# test_self_improvement_workflow.py
 
 このファイルは `runtime/tests/test_self_improvement_workflow.py` の pytest node id 単位UT仕様です。
 
@@ -39,7 +39,7 @@ runtime/tests/test_self_improvement_workflow.py::test_init_and_create_feedback
   - source: `runtime/tests/test_self_improvement_workflow.py:25`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+  - inline input: `args`, `text`
 - 期待結果: feedback用README、report、Context First artifactが生成される。
 
 #### RT-UT-CASE-SELF-003
@@ -56,7 +56,7 @@ runtime/tests/test_self_improvement_workflow.py::test_init_feedback_preserves_ex
   - source: `runtime/tests/test_self_improvement_workflow.py:52`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: existing README and template specimen
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 既存READMEが保持され、template由来のfeedback scaffoldが生成される。
 
 #### RT-UT-CASE-SELF-004
@@ -73,7 +73,7 @@ runtime/tests/test_self_improvement_workflow.py::test_review_feedback_updates_st
   - source: `runtime/tests/test_self_improvement_workflow.py:73`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: feedback report specimen
+  - inline input: `text`
 - 期待結果: review結果がfeedback reportへ追記され、human review decisionが残る。
 
 #### RT-UT-CASE-SELF-005
@@ -90,7 +90,7 @@ runtime/tests/test_self_improvement_workflow.py::test_review_feedback_requires_e
   - source: `runtime/tests/test_self_improvement_workflow.py:99`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: missing feedback specimen
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 存在しないfeedback reviewを成功扱いにせず、必要な入力不足として検出する。
 
 #### RT-UT-CASE-SELF-006
@@ -107,7 +107,7 @@ runtime/tests/test_self_improvement_workflow.py::test_feedback_decision_accepts_
   - source: `runtime/tests/test_self_improvement_workflow.py:113`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: decision specimens
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: human decisionとdefault proposed decisionが期待どおり解釈される。
 
 #### RT-UT-CASE-SELF-007
@@ -124,7 +124,7 @@ runtime/tests/test_self_improvement_workflow.py::test_issue_body_requires_accept
   - source: `runtime/tests/test_self_improvement_workflow.py:119`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: accepted feedback specimen
+  - inline input: `text`
 - 期待結果: accepted statusのfeedbackだけが標準Issue bodyとして生成される。
 
 #### RT-UT-CASE-SELF-008
@@ -141,7 +141,7 @@ runtime/tests/test_self_improvement_workflow.py::test_issue_body_requires_existi
   - source: `runtime/tests/test_self_improvement_workflow.py:190`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: missing feedback specimen
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: feedbackが存在しない場合はIssue bodyを生成しない。
 
 #### RT-UT-CASE-SELF-009
@@ -158,7 +158,7 @@ runtime/tests/test_self_improvement_workflow.py::test_issue_body_can_render_unac
   - source: `runtime/tests/test_self_improvement_workflow.py:202`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: unaccepted feedback and explicit output
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 標準flowを壊さず、明示outputにreview用bodyが生成される。
 
 #### RT-UT-CASE-SELF-010
@@ -175,7 +175,7 @@ runtime/tests/test_self_improvement_workflow.py::test_evidence_scaffold_register
   - source: `runtime/tests/test_self_improvement_workflow.py:233`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: evidence scaffold specimen
+  - inline input: `data`, `manifest_data`
 - 期待結果: evidence directoryとartifact index entryが生成される。
 
 #### RT-UT-CASE-SELF-011
@@ -192,7 +192,7 @@ runtime/tests/test_self_improvement_workflow.py::test_evidence_scaffold_updates_
   - source: `runtime/tests/test_self_improvement_workflow.py:245`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: existing artifact index and README specimen
+  - inline input: `args`, `artifact_index`
 - 期待結果: artifact indexは更新され、既存READMEは保持される。
 
 #### RT-UT-CASE-SELF-012
@@ -207,9 +207,9 @@ runtime/tests/test_self_improvement_workflow.py::test_main_prints_json
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_self_improvement_workflow.py:262`
-  - fixture/arg: `monkeypatch`, `capsys`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
-  - inline input: patched command result
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: mainがJSONをstdoutへ出力し、期待するexit codeを返す。
 
 #### RT-UT-CASE-SELF-013
@@ -226,7 +226,7 @@ runtime/tests/test_self_improvement_workflow.py::test_workflow_skills_declare_fe
   - source: `runtime/tests/test_self_improvement_workflow.py:274`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: skill files
+  - inline input: `missing`, `text`, `required`
 - 期待結果: 対象skillにfeedback出力契約が含まれる。
 
 #### RT-UT-CASE-SELF-014
@@ -243,5 +243,5 @@ runtime/tests/test_self_improvement_workflow.py::test_workflow_help_declares_fee
   - source: `runtime/tests/test_self_improvement_workflow.py:303`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: workflow help registry
+  - inline input: `missing`
 - 期待結果: help registry上の対象commandにfeedback capture説明が含まれる。

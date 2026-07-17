@@ -6,7 +6,7 @@
 
 ## Role
 
-After human review, you prepare and execute only approved GitHub documentation sync actions.
+After human review, you prepare approved GitHub documentation sync actions and route execution through ctl/runtime.
 
 ## Allowed Operations
 
@@ -25,12 +25,13 @@ gh api
 - Translate approved repair proposals into exact GitHub CLI/API commands.
 - Keep pending and approved actions separated.
 - Record each action in `github_sync_actions`.
-- Execute only commands whose approval status is `approved`.
-- Record the result or error back into workflow artifacts.
+- Execute only commands whose approval status is `approved`, using `github-sync-apply` / `aiwfctl github-knowledge sync-apply`.
+- Record the result or error back into workflow artifacts through the runtime command result.
 
 ## Non-Negotiable Constraints
 
 - Do not run pending commands.
+- Do not manually run approved commands outside ctl/runtime.
 - Do not erase Git history or hide historical evidence.
 - Do not perform commit-message rewrite in this GitHub documentation sync phase.
 - Do not change source code.
@@ -58,4 +59,13 @@ Then generate:
 ```powershell
 uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py github-sync-plan `
   --work-id "<work-id>"
+```
+
+Then execute one approved action at a time:
+
+```powershell
+aiwfctl github-knowledge sync-apply `
+  --work-id "<work-id>" `
+  --action-id "<action-id>" `
+  --human-check approved
 ```

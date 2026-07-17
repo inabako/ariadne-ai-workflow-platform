@@ -15,6 +15,7 @@ from runtime import registry_store  # noqa: E402
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
 from runtime.workflow import flutter_multiplatform  # noqa: E402
+from runtime.workflow import github_knowledge_maintenance  # noqa: E402
 from runtime.workflow import iac_template  # noqa: E402
 from runtime.workflow import mcp_server_group  # noqa: E402
 from runtime.workflow import sdk_analysis  # noqa: E402
@@ -1140,6 +1141,21 @@ def build_parser() -> argparse.ArgumentParser:
         mcp_group_item.add_argument("--force", action="store_true", help="Refresh copied template directories during init.")
         mcp_group_item.add_argument("--json", action="store_true")
 
+    github_knowledge_cmd = sub.add_parser("github-knowledge", help="Plan and apply approved GitHub knowledge sync actions.")
+    github_knowledge_sub = github_knowledge_cmd.add_subparsers(dest="github_knowledge_command")
+    github_sync_plan = github_knowledge_sub.add_parser("sync-plan", help="Create an approval-gated GitHub sync plan.")
+    github_sync_plan.add_argument("--work-id", required=True)
+    github_sync_plan.add_argument("--analysis-path", default="")
+    github_sync_plan.add_argument("--output", default="")
+    github_sync_plan.add_argument("--json", action="store_true")
+    github_sync_apply = github_knowledge_sub.add_parser("sync-apply", help="Execute one approved GitHub sync action.")
+    github_sync_apply.add_argument("--work-id", required=True)
+    github_sync_apply.add_argument("--action-id", required=True)
+    github_sync_apply.add_argument("--analysis-path", default="")
+    github_sync_apply.add_argument("--human-check", choices=["pending", "approved"], default="pending")
+    github_sync_apply.add_argument("--dry-run", action="store_true")
+    github_sync_apply.add_argument("--json", action="store_true")
+
     iac_cmd = sub.add_parser("iac", help="Prepare and inspect infrastructure boilerplate templates.")
     iac_sub = iac_cmd.add_subparsers(dest="iac_command")
     iac_template_cmd = iac_sub.add_parser("template", help="List, copy, or health-check IaC templates.")
@@ -1579,6 +1595,41 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
         if getattr(args, "json", False):
             return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
         return code, mcp_server_group.format_result(result) + "\n"
+
+    if command == "github-knowledge":
+        github_knowledge_command = getattr(args, "github_knowledge_command", None)
+        if github_knowledge_command is None:
+            return 1, (
+                "GitHub Knowledge Maintenance\n\n"
+                "Usage:\n"
+                "  aiwfctl github-knowledge sync-plan --work-id <work-id>\n"
+                "  aiwfctl github-knowledge sync-apply --work-id <work-id> --action-id <action-id> --human-check approved\n\n"
+                "Outputs:\n"
+                "  work/<work-id>/process-report/github-documentation-sync-plan-*.md\n"
+                "  work/<work-id>/context/github-knowledge-analysis.json\n"
+            )
+        try:
+            github_args = argparse.Namespace(**vars(args))
+            github_args.command = "github-sync-plan" if github_knowledge_command == "sync-plan" else "github-sync-apply"
+            github_args.repo_root = str(repo_root)
+            result = github_knowledge_maintenance.run(github_args)
+        except Exception as exc:
+            return 1, f"GitHub knowledge maintenance failed: {exc}\n"
+        if getattr(args, "json", False):
+            return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        lines = [
+            "GitHub Knowledge Maintenance",
+            "",
+            f"Command : {github_knowledge_command}",
+            f"Work ID : {getattr(args, 'work_id', '')}",
+        ]
+        if "sync_plan" in result:
+            lines.append(f"Plan    : {result.get('sync_plan', '')}")
+        if "action_id" in result:
+            lines.append(f"Action  : {result.get('action_id', '')}")
+            lines.append(f"Dry Run : {str(result.get('dry_run', False)).lower()}")
+            lines.append(f"Executed: {str(result.get('executed', False)).lower()}")
+        return 0, "\n".join(lines).rstrip() + "\n"
 
     if command == "iac":
         iac_command = getattr(args, "iac_command", None)

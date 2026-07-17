@@ -95,6 +95,30 @@ def sample_analysis() -> dict[str, object]:
                 "approval_required": True,
             }
         ],
+        "history_rewrite_candidates": [
+            {
+                "id": "HISTORY-1",
+                "file_paths": ["runtime/workflow/example.py", "runtime/tests/test_example.py"],
+                "suspect_commits": ["abc1234 docs-only subject"],
+                "expected_commit": "def5678 feat(runtime): add example workflow",
+                "repair_goal": "absorb-into-existing-commit",
+                "independent_responsibility": "",
+                "evidence_refs": ["PR #12 diff", "git show abc1234"],
+                "completion_criteria": [
+                    "The leaked files are absorbed into the semantic implementation commit.",
+                    "No new issue or commit message is invented solely to justify the leaked commit.",
+                ],
+                "recommended_action": "interactive-rebase",
+                "reason": "two files were committed separately from their natural workflow change",
+                "before_summary": "implementation and tests are split into an unrelated later commit",
+                "after_summary": "implementation and tests are grouped in one semantic commit",
+                "approval_status": "pending",
+                "before_after_sha_mapping": [],
+                "rollback_plan": "",
+                "draft_commands": ["git rebase -i abc1234^"],
+                "verification_commands": ["git log --format=\"%H %s\" -5"],
+            }
+        ],
         "github_sync_actions": [
             {
                 "id": "SYNC-1",
@@ -133,7 +157,11 @@ def test_build_parser_parses_every_subcommand() -> None:
     assert parser.parse_args(["init", "--repository", "owner/repo"]).command == "init"
     assert parser.parse_args(["analysis-template", "--work-id", "w"]).command == "analysis-template"
     assert parser.parse_args(["repair-plan", "--work-id", "w"]).command == "repair-plan"
+    assert parser.parse_args(["detect-rebase-candidates", "--work-id", "w"]).command == "detect-rebase-candidates"
+    assert parser.parse_args(["rebase-plan", "--work-id", "w"]).command == "rebase-plan"
+    assert parser.parse_args(["rebase-apply", "--work-id", "w", "--candidate-id", "HISTORY-1"]).command == "rebase-apply"
     assert parser.parse_args(["github-sync-plan", "--work-id", "w"]).command == "github-sync-plan"
+    assert parser.parse_args(["github-sync-apply", "--work-id", "w", "--action-id", "SYNC-1"]).command == "github-sync-apply"
     assert parser.parse_args(["rag-candidate", "--work-id", "w", "--human-check", "approved"]).command == "rag-candidate"
 
 
@@ -254,6 +282,7 @@ def test_default_analysis_ignores_non_string_assumptions_and_analysis_template_m
 
     assert analysis["target_branch"] == "develop"
     assert analysis["scan_mode"] == ["issue", "full"]
+    assert analysis["history_rewrite_candidates"] == []
 
     with pytest.raises(FileNotFoundError, match="Work directory does not exist"):
         github_knowledge_maintenance.create_analysis_template(
@@ -284,11 +313,18 @@ def test_build_repair_sync_and_rag_markdown_include_dynamic_sections() -> None:
     analysis = sample_analysis()
 
     repair_plan = github_knowledge_maintenance.build_repair_plan(analysis)
+    rebase_plan = github_knowledge_maintenance.build_rebase_plan(analysis)
     sync_plan = github_knowledge_maintenance.build_sync_plan(analysis)
     rag_candidate = github_knowledge_maintenance.build_rag_candidate(analysis, "repo knowledge")
 
     assert "Repository knowledge summary." in repair_plan
     assert "FIX-1" in repair_plan
+    assert "HISTORY-1" in repair_plan
+    assert "Git Commit History Rebase Review Plan" in rebase_plan
+    assert "Review Legend" in rebase_plan
+    assert "keep-with-evidence" in rebase_plan
+    assert "Use `keep-with-evidence` when the detected diff is legitimate" in rebase_plan
+    assert "interactive-rebase" in rebase_plan
     assert "SYNC-1" in sync_plan
     assert "gh issue comment 1" in sync_plan
     assert "# repo knowledge" in rag_candidate
@@ -300,6 +336,125 @@ def test_build_sync_plan_renders_empty_action_placeholder() -> None:
 
     assert "owner/repo" in rendered
     assert "SYNC-1" not in rendered
+
+
+def test_history_rewrite_candidate_validation_edges() -> None:
+    assert github_knowledge_maintenance.validate_history_rewrite_candidates(
+        [
+            {
+                "id": "HISTORY-BAD",
+                "file_paths": ["a.py", "b.py", "c.py", "d.py"],
+                "approval_status": "approved",
+            }
+        ]
+    ) == [
+        "HISTORY-BAD: file_paths must contain 1 to 3 files.",
+        "HISTORY-BAD: approved rebase repair requires repair_goal.",
+        "HISTORY-BAD: approved rebase repair requires completion_criteria.",
+        "HISTORY-BAD: approved rebase repair requires before_after_sha_mapping.",
+        "HISTORY-BAD: approved rebase repair requires rollback_plan.",
+        "HISTORY-BAD: approved rebase repair requires draft_commands.",
+        "HISTORY-BAD: approved rebase repair requires verification_commands.",
+    ]
+    assert github_knowledge_maintenance.validate_history_rewrite_candidates(
+        [{"id": "HISTORY-STATUS", "file_paths": ["a.py"], "approval_status": "unknown"}]
+    ) == ["HISTORY-STATUS: approval_status must be pending, approved, or rejected."]
+    assert github_knowledge_maintenance.validate_history_rewrite_candidates(
+        [
+            {
+                "id": "HISTORY-KEEP",
+                "file_paths": ["a.py"],
+                "repair_goal": "keep-with-evidence",
+                "approval_status": "approved",
+                "completion_criteria": ["Keep only with evidence."],
+                "before_after_sha_mapping": ["abc -> def"],
+                "rollback_plan": "git reset --hard abc",
+                "draft_commands": ["git rebase -i abc^"],
+                "verification_commands": ["git log --format=\"%H %s\" -5"],
+            }
+        ]
+    ) == [
+        "HISTORY-KEEP: keep repair requires independent_responsibility.",
+        "HISTORY-KEEP: keep repair requires evidence_refs.",
+    ]
+
+
+def test_detect_history_rewrite_candidates_from_commit_log(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    commits = github_knowledge_maintenance.parse_commit_log(
+        "\n".join(
+            [
+                "222222222222\x1fupdate",
+                "runtime/workflow/example.py",
+                "",
+                "111111111111\x1ffeat(runtime): add example workflow",
+                "runtime/workflow/main.py",
+            ]
+        )
+    )
+    calls: list[list[str]] = []
+
+    def fake_git_output(_repo_path: Path, args: list[str]) -> str:
+        calls.append(args)
+        if len(calls) == 1:
+            raise github_knowledge_maintenance.subprocess.CalledProcessError(128, args)
+        return "222222222222\x1fupdate\nruntime/workflow/example.py\n"
+
+    monkeypatch.setattr(github_knowledge_maintenance, "git_output", fake_git_output)
+    assert github_knowledge_maintenance.collect_commit_summaries(tmp_path, "HEAD~30", "HEAD", 20)[0]["hash"] == "222222222222"
+    assert calls[1][-1] == "HEAD"
+
+    monkeypatch.setattr(github_knowledge_maintenance, "collect_commit_summaries", lambda *args, **kwargs: commits)
+
+    candidates = github_knowledge_maintenance.detect_history_rewrite_candidates(
+        repo_path=tmp_path,
+        base="HEAD~2",
+        head="HEAD",
+        max_commits=20,
+        max_files=3,
+    )
+
+    assert candidates[0]["id"] == "HISTORY-DETECT-001"
+    assert candidates[0]["expected_commit"] == "1111111 feat(runtime): add example workflow"
+    assert candidates[0]["approval_status"] == "pending"
+    assert candidates[0]["repair_goal"] == "absorb-into-existing-commit"
+
+
+def test_create_detect_rebase_candidates_writes_analysis(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis_path = work_dir / "context" / "github-knowledge-analysis.json"
+    write_json(analysis_path, sample_analysis())
+    detected = [
+        {
+            "id": "HISTORY-DETECT-001",
+            "file_paths": ["runtime/workflow/example.py"],
+            "suspect_commits": ["2222222 update"],
+            "expected_commit": "1111111 feat(runtime): add example workflow",
+            "repair_goal": "absorb-into-existing-commit",
+            "recommended_action": "interactive-rebase",
+            "reason": "detected",
+            "approval_status": "pending",
+        }
+    ]
+    monkeypatch.setattr(github_knowledge_maintenance, "detect_history_rewrite_candidates", lambda **kwargs: detected)
+
+    result = github_knowledge_maintenance.create_detect_rebase_candidates(
+        argparse.Namespace(
+            command="detect-rebase-candidates",
+            work_id=work_dir.name,
+            analysis_path="",
+            git_repo=str(repo_root),
+            base="HEAD~30",
+            head="HEAD",
+            max_commits=80,
+            max_files=3,
+            append=False,
+            repo_root=str(repo_root),
+        )
+    )
+
+    updated = json.loads(analysis_path.read_text(encoding="utf-8"))
+    assert result["candidate_count"] == 1
+    assert updated["history_rewrite_candidates"] == detected
 
 
 def test_create_repair_plan_writes_output_and_registers_artifact(tmp_path: Path) -> None:
@@ -323,6 +478,183 @@ def test_create_repair_plan_writes_output_and_registers_artifact(tmp_path: Path)
     assert output_path.exists()
     artifact_index = json.loads((work_dir / "context" / "artifact-index.json").read_text(encoding="utf-8-sig"))
     assert any(item["id"] == "GITHUB-KNOWLEDGE-REPAIR-PLAN" for item in artifact_index["artifacts"])
+
+
+def test_create_rebase_plan_writes_output_and_registers_artifact(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis_path = work_dir / "context" / "github-knowledge-analysis.json"
+    output_path = tmp_path / "rebase.md"
+    write_json(analysis_path, sample_analysis())
+
+    result = github_knowledge_maintenance.create_rebase_plan(
+        argparse.Namespace(
+            command="rebase-plan",
+            work_id=work_dir.name,
+            analysis_path="",
+            output=str(output_path),
+            repo_root=str(repo_root),
+        )
+    )
+
+    assert result["candidate_count"] == 1
+    assert result["rebase_plan"] == "rebase.md"
+    assert result["validation_errors"] == []
+    assert "HISTORY-1" in output_path.read_text(encoding="utf-8-sig")
+    artifact_index = json.loads((work_dir / "context" / "artifact-index.json").read_text(encoding="utf-8-sig"))
+    assert any(item["id"] == "GITHUB-HISTORY-REBASE-PLAN" for item in artifact_index["artifacts"])
+
+
+def test_create_rebase_apply_requires_human_and_candidate_approval(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis = sample_analysis()
+    candidate = analysis["history_rewrite_candidates"][0]
+    candidate.update(
+        {
+            "approval_status": "approved",
+            "before_after_sha_mapping": ["abc1234 -> def5678"],
+            "rollback_plan": "git reset --hard abc1234",
+            "draft_commands": ["git status --short"],
+            "verification_commands": ["git log --format=\"%H %s\" -5"],
+        }
+    )
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    write_ready_gate(repo_root, work_dir, mutation=True)
+
+    with pytest.raises(PermissionError, match="human-check approved"):
+        github_knowledge_maintenance.create_rebase_apply(
+            argparse.Namespace(
+                command="rebase-apply",
+                work_id=work_dir.name,
+                candidate_id="HISTORY-1",
+                analysis_path="",
+                git_repo=str(repo_root),
+                human_check="pending",
+                allow_interactive=False,
+                dry_run=True,
+                repo_root=str(repo_root),
+            )
+        )
+
+    result = github_knowledge_maintenance.create_rebase_apply(
+        argparse.Namespace(
+            command="rebase-apply",
+            work_id=work_dir.name,
+            candidate_id="HISTORY-1",
+            analysis_path="",
+            git_repo=str(repo_root),
+            human_check="approved",
+            allow_interactive=False,
+            dry_run=True,
+            repo_root=str(repo_root),
+        )
+    )
+
+    assert result["dry_run"] is True
+    assert result["planned_count"] == 1
+    assert result["executed_count"] == 0
+    updated = json.loads((work_dir / "context" / "github-knowledge-analysis.json").read_text(encoding="utf-8"))
+    assert updated["history_rewrite_candidates"][0]["execution_status"] == "dry-run"
+
+
+def test_github_sync_command_validation_edges() -> None:
+    action = {
+        "id": "SYNC-1",
+        "target_type": "issue",
+        "operation": "comment",
+        "draft_command": "gh issue comment 1 --body-file note.md",
+    }
+
+    parts = github_knowledge_maintenance.parse_github_sync_command(action["draft_command"])
+    github_knowledge_maintenance.validate_github_sync_command(action, parts)
+
+    with pytest.raises(ValueError, match="single gh command"):
+        github_knowledge_maintenance.parse_github_sync_command("gh issue comment 1 && gh pr comment 2")
+    with pytest.raises(ValueError, match="must start with gh"):
+        github_knowledge_maintenance.parse_github_sync_command("git status")
+    with pytest.raises(ValueError, match="target does not match"):
+        github_knowledge_maintenance.validate_github_sync_command(
+            {"id": "SYNC-BAD", "target_type": "pull-request", "operation": "comment"},
+            parts,
+        )
+    with pytest.raises(ValueError, match="scoped under repos"):
+        github_knowledge_maintenance.validate_github_sync_command(
+            {"id": "SYNC-API", "target_type": "api", "operation": "api"},
+            ["gh", "api", "user"],
+        )
+
+
+def test_create_sync_apply_requires_approval_and_records_result(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis = sample_analysis()
+    action = analysis["github_sync_actions"][0]
+    action["approval_status"] = "approved"
+    analysis["history_rewrite_candidates"] = [
+        {
+            "id": "HISTORY-KEEP",
+            "file_paths": ["runtime/workflow/example.py"],
+            "suspect_commits": ["abc1234 docs-only subject"],
+            "repair_goal": "keep-with-evidence",
+            "independent_responsibility": "This is a legitimate documentation-only follow-up.",
+            "evidence_refs": ["PR #12 review comment"],
+            "recommended_action": "no-rewrite",
+            "reason": "human reviewed as independent",
+            "approval_status": "approved",
+        }
+    ]
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    write_ready_gate(repo_root, work_dir, mutation=True)
+
+    with pytest.raises(PermissionError, match="human-check approved"):
+        github_knowledge_maintenance.create_sync_apply(
+            argparse.Namespace(
+                command="github-sync-apply",
+                work_id=work_dir.name,
+                action_id="SYNC-1",
+                analysis_path="",
+                human_check="pending",
+                dry_run=True,
+                repo_root=str(repo_root),
+            )
+        )
+
+    result = github_knowledge_maintenance.create_sync_apply(
+        argparse.Namespace(
+            command="github-sync-apply",
+            work_id=work_dir.name,
+            action_id="SYNC-1",
+            analysis_path="",
+            human_check="approved",
+            dry_run=True,
+            repo_root=str(repo_root),
+        )
+    )
+
+    updated = json.loads((work_dir / "context" / "github-knowledge-analysis.json").read_text(encoding="utf-8"))
+    updated_action = updated["github_sync_actions"][0]
+    assert result["executed"] is False
+    assert updated_action["execution_status"] == "dry-run"
+    assert updated_action["execution_result"]["skipped"] is True
+
+
+def test_create_sync_apply_blocks_unresolved_rebase_candidates(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis = sample_analysis()
+    analysis["github_sync_actions"][0]["approval_status"] = "approved"
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    write_ready_gate(repo_root, work_dir, mutation=True)
+
+    with pytest.raises(RuntimeError, match="blocked until rebase candidates are resolved: HISTORY-1"):
+        github_knowledge_maintenance.create_sync_apply(
+            argparse.Namespace(
+                command="github-sync-apply",
+                work_id=work_dir.name,
+                action_id="SYNC-1",
+                analysis_path="",
+                human_check="approved",
+                dry_run=True,
+                repo_root=str(repo_root),
+            )
+        )
 
 
 def test_create_rag_candidate_requires_human_approval_for_publish(tmp_path: Path) -> None:
@@ -412,10 +744,28 @@ def test_run_dispatches_commands_and_rejects_unknown(monkeypatch: pytest.MonkeyP
         lambda args: {"command": "analysis-template"},
     )
     monkeypatch.setattr(github_knowledge_maintenance, "create_repair_plan", lambda args: {"command": "repair-plan"})
+    monkeypatch.setattr(
+        github_knowledge_maintenance,
+        "create_detect_rebase_candidates",
+        lambda args: {"command": "detect-rebase-candidates"},
+    )
+    monkeypatch.setattr(github_knowledge_maintenance, "create_rebase_plan", lambda args: {"command": "rebase-plan"})
+    monkeypatch.setattr(github_knowledge_maintenance, "create_rebase_apply", lambda args: {"command": "rebase-apply"})
     monkeypatch.setattr(github_knowledge_maintenance, "create_sync_plan", lambda args: {"command": "github-sync-plan"})
+    monkeypatch.setattr(github_knowledge_maintenance, "create_sync_apply", lambda args: {"command": "github-sync-apply"})
     monkeypatch.setattr(github_knowledge_maintenance, "create_rag_candidate", lambda args: {"command": "rag-candidate"})
 
-    for command in ["init", "analysis-template", "repair-plan", "github-sync-plan", "rag-candidate"]:
+    for command in [
+        "init",
+        "analysis-template",
+        "repair-plan",
+        "detect-rebase-candidates",
+        "rebase-plan",
+        "rebase-apply",
+        "github-sync-plan",
+        "github-sync-apply",
+        "rag-candidate",
+    ]:
         assert github_knowledge_maintenance.run(argparse.Namespace(command=command)) == {"command": command}
 
     with pytest.raises(ValueError, match="Unsupported command"):

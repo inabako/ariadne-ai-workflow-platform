@@ -25,7 +25,7 @@
 | `corrective-action-report.schema.json` | read-only改善レポートの保存先、対象repository/branch、RAG候補、後続fix入力Context |
 | `knowledge-capture.schema.json` | PR資料、docs証跡、RAG/docs候補、archive準備の記録 |
 | `docs-drift-analysis.schema.json` | 実装とdocsの差分、根拠、Issue化材料、受け入れ条件 |
-| `github-knowledge-analysis.schema.json` | GitHub Issue / PR / docs / CARの知識資産、narrative gap、repair proposal、sync action、RAG候補 |
+| `github-knowledge-analysis.schema.json` | GitHub Issue / PR / docs / CARの知識資産、narrative gap、repair proposal、small rebase detection / plan / approved apply候補、sync action、RAG候補 |
 | `github-operation-gate.schema.json` | GitHub read-only収集、mutation、clone、RAG publicationのHuman Check条件 |
 | `human-gates.schema.json` | 人間承認が必要なworkflow操作registryの構造定義 |
 | `workflow-help.schema.json` | `aiwfctl help` 用workflow prompt command registryの構造定義 |

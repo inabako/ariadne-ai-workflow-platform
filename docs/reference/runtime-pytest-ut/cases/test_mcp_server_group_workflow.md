@@ -1,4 +1,4 @@
-# test_mcp_server_group_workflow.py
+﻿# test_mcp_server_group_workflow.py
 
 このファイルは `runtime/tests/test_mcp_server_group_workflow.py` の pytest node id 単位UT仕様です。
 
@@ -158,7 +158,7 @@ runtime/tests/test_mcp_server_group_workflow.py::test_explicit_work_dir_can_be_r
   - source: `runtime/tests/test_mcp_server_group_workflow.py:162`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: relative and absolute work dir specimens
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 相対pathはrepo root基準、絶対pathはそのままwork dirとして扱われる。
 
 #### RT-UT-CASE-MCP-GROUP-010
@@ -175,7 +175,7 @@ runtime/tests/test_mcp_server_group_workflow.py::test_format_result_includes_hum
   - source: `runtime/tests/test_mcp_server_group_workflow.py:185`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: formatted result specimen
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: CLI表示でstatus、human checks、context/evidence artifactを確認できる。
 
 #### RT-UT-CASE-MCP-GROUP-011
@@ -190,9 +190,9 @@ runtime/tests/test_mcp_server_group_workflow.py::test_ctl_parser_and_run_mcp_gro
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_mcp_server_group_workflow.py:206`
-  - fixture/arg: `monkeypatch`, `tmp_path` (temporary filesystem)
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: patched MCP group command functions
+  - inline input: `captured`, `args`
 - 期待結果: CLI namespaceが正しく構築され、analyze/init系処理へ委譲される。
 
 #### RT-UT-CASE-MCP-GROUP-012
@@ -207,7 +207,7 @@ runtime/tests/test_mcp_server_group_workflow.py::test_run_uses_explicit_repo_roo
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_mcp_server_group_workflow.py:238`
-  - fixture/arg: `monkeypatch`, `tmp_path` (temporary filesystem)
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: explicit repo root and patched context builder
+  - inline input: `captured`, `args`
 - 期待結果: 明示repo rootが尊重され、context生成結果がCLI resultへ返る。
