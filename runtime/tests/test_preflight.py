@@ -56,6 +56,18 @@ def test_basic_checks_report_detected_state(monkeypatch: pytest.MonkeyPatch, tmp
     assert exe.detected == "C:/tools/git.exe"
     assert missing.ok is False
     assert missing.install_command == "winget install uv"
+    baseline_checks = preflight.build_checks(
+        argparse.Namespace(
+            profile="minimal",
+            source_dir="",
+            protocol_dir="",
+            support_branch="develop",
+            msys2_root=str(tmp_path / "msys64"),
+            work_id="issue-1",
+        ),
+        tmp_path,
+    )
+    assert next(check for check in baseline_checks if check.id == "exe:git").install_command == "winget install --id Git.Git -e"
     assert fallback.ok is True
     assert fallback.detected == str(fallback_exe)
     assert existing_path.to_dict()["detected"] == str(tmp_path)

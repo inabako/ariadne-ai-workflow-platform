@@ -250,7 +250,12 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
     bash_path = msys2_root / "usr" / "bin" / "bash.exe"
 
     checks: list[Check] = [
-        which_check("git", required=True, install_hint="Install Git for Windows and ensure git is on PATH."),
+        which_check(
+            "git",
+            required=True,
+            install_hint="Install Git for Windows and ensure git is on PATH.",
+            install_command="winget install --id Git.Git -e",
+        ),
         which_check(
             "uv",
             required=True,

@@ -108,14 +108,14 @@ def sample_analysis() -> dict[str, object]:
                     "The leaked files are absorbed into the semantic implementation commit.",
                     "No new issue or commit message is invented solely to justify the leaked commit.",
                 ],
-                "recommended_action": "interactive-rebase",
+                "recommended_action": "non-interactive-git-cli-rewrite",
                 "reason": "two files were committed separately from their natural workflow change",
                 "before_summary": "implementation and tests are split into an unrelated later commit",
                 "after_summary": "implementation and tests are grouped in one semantic commit",
                 "approval_status": "pending",
                 "before_after_sha_mapping": [],
                 "rollback_plan": "",
-                "draft_commands": ["git rebase -i abc1234^"],
+                "draft_commands": ["git status --short"],
                 "verification_commands": ["git log --format=\"%H %s\" -5"],
             }
         ],
@@ -214,7 +214,21 @@ def test_gate_and_tool_selection_proposal_mode_do_not_require_human_check() -> N
     assert gate["mutation_allowed"] is False
     assert gate["human_check_required"] is False
     assert tools["human_check_required"] is False
-    assert [tool["mode"] for tool in tools["tools"]] == ["read-only", "read-only"]
+    assert [tool["mode"] for tool in tools["tools"]] == ["read-only", "read-only", "local-history-read"]
+    assert gate["responsibility_boundary"]["github_api"]["not_allowed"]
+    assert gate["responsibility_boundary"]["git_cli_local"]["authentication_required"] is False
+    assert gate["responsibility_boundary"]["git_cli_remote"]["authentication_required"] is True
+    assert gate["git_cli_preflight"]["install_command"] == "winget install --id Git.Git -e"
+    assert next(tool for tool in tools["tools"] if tool["mode"] == "local-history-read")["authentication_required"] is False
+
+
+def test_tool_selection_apply_mode_splits_local_and_remote_git_auth() -> None:
+    tools = github_knowledge_maintenance.github_tool_selection(work_id="w", repair_mode="apply")
+
+    by_mode = {tool["mode"]: tool for tool in tools["tools"]}
+    assert by_mode["local-history-mutation"]["authentication_required"] is False
+    assert by_mode["remote-history-mutation"]["authentication_required"] is True
+    assert by_mode["remote-history-mutation"]["human_check_required"] is True
 
 
 def test_register_github_knowledge_contexts_skips_missing_files_and_registers_existing(
@@ -320,11 +334,21 @@ def test_build_repair_sync_and_rag_markdown_include_dynamic_sections() -> None:
     assert "Repository knowledge summary." in repair_plan
     assert "FIX-1" in repair_plan
     assert "HISTORY-1" in repair_plan
-    assert "Git Commit History Rebase Review Plan" in rebase_plan
-    assert "Review Legend" in rebase_plan
+    assert "Git Commit 履歴 Rebase レビュー計画" in rebase_plan
+    assert "レビュー凡例" in rebase_plan
+    assert "候補別 OK / NG チェックリスト" in rebase_plan
+    assert "| 候補ID | OK欄 | NG欄 | 疑わしいコミット | 対象ファイル | 現在の推奨 | メモ |" in rebase_plan
+    assert "| HISTORY-1 | [ ] OK | [ ] NG |" in rebase_plan
+    assert "- [ ] OK: rebase整備対象として次段のitem-level計画に進める" in rebase_plan
+    assert "- [ ] NG: rebaseしない / 候補から外す" in rebase_plan
     assert "keep-with-evidence" in rebase_plan
-    assert "Use `keep-with-evidence` when the detected diff is legitimate" in rebase_plan
-    assert "interactive-rebase" in rebase_plan
+    assert "検出された差分が正当でそのまま残すべき場合" in rebase_plan
+    assert "GitHub API / Git CLI 責務境界" in rebase_plan
+    assert "Git CLI local" in rebase_plan
+    assert "認証は不要" in rebase_plan
+    assert "Git CLI remote" in rebase_plan
+    assert "認証が必要" in rebase_plan
+    assert "non-interactive-git-cli-rewrite" in rebase_plan
     assert "SYNC-1" in sync_plan
     assert "gh issue comment 1" in sync_plan
     assert "# repo knowledge" in rag_candidate
@@ -351,7 +375,6 @@ def test_history_rewrite_candidate_validation_edges() -> None:
         "HISTORY-BAD: file_paths must contain 1 to 3 files.",
         "HISTORY-BAD: approved rebase repair requires repair_goal.",
         "HISTORY-BAD: approved rebase repair requires completion_criteria.",
-        "HISTORY-BAD: approved rebase repair requires before_after_sha_mapping.",
         "HISTORY-BAD: approved rebase repair requires rollback_plan.",
         "HISTORY-BAD: approved rebase repair requires draft_commands.",
         "HISTORY-BAD: approved rebase repair requires verification_commands.",
@@ -369,7 +392,7 @@ def test_history_rewrite_candidate_validation_edges() -> None:
                 "completion_criteria": ["Keep only with evidence."],
                 "before_after_sha_mapping": ["abc -> def"],
                 "rollback_plan": "git reset --hard abc",
-                "draft_commands": ["git rebase -i abc^"],
+                "draft_commands": ["git status --short"],
                 "verification_commands": ["git log --format=\"%H %s\" -5"],
             }
         ]
@@ -430,7 +453,7 @@ def test_create_detect_rebase_candidates_writes_analysis(monkeypatch: pytest.Mon
             "suspect_commits": ["2222222 update"],
             "expected_commit": "1111111 feat(runtime): add example workflow",
             "repair_goal": "absorb-into-existing-commit",
-            "recommended_action": "interactive-rebase",
+            "recommended_action": "non-interactive-git-cli-rewrite",
             "reason": "detected",
             "approval_status": "pending",
         }
@@ -552,8 +575,35 @@ def test_create_rebase_apply_requires_human_and_candidate_approval(tmp_path: Pat
     assert result["dry_run"] is True
     assert result["planned_count"] == 1
     assert result["executed_count"] == 0
+    assert result["verification_count"] == 1
     updated = json.loads((work_dir / "context" / "github-knowledge-analysis.json").read_text(encoding="utf-8"))
     assert updated["history_rewrite_candidates"][0]["execution_status"] == "dry-run"
+
+
+def test_rebase_apply_rejects_interactive_rebase_even_when_allowed(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="Interactive rebase is not supported"):
+        github_knowledge_maintenance.run_rebase_command(
+            tmp_path,
+            "git rebase -i abc1234^",
+            allow_interactive=False,
+            dry_run=True,
+        )
+
+    with pytest.raises(ValueError, match="Interactive rebase is not supported"):
+        github_knowledge_maintenance.run_rebase_command(
+            tmp_path,
+            "git rebase --interactive abc1234^",
+            allow_interactive=True,
+            dry_run=True,
+        )
+
+    with pytest.raises(ValueError, match="single command"):
+        github_knowledge_maintenance.run_rebase_command(
+            tmp_path,
+            "git status && git log",
+            allow_interactive=False,
+            dry_run=True,
+        )
 
 
 def test_github_sync_command_validation_edges() -> None:

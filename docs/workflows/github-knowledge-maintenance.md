@@ -152,7 +152,7 @@ Schema:
 未解決の `history_rewrite_candidates` がある場合、`github-sync-apply` は停止します。rebase候補が検出されなかった場合、または全候補が `rejected` / `no-rewrite` / `keep-with-evidence` / `verified` として解決済みの場合だけ、sync系を実施します。
 `detect-rebase-candidates` は、ローカルGit履歴から1-3 fileのcommit漏れ候補を検出し、`github-knowledge-analysis.json` の `history_rewrite_candidates` に `approval_status: pending` として記録します。
 `rebase-plan` は、検出済み候補からHuman Review用の実行計画レポートを出力します。Git操作は実行しません。
-`rebase-apply` は、`--human-check approved` と候補の `approval_status: approved` が両方そろった場合だけ、承認済みのGit commandを実行します。
+`rebase-apply` は、1つのHuman Check approval packageで承認されたGit CLI commandだけを非対話で実行し、local verification結果をanalysis JSONへ記録します。
 `rag-candidate --publish-rag` は、RAG publication前に `github-operation-gate` のHuman Check条件を確認します。
 
 ## GitHub Access Policy
@@ -175,6 +175,15 @@ gh auth status
 `GITHUB_TOKEN` は repository root の `.env` に登録されていれば、runtime helper の `load_env()` 経由で利用できます。現在の PowerShell の `$env:GITHUB_TOKEN` に見えない場合でも、`.env` 側の有無を別途確認します。token 値は表示しません。
 
 Clone は、GitHub APIでは取得できない解析が必要で、人間が理由を承認した場合だけ行います。
+
+## GitHub API / Git CLI Responsibility Boundary
+
+- GitHub API / `gh` は、Issue、PR、comment、label、release、remote branch refなどGitHub上のmetadataとcollaboration stateを扱います。private repositoryやmutationでは通常認証が必要です。
+- Git CLI local は、commit graph作成、rebase相当の履歴rewrite、before/after SHA mapping、tree diff検証を扱います。local-only操作なので認証は不要です。
+- Git CLI remote は、fetch、ls-remote、push、force-with-leaseで検証済みlocal graphをGitHub branchへ反映します。remote操作なので認証が必要です。
+- GitHub APIでは `git rebase`、commit graph rewrite、commit message rewriteはできません。GitHub tokenの有無とlocal rebase editorの要否は別問題です。
+- runtime自動化では `git rebase -i` のeditor hookに依存しません。非対話のGit CLI local commandで履歴を作り、local verification後にGit CLI remote commandで承認済みbranchへ反映します。
+- 承認は1つのapproval packageにまとめます。対象repository、対象branch、rewrite action、rollback plan、local verification command、exact remote update commandを同じ承認単位に含めます。
 
 ## Git History Policy
 
@@ -245,7 +254,7 @@ high-risk path:
 - `git commit --amend`
 - force push
 - Commit SHA変更を伴う commit message rewrite
-- 1-3 fileのcommit漏れを既存commitへ整理するinteractive rebase
+- 1-3 fileのcommit漏れを既存commitへ整理する非対話Git CLI rewrite
 
 Small rebase整備の完了条件:
 
@@ -255,8 +264,9 @@ Small rebase整備の完了条件:
 - `rebase-plan` の凡例で、未完了扱い、rebase不要扱い、正当差分として残す扱いを確認する。
 - `repair_goal` が `absorb-into-existing-commit`、`drop-empty-or-noise-commit`、`split-into-independent-commit`、`keep-with-evidence`、`no-rewrite` のいずれか。
 - `keep-with-evidence` の場合は、独立した責務と既存証跡がある。
-- `before_after_sha_mapping`、`rollback_plan`、`verification_commands` が記録されている。
-- `rebase-apply` は、Human Check承認済み、かつ候補が `approval_status: approved` の場合だけ実行する。
+- approval packageに `rollback_plan`、`verification_commands`、exact remote update command が記録されている。
+- `before_after_sha_mapping` は、承認後のlocal rewrite検証でruntimeが生成して記録する。
+- `rebase-apply` は、Human Check承認済み、かつ候補が `approval_status: approved` の場合だけ非対話Git CLI commandを実行する。
 - 新しいIssue名やcommit messageを作って、無駄なcommitを正当化するだけでは完了にしない。
 
 Rebase候補の凡例:

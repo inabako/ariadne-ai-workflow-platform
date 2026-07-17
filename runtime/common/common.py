@@ -100,3 +100,8 @@ def upsert_artifact(index: dict[str, Any], artifact: dict[str, Any]) -> None:
 def write_markdown_bom(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text.rstrip() + "\n", encoding="utf-8-sig")
+
+
+def write_markdown(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text.rstrip() + "\n", encoding="utf-8")

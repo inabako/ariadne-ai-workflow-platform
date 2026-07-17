@@ -11,6 +11,7 @@ from .common import (
     upsert_artifact,
     utc_now_iso,
     write_json,
+    write_markdown,
     write_markdown_bom,
 )
 from .env import (
@@ -44,6 +45,7 @@ __all__ = [
     "upsert_artifact",
     "utc_now_iso",
     "write_json",
+    "write_markdown",
     "write_markdown_bom",
     "default_github_owner",
     "env_csv",

@@ -15,11 +15,22 @@ GitHub Repositoryを、未来のAI workflowとRAGが再利用できるKnowledge 
 
 This workflow does not erase Git history or make historical evidence disappear. If commit semantic subjects, commit bodies, PR titles, PR bodies, or source documentation are missing, vague, or misleading, record the gap, prepare a reviewed repair proposal, and route the learned content to RAG. Existing commit rewriting is a separate high-risk action and requires explicit item-level approval plus before/after SHA mapping.
 
-Small rebase maintenance for 1-3 file commit leakage is also a high-risk repair path. Run it in four stages: detect commit leakage, calculate the rebase execution plan, output the plan report, and execute rebase only after Human Check approval.
+Small rebase maintenance for 1-3 file commit leakage is also a high-risk repair path. Run it in four stages: detect commit leakage, calculate the rebase execution plan, output the plan report, and execute the approved Git CLI rewrite package only after one Human Check approval.
 
 Do not complete a useless or accidental commit by inventing a strange Issue reference, PR story, or commit message after the fact. The rebase repair must either absorb the files into the proper semantic commit, split them into a real independent responsibility, drop an empty/noise commit, or explicitly keep it with existing evidence.
 
 Semantic commit quality is part of the repair target. The commit subject shown in the GitHub commit list must carry useful meaning by itself, using `type(scope): responsibility/result`, and the body must preserve intent, scope, decision, impact, and reusable maintenance knowledge.
+
+## GitHub API / Git CLI Responsibility Boundary
+
+Keep these responsibilities separate:
+
+- GitHub API / `gh`: collect and update GitHub-hosted metadata such as Issues, Pull Requests, comments, labels, releases, and remote branch refs. Authentication is usually required for private repositories and mutation.
+- Git CLI local: read and create the local commit graph, perform rebase-equivalent non-interactive rewrite, generate before/after SHA mapping, and verify tree equality or intended tree delta. Authentication is not required for local-only operations.
+- Git CLI remote: fetch, ls-remote, push, and force-with-lease the approved local graph to the approved remote branch. Authentication is required because this changes or reads GitHub remote state.
+- GitHub API cannot perform `git rebase`, commit graph rewrite, or commit message rewrite. Do not explain local rebase/editor behavior as a GitHub token problem.
+- Runtime automation must not depend on `git rebase -i` editor hooks. Use non-interactive Git CLI local commands, such as replay/cherry-pick/commit-tree/update-ref patterns, then use Git CLI remote commands only for the approved remote reflection step.
+- One Human Check approval package is enough when it includes repository, target branch, rewrite action, rollback plan, local verification commands, and exact remote update command. Do not split the same approved rewrite into repeated approval prompts.
 
 ## Required Inputs
 
