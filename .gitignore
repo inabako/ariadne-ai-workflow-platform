@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+.agents/
 .codex/
 
 # Local work workspace
