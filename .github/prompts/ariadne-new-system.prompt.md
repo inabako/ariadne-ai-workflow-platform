@@ -1,4 +1,4 @@
-﻿# Ariadne New System Skill Entrypoint
+# Ariadne New System Skill Entrypoint
 
 ## Output Language
 

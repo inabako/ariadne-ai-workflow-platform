@@ -1,4 +1,4 @@
-﻿---
+---
 name: github-knowledge-maintenance
 description: Maintain a GitHub repository as a reusable knowledge asset without erasing Git history or changing commit source.
 argument-hint: "<target-repository> <scan-mode> <repair-mode> [rag]"

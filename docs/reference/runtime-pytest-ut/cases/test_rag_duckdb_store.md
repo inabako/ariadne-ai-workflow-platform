@@ -1,4 +1,4 @@
-﻿# test_rag_duckdb_store.py
+# test_rag_duckdb_store.py
 
 このファイルは `runtime/tests/test_rag_duckdb_store.py` のpytest node id単位UT仕様です。
 

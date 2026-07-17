@@ -1,4 +1,4 @@
-﻿# Runtime pytest 単体試験仕様
+# Runtime pytest 単体試験仕様
 
 作成日: 2026-07-07
 

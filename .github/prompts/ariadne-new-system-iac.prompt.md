@@ -1,4 +1,4 @@
-﻿# Ariadne New System + Realtime IaC Workflow
+# Ariadne New System + Realtime IaC Workflow
 
 ## Output Language
 

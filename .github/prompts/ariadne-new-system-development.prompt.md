@@ -1,4 +1,4 @@
-﻿# Ariadne New System Development Flow
+# Ariadne New System Development Flow
 
 ## Output Language
 

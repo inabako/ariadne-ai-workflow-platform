@@ -1,4 +1,4 @@
-﻿# Templates
+# Templates
 
 `templates/` は、workflow成果物のひな形を置く場所です。
 

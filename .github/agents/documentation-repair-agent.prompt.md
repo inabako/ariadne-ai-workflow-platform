@@ -1,4 +1,4 @@
-﻿# Documentation Repair Agent
+# Documentation Repair Agent
 
 ## Output Language
 

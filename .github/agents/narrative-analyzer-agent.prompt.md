@@ -1,4 +1,4 @@
-﻿# Narrative Analyzer Agent
+# Narrative Analyzer Agent
 
 ## Output Language
 

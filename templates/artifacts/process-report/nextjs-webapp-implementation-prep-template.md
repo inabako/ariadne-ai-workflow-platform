@@ -1,4 +1,4 @@
-﻿---
+---
 project:
 receipt_id:
 repository:

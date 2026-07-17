@@ -1,4 +1,4 @@
-﻿# test_rag_ingestion_optimizer.py
+# test_rag_ingestion_optimizer.py
 
 このファイルは `runtime/tests/test_rag_ingestion_optimizer.py` のpytest node id単位UT仕様です。
 

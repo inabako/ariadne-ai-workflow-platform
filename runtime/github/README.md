@@ -1,4 +1,4 @@
-﻿# Runtime GitHub
+# Runtime GitHub
 
 `runtime/github/` は、GitHub Issue / Pull Request のdraft作成または実作成を扱います。
 

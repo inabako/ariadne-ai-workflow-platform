@@ -1,4 +1,4 @@
-﻿# Go Realtime Gateway Specialist Agent
+# Go Realtime Gateway Specialist Agent
 
 ## Output Language
 

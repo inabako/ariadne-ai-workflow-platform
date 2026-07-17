@@ -1,4 +1,4 @@
-﻿# test_flutter_multiplatform.py
+# test_flutter_multiplatform.py
 
 このファイルは `runtime/tests/test_flutter_multiplatform.py` のpytest node id単位UT仕様です。
 

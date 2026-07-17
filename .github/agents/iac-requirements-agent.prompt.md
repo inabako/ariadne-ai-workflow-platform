@@ -1,4 +1,4 @@
-﻿# IaC Requirements Agent
+# IaC Requirements Agent
 
 ## Output Language
 

@@ -1,4 +1,4 @@
-﻿# Database Infrastructure Template
+# Database Infrastructure Template
 
 PostgreSQL と MySQL を、アプリケーション基盤・リアルタイム基盤・platform基盤から共通利用できる独立データ基盤として構築するためのboilerplateです。
 

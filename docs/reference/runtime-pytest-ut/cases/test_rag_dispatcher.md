@@ -1,4 +1,4 @@
-﻿# test_rag_dispatcher.py
+# test_rag_dispatcher.py
 
 このファイルは `runtime/tests/test_rag_dispatcher.py` のpytest node id単位UT仕様です。
 

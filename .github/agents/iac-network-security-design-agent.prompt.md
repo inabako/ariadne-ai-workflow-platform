@@ -1,4 +1,4 @@
-﻿# IaC Network Security Design Agent
+# IaC Network Security Design Agent
 
 ## Output Language
 

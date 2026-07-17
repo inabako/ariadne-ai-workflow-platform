@@ -1,4 +1,4 @@
-﻿# LocalStack Emulator Template
+# LocalStack Emulator Template
 
 AWS SDK連携のIntegration Testを、実AWSへ接続せずに確認するためのtemplateです。
 

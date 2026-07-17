@@ -1,4 +1,4 @@
-﻿# test_rag_build.py
+# test_rag_build.py
 
 このファイルは `runtime/tests/test_rag_build.py` のpytest node id単位UT仕様です。
 

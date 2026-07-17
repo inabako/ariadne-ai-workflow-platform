@@ -1,4 +1,4 @@
-﻿# Boilerplate Templates
+# Boilerplate Templates
 
 新システム開発で、既存の共通土台からservice / appを生成するためのboilerplate置き場です。
 

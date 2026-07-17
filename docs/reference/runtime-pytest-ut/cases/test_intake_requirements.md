@@ -1,4 +1,4 @@
-﻿# test_intake_requirements.py
+# test_intake_requirements.py
 
 このファイルは `runtime/tests/test_intake_requirements.py` のpytest node id単位UT仕様です。
 

@@ -1,4 +1,4 @@
-﻿# Terminal Architect Agent
+# Terminal Architect Agent
 
 ## Output Language
 

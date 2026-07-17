@@ -1,4 +1,4 @@
-﻿# test_sdk_analysis.py
+# test_sdk_analysis.py
 
 このファイルは `runtime/tests/test_sdk_analysis.py` のpytest node id単位UT仕様です。
 

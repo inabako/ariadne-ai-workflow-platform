@@ -1,4 +1,4 @@
-﻿# test_vscode_workspace.py
+# test_vscode_workspace.py
 
 このファイルは `runtime/tests/test_vscode_workspace.py` のpytest node id単位UT仕様です。
 

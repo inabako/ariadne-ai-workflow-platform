@@ -1,4 +1,4 @@
-﻿# Ariadne New System
+# Ariadne New System
 
 新しい対象システム、runtime、remote operation、device integration、architecture-level launch を始めるworkflowです。
 

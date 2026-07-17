@@ -1,4 +1,4 @@
-﻿# /knowledge-capture
+# /knowledge-capture
 
 ## Output Language
 

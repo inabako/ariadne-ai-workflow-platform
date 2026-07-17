@@ -1,4 +1,4 @@
-﻿# Ariadne Feature Maintenance Development Flow
+# Ariadne Feature Maintenance Development Flow
 
 ## Output Language
 

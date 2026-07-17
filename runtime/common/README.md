@@ -1,4 +1,4 @@
-﻿# Runtime Common
+# Runtime Common
 
 `runtime/common/` は、runtime 間で共有する utility を格納します。
 

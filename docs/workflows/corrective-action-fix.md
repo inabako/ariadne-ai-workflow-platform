@@ -1,4 +1,4 @@
-﻿# Corrective Action Fix
+# Corrective Action Fix
 
 Corrective Action Report を作成し、RAG build/load、GitHub Issue、remote-first branch作成、修正、test、人間確認、pushまで進めるworkflowです。
 

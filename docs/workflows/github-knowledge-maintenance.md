@@ -1,4 +1,4 @@
-﻿# GitHub Knowledge Maintenance
+# GitHub Knowledge Maintenance
 
 `/github-knowledge-maintenance` は、GitHub Repositoryを長期的な知識資産として保守するworkflowです。
 

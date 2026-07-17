@@ -1,4 +1,4 @@
-﻿# test_preflight.py
+# test_preflight.py
 
 このファイルは `runtime/tests/test_preflight.py` のpytest node id単位UT仕様です。
 

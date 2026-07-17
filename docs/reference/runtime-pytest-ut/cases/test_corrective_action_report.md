@@ -1,4 +1,4 @@
-﻿# test_corrective_action_report.py
+# test_corrective_action_report.py
 
 このファイルは `runtime/tests/test_corrective_action_report.py` のpytest node id単位UT仕様です。
 

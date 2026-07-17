@@ -1,4 +1,4 @@
-﻿# Realtime IaC Workflow
+# Realtime IaC Workflow
 
 ## Output Language
 

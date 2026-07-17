@@ -1,4 +1,4 @@
-﻿# test_init_corrective_action_fix.py
+# test_init_corrective_action_fix.py
 
 このファイルは `runtime/tests/test_init_corrective_action_fix.py` のpytest node id単位UT仕様です。
 

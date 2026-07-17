@@ -1,4 +1,4 @@
-﻿---
+---
 name: ariadne-feature-maintenance
 description: Start the Ariadne AI Workflow for adding a new feature to an existing target system or performing maintenance development such as bug fix, hardware replacement, network change, deployment change, field issue response, or operational improvement. Use when the user selects /ariadne-feature-maintenance or asks to begin feature or maintenance work from a completed requirement document in work/requirements/.
 ---

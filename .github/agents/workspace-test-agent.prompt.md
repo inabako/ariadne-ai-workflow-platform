@@ -1,4 +1,4 @@
-﻿# Workspace Test Agent
+# Workspace Test Agent
 
 ## Output Language
 

@@ -1,4 +1,4 @@
-﻿# test_coverage_audit.py
+# test_coverage_audit.py
 
 このファイルは `runtime/tests/test_coverage_audit.py` のpytest node id単位UT仕様です。
 

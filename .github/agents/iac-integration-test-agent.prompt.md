@@ -1,4 +1,4 @@
-﻿# IaC Integration Test Agent
+# IaC Integration Test Agent
 
 ## Output Language
 

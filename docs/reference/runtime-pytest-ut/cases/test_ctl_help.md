@@ -1,4 +1,4 @@
-﻿# test_ctl_help.py
+# test_ctl_help.py
 
 このファイルは `runtime/tests/test_ctl_help.py` の pytest node id 単位UT仕様です。
 

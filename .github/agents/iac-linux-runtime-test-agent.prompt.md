@@ -1,4 +1,4 @@
-﻿# IaC Linux Runtime Test Agent
+# IaC Linux Runtime Test Agent
 
 ## Output Language
 

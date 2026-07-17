@@ -1,4 +1,4 @@
-﻿# test_workflow_state_noise_validation.py
+# test_workflow_state_noise_validation.py
 
 このファイルは `runtime/tests/test_workflow_state_noise_validation.py` のpytest node id単位UT仕様です。
 

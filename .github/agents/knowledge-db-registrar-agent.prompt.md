@@ -1,4 +1,4 @@
-﻿# Knowledge DB Registrar Agent
+# Knowledge DB Registrar Agent
 
 ## Output Language
 

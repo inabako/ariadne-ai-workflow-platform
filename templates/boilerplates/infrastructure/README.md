@@ -1,4 +1,4 @@
-﻿# Infrastructure Boilerplates
+# Infrastructure Boilerplates
 
 IaC and shared infrastructure templates live here.
 

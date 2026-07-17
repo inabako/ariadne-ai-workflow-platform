@@ -1,4 +1,4 @@
-﻿# test_rag_retrieve_context.py
+# test_rag_retrieve_context.py
 
 このファイルは `runtime/tests/test_rag_retrieve_context.py` のpytest node id単位UT仕様です。
 

@@ -1,4 +1,4 @@
-﻿# test_self_improvement_workflow.py
+# test_self_improvement_workflow.py
 
 このファイルは `runtime/tests/test_self_improvement_workflow.py` の pytest node id 単位UT仕様です。
 

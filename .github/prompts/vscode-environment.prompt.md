@@ -1,4 +1,4 @@
-﻿---
+---
 name: vscode-environment
 description: Build or maintain a reproducible VSCode Workspace-as-Code setup with settings, tasks, launch configs, extensions, terminal profiles, AI workflow entry tasks, tests, evidence, and documentation.
 argument-hint: "[target-workspace-path | --custom-design]"

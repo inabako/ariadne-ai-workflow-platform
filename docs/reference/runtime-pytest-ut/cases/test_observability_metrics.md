@@ -1,4 +1,4 @@
-﻿# test_observability_metrics.py
+# test_observability_metrics.py
 
 このファイルは `runtime/tests/test_observability_metrics.py` のpytest node id単位UT仕様です。
 

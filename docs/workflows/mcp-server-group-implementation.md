@@ -1,4 +1,4 @@
-﻿# MCP Server Group Implementation
+# MCP Server Group Implementation
 
 MCP Server Group Implementation は、Ariadne の MCP 系 boilerplate を使って、MCP Server 群、Reusable MCP Client、Local AI Agent Runtime、Discord Gateway を段階的に実装するための workflow extension です。
 

@@ -1,4 +1,4 @@
-﻿# System Integration Quality Workflow
+# System Integration Quality Workflow
 
 Use this workflow when generated or modified code must be integrated into an existing target system, especially when SDKs, external APIs, cloud services, payment services, databases, async processing, UI, batch jobs, monitoring, or infrastructure settings are involved.
 

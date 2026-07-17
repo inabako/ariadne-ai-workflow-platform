@@ -1,4 +1,4 @@
-﻿# Agent Handoff
+# Agent Handoff
 
 ## Purpose
 

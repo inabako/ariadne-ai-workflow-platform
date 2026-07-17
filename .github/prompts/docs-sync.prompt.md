@@ -1,4 +1,4 @@
-﻿---
+---
 name: docs-sync
 description: Compare implementation and docs on a target branch, store docs drift analysis as JSON, create an Issue, create feature/issue-XXX, update docs only, push after approval, then prepare RAG capture and a report-only close archive.
 argument-hint: "<target-repository> <target-branch>"

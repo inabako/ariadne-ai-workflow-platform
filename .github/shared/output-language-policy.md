@@ -1,4 +1,4 @@
-﻿# Output Language Policy
+# Output Language Policy
 
 ## 目的
 

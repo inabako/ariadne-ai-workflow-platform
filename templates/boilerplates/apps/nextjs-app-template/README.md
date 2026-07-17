@@ -1,4 +1,4 @@
-﻿# Next.js Webapp Template
+# Next.js Webapp Template
 
 This is a reusable boilerplate for Next.js dashboard, admin, monitoring, and business web applications. Copy this directory to a new app repository or service directory, then edit only the copy.
 

@@ -1,4 +1,4 @@
-﻿# Network Migration Planner Agent
+# Network Migration Planner Agent
 
 ## Output Language
 

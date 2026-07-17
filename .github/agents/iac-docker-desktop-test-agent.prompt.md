@@ -1,4 +1,4 @@
-﻿# IaC Docker Desktop Test Agent
+# IaC Docker Desktop Test Agent
 
 ## Output Language
 

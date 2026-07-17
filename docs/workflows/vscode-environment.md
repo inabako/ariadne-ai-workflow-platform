@@ -189,12 +189,14 @@ chcp 65001 > $null
 uv run --project runtime python runtime/tools/text_encoding_convert.py --repo-root . preview --paths docs --extensions .md --bytes 160 --chars 120
 uv run --project runtime python runtime/tools/text_encoding_convert.py --repo-root . inspect --paths docs --extensions .md
 uv run --project runtime python runtime/tools/text_encoding_guard.py --repo-root . scan --paths docs --extensions .md --fail-on-finding
+uv run --project runtime python runtime/tools/utf8_bom.py --repo-root . scan --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --fail-on-finding
 ```
 
 PowerShell由来のShift_JIS / CP932文書をUTF-8へ寄せる場合は、`inspect` の推奨encodingを確認してから変換します。
 
 ```powershell
 uv run --project runtime python runtime/tools/text_encoding_convert.py --repo-root . convert --paths docs --extensions .md --from-encoding cp932 --write
+uv run --project runtime python runtime/tools/utf8_bom.py --repo-root . strip --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --write
 ```
 
 保存済み文字化け候補は、固定markerでは断定せず、`preview` のhex bytesとencoding別previewで確認します。連続した疑問符のように情報が失われた箇所は自動復元対象にしません。

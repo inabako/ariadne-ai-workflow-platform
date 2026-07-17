@@ -1,4 +1,4 @@
-﻿# test_close_archive.py
+# test_close_archive.py
 
 このファイルは `runtime/tests/test_close_archive.py` のpytest node id単位UT仕様です。
 

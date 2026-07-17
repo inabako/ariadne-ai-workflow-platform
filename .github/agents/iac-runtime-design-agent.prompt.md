@@ -1,4 +1,4 @@
-﻿# IaC Runtime Design Agent
+# IaC Runtime Design Agent
 
 ## Output Language
 

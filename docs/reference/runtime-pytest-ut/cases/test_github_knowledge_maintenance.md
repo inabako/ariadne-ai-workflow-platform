@@ -1,4 +1,4 @@
-﻿# test_github_knowledge_maintenance.py
+# test_github_knowledge_maintenance.py
 
 ??????? `runtime/tests/test_github_knowledge_maintenance.py` ?pytest node id??UT?????
 

@@ -1,4 +1,4 @@
-﻿# Repository Discovery Agent
+# Repository Discovery Agent
 
 ## Output Language
 

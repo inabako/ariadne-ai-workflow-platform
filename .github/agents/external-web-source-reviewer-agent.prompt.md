@@ -1,4 +1,4 @@
-﻿# External Web Source Reviewer Agent
+# External Web Source Reviewer Agent
 
 ## Output Language
 

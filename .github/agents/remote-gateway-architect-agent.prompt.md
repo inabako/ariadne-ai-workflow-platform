@@ -1,4 +1,4 @@
-﻿# Remote Gateway Architect Agent
+# Remote Gateway Architect Agent
 
 ## Output Language
 

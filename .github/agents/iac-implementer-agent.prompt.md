@@ -1,4 +1,4 @@
-﻿# IaC Implementer Agent
+# IaC Implementer Agent
 
 ## Output Language
 

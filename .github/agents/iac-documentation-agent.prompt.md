@@ -1,4 +1,4 @@
-﻿# IaC Documentation Agent
+# IaC Documentation Agent
 
 ## Output Language
 

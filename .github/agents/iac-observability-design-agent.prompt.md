@@ -1,4 +1,4 @@
-﻿# IaC Observability Design Agent
+# IaC Observability Design Agent
 
 ## Output Language
 

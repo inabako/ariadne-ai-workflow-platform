@@ -1,4 +1,4 @@
-﻿# IaC Security Review Agent
+# IaC Security Review Agent
 
 ## Output Language
 

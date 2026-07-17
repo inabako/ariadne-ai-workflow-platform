@@ -1,4 +1,4 @@
-﻿# test_workflow_doctor.py
+# test_workflow_doctor.py
 
 このファイルは `runtime/tests/test_workflow_doctor.py` の pytest node id 単位UT仕様です。
 

@@ -1,4 +1,4 @@
-﻿# VSCode Architect Agent
+# VSCode Architect Agent
 
 ## Output Language
 

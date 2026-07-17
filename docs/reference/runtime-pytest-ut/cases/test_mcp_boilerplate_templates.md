@@ -1,4 +1,4 @@
-﻿# test_mcp_boilerplate_templates.py
+# test_mcp_boilerplate_templates.py
 
 このファイルは `runtime/tests/test_mcp_boilerplate_templates.py` の pytest node id 単位UT仕様です。
 

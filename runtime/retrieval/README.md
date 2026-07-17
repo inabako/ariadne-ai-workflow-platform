@@ -1,4 +1,4 @@
-﻿# Runtime Retrieval
+# Runtime Retrieval
 
 `runtime/retrieval/` は、workflow task を順次または並列で処理するときに必要な情報を取り出し、Agentへ渡すための機能を格納します。
 

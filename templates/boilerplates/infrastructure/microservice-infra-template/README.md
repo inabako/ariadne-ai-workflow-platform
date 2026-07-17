@@ -1,4 +1,4 @@
-﻿# Realtime Gateway Infra Template
+# Realtime Gateway Infra Template
 
 リアルタイム gateway / remote operation / 対象システム向け IaC の出発点です。
 この template は、アプリケーション実装ではなく、network、runtime、security、observability、DNS の基盤構成を定義するために使います。

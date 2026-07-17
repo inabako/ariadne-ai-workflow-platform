@@ -1,4 +1,4 @@
-﻿# test_mcp_server_group_workflow.py
+# test_mcp_server_group_workflow.py
 
 このファイルは `runtime/tests/test_mcp_server_group_workflow.py` の pytest node id 単位UT仕様です。
 

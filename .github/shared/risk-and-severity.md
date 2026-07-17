@@ -1,4 +1,4 @@
-﻿# Risk And Severity
+# Risk And Severity
 
 ## Purpose
 

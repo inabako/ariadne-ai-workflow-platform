@@ -1,4 +1,4 @@
-﻿# Workspace Shared Artifact Validator Agent
+# Workspace Shared Artifact Validator Agent
 
 ## Output Language
 

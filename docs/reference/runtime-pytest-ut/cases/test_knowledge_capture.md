@@ -1,4 +1,4 @@
-﻿# test_knowledge_capture.py
+# test_knowledge_capture.py
 
 このファイルは `runtime/tests/test_knowledge_capture.py` のpytest node id単位UT仕様です。
 

@@ -1,4 +1,4 @@
-﻿# App Boilerplates
+# App Boilerplates
 
 UI and application templates live here.
 

@@ -1,4 +1,4 @@
-﻿# test_rag_artifact_migration.py
+# test_rag_artifact_migration.py
 
 このファイルは `runtime/tests/test_rag_artifact_migration.py` のpytest node id単位UT仕様です。
 

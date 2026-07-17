@@ -1,4 +1,4 @@
-﻿# Workspace Requirements Analyst Agent
+# Workspace Requirements Analyst Agent
 
 ## Output Language
 

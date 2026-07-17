@@ -52,6 +52,13 @@
 | `runtime/tools/text_encoding_guard.py` | UTF-8として読んだtextのdecode errorと不可逆欠落を検出する。固定の文字化けmarker判定は行わない |
 | `runtime/rag/rag_dispatcher.py` | 複数queryのRAG loadを計画・実行・集約する |
 
+## UTF-8 BOM Tool
+
+```powershell
+uv run --project runtime python runtime/tools/utf8_bom.py --repo-root . scan --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --fail-on-finding
+uv run --project runtime python runtime/tools/utf8_bom.py --repo-root . strip --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --write
+```
+
 ## Environment Files
 
 GitHub / SCM 連携で必要な値は、repository root の環境ファイルで管理します。

@@ -1,4 +1,4 @@
-﻿# Web SVG Layout Mode Template
+# Web SVG Layout Mode Template
 
 SVGで表現されたNext.js画面レイアウト案を、route、section、component責務、responsive layout、React候補、Playwright候補へ変換する共通サブワークフロー用templateです。
 

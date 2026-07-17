@@ -1,4 +1,4 @@
-﻿# GitHub Metadata Collector Agent
+# GitHub Metadata Collector Agent
 
 ## Output Language
 

@@ -1,4 +1,4 @@
-﻿# test_context_first.py
+# test_context_first.py
 
 このファイルは `runtime/tests/test_context_first.py` のpytest node id単位UT仕様です。
 

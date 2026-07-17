@@ -1,4 +1,4 @@
-﻿# test_common_runtime.py
+# test_common_runtime.py
 
 このファイルは `runtime/tests/test_common_runtime.py` のpytest node id単位UT仕様です。
 

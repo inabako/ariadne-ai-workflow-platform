@@ -1,4 +1,4 @@
-﻿# Knowledge Capture Agent
+# Knowledge Capture Agent
 
 ## Output Language
 

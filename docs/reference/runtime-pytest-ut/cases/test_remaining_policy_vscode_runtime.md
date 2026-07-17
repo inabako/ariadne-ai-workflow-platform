@@ -1,4 +1,4 @@
-﻿# test_remaining_policy_vscode_runtime.py
+# test_remaining_policy_vscode_runtime.py
 
 このファイルは `runtime/tests/test_remaining_policy_vscode_runtime.py` のpytest node id単位UT仕様です。
 

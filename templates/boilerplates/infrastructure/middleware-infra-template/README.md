@@ -1,4 +1,4 @@
-﻿# Middleware Infrastructure Template
+# Middleware Infrastructure Template
 
 Redis を、アプリケーション横断の cache / session / temporary state / Pub/Sub 補助基盤として構築するための boilerplate です。
 

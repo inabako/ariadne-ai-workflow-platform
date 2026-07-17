@@ -1,4 +1,4 @@
-﻿# /system-integration-quality
+# /system-integration-quality
 
 You are running Ariadne's System Integration Quality workflow.
 

@@ -4,7 +4,7 @@ import json
 import runpy
 from pathlib import Path
 
-from runtime.tools import coverage_audit, text_encoding_convert, text_encoding_guard
+from runtime.tools import coverage_audit, text_encoding_convert, text_encoding_guard, utf8_bom
 
 
 def test_static_runtime_audit_counts_cli_and_branch_markers(tmp_path: Path) -> None:
@@ -354,3 +354,66 @@ def test_text_encoding_guard_reports_lossy_damage_without_writing(tmp_path: Path
     assert scan["findings"][0]["kind"] == "lossy-marker"
     assert text_encoding_guard.main(["--repo-root", str(repo), "scan", "--paths", "docs", "--fail-on-finding"]) == 1
     assert target.read_text(encoding="utf-8") == lossy_text
+
+
+def test_utf8_bom_scan_and_strip_removes_only_bom(tmp_path: Path, capsys) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "docs"
+    docs.mkdir(parents=True)
+    target = docs / "guide.md"
+    target.write_bytes(utf8_bom.UTF8_BOM + "body\n".encode("utf-8"))
+
+    scan = utf8_bom.scan_files(repo, ["docs"], {".md"})
+
+    assert scan["status"] == "finding"
+    assert scan["bom_files"] == [{"path": "docs/guide.md", "size_bytes": len(utf8_bom.UTF8_BOM) + 5}]
+    assert utf8_bom.main(["--repo-root", str(repo), "scan", "--paths", "docs", "--fail-on-finding"]) == 1
+    assert '"artifact_type": "utf8-bom-scan"' in capsys.readouterr().out
+
+    dry_run_args = utf8_bom.build_parser().parse_args(["--repo-root", str(repo), "strip", "--paths", "docs"])
+    dry_run = utf8_bom.strip_files(dry_run_args)
+
+    assert dry_run["status"] == "candidate"
+    assert dry_run["stripped"][0]["written"] is False
+    assert target.read_bytes().startswith(utf8_bom.UTF8_BOM)
+
+    write_args = utf8_bom.build_parser().parse_args(["--repo-root", str(repo), "strip", "--paths", "docs", "--write"])
+    written = utf8_bom.strip_files(write_args)
+
+    assert written["status"] == "stripped"
+    assert written["stripped"][0]["written"] is True
+    assert written["stripped"][0]["backup"] == "docs/guide.md.bom-bak"
+    assert target.read_bytes() == b"body\n"
+    assert (docs / "guide.md.bom-bak").read_bytes().startswith(utf8_bom.UTF8_BOM)
+
+
+def test_utf8_bom_skips_binary_files(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "docs"
+    docs.mkdir(parents=True)
+    binary = docs / "data.txt"
+    binary.write_bytes(utf8_bom.UTF8_BOM + b"\x00data")
+
+    scan = utf8_bom.scan_files(repo, ["docs"], {".txt"})
+
+    assert scan["status"] == "ok"
+    assert scan["bom_files"] == []
+    assert scan["files_skipped_binary"] == ["docs/data.txt"]
+
+
+def test_utf8_bom_strip_can_disable_backup(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    docs = repo / "docs"
+    docs.mkdir(parents=True)
+    target = docs / "guide.md"
+    target.write_bytes(utf8_bom.UTF8_BOM + b"body\n")
+
+    args = utf8_bom.build_parser().parse_args(
+        ["--repo-root", str(repo), "strip", "--paths", "docs", "--write", "--backup-suffix="]
+    )
+    result = utf8_bom.strip_files(args)
+
+    assert result["status"] == "stripped"
+    assert result["stripped"][0]["backup"] == ""
+    assert not (docs / "guide.md.bom-bak").exists()
+    assert target.read_bytes() == b"body\n"

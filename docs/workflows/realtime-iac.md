@@ -1,4 +1,4 @@
-﻿# Realtime IaC
+# Realtime IaC
 
 リアルタイムシステム向けの Docker Compose、systemd、firewall、reverse proxy、TURN / STUN、logrotate、monitoring などの IaC を扱う workflow です。
 

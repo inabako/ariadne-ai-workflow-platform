@@ -1,4 +1,4 @@
-﻿# test_system_integration.py
+# test_system_integration.py
 
 このファイルは `runtime/tests/test_system_integration.py` のpytest node id単位UT仕様です。
 

@@ -1,4 +1,4 @@
-﻿# Identity Infrastructure Template
+# Identity Infrastructure Template
 
 OpenLDAP を、認証・組織情報・ユーザー・グループ管理のための directory service infrastructure として構築する boilerplate です。
 

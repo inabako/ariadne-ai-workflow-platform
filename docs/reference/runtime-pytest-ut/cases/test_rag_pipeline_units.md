@@ -1,4 +1,4 @@
-﻿# test_rag_pipeline_units.py
+# test_rag_pipeline_units.py
 
 このファイルは `runtime/tests/test_rag_pipeline_units.py` のpytest node id単位UT仕様です。
 

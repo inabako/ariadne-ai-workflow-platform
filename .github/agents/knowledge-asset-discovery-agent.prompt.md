@@ -1,4 +1,4 @@
-﻿# Knowledge Asset Discovery Agent
+# Knowledge Asset Discovery Agent
 
 ## Output Language
 

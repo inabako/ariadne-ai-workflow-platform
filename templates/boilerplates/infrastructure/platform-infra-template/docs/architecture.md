@@ -1,4 +1,4 @@
-﻿# Architecture
+# Architecture
 
 Platform Infrastructure Template separates shared infrastructure contracts from product-specific deploy units.
 

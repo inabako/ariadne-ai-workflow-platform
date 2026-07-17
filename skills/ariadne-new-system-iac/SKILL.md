@@ -1,4 +1,4 @@
-﻿---
+---
 name: ariadne-new-system-iac
 description: Run the integrated Ariadne New System plus realtime IaC workflow. Use when the user selects /ariadne-new-system-iac or asks to create a new target system and then generate validated Shared Artifacts for the realtime IaC workflow.
 ---

@@ -1,4 +1,4 @@
-﻿# GitHub Documentation Sync Agent
+# GitHub Documentation Sync Agent
 
 ## Output Language
 

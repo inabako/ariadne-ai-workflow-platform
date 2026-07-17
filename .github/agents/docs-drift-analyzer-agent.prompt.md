@@ -1,4 +1,4 @@
-﻿# Docs Drift Analyzer Agent
+# Docs Drift Analyzer Agent
 
 ## Output Language
 

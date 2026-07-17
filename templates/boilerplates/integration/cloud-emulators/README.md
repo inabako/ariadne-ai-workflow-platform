@@ -1,4 +1,4 @@
-﻿# Cloud Emulator Boilerplates
+# Cloud Emulator Boilerplates
 
 このディレクトリは、System Integration Quality workflowで使うクラウド / 外部サービスエミュレータ用boilerplateです。
 

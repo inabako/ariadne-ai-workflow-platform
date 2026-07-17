@@ -1,4 +1,4 @@
-﻿# test_retrieval_runtime.py
+# test_retrieval_runtime.py
 
 このファイルは `runtime/tests/test_retrieval_runtime.py` のpytest node id単位UT仕様です。
 

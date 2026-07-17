@@ -1,4 +1,4 @@
-﻿# test_svg_layout_modes.py
+# test_svg_layout_modes.py
 
 このファイルは `runtime/tests/test_svg_layout_modes.py` のpytest node id単位UT仕様です。
 

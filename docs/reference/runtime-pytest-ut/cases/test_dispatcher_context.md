@@ -1,4 +1,4 @@
-﻿# test_dispatcher_context.py
+# test_dispatcher_context.py
 
 このファイルは `runtime/tests/test_dispatcher_context.py` のpytest node id単位UT仕様です。
 

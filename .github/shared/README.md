@@ -1,4 +1,4 @@
-﻿# Shared Agent Instructions
+# Shared Agent Instructions
 
 このディレクトリは、すべてのAgentが共通で読むべき運用ルールを格納します。
 

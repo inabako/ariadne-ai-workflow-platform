@@ -1,4 +1,4 @@
-﻿# test_pytest_ut_spec_sync.py
+# test_pytest_ut_spec_sync.py
 
 このファイルは `runtime/tests/test_pytest_ut_spec_sync.py` のpytest node id単位UT仕様です。
 

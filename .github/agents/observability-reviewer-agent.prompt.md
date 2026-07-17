@@ -1,4 +1,4 @@
-﻿# Observability Reviewer Agent
+# Observability Reviewer Agent
 
 ## Output Language
 

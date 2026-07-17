@@ -1,4 +1,4 @@
-﻿# test_vscode_environment_workflow.py
+# test_vscode_environment_workflow.py
 
 このファイルは `runtime/tests/test_vscode_environment_workflow.py` のpytest node id単位UT仕様です。
 

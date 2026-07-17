@@ -1,4 +1,4 @@
-﻿# Python Runtime Specialist Agent
+# Python Runtime Specialist Agent
 
 ## Output Language
 

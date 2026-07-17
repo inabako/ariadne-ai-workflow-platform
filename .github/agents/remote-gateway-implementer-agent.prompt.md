@@ -1,4 +1,4 @@
-﻿# Remote Gateway Implementer Agent
+# Remote Gateway Implementer Agent
 
 ## Output Language
 

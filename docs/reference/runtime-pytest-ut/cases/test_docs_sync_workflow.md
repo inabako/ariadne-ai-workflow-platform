@@ -1,4 +1,4 @@
-﻿# test_docs_sync_workflow.py
+# test_docs_sync_workflow.py
 
 このファイルは `runtime/tests/test_docs_sync_workflow.py` のpytest node id単位UT仕様です。
 

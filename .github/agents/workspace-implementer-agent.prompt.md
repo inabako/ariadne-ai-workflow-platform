@@ -1,4 +1,4 @@
-﻿# Workspace Implementer Agent
+# Workspace Implementer Agent
 
 ## Output Language
 

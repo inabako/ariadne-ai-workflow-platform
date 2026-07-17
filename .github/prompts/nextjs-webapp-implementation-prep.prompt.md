@@ -1,4 +1,4 @@
-﻿---
+---
 name: nextjs-webapp-implementation-prep
 description: 親workflow内でNext.js画面機能の実装前に、新規/既存分類、boilerplate採用可否、画面契約、API契約、auth、env、testを整理します。
 argument-hint: "<work-id> [target-app-path]"

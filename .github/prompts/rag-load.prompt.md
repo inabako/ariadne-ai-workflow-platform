@@ -1,4 +1,4 @@
-﻿# /rag-load
+# /rag-load
 
 ## Output Language
 

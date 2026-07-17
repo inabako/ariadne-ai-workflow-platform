@@ -1,4 +1,4 @@
-﻿# Platform Infrastructure Template
+# Platform Infrastructure Template
 
 開発基盤、CI/CD基盤、監視基盤を Terraform で選択し、Docker Compose deploy unit として構築するためのboilerplateです。
 

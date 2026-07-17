@@ -1,4 +1,4 @@
-﻿# Workspace Documentation Writer Agent
+# Workspace Documentation Writer Agent
 
 ## Output Language
 

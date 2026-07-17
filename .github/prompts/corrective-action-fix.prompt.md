@@ -1,4 +1,4 @@
-﻿---
+---
 name: corrective-action-fix
 description: GitHub repository / branch と任意の corrective action report を受け取り、work/<branch> に原本を取得し、report作成または読込、RAG build/load、GitHub Issue、work/issue-XXX + feature/issue-XXX、修正、単体テスト、起動/結合確認、人間チェック、push まで進めます。
 argument-hint: "<target-repository> <target-branch> [report]"

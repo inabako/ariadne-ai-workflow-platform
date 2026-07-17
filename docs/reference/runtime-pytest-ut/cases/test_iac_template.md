@@ -1,4 +1,4 @@
-﻿# test_iac_template.py
+# test_iac_template.py
 
 This file lists pytest node id based UT cases for `runtime/tests/test_iac_template.py`.
 

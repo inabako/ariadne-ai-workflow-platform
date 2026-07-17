@@ -1,4 +1,4 @@
-﻿# Artifact Management
+# Artifact Management
 
 ## Purpose
 
