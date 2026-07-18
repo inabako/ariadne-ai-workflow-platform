@@ -77,6 +77,25 @@ def test_missing_required_files_reports_core_runtime_assets(tmp_path: Path) -> N
     assert ".github/agents/runtime-quality-gate-agent.prompt.md" in missing
 
 
+def test_pytest_runtime_boundary_findings_blocks_root_config_and_cache(tmp_path: Path) -> None:
+    (tmp_path / "pytest.ini").write_text("[pytest]\n", encoding="utf-8")
+    (tmp_path / ".pytest_cache").mkdir()
+    (tmp_path / "runtime").mkdir()
+
+    findings = workflow_doctor.pytest_runtime_boundary_findings(tmp_path)
+
+    assert "pytest.ini" in findings
+    assert ".pytest_cache" in findings
+    assert "missing:runtime/pytest.ini" in findings
+
+    (tmp_path / "pytest.ini").unlink()
+    (tmp_path / ".pytest_cache").rmdir()
+    (tmp_path / "runtime" / "pytest.ini").write_text("[pytest]\ncache_dir = .pytest_cache\n", encoding="utf-8")
+    (tmp_path / "runtime" / ".pytest_cache").mkdir()
+
+    assert workflow_doctor.pytest_runtime_boundary_findings(tmp_path) == []
+
+
 def test_human_gate_registry_flags_schema_responsibility_boundary(tmp_path: Path) -> None:
     registry = tmp_path / "runtime" / "registries" / "human_gates.json"
     registry.parent.mkdir(parents=True)
@@ -390,6 +409,7 @@ def test_path_constant_literal_findings_ignores_constants_and_tests(tmp_path: Pa
 def test_workflow_doctor_fail_on_warning_turns_warning_into_fail(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: ["work/issue-1/tmp.txt"])
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "pytest_runtime_boundary_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
@@ -409,6 +429,7 @@ def test_workflow_doctor_fail_on_warning_turns_warning_into_fail(monkeypatch, tm
 def test_workflow_doctor_run_reports_all_warning_types(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: ["work/issue-1/tmp.txt"])
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: ["runtime/common/ctl.py"])
+    monkeypatch.setattr(workflow_doctor, "pytest_runtime_boundary_findings", lambda repo_root: ["pytest.ini"])
     monkeypatch.setattr(
         workflow_doctor,
         "human_gate_registry_findings",
@@ -437,10 +458,11 @@ def test_workflow_doctor_run_reports_all_warning_types(monkeypatch, tmp_path: Pa
     result = workflow_doctor.run(args)
 
     assert result["status"] == "warning"
-    assert result["warning_count"] == 9
+    assert result["warning_count"] == 10
     assert [warning["id"] for warning in result["warnings"]] == [
         "tracked-local-workspace-files",
         "missing-required-files",
+        "pytest-runtime-boundary",
         "human-gate-registry-responsibility-boundary",
         "incomplete-close-archive",
         "vscode-utf8-first",
@@ -454,6 +476,7 @@ def test_workflow_doctor_run_reports_all_warning_types(monkeypatch, tmp_path: Pa
 def test_workflow_doctor_run_passes_without_warnings(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "pytest_runtime_boundary_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
@@ -471,6 +494,7 @@ def test_workflow_doctor_run_passes_without_warnings(monkeypatch, tmp_path: Path
 def test_workflow_doctor_main_prints_pass_json(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "pytest_runtime_boundary_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
@@ -489,6 +513,7 @@ def test_workflow_doctor_main_prints_pass_json(monkeypatch, tmp_path: Path, caps
 def test_workflow_doctor_main_returns_one_on_fail_on_warning(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: ["rag/chunks/chunks.jsonl"])
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "pytest_runtime_boundary_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
@@ -533,6 +558,7 @@ def test_workflow_doctor_ut_spec_sync_findings_and_skip(monkeypatch, tmp_path: P
 
     monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "pytest_runtime_boundary_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])

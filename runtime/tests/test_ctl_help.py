@@ -46,7 +46,7 @@ def test_windows_ps1_runtime_contract() -> None:
     assert '"environment/preflight.py"' in text
     assert '"--project", $RuntimeRoot, "python", $CtlPath, "--repo-root", $RepoRoot' in text
     assert '"--project", $RuntimeRoot, "python", $PreflightPath, "--repo-root", $RepoRoot' in text
-    assert '"run", "pytest"' in text
+    assert '"run", "--project", $RuntimeRoot, "pytest", "-c", $PytestConfig' in text
     assert "pytest_ut_spec_sync.py" in text
     assert "utf8_bom.py" in text
     assert "runtime/workflow" not in text
@@ -60,10 +60,24 @@ def test_windows_ps1_runtime_contract() -> None:
     assert 'preflight_path="$runtime_root/environment/preflight.py"' in bash_text
     assert 'run --project "$runtime_root" python "$ctl_path" --repo-root "$repo_root"' in bash_text
     assert 'run --project "$runtime_root" python "$preflight_path" --repo-root "$repo_root"' in bash_text
-    assert 'run pytest "$@"' in bash_text
+    assert 'run --project "$runtime_root" pytest -c "$runtime_root/pytest.ini" "$@"' in bash_text
     assert "pytest_ut_spec_sync.py" in bash_text
     assert "utf8_bom.py" in bash_text
     assert "runtime/workflow" not in bash_text
+
+
+def test_pytest_config_and_cache_are_runtime_scoped() -> None:
+    root_config = repo_root() / "pytest.ini"
+    runtime_config = repo_root() / "runtime" / "pytest.ini"
+    gitignore = (repo_root() / ".gitignore").read_text(encoding="utf-8")
+    text = runtime_config.read_text(encoding="utf-8")
+
+    assert not root_config.exists()
+    assert "testpaths = tests" in text
+    assert "cache_dir = .pytest_cache" in text
+    assert "pythonpath = .." in text
+    assert "runtime/.pytest_cache/" in gitignore
+    assert "\n.pytest_cache/" not in gitignore
 
 
 def test_ctl_without_modifier_warns_and_does_not_show_list() -> None:

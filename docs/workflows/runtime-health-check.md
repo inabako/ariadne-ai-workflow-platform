@@ -98,7 +98,7 @@ local evidence:
 - `runtime/.pytest_cache/pytest-ut-spec-sync-report.md`
 - `runtime/.pytest_cache/runtime-health-check/context/context-manifest.json`
 
-`.pytest_cache` 配下の生成物はGit管理しません。
+`runtime/.pytest_cache` 配下の生成物はGit管理しません。repository root 直下の `pytest.ini` と `.pytest_cache` は生成しません。
 
 ## 成功条件
 

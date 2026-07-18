@@ -149,7 +149,8 @@ switch ($Command) {
         Invoke-AiwfUv -ArgumentList $arguments -WorkingDirectory $RepoRoot
     }
     "pytest" {
-        $arguments = @("run", "pytest")
+        $PytestConfig = Join-Path $RuntimeRoot "pytest.ini"
+        $arguments = @("run", "--project", $RuntimeRoot, "pytest", "-c", $PytestConfig)
         $arguments += $RemainingArgs
         Invoke-AiwfUv -ArgumentList $arguments -WorkingDirectory $RuntimeRoot
     }

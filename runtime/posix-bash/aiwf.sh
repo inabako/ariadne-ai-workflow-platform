@@ -87,7 +87,7 @@ case "$command_name" in
     invoke_uv "$repo_root" run --project "$runtime_root" python "$ctl_path" --repo-root "$repo_root" doctor "$@"
     ;;
   pytest)
-    invoke_uv "$runtime_root" run pytest "$@"
+    invoke_uv "$runtime_root" run --project "$runtime_root" pytest -c "$runtime_root/pytest.ini" "$@"
     ;;
   preflight)
     invoke_uv "$repo_root" run --project "$runtime_root" python "$preflight_path" --repo-root "$repo_root" "$@"

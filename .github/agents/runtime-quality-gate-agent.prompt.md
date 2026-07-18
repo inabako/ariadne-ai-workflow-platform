@@ -33,8 +33,8 @@ docs/reference/runtime-pytest-ut-test-items.md
 - GitHub Actions workflow は作成しません。
 - `.github/workflows/` は使用しません。
 - runtime quality gate は Agent が明示的に実行します。
-- 生成物は原則 `.pytest_cache`、または指定された `work/<work-id>/test-evidence/` に保存します。
-- `.pytest_cache` 配下の生成物はGit管理対象にしません。
+- 生成物は原則 `runtime/.pytest_cache`、または指定された `work/<work-id>/test-evidence/` に保存します。
+- `runtime/.pytest_cache` 配下の生成物はGit管理対象にしません。repository root直下の `pytest.ini` と `.pytest_cache` は生成しません。
 - 失敗した場合は、原因、該当node、該当仕様書箇所、次に直すべきファイルを明記します。
 
 ## 標準コマンド

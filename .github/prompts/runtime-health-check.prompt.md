@@ -46,7 +46,7 @@ Ariadne AI Workflow Platform 自身の runtime health を確認する自己診�
 
 - GitHub Actions workflowは作成しない。
 - `.github/workflows/` は使用しない。
-- local evidenceは原則 `.pytest_cache` 配下に保存し、Git管理しない。
+- local evidenceは原則 `runtime/.pytest_cache` 配下に保存し、Git管理しない。repository root直下の `pytest.ini` と `.pytest_cache` は生成しない。
 - runtime、tests、docs/reference、Context First、aiwfctl、schema、agent promptを変更した後の自己診断として使う。
 
 ## 標準コマンド

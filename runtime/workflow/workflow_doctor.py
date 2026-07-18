@@ -148,6 +148,27 @@ def missing_required_files(repo_root: Path) -> list[str]:
     return [path for path in required if not (repo_root / path).exists()]
 
 
+def pytest_runtime_boundary_findings(repo_root: Path) -> list[str]:
+    findings: list[str] = []
+    root_config = repo_root / "pytest.ini"
+    root_cache = repo_root / ".pytest_cache"
+    runtime_config = repo_root / "runtime" / "pytest.ini"
+    runtime_cache = repo_root / "runtime" / ".pytest_cache"
+    if root_config.exists():
+        findings.append("pytest.ini")
+    if root_cache.exists():
+        findings.append(".pytest_cache")
+    if not runtime_config.exists():
+        findings.append("missing:runtime/pytest.ini")
+    else:
+        text = runtime_config.read_text(encoding="utf-8-sig")
+        if "cache_dir = .pytest_cache" not in text:
+            findings.append("runtime/pytest.ini:cache_dir")
+    if not runtime_cache.exists():
+        findings.append("missing:runtime/.pytest_cache")
+    return findings
+
+
 def human_gate_registry_findings(repo_root: Path) -> list[str]:
     db_path = registry_store.registry_db_path(repo_root)
     legacy_path = registry_store.legacy_registry_dir(repo_root) / "human_gates.json"
@@ -352,6 +373,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     missing = missing_required_files(repo_root)
     if missing:
         warnings.append({"id": "missing-required-files", "message": "必須workflow fileが不足しています。", "paths": missing})
+    pytest_boundary_findings = pytest_runtime_boundary_findings(repo_root)
+    if pytest_boundary_findings:
+        warnings.append(
+            {
+                "id": "pytest-runtime-boundary",
+                "message": "pytest config and cache must stay under runtime/. Root pytest.ini or .pytest_cache is workflow noise.",
+                "paths": pytest_boundary_findings,
+            }
+        )
     registry_findings = human_gate_registry_findings(repo_root)
     if registry_findings:
         warnings.append(
