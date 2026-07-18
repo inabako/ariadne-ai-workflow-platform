@@ -14,8 +14,8 @@ coverage 推移と監査履歴は repository root の `Runtime pytest 分岐・C
 | --- | ---: |
 | pytest files | 39 |
 | pytest test functions | 678 |
-| pytest collected cases | 677 |
-| pytest result | `677 passed` |
+| pytest collected cases | 703 |
+| pytest result | `703 passed` |
 | statement coverage | 99.66% |
 | total coverage | 99.48% |
 
@@ -56,7 +56,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_docs_sync_workflow.py](cases/test_docs_sync_workflow.md) | 11 |
 | [test_flutter_multiplatform.py](cases/test_flutter_multiplatform.md) | 16 |
 | [test_gate_restart.py](cases/test_gate_restart.md) | 4 |
-| [test_github_knowledge_maintenance.py](cases/test_github_knowledge_maintenance.md) | 38 |
+| [test_github_knowledge_maintenance.py](cases/test_github_knowledge_maintenance.md) | 44 |
 | [test_github_runtime.py](cases/test_github_runtime.md) | 36 |
 | [test_iac_template.py](cases/test_iac_template.md) | 6 |
 | [test_init_corrective_action_fix.py](cases/test_init_corrective_action_fix.md) | 9 |
@@ -66,7 +66,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_mcp_server_group_workflow.py](cases/test_mcp_server_group_workflow.md) | 12 |
 | [test_observability_metrics.py](cases/test_observability_metrics.md) | 17 |
 | [test_preflight.py](cases/test_preflight.md) | 31 |
-| [test_pytest_ut_spec_sync.py](cases/test_pytest_ut_spec_sync.md) | 20 |
+| [test_pytest_ut_spec_sync.py](cases/test_pytest_ut_spec_sync.md) | 21 |
 | [test_rag_artifact_migration.py](cases/test_rag_artifact_migration.md) | 19 |
 | [test_rag_build.py](cases/test_rag_build.md) | 8 |
 | [test_rag_dispatcher.py](cases/test_rag_dispatcher.md) | 10 |

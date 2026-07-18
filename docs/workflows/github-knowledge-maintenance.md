@@ -93,7 +93,22 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
   --work-id "<work-id>"
 ```
 
-Execute one approved GitHub sync action:
+Create the OK / NG review checklist for Issue / PR / comment repair actions:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge sync-review-plan `
+  --work-id "<work-id>"
+```
+
+Ingest the checked review plan through ctl before execution:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge sync-review-intake `
+  --work-id "<work-id>" `
+  --human-check approved
+```
+
+Execute one reviewed and approved GitHub sync action:
 
 ```powershell
 uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge sync-apply `
@@ -150,6 +165,56 @@ The replay runtime checks out the target branch under `work/<work-id>/git-worktr
 
 Use `apply_mode: direct` by default. If direct patch replay cannot match context, use an approved `apply_mode: git-3way` package or pass `--apply-mode git-3way` so the runtime uses `git apply --3way --index`. Use `apply_mode: auto-3way` only when the approval package explicitly permits fallback from direct apply to Git 3-way apply.
 
+If a replay package has already been executed and verified without `--push`, publish the verified tip through ctl instead of regenerating the package or editing JSON:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge publish-verified-replay `
+  --work-id "<work-id>" `
+  --target-branch "<branch>" `
+  --expected-remote-sha "<approved-remote-sha>" `
+  --human-check approved
+```
+
+`publish-verified-replay` selects the latest unpublished `tree_equal: true` replay execution, checks that `source_tip..new_tip` has no tree diff, verifies the remote branch still equals the approved expected SHA, and pushes `new_tip` with `force-with-lease`. Use `--new-tip "<sha>"` when more than one verified unpublished replay exists.
+
+After the approved small-commit rebase is verified, run commit message/body repair before GitHub sync when weak semantic subjects remain:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge message-repair-plan `
+  --work-id "<work-id>" `
+  --source-ref "origin/<branch>"
+```
+
+The generated message repair checklist is the single Human Check for message rewrite candidates. Ingest it through ctl:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge message-review-intake `
+  --work-id "<work-id>" `
+  --human-check approved
+```
+
+Generate a tree-preserving replay package from approved message candidates:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge message-repair-package `
+  --work-id "<work-id>" `
+  --target-branch "<branch>" `
+  --source-ref "origin/<branch>" `
+  --expected-remote-sha "<remote-sha>"
+```
+
+Execute that package with the existing replay apply runtime:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge rebase-apply `
+  --work-id "<work-id>" `
+  --package-path "work/<work-id>/context/message-repair-package.json" `
+  --human-check approved `
+  --push
+```
+
+`message-repair-package.json` must contain only approved `message_overrides`. The runtime verifies that the final tree still matches `source_ref`, records before/after SHA mapping, checks the repaired subjects with `git log --format="%H %s"`, and only then returns to GitHub sync.
+
 Create a RAG candidate:
 
 ```powershell
@@ -181,7 +246,9 @@ Schema:
 `repair_mode: proposal` では mutation を許可しません。`repair_mode: apply` の場合も、GitHubへの書き込みは `github-operation-gate` とHuman Review Gateの確認後に行います。
 
 `github-sync-plan` は、analysisが `repair_mode: apply` の場合に `github-operation-gate` と `tool-selection` を必須Contextとして確認します。
-`github-sync-apply` は、`github_sync_actions` のうち `approval_status: approved` の1件だけを実行し、結果をanalysis JSONへ書き戻します。実行可能なcommandは `gh issue edit/comment`、`gh pr edit/comment`、`gh api repos/...` に限定します。
+`github-sync-review-plan` は、Issue / PR / comment repair action を候補IDごとの OK / NG チェックリストとして出力します。
+`github-sync-review-intake` は、チェック済みレポートを読み取り、`github_sync_actions` の `approval_status`、`human_review_decision`、`human_review_source` を更新します。
+`github-sync-apply` は、`github_sync_actions` のうち `approval_status: approved` かつ `human_review_decision: OK` の1件だけを実行し、結果をanalysis JSONへ書き戻します。実行可能なcommandは `gh issue edit/comment`、`gh pr edit/comment`、`gh api repos/...` に限定します。
 未解決の `history_rewrite_candidates` がある場合、`github-sync-apply` は停止します。rebase候補が検出されなかった場合、または全候補が `rejected` / 明示的な `no-rewrite` / `keep-with-evidence` / `verified` として解決済みの場合だけ、sync系を実施します。
 `detect-rebase-candidates` は、ローカルGit履歴から1-3 fileのcommit漏れ候補を検出し、`github-knowledge-analysis.json` の `history_rewrite_candidates` に `approval_status: pending` として記録します。commit subjectが薄い場合は、subjectだけで判断せず、変更path、directory、extension、repository domain、近接commit、関連file setを複合的に確認します。安全な吸収先を自動特定できない場合は `no-rewrite` ではなく `manual-review-required` としてHuman Reviewへ残します。
 `rebase-plan` は、検出済み候補からHuman Review用の実行計画レポートを出力します。Git操作は実行しません。

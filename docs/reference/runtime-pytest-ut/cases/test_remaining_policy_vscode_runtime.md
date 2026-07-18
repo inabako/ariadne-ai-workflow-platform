@@ -87,7 +87,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_ch
 - 確認内容: pytest case `human gate policy check approves when value matches` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:98`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:102`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -104,7 +104,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_no
 - 確認内容: pytest case `human gate policy non required gate does not block` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:109`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:113`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -121,7 +121,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_un
 - 確認内容: pytest case `human gate policy unknown gate raises key error` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:120`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:124`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -138,7 +138,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_ma
 - 確認内容: pytest case `human gate policy main list prints json` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:128`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:132`
   - fixture/arg: `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -155,7 +155,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_ma
 - 確認内容: pytest case `human gate policy main check returns one when blocked` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:141`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:145`
   - fixture/arg: `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -172,7 +172,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_human_gate_policy_ma
 - 確認内容: pytest case `human gate policy main reports error for unknown gate` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:158`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:162`
   - fixture/arg: `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -189,7 +189,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
 - 確認内容: pytest case `vscode task runner refreshed env merges registry and extra` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:175`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:179`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -206,7 +206,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_f
 - 確認内容: pytest case `vscode task runner find executable uses fallback` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:185`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:189`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -223,7 +223,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
 - 確認内容: pytest case `vscode task runner run process uses cwd and returns code` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:193`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:197`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `calls`
@@ -240,7 +240,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_c
 - 確認内容: pytest case `vscode task runner command display posix quotes arguments` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:215`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:219`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -257,7 +257,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_w
 - 確認内容: pytest case `vscode task runner windows registry paths returns empty on non windows` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:221`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:225`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -274,7 +274,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
 - 確認内容: pytest case `vscode task runner run open questions invokes helper` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:227`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:231`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: `calls`
@@ -291,7 +291,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
 - 確認内容: pytest case `vscode task runner run preflight uses refreshed env` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:250`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:254`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: `calls`
@@ -308,7 +308,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
 - 確認内容: pytest case `vscode task runner run helper help invokes vscode environment help` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:280`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:284`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: `calls`
@@ -325,7 +325,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_m
 - 確認内容: pytest case `vscode task runner msys2 smoke reports missing bash` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:288`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:292`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -342,7 +342,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
 - 確認内容: pytest case `vscode task runner run docker version reports missing docker` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:301`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:305`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -359,7 +359,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
 - 確認内容: pytest case `vscode task runner run docker version uses found executable` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:315`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:319`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: `calls`
@@ -376,7 +376,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
 - 確認内容: pytest case `vscode task runner run go version reports missing go` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:330`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:334`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -393,7 +393,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
 - 確認内容: pytest case `vscode task runner run go version uses found executable` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:344`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:348`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: `calls`
@@ -410,7 +410,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_s
 - 確認内容: pytest case `vscode task runner skill info prints command and skill` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:359`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:363`
   - fixture/arg: `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -427,7 +427,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_m
 - 確認内容: pytest case `vscode task runner main dispatches skill info` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:370`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:374`
   - fixture/arg: `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -444,7 +444,7 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_w
 - 確認内容: pytest case `vscode task runner windows registry and remaining edges` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:386`
+  - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:390`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `fake_winreg`, `calls`, `calls_process`

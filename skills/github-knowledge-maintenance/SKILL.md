@@ -39,7 +39,7 @@ Do not judge JSON or Markdown corruption from PowerShell console rendering alone
 
 - Treat the saved file bytes and strict UTF-8 / JSON parse result from `artifact-integrity` as the source of truth.
 - Do not update `github-knowledge-analysis.json` with ad hoc PowerShell JSON fragments, text replacement, or temporary helper scripts.
-- Use dedicated runtime commands such as `analysis-template`, `detect-rebase`, `rebase-review-intake`, `rebase-package`, `rebase-apply`, `sync-apply`, and `rag-candidate` to write workflow JSON.
+- Use dedicated runtime commands such as `analysis-template`, `detect-rebase`, `rebase-review-intake`, `rebase-package`, `rebase-apply`, `publish-verified-replay`, `sync-review-intake`, `sync-apply`, and `rag-candidate` to write workflow JSON.
 - If an update path is missing, create Feedback first instead of hand-editing the JSON during the active workflow.
 
 ## Purpose
@@ -419,6 +419,56 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
 
 When remote reflection is part of the approved package, add `--push`. The package must include `target_branch`, `source_ref`, `expected_remote_sha`, `candidate_ids`, and data-only rewrite actions such as `absorb`, `drop`, `remove_after_apply`, and `message_overrides`.
 
+If replay was already executed and verified without `--push`, do not regenerate the package or hand-edit JSON just to add `allow_push`. Publish the verified replay tip through the dedicated runtime entrypoint:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge publish-verified-replay `
+  --work-id "<work-id>" `
+  --target-branch "<branch>" `
+  --expected-remote-sha "<approved-remote-sha>" `
+  --human-check approved
+```
+
+`publish-verified-replay` consumes the latest `tree_equal: true` and unpublished `rebase_replay_executions[*].new_tip`, verifies that the remote branch still equals the approved expected SHA, then runs one `force-with-lease` push. Use `--new-tip "<sha>"` only when multiple verified unpublished replay executions exist and the approval package identifies the exact tip.
+
+After approved small-commit rebase is verified, run commit message/body repair through the same high-risk replay runtime. Do not run `git commit --amend`, `git rebase -i`, or ad hoc scripts by hand:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge message-repair-plan `
+  --work-id "<work-id>" `
+  --source-ref "origin/<branch>"
+```
+
+The message repair plan writes one OK / NG checklist for weak semantic subjects or damaged commit messages. After the human checks the list, ingest it once:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge message-review-intake `
+  --work-id "<work-id>" `
+  --human-check approved
+```
+
+Generate the replay package from approved message repair candidates:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge message-repair-package `
+  --work-id "<work-id>" `
+  --target-branch "<branch>" `
+  --source-ref "origin/<branch>" `
+  --expected-remote-sha "<remote-sha>"
+```
+
+Then execute it with the existing replay apply runtime:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge rebase-apply `
+  --work-id "<work-id>" `
+  --package-path "work/<work-id>/context/message-repair-package.json" `
+  --human-check approved `
+  --push
+```
+
+Message repair packages must be tree-preserving and may contain only `message_overrides` for approved `message_repair_candidates`. The replay runtime must verify that the final tree still matches `source_ref`, record before/after SHA mapping, verify the GitHub-list-readable subject with `git log --format="%H %s"`, and return to GitHub sync only after `execution_status: verified` or `pushed`.
+
 Patch apply mode must be explicit in the package or CLI when direct patch replay is not enough:
 
 - `apply_mode: direct`: default strict `git apply --index`; use when commit patches match cleanly.
@@ -481,7 +531,22 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
   --work-id "<work-id>"
 ```
 
-Execute one approved GitHub sync action through ctl/runtime:
+Create the single OK / NG review checklist for Issue / PR / comment repair actions:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge sync-review-plan `
+  --work-id "<work-id>"
+```
+
+After the human checks one OK or NG per action id, ingest the checklist through ctl. Do not hand-edit `github_sync_actions[*].approval_status`:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge sync-review-intake `
+  --work-id "<work-id>" `
+  --human-check approved
+```
+
+Execute one reviewed and approved GitHub sync action through ctl/runtime:
 
 ```powershell
 aiwfctl github-knowledge sync-apply `
@@ -500,7 +565,7 @@ gh pr comment
 gh api
 ```
 
-Do not execute commands marked `pending`. Do not execute GitHub sync commands manually; use `github-sync-apply` / `aiwfctl github-knowledge sync-apply` so approval status, command shape, and execution result are recorded.
+Do not execute commands marked `pending` or `approved` without `human_review_decision: OK` and `human_review_source` from `sync-review-intake`. Do not execute GitHub sync commands manually; use `github-sync-apply` / `aiwfctl github-knowledge sync-apply` so approval status, command shape, and execution result are recorded.
 
 ### 10. Knowledge DB / RAG Candidate Generation
 

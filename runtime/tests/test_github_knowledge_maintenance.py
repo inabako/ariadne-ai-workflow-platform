@@ -163,14 +163,34 @@ def test_build_parser_parses_every_subcommand() -> None:
     assert parser.parse_args(["detect-rebase-candidates", "--work-id", "w", "--all-history"]).all_history is True
     assert parser.parse_args(["rebase-plan", "--work-id", "w"]).command == "rebase-plan"
     assert parser.parse_args(["rebase-review-intake", "--work-id", "w"]).command == "rebase-review-intake"
+    assert parser.parse_args(["message-repair-plan", "--work-id", "w"]).command == "message-repair-plan"
+    assert parser.parse_args(["message-review-intake", "--work-id", "w"]).command == "message-review-intake"
     assert parser.parse_args(["rebase-apply", "--work-id", "w", "--candidate-id", "HISTORY-1"]).command == "rebase-apply"
     assert parser.parse_args(["rebase-replay-package", "--work-id", "w"]).command == "rebase-replay-package"
+    assert parser.parse_args(["message-repair-package", "--work-id", "w"]).command == "message-repair-package"
     assert parser.parse_args(["rebase-replay-apply", "--work-id", "w"]).command == "rebase-replay-apply"
     assert (
         parser.parse_args(["rebase-replay-apply", "--work-id", "w", "--apply-mode", "git-3way"]).apply_mode
         == "git-3way"
     )
+    publish_args = parser.parse_args(
+        [
+            "publish-verified-replay",
+            "--work-id",
+            "w",
+            "--target-branch",
+            "dev-bk",
+            "--expected-remote-sha",
+            "abc123",
+            "--human-check",
+            "approved",
+        ]
+    )
+    assert publish_args.command == "publish-verified-replay"
+    assert publish_args.expected_remote_sha == "abc123"
     assert parser.parse_args(["github-sync-plan", "--work-id", "w"]).command == "github-sync-plan"
+    assert parser.parse_args(["github-sync-review-plan", "--work-id", "w"]).command == "github-sync-review-plan"
+    assert parser.parse_args(["github-sync-review-intake", "--work-id", "w"]).command == "github-sync-review-intake"
     assert parser.parse_args(["github-sync-apply", "--work-id", "w", "--action-id", "SYNC-1"]).command == "github-sync-apply"
     assert parser.parse_args(["rag-candidate", "--work-id", "w", "--human-check", "approved"]).command == "rag-candidate"
 
@@ -367,8 +387,15 @@ def test_build_repair_sync_and_rag_markdown_include_dynamic_sections() -> None:
     assert "候補別 OK / NG チェックリスト" in rebase_plan
     assert "| 候補ID | OK欄 | NG欄 | 疑わしいコミット | 対象ファイル | 現在の推奨 | メモ |" in rebase_plan
     assert "| HISTORY-1 | [ ] OK | [ ] NG |" in rebase_plan
-    assert "- [ ] OK: rebase整備対象として次段のitem-level計画に進める" in rebase_plan
-    assert "- [ ] NG: rebaseしない / 候補から外す" in rebase_plan
+    assert "### 詳細事項" in rebase_plan
+    detail_section = rebase_plan.split("### 詳細事項", 1)[1]
+    assert "OK / NG のチェックは上の「候補別 OK / NG チェックリスト」にのみ記入してください。" in detail_section
+    assert "- [ ] OK:" not in detail_section
+    assert "- [ ] NG:" not in detail_section
+    assert "- 想定吸収先 / 期待commit: def5678 feat(runtime): add example workflow" in detail_section
+    assert "- 判断理由: two files were committed separately from their natural workflow change" in detail_section
+    assert "- 証跡refs: PR #12 diff, git show abc1234" in detail_section
+    assert "- Verification commands: git log --format=\"%H %s\" -5" in detail_section
     assert "keep-with-evidence" in rebase_plan
     assert "検出された差分が正当でそのまま残すべき場合" in rebase_plan
     assert "GitHub API / Git CLI 責務境界" in rebase_plan
@@ -895,6 +922,7 @@ def test_rebase_replay_package_generates_from_approved_candidate(tmp_path: Path)
     assert package["target_branch"] == "dev-bk"
     assert package["source_ref"] == "dev-bk"
     assert package["apply_mode"] == "auto-3way"
+    assert package["replay_strategy"] == "tree-preserving"
     assert package["candidate_ids"] == ["HISTORY-REPLAY-1"]
     assert package["absorb"] == [{"target": "def5678", "sources": ["abc1234"]}]
     assert package["drop"] == []
@@ -1006,14 +1034,17 @@ def test_rebase_replay_apply_uses_worktree_and_builtin_runtime(tmp_path: Path) -
             "source_ref": "dev-bk",
             "apply_mode": "git-3way",
             "candidate_ids": ["HISTORY-REPLAY-1"],
-            "absorb": [{"target": target_commit, "sources": [source_commit]}],
+            "absorb": [{"target": target_commit[:7], "sources": [source_commit[:7]]}],
             "message_overrides": [
                 {
-                    "commit": target_commit,
+                    "commit": target_commit[:7],
                     "message": "feat(runtime): add example workflow\n\nAbsorb the immediate test follow-up into the same semantic runtime change.",
                 }
             ],
-            "verification_commands": ["git diff --quiet dev-bk..HEAD"],
+            "verification_commands": [
+                'git log --format="%H %s" --max-count=20',
+                "git diff --quiet dev-bk..HEAD",
+            ],
         },
     )
 
@@ -1034,13 +1065,16 @@ def test_rebase_replay_apply_uses_worktree_and_builtin_runtime(tmp_path: Path) -
 
     assert result["tree_equal"] is True
     assert result["apply_mode"] == "git-3way"
-    assert {item["mode"] for item in result["apply_results"]} == {"git-3way"}
+    assert {item["mode"] for item in result["apply_results"]} == {"tree-replay", "tree-overlay"}
     assert result["before_count"] == 3
     assert result["after_count"] == 2
+    assert all(item["returncode"] == 0 for item in result["verification_results"])
     assert result["worktree_path"] == f"work/{work_dir.name}/git-worktree/dev-bk"
     replay_log = run_git(repo_root / result["worktree_path"], ["log", "--format=%s"])
     assert "feat(runtime): add example workflow" in replay_log
     assert "update: test" not in replay_log
+    mapping = (repo_root / result["mapping_path"]).read_text(encoding="utf-8")
+    assert f"{source_commit}\tDROPPED" in mapping
     assert not list((work_dir / "context").glob("*rebase*.py"))
     updated = json.loads((work_dir / "context" / "github-knowledge-analysis.json").read_text(encoding="utf-8"))
     updated_candidate = updated["history_rewrite_candidates"][0]
@@ -1048,6 +1082,342 @@ def test_rebase_replay_apply_uses_worktree_and_builtin_runtime(tmp_path: Path) -
     assert updated_candidate["execution_result"]["runtime"] == "built-in-rebase-replay"
     assert updated_candidate["execution_result"]["apply_mode"] == "git-3way"
     assert updated_candidate["before_after_sha_mapping"][0].endswith(".tsv")
+
+
+def test_rebase_replay_apply_preserves_final_tree_when_absorbed_patch_context_moved(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path, "github-knowledge-owner-repo-recent")
+    run_git(repo_root, ["init"])
+    run_git(repo_root, ["config", "user.name", "Tester"])
+    run_git(repo_root, ["config", "user.email", "tester@example.com"])
+    run_git(repo_root, ["config", "core.autocrlf", "false"])
+    run_git(repo_root, ["checkout", "-b", "dev-bk"])
+    commit_file(repo_root, "README.md", "# repo\n", "add: initial")
+    target_commit = commit_file(repo_root, "docs/guide.md", "alpha\n", "docs: add guide")
+    middle_commit = commit_file(repo_root, "docs/guide.md", "alpha\nbeta\n", "docs: expand guide")
+    source_commit = commit_file(repo_root, "docs/guide.md", "alpha\nbeta\ngamma\n", "update: guide follow-up")
+    source_tip = run_git(repo_root, ["rev-parse", "HEAD"]).strip()
+    source_tree = run_git(repo_root, ["rev-parse", f"{source_tip}^{{tree}}"]).strip()
+    analysis = sample_analysis()
+    analysis["target_branch"] = "dev-bk"
+    candidate = analysis["history_rewrite_candidates"][0]
+    candidate.update(
+        {
+            "id": "HISTORY-REPLAY-CONTEXT",
+            "approval_status": "approved",
+            "repair_goal": "absorb-into-existing-commit",
+            "expected_commit": target_commit,
+            "suspect_commits": [source_commit],
+            "rollback_plan": f"git reset --hard {source_tip}",
+            "draft_commands": [],
+            "replay_package_ref": "work/github-knowledge-owner-repo-recent/context/rebase-replay-package.json",
+            "verification_commands": ["git diff --quiet dev-bk..HEAD"],
+        }
+    )
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    write_ready_gate(repo_root, work_dir, mutation=True)
+    write_json(
+        work_dir / "context" / "rebase-replay-package.json",
+        {
+            "schema_version": "1.0",
+            "target_branch": "dev-bk",
+            "source_ref": "dev-bk",
+            "apply_mode": "auto-3way",
+            "candidate_ids": ["HISTORY-REPLAY-CONTEXT"],
+            "absorb": [{"target": target_commit[:7], "sources": [source_commit[:7]]}],
+            "verification_commands": ["git diff --quiet dev-bk..HEAD"],
+        },
+    )
+
+    result = github_knowledge_maintenance.create_rebase_replay_apply(
+        argparse.Namespace(
+            command="rebase-replay-apply",
+            work_id=work_dir.name,
+            package_path="",
+            analysis_path="",
+            human_check="approved",
+            remote="",
+            push=False,
+            reuse_worktree=False,
+            dry_run=False,
+            repo_root=str(repo_root),
+        )
+    )
+
+    replay_repo = repo_root / result["worktree_path"]
+    replay_tree = run_git(replay_repo, ["rev-parse", "HEAD^{tree}"]).strip()
+    replay_log = run_git(replay_repo, ["log", "--format=%s"])
+    mapping = (repo_root / result["mapping_path"]).read_text(encoding="utf-8")
+    assert result["tree_equal"] is True
+    assert replay_tree == source_tree
+    assert result["before_count"] == 4
+    assert result["after_count"] == 3
+    assert "docs: add guide" in replay_log
+    assert "docs: expand guide" in replay_log
+    assert "update: guide follow-up" not in replay_log
+    assert f"{source_commit}\tDROPPED" in mapping
+    assert f"{middle_commit}\tDROPPED" not in mapping
+
+
+def test_rebase_replay_apply_resolves_absorb_cycle_to_earliest_anchor(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path, "github-knowledge-owner-repo-recent")
+    run_git(repo_root, ["init"])
+    run_git(repo_root, ["config", "user.name", "Tester"])
+    run_git(repo_root, ["config", "user.email", "tester@example.com"])
+    run_git(repo_root, ["config", "core.autocrlf", "false"])
+    run_git(repo_root, ["checkout", "-b", "dev-bk"])
+    commit_file(repo_root, "README.md", "# repo\n", "add: initial")
+    target_commit = commit_file(repo_root, "runtime/workflow/example.py", "print('runtime')\n", "update: runtime")
+    source_commit = commit_file(repo_root, "runtime/tests/test_example.py", "def test_example():\n    assert True\n", "update: test")
+    analysis = sample_analysis()
+    analysis["target_branch"] = "dev-bk"
+    for candidate_id, expected, suspect in [
+        ("HISTORY-REPLAY-1", target_commit, source_commit),
+        ("HISTORY-REPLAY-2", source_commit, target_commit),
+    ]:
+        candidate = dict(analysis["history_rewrite_candidates"][0])
+        candidate.update(
+            {
+                "id": candidate_id,
+                "approval_status": "approved",
+                "repair_goal": "absorb-into-existing-commit",
+                "expected_commit": expected,
+                "suspect_commits": [suspect],
+                "rollback_plan": "git reset --hard HEAD",
+                "verification_commands": ["git diff --quiet dev-bk..HEAD"],
+            }
+        )
+        analysis.setdefault("history_rewrite_candidates", []).append(candidate)
+    analysis["history_rewrite_candidates"] = analysis["history_rewrite_candidates"][1:]
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    write_ready_gate(repo_root, work_dir, mutation=True)
+    write_json(
+        work_dir / "context" / "rebase-replay-package.json",
+        {
+            "target_branch": "dev-bk",
+            "source_ref": "dev-bk",
+            "apply_mode": "git-3way",
+            "candidate_ids": ["HISTORY-REPLAY-1", "HISTORY-REPLAY-2"],
+            "absorb": [
+                {"target": target_commit[:7], "sources": [source_commit[:7]]},
+                {"target": source_commit[:7], "sources": [target_commit[:7]]},
+            ],
+            "verification_commands": ["git diff --quiet dev-bk..HEAD"],
+        },
+    )
+
+    result = github_knowledge_maintenance.create_rebase_replay_apply(
+        argparse.Namespace(
+            command="rebase-replay-apply",
+            work_id=work_dir.name,
+            package_path="",
+            analysis_path="",
+            human_check="approved",
+            remote="",
+            push=False,
+            reuse_worktree=False,
+            dry_run=False,
+            repo_root=str(repo_root),
+        )
+    )
+
+    replay_repo = repo_root / result["worktree_path"]
+    replay_log = run_git(replay_repo, ["log", "--format=%s"])
+    mapping = (repo_root / result["mapping_path"]).read_text(encoding="utf-8")
+    report = (repo_root / result["report_path"]).read_text(encoding="utf-8")
+    assert result["tree_equal"] is True
+    assert result["before_count"] == 3
+    assert result["after_count"] == 2
+    assert "update: runtime" in replay_log
+    assert "update: test" not in replay_log
+    assert f"{target_commit}\tDROPPED" not in mapping
+    assert f"{source_commit}\tDROPPED" in mapping
+    assert "Semantic Anchor Resolution" in report
+    assert "cycle resolved to earliest responsibility anchor" in report
+
+
+def test_message_repair_plan_intake_package_and_replay_apply(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path, "github-knowledge-owner-repo-recent")
+    run_git(repo_root, ["init"])
+    run_git(repo_root, ["config", "user.name", "Tester"])
+    run_git(repo_root, ["config", "user.email", "tester@example.com"])
+    run_git(repo_root, ["config", "core.autocrlf", "false"])
+    run_git(repo_root, ["checkout", "-b", "dev-bk"])
+    commit_file(repo_root, "README.md", "# repo\n", "feat(runtime): add baseline\n\nIntent: baseline")
+    weak_commit = commit_file(repo_root, "runtime/workflow/example.py", "print('runtime')\n", "update: runtime")
+    source_tip = run_git(repo_root, ["rev-parse", "HEAD"]).strip()
+    source_tree = run_git(repo_root, ["rev-parse", f"{source_tip}^{{tree}}"]).strip()
+    analysis = sample_analysis()
+    analysis["target_branch"] = "dev-bk"
+    analysis["history_rewrite_candidates"] = []
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    write_ready_gate(repo_root, work_dir, mutation=True)
+
+    plan = github_knowledge_maintenance.create_message_repair_plan(
+        argparse.Namespace(
+            command="message-repair-plan",
+            work_id=work_dir.name,
+            analysis_path="",
+            git_repo=str(repo_root),
+            source_ref="dev-bk",
+            max_commits=10,
+            output="",
+            repo_root=str(repo_root),
+        )
+    )
+
+    plan_path = repo_root / plan["message_repair_plan"]
+    text = plan_path.read_text(encoding="utf-8")
+    assert "MESSAGE-REPAIR-001" in text
+    assert "fix(runtime): runtime" in text or "feat(runtime): runtime" in text
+    plan_path.write_text(text.replace("| MESSAGE-REPAIR-001 | [ ] OK | [ ] NG |", "| MESSAGE-REPAIR-001 | [x] OK | [ ] NG |"), encoding="utf-8")
+
+    intake = github_knowledge_maintenance.create_message_review_intake(
+        argparse.Namespace(
+            command="message-review-intake",
+            work_id=work_dir.name,
+            analysis_path="",
+            plan_path=str(plan_path),
+            human_check="approved",
+            allow_partial=False,
+            repo_root=str(repo_root),
+        )
+    )
+    assert intake["approved_count"] == 1
+
+    package = github_knowledge_maintenance.create_message_repair_package(
+        argparse.Namespace(
+            command="message-repair-package",
+            work_id=work_dir.name,
+            candidate_id=[],
+            analysis_path="",
+            output="",
+            target_branch="dev-bk",
+            source_ref="dev-bk",
+            remote="origin",
+            expected_remote_sha="",
+            allow_push=False,
+            apply_mode="auto-3way",
+            repo_root=str(repo_root),
+        )
+    )
+    package_data = json.loads((repo_root / package["message_repair_package"]).read_text(encoding="utf-8"))
+    assert package_data["message_overrides"][0]["commit"] == weak_commit
+
+    result = github_knowledge_maintenance.create_rebase_replay_apply(
+        argparse.Namespace(
+            command="rebase-replay-apply",
+            work_id=work_dir.name,
+            package_path=str(repo_root / package["message_repair_package"]),
+            analysis_path="",
+            human_check="approved",
+            remote="",
+            push=False,
+            reuse_worktree=False,
+            dry_run=False,
+            repo_root=str(repo_root),
+        )
+    )
+
+    replay_repo = repo_root / result["worktree_path"]
+    replay_tree = run_git(replay_repo, ["rev-parse", "HEAD^{tree}"]).strip()
+    replay_log = run_git(replay_repo, ["log", "--format=%s", "--max-count=1"])
+    updated = json.loads((work_dir / "context" / "github-knowledge-analysis.json").read_text(encoding="utf-8"))
+    assert result["tree_equal"] is True
+    assert replay_tree == source_tree
+    assert "update: runtime" not in replay_log
+    assert updated["message_repair_candidates"][0]["execution_status"] == "verified"
+    assert updated["message_repair_candidates"][0]["before_after_sha_mapping"][0].endswith(".tsv")
+
+
+def test_publish_verified_replay_pushes_existing_verified_tip(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path, "github-knowledge-owner-repo-recent")
+    remote_repo = tmp_path / "remote.git"
+    run_git(repo_root, ["init"])
+    run_git(repo_root, ["config", "user.name", "Tester"])
+    run_git(repo_root, ["config", "user.email", "tester@example.com"])
+    run_git(repo_root, ["config", "core.autocrlf", "false"])
+    run_git(repo_root, ["checkout", "-b", "dev-bk"])
+    root_commit = commit_file(repo_root, "README.md", "# repo\n", "feat(runtime): add baseline\n\nIntent: baseline")
+    source_tip = commit_file(repo_root, "runtime/workflow/example.py", "print('runtime')\n", "update: runtime")
+    run_git(repo_root, ["init", "--bare", str(remote_repo)])
+    run_git(repo_root, ["remote", "add", "origin", str(remote_repo)])
+    run_git(repo_root, ["push", "origin", "dev-bk"])
+    source_tree = run_git(repo_root, ["rev-parse", f"{source_tip}^{{tree}}"]).strip()
+    new_tip = run_git(
+        repo_root,
+        [
+            "commit-tree",
+            source_tree,
+            "-p",
+            root_commit,
+            "-m",
+            "feat(runtime): runtime\n\nIntent: verified replay publication test.",
+        ],
+    ).strip()
+    analysis = sample_analysis()
+    analysis["target_branch"] = "dev-bk"
+    analysis["history_rewrite_candidates"] = []
+    analysis["message_repair_candidates"] = [
+        {
+            "id": "MESSAGE-REPAIR-001",
+            "commit": source_tip,
+            "approval_status": "approved",
+            "proposed_commit_message": "feat(runtime): runtime\n",
+            "execution_status": "verified",
+            "execution_result": {
+                "runtime": "built-in-rebase-replay",
+                "new_tip": new_tip,
+                "pushed": False,
+            },
+        }
+    ]
+    analysis["rebase_replay_executions"] = [
+        {
+            "dry_run": False,
+            "source_tip": source_tip,
+            "new_tip": new_tip,
+            "before_count": 2,
+            "after_count": 2,
+            "tree_equal": True,
+            "pushed": False,
+            "remote_before": "",
+            "remote_after": "",
+            "worktree_path": f"work/{work_dir.name}/git-worktree/dev-bk",
+            "report_path": f"work/{work_dir.name}/process-report/github-history-rebase-replay-execution.md",
+            "mapping_path": f"work/{work_dir.name}/context/github-history-rebase-replay-sha-map.tsv",
+            "apply_mode": "auto-3way",
+            "apply_results": [],
+        }
+    ]
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    write_ready_gate(repo_root, work_dir, mutation=True)
+
+    result = github_knowledge_maintenance.create_publish_verified_replay(
+        argparse.Namespace(
+            command="publish-verified-replay",
+            work_id=work_dir.name,
+            analysis_path="",
+            target_branch="dev-bk",
+            remote="origin",
+            expected_remote_sha=source_tip,
+            new_tip="",
+            execution_index=-1,
+            human_check="approved",
+            dry_run=False,
+            repo_root=str(repo_root),
+        )
+    )
+
+    remote_tip = run_git(repo_root, ["ls-remote", "--heads", "origin", "dev-bk"]).split()[0]
+    updated = json.loads((work_dir / "context" / "github-knowledge-analysis.json").read_text(encoding="utf-8"))
+    assert result["pushed"] is True
+    assert result["remote_before"] == source_tip
+    assert result["remote_after"] == new_tip
+    assert remote_tip == new_tip
+    assert updated["rebase_replay_executions"][0]["pushed"] is True
+    assert updated["message_repair_candidates"][0]["execution_status"] == "pushed"
+    assert updated["rebase_replay_publications"][0]["new_tip"] == new_tip
+    assert (repo_root / result["report_path"]).exists()
 
 
 def test_rebase_replay_apply_dry_run_does_not_create_worktree(tmp_path: Path) -> None:
@@ -1137,6 +1507,69 @@ def test_github_sync_command_validation_edges() -> None:
         )
 
 
+def test_create_sync_review_plan_and_intake_reads_ok_ng_checklist(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis = sample_analysis()
+    analysis["history_rewrite_candidates"] = []
+    analysis["github_sync_actions"].append(
+        {
+            "id": "SYNC-2",
+            "title": "Reject stale PR comment",
+            "target_type": "pr-comment",
+            "target_id": "2",
+            "operation": "comment",
+            "approval_status": "pending",
+            "reason": "stale proposal",
+            "draft_command": "gh pr comment 2 --body-file stale.md",
+        }
+    )
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    write_ready_gate(repo_root, work_dir)
+
+    result = github_knowledge_maintenance.create_sync_review_plan(
+        argparse.Namespace(
+            command="github-sync-review-plan",
+            work_id=work_dir.name,
+            analysis_path="",
+            output="",
+            repo_root=str(repo_root),
+        )
+    )
+    plan_path = repo_root / result["sync_review_plan"]
+    text = plan_path.read_text(encoding="utf-8")
+    assert "| SYNC-1 | [ ] OK | [ ] NG |" in text
+    assert "| SYNC-2 | [ ] OK | [ ] NG |" in text
+
+    plan_path.write_text(
+        text.replace("| SYNC-1 | [ ] OK | [ ] NG |", "| SYNC-1 | [x] OK | [ ] NG |").replace(
+            "| SYNC-2 | [ ] OK | [ ] NG |",
+            "| SYNC-2 | [ ] OK | [x] NG |",
+        ),
+        encoding="utf-8",
+    )
+
+    intake = github_knowledge_maintenance.create_sync_review_intake(
+        argparse.Namespace(
+            command="github-sync-review-intake",
+            work_id=work_dir.name,
+            analysis_path="",
+            plan_path="",
+            human_check="approved",
+            allow_partial=False,
+            repo_root=str(repo_root),
+        )
+    )
+
+    updated = json.loads((work_dir / "context" / "github-knowledge-analysis.json").read_text(encoding="utf-8"))
+    assert intake["approved_count"] == 1
+    assert intake["rejected_count"] == 1
+    assert updated["github_sync_actions"][0]["approval_status"] == "approved"
+    assert updated["github_sync_actions"][0]["human_review_decision"] == "OK"
+    assert updated["github_sync_actions"][0]["human_review_source"].endswith(".md")
+    assert updated["github_sync_actions"][1]["approval_status"] == "rejected"
+    assert updated["github_sync_actions"][1]["human_review_decision"] == "NG"
+
+
 def test_create_sync_apply_requires_approval_and_records_result(tmp_path: Path) -> None:
     repo_root, work_dir = make_work_dir(tmp_path)
     analysis = sample_analysis()
@@ -1171,6 +1604,23 @@ def test_create_sync_apply_requires_approval_and_records_result(tmp_path: Path) 
             )
         )
 
+    with pytest.raises(PermissionError, match="approved through github-sync-review-intake"):
+        github_knowledge_maintenance.create_sync_apply(
+            argparse.Namespace(
+                command="github-sync-apply",
+                work_id=work_dir.name,
+                action_id="SYNC-1",
+                analysis_path="",
+                human_check="approved",
+                dry_run=True,
+                repo_root=str(repo_root),
+            )
+        )
+
+    analysis["github_sync_actions"][0]["human_review_decision"] = "OK"
+    analysis["github_sync_actions"][0]["human_review_source"] = "work/github/original/recent/process-report/sync-review.md"
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+
     result = github_knowledge_maintenance.create_sync_apply(
         argparse.Namespace(
             command="github-sync-apply",
@@ -1199,6 +1649,41 @@ def test_create_sync_apply_blocks_unresolved_rebase_candidates(tmp_path: Path) -
     write_ready_gate(repo_root, work_dir, mutation=True)
 
     with pytest.raises(RuntimeError, match="blocked until rebase candidates are resolved: HISTORY-1"):
+        github_knowledge_maintenance.create_sync_apply(
+            argparse.Namespace(
+                command="github-sync-apply",
+                work_id=work_dir.name,
+                action_id="SYNC-1",
+                analysis_path="",
+                human_check="approved",
+                dry_run=True,
+                repo_root=str(repo_root),
+            )
+        )
+
+
+def test_create_sync_apply_blocks_unresolved_message_repair_candidates(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis = sample_analysis()
+    analysis["history_rewrite_candidates"][0]["approval_status"] = "rejected"
+    analysis["github_sync_actions"][0]["approval_status"] = "approved"
+    analysis["message_repair_candidates"] = [
+        {
+            "id": "MESSAGE-REPAIR-001",
+            "commit": "abc1234",
+            "current_subject": "update: runtime",
+            "proposed_subject": "fix(runtime): connect message repair gate before sync",
+            "proposed_commit_message": "fix(runtime): connect message repair gate before sync\n\nVerify message repair before GitHub sync.",
+            "file_paths": ["runtime/workflow/github_knowledge_maintenance.py"],
+            "reason": "weak semantic subject remains before GitHub sync",
+            "approval_status": "approved",
+            "execution_status": "pending",
+        }
+    ]
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    write_ready_gate(repo_root, work_dir, mutation=True)
+
+    with pytest.raises(RuntimeError, match="blocked until message repair candidates are verified: MESSAGE-REPAIR-001"):
         github_knowledge_maintenance.create_sync_apply(
             argparse.Namespace(
                 command="github-sync-apply",
@@ -1306,6 +1791,16 @@ def test_run_dispatches_commands_and_rejects_unknown(monkeypatch: pytest.MonkeyP
         lambda args: {"command": "detect-rebase-candidates"},
     )
     monkeypatch.setattr(github_knowledge_maintenance, "create_rebase_plan", lambda args: {"command": "rebase-plan"})
+    monkeypatch.setattr(
+        github_knowledge_maintenance,
+        "create_message_repair_plan",
+        lambda args: {"command": "message-repair-plan"},
+    )
+    monkeypatch.setattr(
+        github_knowledge_maintenance,
+        "create_message_review_intake",
+        lambda args: {"command": "message-review-intake"},
+    )
     monkeypatch.setattr(github_knowledge_maintenance, "create_rebase_apply", lambda args: {"command": "rebase-apply"})
     monkeypatch.setattr(
         github_knowledge_maintenance,
@@ -1317,7 +1812,27 @@ def test_run_dispatches_commands_and_rejects_unknown(monkeypatch: pytest.MonkeyP
         "create_rebase_replay_apply",
         lambda args: {"command": "rebase-replay-apply"},
     )
+    monkeypatch.setattr(
+        github_knowledge_maintenance,
+        "create_publish_verified_replay",
+        lambda args: {"command": "publish-verified-replay"},
+    )
+    monkeypatch.setattr(
+        github_knowledge_maintenance,
+        "create_message_repair_package",
+        lambda args: {"command": "message-repair-package"},
+    )
     monkeypatch.setattr(github_knowledge_maintenance, "create_sync_plan", lambda args: {"command": "github-sync-plan"})
+    monkeypatch.setattr(
+        github_knowledge_maintenance,
+        "create_sync_review_plan",
+        lambda args: {"command": "github-sync-review-plan"},
+    )
+    monkeypatch.setattr(
+        github_knowledge_maintenance,
+        "create_sync_review_intake",
+        lambda args: {"command": "github-sync-review-intake"},
+    )
     monkeypatch.setattr(github_knowledge_maintenance, "create_sync_apply", lambda args: {"command": "github-sync-apply"})
     monkeypatch.setattr(github_knowledge_maintenance, "create_rag_candidate", lambda args: {"command": "rag-candidate"})
 
@@ -1327,10 +1842,16 @@ def test_run_dispatches_commands_and_rejects_unknown(monkeypatch: pytest.MonkeyP
         "repair-plan",
         "detect-rebase-candidates",
         "rebase-plan",
+        "message-repair-plan",
+        "message-review-intake",
         "rebase-apply",
         "rebase-replay-package",
+        "message-repair-package",
         "rebase-replay-apply",
+        "publish-verified-replay",
         "github-sync-plan",
+        "github-sync-review-plan",
+        "github-sync-review-intake",
         "github-sync-apply",
         "rag-candidate",
     ]:

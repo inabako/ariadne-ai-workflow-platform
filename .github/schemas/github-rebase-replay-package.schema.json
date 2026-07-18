@@ -20,6 +20,15 @@
     },
     "output_branch": { "type": "string" },
     "allow_push": { "type": "boolean", "default": false },
+    "replay_strategy": {
+      "type": "string",
+      "enum": ["tree-preserving"],
+      "default": "tree-preserving"
+    },
+    "semantic_anchor_resolution": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
     "absorb": {
       "type": "array",
       "items": {

@@ -35,6 +35,7 @@ from runtime.constants.workspace import (  # noqa: E402
     work_dir_for_id,
     work_path_pattern,
 )
+from runtime.observability.metrics import RuntimeMetricsCollector  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
 from runtime.workflow import close_archive  # noqa: E402
 from runtime.workflow import flutter_multiplatform  # noqa: E402
@@ -52,6 +53,68 @@ from runtime.workflow.context_first import register_context  # noqa: E402
 
 ANSI_YELLOW = "\033[33m"
 ANSI_RESET = "\033[0m"
+
+
+def _github_knowledge_metrics_collector(
+    repo_root: Path,
+    *,
+    work_id: str = "",
+) -> RuntimeMetricsCollector:
+    work_dir = work_dir_for_id(repo_root, work_id) if work_id else None
+    return RuntimeMetricsCollector(
+        repo_root=repo_root,
+        work_dir=work_dir,
+        workflow_id=work_id,
+        workflow_name="/github-knowledge-maintenance",
+        agent_name="aiwfctl",
+    )
+
+
+def _attach_work_dir_to_metrics(
+    collector: RuntimeMetricsCollector,
+    repo_root: Path,
+    result: dict[str, Any],
+) -> None:
+    if collector.work_dir is not None:
+        return
+    work_id = str(result.get("work_id", "")).strip()
+    if not work_id:
+        return
+    collector.workflow_id = work_id
+    collector.work_dir = work_dir_for_id(repo_root, work_id)
+
+
+def _record_github_knowledge_metrics_result(
+    collector: RuntimeMetricsCollector,
+    repo_root: Path,
+    *,
+    command_name: str,
+    result: dict[str, Any],
+) -> None:
+    _attach_work_dir_to_metrics(collector, repo_root, result)
+    status = str(result.get("status", "")).strip()
+    if status == "human-check-required":
+        collector.human_check_required(reason=f"{command_name} requires human check")
+    for key in (
+        "analysis_path",
+        "report_path",
+        "plan_path",
+        "rebase_plan",
+        "message_repair_plan",
+        "rebase_replay_package",
+        "message_repair_package",
+        "rag_candidate",
+    ):
+        path = str(result.get(key, "")).strip()
+        if path:
+            collector.evidence_generated(path=path)
+    collector.workflow_completed(
+        save_evidence=False,
+        metadata={"ctl_command": f"github-knowledge {command_name}", "status": status or "completed"},
+    )
+    if collector.work_dir is not None:
+        evidence_status = "human-check-required" if status == "human-check-required" else "available"
+        collector.save_evidence_summary(status=evidence_status)
 
 
 def registry_path(repo_root: Path) -> Path:
@@ -1281,11 +1344,50 @@ def build_parser() -> argparse.ArgumentParser:
     )
     github_rebase_review.add_argument("--allow-partial", action="store_true")
     github_rebase_review.add_argument("--json", action="store_true")
+    github_message_plan = github_knowledge_sub.add_parser(
+        "message-repair-plan",
+        help="Create a high-risk commit message repair review plan after rebase verification.",
+    )
+    github_message_plan.add_argument("--work-id", required=True)
+    github_message_plan.add_argument("--analysis-path", default="")
+    github_message_plan.add_argument("--git-repo", default="")
+    github_message_plan.add_argument("--source-ref", default="")
+    github_message_plan.add_argument("--max-commits", type=int, default=200)
+    github_message_plan.add_argument("--output", default="")
+    github_message_plan.add_argument("--json", action="store_true")
+    github_message_review = github_knowledge_sub.add_parser(
+        "message-review-intake",
+        help="Ingest a commit message repair OK/NG checklist into analysis JSON.",
+    )
+    github_message_review.add_argument("--work-id", required=True)
+    github_message_review.add_argument("--analysis-path", default="")
+    github_message_review.add_argument("--plan-path", default="")
+    github_message_review.add_argument("--human-check", choices=["pending", "approved"], default="pending")
+    github_message_review.add_argument("--allow-partial", action="store_true")
+    github_message_review.add_argument("--json", action="store_true")
     github_sync_plan = github_knowledge_sub.add_parser("sync-plan", help="Create an approval-gated GitHub sync plan.")
     github_sync_plan.add_argument("--work-id", required=True)
     github_sync_plan.add_argument("--analysis-path", default="")
     github_sync_plan.add_argument("--output", default="")
     github_sync_plan.add_argument("--json", action="store_true")
+    github_sync_review = github_knowledge_sub.add_parser(
+        "sync-review-plan",
+        help="Create an OK/NG review checklist for GitHub Issue/PR/comment repair actions.",
+    )
+    github_sync_review.add_argument("--work-id", required=True)
+    github_sync_review.add_argument("--analysis-path", default="")
+    github_sync_review.add_argument("--output", default="")
+    github_sync_review.add_argument("--json", action="store_true")
+    github_sync_review_intake = github_knowledge_sub.add_parser(
+        "sync-review-intake",
+        help="Ingest a GitHub sync OK/NG checklist into analysis JSON.",
+    )
+    github_sync_review_intake.add_argument("--work-id", required=True)
+    github_sync_review_intake.add_argument("--analysis-path", default="")
+    github_sync_review_intake.add_argument("--plan-path", default="")
+    github_sync_review_intake.add_argument("--human-check", choices=["pending", "approved"], default="pending")
+    github_sync_review_intake.add_argument("--allow-partial", action="store_true")
+    github_sync_review_intake.add_argument("--json", action="store_true")
     github_sync_apply = github_knowledge_sub.add_parser("sync-apply", help="Execute one approved GitHub sync action.")
     github_sync_apply.add_argument("--work-id", required=True)
     github_sync_apply.add_argument("--action-id", required=True)
@@ -1308,6 +1410,21 @@ def build_parser() -> argparse.ArgumentParser:
     github_rebase_package.add_argument("--allow-push", action="store_true")
     github_rebase_package.add_argument("--apply-mode", choices=["direct", "git-3way", "auto-3way"], default="direct")
     github_rebase_package.add_argument("--json", action="store_true")
+    github_message_package = github_knowledge_sub.add_parser(
+        "message-repair-package",
+        help="Generate an approved commit message repair replay package.",
+    )
+    github_message_package.add_argument("--work-id", required=True)
+    github_message_package.add_argument("--candidate-id", action="append", default=[])
+    github_message_package.add_argument("--analysis-path", default="")
+    github_message_package.add_argument("--output", default="")
+    github_message_package.add_argument("--target-branch", default="")
+    github_message_package.add_argument("--source-ref", default="")
+    github_message_package.add_argument("--remote", default="origin")
+    github_message_package.add_argument("--expected-remote-sha", default="")
+    github_message_package.add_argument("--allow-push", action="store_true")
+    github_message_package.add_argument("--apply-mode", choices=["direct", "git-3way", "auto-3way"], default="auto-3way")
+    github_message_package.add_argument("--json", action="store_true")
     github_rebase_apply = github_knowledge_sub.add_parser(
         "rebase-apply",
         help="Execute an approved generated rebase replay package.",
@@ -1322,6 +1439,20 @@ def build_parser() -> argparse.ArgumentParser:
     github_rebase_apply.add_argument("--reuse-worktree", action="store_true")
     github_rebase_apply.add_argument("--dry-run", action="store_true")
     github_rebase_apply.add_argument("--json", action="store_true")
+    github_publish_verified = github_knowledge_sub.add_parser(
+        "publish-verified-replay",
+        help="Push an already verified replay tip without regenerating the package.",
+    )
+    github_publish_verified.add_argument("--work-id", required=True)
+    github_publish_verified.add_argument("--analysis-path", default="")
+    github_publish_verified.add_argument("--target-branch", default="")
+    github_publish_verified.add_argument("--remote", default="origin")
+    github_publish_verified.add_argument("--expected-remote-sha", required=True)
+    github_publish_verified.add_argument("--new-tip", default="")
+    github_publish_verified.add_argument("--execution-index", type=int, default=-1)
+    github_publish_verified.add_argument("--human-check", choices=["pending", "approved"], default="pending")
+    github_publish_verified.add_argument("--dry-run", action="store_true")
+    github_publish_verified.add_argument("--json", action="store_true")
     github_rag_candidate = github_knowledge_sub.add_parser("rag-candidate", help="Create or publish a RAG candidate note.")
     github_rag_candidate.add_argument("--work-id", required=True)
     github_rag_candidate.add_argument("--analysis-path", default="")
@@ -1915,40 +2046,68 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 "  aiwfctl github-knowledge rebase-plan --work-id <work-id>\n"
                 "  aiwfctl github-knowledge rebase-review-intake --work-id <work-id> --human-check approved\n"
                 "  aiwfctl github-knowledge sync-plan --work-id <work-id>\n"
+                "  aiwfctl github-knowledge sync-review-plan --work-id <work-id>\n"
+                "  aiwfctl github-knowledge sync-review-intake --work-id <work-id> --human-check approved\n"
                 "  aiwfctl github-knowledge sync-apply --work-id <work-id> --action-id <action-id> --human-check approved\n\n"
                 "  aiwfctl github-knowledge rebase-package --work-id <work-id> --target-branch <branch>\n"
                 "  aiwfctl github-knowledge rebase-apply --work-id <work-id> --human-check approved\n\n"
+                "  aiwfctl github-knowledge message-repair-plan --work-id <work-id>\n"
+                "  aiwfctl github-knowledge message-review-intake --work-id <work-id> --human-check approved\n"
+                "  aiwfctl github-knowledge message-repair-package --work-id <work-id> --target-branch <branch>\n\n"
+                "  aiwfctl github-knowledge publish-verified-replay --work-id <work-id> --target-branch <branch> --expected-remote-sha <sha> --human-check approved\n"
                 "  aiwfctl github-knowledge rag-candidate --work-id <work-id>\n\n"
                 "Outputs:\n"
                 f"  {context_path_pattern('github-knowledge-analysis.json')}\n"
                 f"  {process_report_path_pattern('github-knowledge-repair-plan-*.md')}\n"
                 f"  {process_report_path_pattern('github-documentation-sync-plan-*.md')}\n"
+                f"  {process_report_path_pattern('github-documentation-sync-review-plan-*.md')}\n"
+                f"  {process_report_path_pattern('github-history-message-repair-plan-*.md')}\n"
                 f"  {context_path_pattern('rebase-replay-package.json')}\n"
+                f"  {context_path_pattern('message-repair-package.json')}\n"
                 f"  {process_report_path_pattern('github-history-rebase-replay-execution-*.md')}\n"
                 f"  {process_report_path_pattern('github-knowledge-rag-candidate-*.md')}\n"
             )
+        command_map = {
+            "init": "init",
+            "analysis-template": "analysis-template",
+            "artifact-integrity": "artifact-integrity",
+            "repair-plan": "repair-plan",
+            "detect-rebase": "detect-rebase-candidates",
+            "rebase-plan": "rebase-plan",
+            "rebase-review-intake": "rebase-review-intake",
+            "message-repair-plan": "message-repair-plan",
+            "message-review-intake": "message-review-intake",
+            "sync-plan": "github-sync-plan",
+            "sync-review-plan": "github-sync-review-plan",
+            "sync-review-intake": "github-sync-review-intake",
+            "sync-apply": "github-sync-apply",
+            "rebase-package": "rebase-replay-package",
+            "message-repair-package": "message-repair-package",
+            "rebase-apply": "rebase-replay-apply",
+            "publish-verified-replay": "publish-verified-replay",
+            "rag-candidate": "rag-candidate",
+        }
+        if github_knowledge_command not in command_map:
+            return 1, f"Unknown GitHub knowledge command: {github_knowledge_command}\n"
+        metrics = _github_knowledge_metrics_collector(
+            repo_root,
+            work_id=str(getattr(args, "work_id", "") or ""),
+        )
+        metrics.workflow_started(metadata={"ctl_command": f"github-knowledge {github_knowledge_command}"})
         try:
             github_args = argparse.Namespace(**vars(args))
-            command_map = {
-                "init": "init",
-                "analysis-template": "analysis-template",
-                "artifact-integrity": "artifact-integrity",
-                "repair-plan": "repair-plan",
-                "detect-rebase": "detect-rebase-candidates",
-                "rebase-plan": "rebase-plan",
-                "rebase-review-intake": "rebase-review-intake",
-                "sync-plan": "github-sync-plan",
-                "sync-apply": "github-sync-apply",
-                "rebase-package": "rebase-replay-package",
-                "rebase-apply": "rebase-replay-apply",
-                "rag-candidate": "rag-candidate",
-            }
-            if github_knowledge_command not in command_map:
-                return 1, f"Unknown GitHub knowledge command: {github_knowledge_command}\n"
             github_args.command = command_map[github_knowledge_command]
             github_args.repo_root = str(repo_root)
             result = github_knowledge_maintenance.run(github_args)
+            _record_github_knowledge_metrics_result(
+                metrics,
+                repo_root,
+                command_name=github_knowledge_command,
+                result=result,
+            )
         except Exception as exc:
+            metrics.runtime_error(error=str(exc))
+            metrics.workflow_failed(error=str(exc))
             return 1, f"GitHub knowledge maintenance failed: {exc}\n"
         if getattr(args, "json", False):
             return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
@@ -1960,10 +2119,14 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
         ]
         if "sync_plan" in result:
             lines.append(f"Plan    : {result.get('sync_plan', '')}")
+        if "sync_review_plan" in result:
+            lines.append(f"Review  : {result.get('sync_review_plan', '')}")
         if "repair_plan" in result:
             lines.append(f"Plan    : {result.get('repair_plan', '')}")
         if "rebase_plan" in result:
             lines.append(f"Plan    : {result.get('rebase_plan', '')}")
+        if "message_repair_plan" in result:
+            lines.append(f"Plan    : {result.get('message_repair_plan', '')}")
         if "plan_path" in result:
             lines.append(f"Review  : {result.get('plan_path', '')}")
         if "rag_candidate" in result:
@@ -1979,10 +2142,19 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
         if "rebase_replay_package" in result:
             lines.append(f"Package : {result.get('rebase_replay_package', '')}")
             lines.append(f"Targets : {result.get('candidate_count', 0)} candidate(s)")
+        if "message_repair_package" in result:
+            lines.append(f"Package : {result.get('message_repair_package', '')}")
+            lines.append(f"Targets : {result.get('candidate_count', 0)} candidate(s)")
         if "report_path" in result:
             lines.append(f"Report  : {result.get('report_path', '')}")
         if "mapping_path" in result:
             lines.append(f"SHA Map : {result.get('mapping_path', '')}")
+        if "new_tip" in result:
+            lines.append(f"New Tip : {result.get('new_tip', '')}")
+        if "remote_before" in result:
+            lines.append(f"Remote Before: {result.get('remote_before', '')}")
+        if "remote_after" in result:
+            lines.append(f"Remote After : {result.get('remote_after', '')}")
         if "action_id" in result:
             lines.append(f"Action  : {result.get('action_id', '')}")
         if "approved_count" in result:

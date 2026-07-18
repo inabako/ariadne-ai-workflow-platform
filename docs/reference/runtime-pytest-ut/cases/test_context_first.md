@@ -53,7 +53,7 @@ runtime/tests/test_context_first.py::test_context_first_require_passes_when_cont
 - 確認内容: pytest case `context first require passes when context exists` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:75`
+  - source: `runtime/tests/test_context_first.py:78`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -70,7 +70,7 @@ runtime/tests/test_context_first.py::test_context_first_loads_test_evidence_cont
 - 確認内容: pytest case `context first loads test evidence context` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:101`
+  - source: `runtime/tests/test_context_first.py:105`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -87,7 +87,7 @@ runtime/tests/test_context_first.py::test_context_first_parser_show_and_main_sta
 - 確認内容: pytest case `context first parser show and main status paths` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:126`
+  - source: `runtime/tests/test_context_first.py:130`
   - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `parsed_show`, `parsed_require`, `parsed_environment`
@@ -104,7 +104,7 @@ runtime/tests/test_context_first.py::test_context_first_require_environment_reje
 - 確認内容: pytest case `context first require environment rejects missing entry after status ready` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:183`
+  - source: `runtime/tests/test_context_first.py:187`
   - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -121,7 +121,7 @@ runtime/tests/test_context_first.py::test_context_first_require_environment_reje
 - 確認内容: pytest case `context first require environment rejects invalid selection document` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:214`
+  - source: `runtime/tests/test_context_first.py:218`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -138,7 +138,7 @@ runtime/tests/test_context_first.py::test_context_first_module_can_be_loaded_as_
 - 確認内容: pytest case `context first module can be loaded as script path` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:240`
+  - source: `runtime/tests/test_context_first.py:244`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -155,7 +155,7 @@ runtime/tests/test_context_first.py::test_requirement_intake_registers_context_m
 - 確認内容: pytest case `requirement intake registers context manifest` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:246`
+  - source: `runtime/tests/test_context_first.py:250`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `manifest`
@@ -172,7 +172,7 @@ runtime/tests/test_context_first.py::test_corrective_action_fix_init_registers_c
 - 確認内容: pytest case `corrective action fix init registers context manifest` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:278`
+  - source: `runtime/tests/test_context_first.py:282`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `manifest`
@@ -189,7 +189,7 @@ runtime/tests/test_context_first.py::test_vscode_environment_init_registers_cont
 - 確認内容: pytest case `vscode environment init registers context manifest` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:299`
+  - source: `runtime/tests/test_context_first.py:303`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `manifest`
@@ -206,7 +206,7 @@ runtime/tests/test_context_first.py::test_gui_mode_requires_environment_selectio
 - 確認内容: pytest case `gui mode requires environment selection before run` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:320`
+  - source: `runtime/tests/test_context_first.py:324`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -223,7 +223,7 @@ runtime/tests/test_context_first.py::test_gui_mode_registers_state_after_environ
 - 確認内容: pytest case `gui mode registers state after environment selection` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:342`
+  - source: `runtime/tests/test_context_first.py:346`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -240,7 +240,7 @@ runtime/tests/test_context_first.py::test_web_svg_layout_mode_rejects_gui_enviro
 - 確認内容: pytest case `web svg layout mode rejects gui environment selection` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:378`
+  - source: `runtime/tests/test_context_first.py:382`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -257,7 +257,7 @@ runtime/tests/test_context_first.py::test_context_first_require_environment_chec
 - 確認内容: pytest case `context first require environment checks expected environment` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:414`
+  - source: `runtime/tests/test_context_first.py:418`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -274,7 +274,7 @@ runtime/tests/test_context_first.py::test_context_first_require_environment_reje
 - 確認内容: pytest case `context first require environment rejects mismatch` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:439`
+  - source: `runtime/tests/test_context_first.py:443`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -291,7 +291,7 @@ runtime/tests/test_context_first.py::test_iac_handoff_context_registers_executio
 - 確認内容: pytest case `iac handoff context registers execution plan and handoff` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:466`
+  - source: `runtime/tests/test_context_first.py:470`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `execution_plan`, `handoff`
@@ -308,7 +308,7 @@ runtime/tests/test_context_first.py::test_iac_handoff_context_parser_paths_and_h
 - 確認内容: pytest case `iac handoff context parser paths and handoff defaults` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:498`
+  - source: `runtime/tests/test_context_first.py:502`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -325,7 +325,7 @@ runtime/tests/test_context_first.py::test_iac_handoff_context_reuses_existing_ha
 - 確認内容: pytest case `iac handoff context reuses existing handoff and rejects invalid existing` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:551`
+  - source: `runtime/tests/test_context_first.py:555`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -342,7 +342,7 @@ runtime/tests/test_context_first.py::test_iac_handoff_context_main_and_script_lo
 - 確認内容: pytest case `iac handoff context main and script load paths` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:581`
+  - source: `runtime/tests/test_context_first.py:585`
   - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -359,7 +359,7 @@ runtime/tests/test_context_first.py::test_dispatcher_context_init_registers_phas
 - 確認内容: pytest case `dispatcher context init registers phase3 contexts` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:607`
+  - source: `runtime/tests/test_context_first.py:611`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `tool_selection`
@@ -376,7 +376,7 @@ runtime/tests/test_context_first.py::test_dispatcher_context_init_preserves_exis
 - 確認内容: pytest case `dispatcher context init preserves existing context without force` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:655`
+  - source: `runtime/tests/test_context_first.py:659`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `existing`, `args`, `preserved`
@@ -393,7 +393,7 @@ runtime/tests/test_context_first.py::test_dispatcher_context_auto_selects_clear_
 - 確認内容: pytest case `dispatcher context auto selects clear workflow candidate` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:686`
+  - source: `runtime/tests/test_context_first.py:690`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `selection`
@@ -410,7 +410,7 @@ runtime/tests/test_context_first.py::test_dispatcher_context_auto_scores_tool_ca
 - 確認内容: pytest case `dispatcher context auto scores tool candidates` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:744`
+  - source: `runtime/tests/test_context_first.py:748`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `tool_selection`
@@ -427,7 +427,7 @@ runtime/tests/test_context_first.py::test_dispatcher_context_tool_candidate_huma
 - 確認内容: pytest case `dispatcher context tool candidate human check for docker` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:828`
+  - source: `runtime/tests/test_context_first.py:832`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `tool_selection`
@@ -444,7 +444,7 @@ runtime/tests/test_context_first.py::test_rag_build_registers_pipeline_context
 - 確認内容: pytest case `rag build registers pipeline context` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:898`
+  - source: `runtime/tests/test_context_first.py:902`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `artifact`
@@ -461,7 +461,7 @@ runtime/tests/test_context_first.py::test_corrective_action_report_registers_rep
 - 確認内容: pytest case `corrective action report registers report context` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:943`
+  - source: `runtime/tests/test_context_first.py:947`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `context`
@@ -478,7 +478,7 @@ runtime/tests/test_context_first.py::test_corrective_action_fix_prefers_manifest
 - 確認内容: pytest case `corrective action fix prefers manifest report when argument missing` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:995`
+  - source: `runtime/tests/test_context_first.py:999`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `fix_context`
@@ -495,7 +495,7 @@ runtime/tests/test_context_first.py::test_docs_sync_registers_manifest_contexts
 - 確認内容: pytest case `docs sync registers manifest contexts` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:1036`
+  - source: `runtime/tests/test_context_first.py:1040`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -512,7 +512,7 @@ runtime/tests/test_context_first.py::test_docs_sync_analysis_requires_scm_state_
 - 確認内容: pytest case `docs sync analysis requires scm state for new work` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:1070`
+  - source: `runtime/tests/test_context_first.py:1074`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -529,7 +529,7 @@ runtime/tests/test_context_first.py::test_github_knowledge_registers_tool_select
 - 確認内容: pytest case `github knowledge registers tool selection and gate` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:1096`
+  - source: `runtime/tests/test_context_first.py:1100`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `gate`, `tool_selection`
@@ -546,7 +546,7 @@ runtime/tests/test_context_first.py::test_github_knowledge_sync_plan_requires_mu
 - 確認内容: pytest case `github knowledge sync plan requires mutation gate` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:1122`
+  - source: `runtime/tests/test_context_first.py:1126`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -563,7 +563,7 @@ runtime/tests/test_context_first.py::test_knowledge_capture_prefers_manifest_con
 - 確認内容: pytest case `knowledge capture prefers manifest context then records resolution` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:1160`
+  - source: `runtime/tests/test_context_first.py:1164`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -580,7 +580,7 @@ runtime/tests/test_context_first.py::test_knowledge_capture_requires_manifest_sc
 - 確認内容: pytest case `knowledge capture requires manifest scm state for active work` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_context_first.py:1205`
+  - source: `runtime/tests/test_context_first.py:1209`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`

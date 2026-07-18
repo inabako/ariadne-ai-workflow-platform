@@ -512,7 +512,7 @@ runtime/tests/test_preflight.py::test_main_returns_two_when_required_check_missi
 - 確認内容: pytest case `main returns two when required check missing` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:749`
+  - source: `runtime/tests/test_preflight.py:751`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `output`
@@ -529,7 +529,7 @@ runtime/tests/test_preflight.py::test_main_runs_install_after_human_approval_and
 - 確認内容: pytest case `main runs install after human approval and module script load` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:775`
+  - source: `runtime/tests/test_preflight.py:780`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `output`

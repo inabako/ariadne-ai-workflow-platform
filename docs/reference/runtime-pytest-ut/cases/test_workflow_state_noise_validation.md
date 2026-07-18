@@ -294,7 +294,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_validate_output_lang
   - source: `runtime/tests/test_workflow_state_noise_validation.py:362`
   - fixture/arg: `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+  - inline input: `json_output`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
 #### RT-UT-CASE-559
@@ -308,7 +308,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_validate_output_lang
 - 確認内容: pytest case `validate output language main prints absolute external path and script load` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_workflow_state_noise_validation.py:392`
+  - source: `runtime/tests/test_workflow_state_noise_validation.py:409`
   - fixture/arg: `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -325,7 +325,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_validate_output_lang
 - 確認内容: pytest case `validate output language main reports ok for japanese dominant` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_workflow_state_noise_validation.py:425`
+  - source: `runtime/tests/test_workflow_state_noise_validation.py:442`
   - fixture/arg: `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -342,7 +342,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_validate_vscode_work
 - 確認内容: pytest case `validate vscode workspace accepts utf8 sig json` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_workflow_state_noise_validation.py:441`
+  - source: `runtime/tests/test_workflow_state_noise_validation.py:458`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -359,7 +359,7 @@ runtime/tests/test_workflow_state_noise_validation.py::test_validate_vscode_work
 - 確認内容: pytest case `validate vscode workspace rejects invalid json` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_workflow_state_noise_validation.py:450`
+  - source: `runtime/tests/test_workflow_state_noise_validation.py:467`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル

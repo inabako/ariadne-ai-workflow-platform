@@ -226,7 +226,7 @@ runtime/tests/test_rag_artifact_migration.py::test_standardize_report_names_rena
   - source: `runtime/tests/test_rag_artifact_migration.py:469`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: `args`
+  - inline input: `source_root`, `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
 #### RT-UT-CASE-285
@@ -240,7 +240,7 @@ runtime/tests/test_rag_artifact_migration.py::test_standardize_report_names_skip
 - 確認内容: pytest case `standardize report names skips already standard and readme` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_artifact_migration.py:511`
+  - source: `runtime/tests/test_rag_artifact_migration.py:512`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -257,7 +257,7 @@ runtime/tests/test_rag_artifact_migration.py::test_standardize_report_names_reje
 - 確認内容: pytest case `standardize report names rejects source dir outside repo` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_artifact_migration.py:533`
+  - source: `runtime/tests/test_rag_artifact_migration.py:534`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -274,7 +274,7 @@ runtime/tests/test_rag_artifact_migration.py::test_standardize_report_names_pars
 - 確認内容: pytest case `standardize report names parser and helper fallbacks` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_artifact_migration.py:548`
+  - source: `runtime/tests/test_rag_artifact_migration.py:549`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -291,7 +291,7 @@ runtime/tests/test_rag_artifact_migration.py::test_standardize_report_names_miss
 - 確認内容: pytest case `standardize report names missing dir and target collision` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_artifact_migration.py:607`
+  - source: `runtime/tests/test_rag_artifact_migration.py:608`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -308,10 +308,10 @@ runtime/tests/test_rag_artifact_migration.py::test_standardize_report_names_repl
 - 確認内容: pytest case `standardize report names replace text references updates supported files` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_artifact_migration.py:633`
+  - source: `runtime/tests/test_rag_artifact_migration.py:634`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: `old_rel`, `new_rel`, `files`
+  - inline input: `source_root`, `files`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
 #### RT-UT-CASE-290
@@ -325,7 +325,7 @@ runtime/tests/test_rag_artifact_migration.py::test_standardize_report_names_main
 - 確認内容: pytest case `standardize report names main paths` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_artifact_migration.py:668`
+  - source: `runtime/tests/test_rag_artifact_migration.py:670`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル

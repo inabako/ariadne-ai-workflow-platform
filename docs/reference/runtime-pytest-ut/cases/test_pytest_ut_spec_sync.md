@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 20 |
+| cases | 21 |
 
 ## ケース一覧
 
@@ -229,6 +229,22 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_check_spec_reads_split_case_file
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、UT仕様書とpytest実体の同期検査、入力値生成、Context First manifest登録が仕様どおりに確認される。
 
+#### RT-UT-CASE-264A
+
+- pytest node id:
+
+```text
+runtime/tests/test_pytest_ut_spec_sync.py::test_check_spec_accepts_ascii_case_field_labels
+```
+
+- Confirm: pytest UT spec sync accepts ASCII field labels for encoding-safe case additions.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_pytest_ut_spec_sync.py:350`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- Expected: check result is `ok` and confirm/input/expected counts are each 1.
 #### RT-UT-CASE-265
 
 - pytest node id:
@@ -240,7 +256,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_main_fix_inputs_and_check_json_o
 - 確認内容: pytest case `main fix inputs and check json output` に対応するUT仕様書とpytest実体の同期チェック、入力値抽出、差分検知、Context First manifest接続の単体振る舞いを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_pytest_ut_spec_sync.py:350`
+  - source: `runtime/tests/test_pytest_ut_spec_sync.py:379`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `payload`
@@ -257,7 +273,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_main_fix_inputs_updates_split_ca
 - 確認内容: pytest case `main fix inputs updates split case files` に対応するUT仕様書とpytest実体の同期チェック、入力値抽出、差分検知、Context First manifest接続の単体振る舞いを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_pytest_ut_spec_sync.py:390`
+  - source: `runtime/tests/test_pytest_ut_spec_sync.py:419`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `payload`, `updated`
@@ -274,7 +290,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_defensive_specimen_default_paths
 - 確認内容: pytest case `defensive specimen default paths and register context requires work dir` records defensive specimen for runtime observability, doctor, UT spec sync, CLI output, or error boundary behavior.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_pytest_ut_spec_sync.py:433`
+  - source: `runtime/tests/test_pytest_ut_spec_sync.py:462`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -291,7 +307,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_report_payload_and_context_first
 - 確認内容: pytest case `report payload and context first registration` に対応するUT仕様書とpytest実体の同期チェック、入力値抽出、差分検知、Context First manifest接続の単体振る舞いを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_pytest_ut_spec_sync.py:451`
+  - source: `runtime/tests/test_pytest_ut_spec_sync.py:480`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `check_result`, `payload`, `saved`
@@ -308,7 +324,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_defensive_specimen_main_uses_def
 - 確認内容: pytest case `defensive specimen main uses default report paths when registering context` records defensive specimen for runtime observability, doctor, UT spec sync, CLI output, or error boundary behavior.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_pytest_ut_spec_sync.py:498`
+  - source: `runtime/tests/test_pytest_ut_spec_sync.py:527`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `output`
@@ -325,7 +341,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_defensive_specimen_main_writes_r
 - 確認内容: pytest case `defensive specimen main writes report without context registration` records defensive specimen for runtime observability, doctor, UT spec sync, CLI output, or error boundary behavior.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_pytest_ut_spec_sync.py:554`
+  - source: `runtime/tests/test_pytest_ut_spec_sync.py:583`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `output`
@@ -342,7 +358,7 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_main_check_writes_report_and_reg
 - 確認内容: pytest case `main check writes report and registers context` に対応するUT仕様書とpytest実体の同期チェック、入力値抽出、差分検知、Context First manifest接続の単体振る舞いを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_pytest_ut_spec_sync.py:585`
+  - source: `runtime/tests/test_pytest_ut_spec_sync.py:614`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `output`, `manifest`

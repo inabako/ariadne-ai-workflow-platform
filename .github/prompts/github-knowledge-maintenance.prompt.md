@@ -101,7 +101,22 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
   --work-id "<work-id>"
 ```
 
-Execute approved GitHub sync action:
+Create the OK / NG review checklist for Issue / PR / comment repair actions:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge sync-review-plan `
+  --work-id "<work-id>"
+```
+
+Ingest the checked review plan through ctl:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge sync-review-intake `
+  --work-id "<work-id>" `
+  --human-check approved
+```
+
+Execute one reviewed and approved GitHub sync action:
 
 ```powershell
 aiwfctl github-knowledge sync-apply `
@@ -138,6 +153,56 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
   --package-path "work/<work-id>/context/rebase-replay-package.json" `
   --human-check approved
 ```
+
+If the replay is already verified and only the remote reflection remains, do not regenerate the package or hand-edit workflow JSON. Use the push-only runtime:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge publish-verified-replay `
+  --work-id "<work-id>" `
+  --target-branch "<branch>" `
+  --expected-remote-sha "<approved-remote-sha>" `
+  --human-check approved
+```
+
+This command consumes the latest unpublished verified replay execution, checks tree equality and the exact remote SHA, then publishes the verified `new_tip` with `force-with-lease`.
+
+After approved rebase repair is verified, run commit message/body repair before GitHub sync when weak semantic subjects remain:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge message-repair-plan `
+  --work-id "<work-id>" `
+  --source-ref "origin/<branch>"
+```
+
+Ingest the single OK / NG checklist:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge message-review-intake `
+  --work-id "<work-id>" `
+  --human-check approved
+```
+
+Generate the tree-preserving message repair package:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge message-repair-package `
+  --work-id "<work-id>" `
+  --target-branch "<branch>" `
+  --source-ref "origin/<branch>" `
+  --expected-remote-sha "<remote-sha>"
+```
+
+Execute the package through the existing replay apply runtime:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge rebase-apply `
+  --work-id "<work-id>" `
+  --package-path "work/<work-id>/context/message-repair-package.json" `
+  --human-check approved `
+  --push
+```
+
+Message repair must not change the final tree. The runtime records before/after SHA mapping and verifies repaired subjects with `git log --format="%H %s"` before GitHub sync may continue.
 
 Create RAG candidate:
 
@@ -181,11 +246,13 @@ Schema:
 8. Generate a `rebase-plan` execution report for any high-risk small rebase candidate.
 9. Ingest the reviewed OK / NG checklist with `aiwfctl github-knowledge rebase-review-intake --human-check approved`; do not hand-edit `approval_status` or `repair_goal`.
 10. Generate `rebase-replay-package.json` only with `aiwfctl github-knowledge rebase-package` from candidates whose `approval_status: approved`; do not hand-write replay JSON or generate ad hoc Python helpers under `work/<work-id>/context/`.
-11. Execute existing commit message/body rewrite or small rebase only when the high-risk Git rewrite review plan is explicitly approved and the target candidate has `approval_status: approved`.
-12. Generate an approval-gated GitHub documentation sync plan only after rebase candidates are resolved.
-13. Execute only approved GitHub CLI/API updates through `github-sync-apply` / `aiwfctl github-knowledge sync-apply`.
-14. Generate Knowledge DB and RAG candidates.
-15. Publish RAG candidates only after human approval.
+11. Execute approved small rebase packages with `rebase-apply` and verify before/after SHA mapping.
+12. Execute existing commit message/body rewrite through `message-repair-plan`, `message-review-intake`, `message-repair-package`, and `rebase-apply` only when the high-risk Git rewrite review plan is explicitly approved and the target candidate has `approval_status: approved`.
+13. Generate an approval-gated GitHub documentation sync plan only after rebase and message repair candidates are resolved.
+14. Generate and ingest the `sync-review-plan` OK / NG checklist before any Issue / PR / comment repair execution.
+15. Execute only reviewed and approved GitHub CLI/API updates through `github-sync-apply` / `aiwfctl github-knowledge sync-apply`.
+16. Generate Knowledge DB and RAG candidates.
+17. Publish RAG candidates only after human approval.
 
 ## Guardrails
 
@@ -194,15 +261,18 @@ Schema:
 - Existing commit message/body rewrite requires explicit item-level human approval, before/after SHA mapping, rollback plan, and reviewed force-push command when needed.
 - 1-3 file commit leakage rebase requires detection, `rebase-plan`, item-level human approval, before/after SHA mapping, rollback plan, and verification commands.
 - Approved small rebase packages must be generated by `aiwfctl github-knowledge rebase-package`; do not hand-write replay JSON or create temporary `*.py` helpers in `work/<work-id>/context/`.
+- Approved message rewrite packages must be generated by `aiwfctl github-knowledge message-repair-package` and executed by `rebase-apply`; do not amend commits manually.
 - Use the `rebase-plan` legend to resolve legitimate detected diffs as `keep-with-evidence` or false positives as `no-rewrite`; do not leave them pending.
 - Run rebase maintenance before GitHub sync when candidates exist. If no rebase candidates are detected, GitHub sync may proceed after Human Check.
 - Do not run `github-sync-apply` while unresolved `history_rewrite_candidates` remain.
+- Do not run `github-sync-apply` while pending or approved `message_repair_candidates` remain unverified.
 - Do not mark rebase maintenance complete by attaching a new Issue/message to a useless commit. Completion requires absorb/split/drop/no-rewrite/keep-with-evidence disposition and reviewed evidence.
 - Do not accept body-only repairs when the GitHub commit-list subject remains vague.
 - Avoid weak semantic subjects such as "対応", "修正", "更新", file-name-only subjects, or repository-name-only scopes when source evidence supports a more precise scope.
 - Prefer GitHub CLI/API; clone only after explicit human approval.
 - Do not mutate GitHub from a free-form summary. Update `github-knowledge-analysis.json` first.
 - Do not execute `gh issue edit`, `gh issue comment`, `gh pr edit`, `gh pr comment`, or `gh api` mutation commands without item-level human approval.
+- Do not mark `github_sync_actions` approved by hand; use `github-sync-review-intake` to record `human_review_decision: OK` and `human_review_source`.
 - Do not manually run approved GitHub sync actions outside ctl/runtime. Use `github-sync-apply` so the execution result is written back to analysis JSON.
 - Do not execute `git rebase`, `git commit --amend`, or force push without item-level human approval.
 - Do not run RAG publication without explicit human approval.

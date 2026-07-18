@@ -64,6 +64,22 @@
       "type": "array",
       "items": { "$ref": "#/$defs/history_rewrite_candidate" }
     },
+    "message_repair_candidates": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/message_repair_candidate" }
+    },
+    "message_repair_plans": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "message_review_intakes": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "message_repair_packages": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
     "rebase_replay_executions": {
       "type": "array",
       "items": { "$ref": "#/$defs/rebase_replay_execution" }
@@ -72,9 +88,21 @@
       "type": "array",
       "items": { "$ref": "#/$defs/rebase_replay_package" }
     },
+    "rebase_replay_publications": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rebase_replay_publication" }
+    },
     "github_sync_actions": {
       "type": "array",
       "items": { "$ref": "#/$defs/github_sync_action" }
+    },
+    "github_sync_review_plans": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "github_sync_review_intakes": {
+      "type": "array",
+      "items": { "type": "object" }
     },
     "knowledge_db_candidates": {
       "type": "array",
@@ -273,6 +301,44 @@
         "allow_push": { "type": "boolean" }
       }
     },
+    "message_repair_candidate": {
+      "type": "object",
+      "required": ["id", "commit", "current_subject", "proposed_subject", "proposed_commit_message", "approval_status"],
+      "properties": {
+        "id": { "type": "string" },
+        "commit": { "type": "string" },
+        "current_subject": { "type": "string" },
+        "proposed_subject": { "type": "string" },
+        "proposed_commit_message": { "type": "string" },
+        "file_paths": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "reason": { "type": "string" },
+        "approval_status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"]
+        },
+        "execution_status": {
+          "type": "string",
+          "enum": ["pending", "dry-run", "applied", "verified", "pushed", "failed", "verification-failed"]
+        },
+        "verification_commands": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "replay_package_ref": { "type": "string" },
+        "before_after_sha_mapping": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "human_review_decision": { "type": "string" },
+        "human_reviewed_at": { "type": "string" },
+        "human_review_source": { "type": "string" },
+        "executed_at": { "type": "string" },
+        "execution_result": { "type": "object" }
+      }
+    },
     "rebase_replay_execution": {
       "type": "object",
       "properties": {
@@ -296,7 +362,29 @@
           "type": "array",
           "items": { "type": "object" }
         },
+        "push_result": {
+          "type": ["object", "null"],
+          "properties": {
+            "command": { "type": "string" },
+            "stdout": { "type": "string" },
+            "remote_after": { "type": "string" }
+          }
+        },
         "package_path": { "type": "string" }
+      }
+    },
+    "rebase_replay_publication": {
+      "type": "object",
+      "required": ["published_at", "target_branch", "remote", "expected_remote_sha", "new_tip", "remote_before", "remote_after", "report_path"],
+      "properties": {
+        "published_at": { "type": "string" },
+        "target_branch": { "type": "string" },
+        "remote": { "type": "string" },
+        "expected_remote_sha": { "type": "string" },
+        "new_tip": { "type": "string" },
+        "remote_before": { "type": "string" },
+        "remote_after": { "type": "string" },
+        "report_path": { "type": "string" }
       }
     },
     "github_sync_action": {
@@ -320,6 +408,13 @@
           "type": "string",
           "enum": ["pending", "approved", "rejected"]
         },
+        "human_review_decision": {
+          "type": "string",
+          "enum": ["OK", "NG"]
+        },
+        "human_reviewed_at": { "type": "string" },
+        "human_review_source": { "type": "string" },
+        "rejection_reason": { "type": "string" },
         "execution_status": {
           "type": "string",
           "enum": ["pending", "dry-run", "applied", "failed"]

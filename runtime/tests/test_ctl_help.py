@@ -22,6 +22,22 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     args = parser.parse_args(["github-knowledge", "rebase-review-intake", "--work-id", "w", "--human-check", "approved"])
     assert args.github_knowledge_command == "rebase-review-intake"
     assert args.human_check == "approved"
+    publish_args = parser.parse_args(
+        [
+            "github-knowledge",
+            "publish-verified-replay",
+            "--work-id",
+            "w",
+            "--target-branch",
+            "dev-bk",
+            "--expected-remote-sha",
+            "abc123",
+            "--human-check",
+            "approved",
+        ]
+    )
+    assert publish_args.github_knowledge_command == "publish-verified-replay"
+    assert publish_args.expected_remote_sha == "abc123"
     namespace = runpy.run_path(str(Path(ctl.__file__)))
     assert namespace["build_parser"]
 
@@ -319,14 +335,16 @@ def test_ctl_github_knowledge_sync_apply_dry_run_updates_analysis(tmp_path: Path
                 "repair_proposals": [],
                 "history_rewrite_candidates": [],
                 "github_sync_actions": [
-                    {
-                        "id": "SYNC-1",
-                        "target_type": "issue",
-                        "target_id": "1",
-                        "operation": "comment",
-                        "draft_command": "gh issue comment 1 --body-file note.md",
-                        "approval_status": "approved",
-                    }
+                        {
+                            "id": "SYNC-1",
+                            "target_type": "issue",
+                            "target_id": "1",
+                            "operation": "comment",
+                            "draft_command": "gh issue comment 1 --body-file note.md",
+                            "approval_status": "approved",
+                            "human_review_decision": "OK",
+                            "human_review_source": "work/github-knowledge-repo-recent/process-report/sync-review.md",
+                        }
                 ],
                 "knowledge_db_candidates": [],
                 "rag_candidates": [],
@@ -494,6 +512,30 @@ def test_ctl_github_knowledge_rebase_package_and_apply_dry_run(tmp_path: Path) -
     assert updated["history_rewrite_candidates"][0]["replay_package_ref"] == (
         "work/github-knowledge-repo-recent/context/rebase-replay-package.json"
     )
+    metrics_context_path = context_dir / "runtime-metrics.json"
+    metrics_evidence_path = root / "work" / "github-knowledge-repo-recent" / "test-evidence" / "runtime-metrics.json"
+    assert metrics_context_path.exists()
+    assert metrics_evidence_path.exists()
+    metrics = json.loads(metrics_context_path.read_text(encoding="utf-8"))
+    assert metrics["workflow_id"] == "github-knowledge-repo-recent"
+    assert metrics["workflow_name"] == "/github-knowledge-maintenance"
+    assert metrics["events"][0]["event"] == "workflow_started"
+    assert metrics["events"][-1]["event"] == "workflow_completed"
+    assert metrics["events"][-1]["metadata"]["ctl_command"] == "github-knowledge rebase-apply"
+    manifest = json.loads((context_dir / "context-manifest.json").read_text(encoding="utf-8"))
+    runtime_metrics_contexts = [item for item in manifest["contexts"] if item["type"] == "runtime-metrics"]
+    assert runtime_metrics_contexts == [
+        {
+            "type": "runtime-metrics",
+            "path": "work/github-knowledge-repo-recent/context/runtime-metrics.json",
+            "required": False,
+            "generated_by": "runtime-observability",
+            "owner": "workflow",
+            "schema": ".github/schemas/runtime-metrics.schema.json",
+            "status": "available",
+            "updated_at": runtime_metrics_contexts[0]["updated_at"],
+        }
+    ]
 
 
 def test_ctl_human_gate_check_blocks_until_approved(tmp_path: Path) -> None:

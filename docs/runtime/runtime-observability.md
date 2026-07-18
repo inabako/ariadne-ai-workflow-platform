@@ -46,6 +46,20 @@ work/<work-id>/context/runtime-metrics.json
 
 `context/runtime-metrics.json` は Context First manifest に `runtime-metrics` として登録できます。後続workflowは、runtimeの実行時間、token見積もり、context量、Human Check、error数を読み取れます。
 
+## aiwfctl workflow入口
+
+`aiwfctl github-knowledge <subcommand> --work-id <work-id>` は Runtime Observability を自動で記録します。
+成功時、Human Check停止時、例外停止時のいずれでも、可能な範囲で次の出力を残します。
+
+```text
+runtime/logs/runtime-metrics-YYYYMM.jsonl
+work/<work-id>/test-evidence/runtime-metrics.json
+work/<work-id>/context/runtime-metrics.json
+work/<work-id>/context/context-manifest.json
+```
+
+`context-manifest.json` には `runtime-metrics` として登録します。以降の本線workflowは、doctor gate や repair 復帰後もこの context を読み、同じgateから再開した実行結果を追跡できます。
+
 ## TokenとCostの扱い
 
 正確な token / cost が外部から渡される場合は、その値を記録します。

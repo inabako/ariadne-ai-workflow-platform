@@ -240,7 +240,7 @@ runtime/tests/test_close_archive.py::test_prune_execute_removes_targets_and_refu
 - 確認内容: pytest case `prune execute removes targets and refuses missing reports` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_close_archive.py:528`
+  - source: `runtime/tests/test_close_archive.py:532`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -257,7 +257,7 @@ runtime/tests/test_close_archive.py::test_prune_execute_skips_disappeared_target
 - 確認内容: pytest case `prune execute skips disappeared target` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_close_archive.py:578`
+  - source: `runtime/tests/test_close_archive.py:584`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -274,7 +274,7 @@ runtime/tests/test_close_archive.py::test_remove_helpers_retry_permission_errors
 - 確認内容: pytest case `remove helpers retry permission errors` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_close_archive.py:606`
+  - source: `runtime/tests/test_close_archive.py:612`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `calls`, `rmtree_calls`

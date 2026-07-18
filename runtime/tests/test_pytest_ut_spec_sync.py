@@ -347,6 +347,35 @@ runtime/tests/test_sample.py::test_example
     assert sync.check_spec(spec_path, tmp_path / "runtime")["status"] == "ok"
 
 
+def test_check_spec_accepts_ascii_case_field_labels(monkeypatch, tmp_path: Path) -> None:
+    spec_path = tmp_path / "spec.md"
+    spec_path.write_text(
+        """# Spec
+#### RT-UT-CASE-001
+
+- pytest node id:
+
+```text
+runtime/tests/test_sample.py::test_example
+```
+
+- Confirm: sample
+- Input:
+  - pytest node: runtime pytest node id
+- Expected: pass
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(sync, "collect_pytest_nodes", lambda runtime_root: ["runtime/tests/test_sample.py::test_example"])
+
+    result = sync.check_spec(spec_path, tmp_path / "runtime")
+
+    assert result["status"] == "ok"
+    assert result["confirm_count"] == 1
+    assert result["input_count"] == 1
+    assert result["expected_count"] == 1
+
+
 def test_main_fix_inputs_and_check_json_output(monkeypatch, tmp_path: Path, capsys) -> None:
     runtime_root = tmp_path / "runtime"
     test_dir = runtime_root / "tests"

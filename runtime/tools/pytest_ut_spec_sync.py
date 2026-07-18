@@ -27,6 +27,9 @@ INPUT_PREFIX = "- 入力値:"
 EXPECTED_PREFIX = "- 期待結果:"
 TEXT_FENCE = "```text"
 REPORT_SCHEMA = PYTEST_UT_SPEC_SYNC_REPORT_SCHEMA
+CONFIRM_PREFIXES = (CONFIRM_PREFIX, "- Confirm:")
+INPUT_PREFIXES = (INPUT_PREFIX, "- Input:")
+EXPECTED_PREFIXES = (EXPECTED_PREFIX, "- Expected:")
 
 FIXTURE_MEANINGS = {
     "tmp_path": "temporary filesystem",
@@ -129,6 +132,15 @@ def spec_part_paths(spec_path: Path) -> list[Path]:
 
 def read_spec_text(spec_path: Path) -> str:
     return "\n".join(path.read_text(encoding="utf-8-sig") for path in spec_part_paths(spec_path))
+
+
+def count_any_prefix(text: str, prefixes: Iterable[str]) -> int:
+    return sum(text.count(prefix) for prefix in prefixes)
+
+
+def find_any_prefix(text: str, prefixes: Iterable[str]) -> int:
+    indexes = [index for prefix in prefixes if (index := text.find(prefix)) != -1]
+    return min(indexes) if indexes else -1
 
 
 def split_node(node_id: str) -> tuple[Path, str, str]:
@@ -296,11 +308,11 @@ def replace_input_sections(spec_text: str, runtime_root: Path) -> tuple[str, int
                 skipping_input = False
             else:
                 continue
-        if line.startswith(INPUT_PREFIX):
+        if any(line.startswith(prefix) for prefix in INPUT_PREFIXES):
             skipping_input = True
             continue
         output.append(line)
-        if current_case and line.startswith(CONFIRM_PREFIX):
+        if current_case and any(line.startswith(prefix) for prefix in CONFIRM_PREFIXES):
             node_id = cases.get(current_case)
             if node_id:
                 output.extend(input_lines_for_node(runtime_root, node_id))
@@ -317,15 +329,15 @@ def check_spec(spec_path: Path, runtime_root: Path) -> dict[str, object]:
     stale_in_spec = [node for node in spec_nodes if node not in pytest_nodes]
     order_matches = spec_nodes == pytest_nodes
 
-    input_count = spec_text.count(INPUT_PREFIX)
-    confirm_count = spec_text.count(CONFIRM_PREFIX)
-    expected_count = spec_text.count(EXPECTED_PREFIX)
+    input_count = count_any_prefix(spec_text, INPUT_PREFIXES)
+    confirm_count = count_any_prefix(spec_text, CONFIRM_PREFIXES)
+    expected_count = count_any_prefix(spec_text, EXPECTED_PREFIXES)
     bad_position: list[str] = []
     for block in spec_text.split(f"\n{CASE_HEADING_PREFIX}")[1:]:
         case_id = "RT-UT-CASE-" + block.split("\n", 1)[0].strip().split("RT-UT-CASE-", 1)[-1]
-        confirm_index = block.find(CONFIRM_PREFIX)
-        input_index = block.find(INPUT_PREFIX)
-        expected_index = block.find(EXPECTED_PREFIX)
+        confirm_index = find_any_prefix(block, CONFIRM_PREFIXES)
+        input_index = find_any_prefix(block, INPUT_PREFIXES)
+        expected_index = find_any_prefix(block, EXPECTED_PREFIXES)
         if not (confirm_index != -1 and input_index != -1 and expected_index != -1 and confirm_index < input_index < expected_index):
             bad_position.append(case_id)
 
