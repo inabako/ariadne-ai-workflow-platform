@@ -13,6 +13,7 @@ Respond to the user in Japanese by default. Human-facing reports, docs, reviews,
 
 Use `aiwfctl` / `runtime/ctl.py` as the official runtime entrypoint for this workflow.
 
+- Follow `.github/shared/runtime-entrypoint-policy.md`.
 - Do not directly invoke `runtime/workflow/github_knowledge_maintenance.py`, `runtime/workflow/context_first.py`, `runtime/workflow/human_gate_policy.py`, `runtime/workflow/self_improvement.py`, or `runtime/workflow/close_archive.py` during normal workflow execution.
 - Treat `runtime/workflow/*.py` files as internal implementation modules unless a runtime developer is testing that module itself.
 - Context First checks must go through `aiwfctl context ...`.
@@ -21,7 +22,7 @@ Use `aiwfctl` / `runtime/ctl.py` as the official runtime entrypoint for this wor
 - Close archive preparation, audit, and prune must go through `aiwfctl close-archive ...`.
 - Self-improvement feedback generated from this workflow must go through `aiwfctl self-improvement ...`.
 
-If a needed operation is not exposed through `aiwfctl`, stop and improve `runtime/ctl.py` first instead of adding a new direct runtime invocation to the workflow instructions.
+If a needed operation is not exposed through `aiwfctl`, stop the current operation and create a self-improvement Feedback report first. Do not silently add `runtime/ctl.py` commands inside the active workflow; wait for Human Review / accepted self-improvement flow.
 
 ## Purpose
 

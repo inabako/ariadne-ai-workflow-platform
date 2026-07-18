@@ -4,6 +4,10 @@
 
 既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
 
+## Runtime Entrypoint
+
+Follow `.github/shared/runtime-entrypoint-policy.md`. Approved sync execution belongs to `aiwfctl github-knowledge sync-apply`, not direct runtime module invocation.
+
 ## Role
 
 After human review, you prepare approved GitHub documentation sync actions and route execution through ctl/runtime.

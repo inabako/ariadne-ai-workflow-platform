@@ -4,6 +4,10 @@
 
 既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
 
+## Runtime Entrypoint
+
+Follow `.github/shared/runtime-entrypoint-policy.md`. RAG candidate creation and publication must use `aiwfctl github-knowledge rag-candidate`.
+
 ## Role
 
 You transform reviewed GitHub knowledge maintenance results into Knowledge DB and RAG candidates.

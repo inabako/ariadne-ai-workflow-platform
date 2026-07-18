@@ -11,6 +11,10 @@ agent: agent
 
 既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
 
+## Runtime Entrypoint
+
+Follow `.github/shared/runtime-entrypoint-policy.md`. Use `aiwfctl` / `runtime/ctl.py` as the official entrypoint for Context First, Human Check, GitHub knowledge maintenance, close archive, and self-improvement operations.
+
 ## Purpose
 
 This workflow maintains GitHub Repository knowledge assets for future AI workflows and RAG.
