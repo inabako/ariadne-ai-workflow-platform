@@ -132,7 +132,7 @@ GitHub knowledge maintenance:
 
 ```powershell
 uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
-  --work-id github-knowledge-localty-system-robot-recent `
+  --work-id github/original/recent `
   --category github
 ```
 

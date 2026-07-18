@@ -52,6 +52,15 @@ Use the agents in this order:
 
 ## Runtime Helpers
 
+Default work folders are short and branch-scoped:
+
+```text
+work/github/<target-branch>/<scan-mode>/
+work/github/original/<scan-mode>/
+```
+
+Use `original` when no `--target-branch` is provided.
+
 Initialize:
 
 ```powershell

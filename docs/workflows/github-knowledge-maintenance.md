@@ -43,6 +43,16 @@ Repository URL
 
 ## Runtime
 
+Default work folders are:
+
+```text
+work/github/<target-branch>/<scan-mode>/
+work/github/original/<scan-mode>/
+```
+
+For example, branch-scoped work for `dev-bk-01` goes under `work/github/dev-bk-01/recent/`.
+If no `--target-branch` is provided, the original repository-level scan goes under `work/github/original/recent/`.
+
 Initialize:
 
 ```powershell

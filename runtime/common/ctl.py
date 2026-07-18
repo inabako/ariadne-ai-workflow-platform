@@ -1846,6 +1846,7 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 "GitHub Knowledge Maintenance\n\n"
                 "Usage:\n"
                 "  aiwfctl github-knowledge init --repository <owner/repo>\n"
+                "  default work folders: work/github/<target-branch>/<scan-mode> or work/github/original/<scan-mode>\n"
                 "  aiwfctl github-knowledge analysis-template --work-id <work-id>\n"
                 "  aiwfctl github-knowledge detect-rebase --work-id <work-id>\n"
                 "  aiwfctl github-knowledge repair-plan --work-id <work-id>\n"
@@ -1892,7 +1893,7 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
             "GitHub Knowledge Maintenance",
             "",
             f"Command : {github_knowledge_command}",
-            f"Work ID : {getattr(args, 'work_id', '')}",
+            f"Work ID : {result.get('work_id', getattr(args, 'work_id', ''))}",
         ]
         if "sync_plan" in result:
             lines.append(f"Plan    : {result.get('sync_plan', '')}")

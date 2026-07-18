@@ -66,7 +66,15 @@ Example:
 Primary work folder:
 
 ```text
-work/github-knowledge-<repository>-<mode>/
+work/github/<scope>/<mode>/
+```
+
+`<scope>` is the target branch name when `--target-branch` is provided. If no target branch is provided, use `original`.
+Examples:
+
+```text
+work/github/dev-bk-01/recent/
+work/github/original/recent/
 ```
 
 Primary artifacts:

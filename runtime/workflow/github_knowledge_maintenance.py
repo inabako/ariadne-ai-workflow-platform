@@ -289,10 +289,19 @@ def repository_name(repository: str, default_owner: str = "") -> str:
     return slugify(name)
 
 
-def default_work_id(repository: str, scan_mode: list[str], default_owner: str = "") -> str:
-    repo_name = repository_name(repository, default_owner)
+def default_work_scope(target_branch: str) -> str:
+    branch = target_branch.strip()
+    return slugify(branch) if branch else "original"
+
+
+def default_work_id(
+    repository: str,
+    scan_mode: list[str],
+    default_owner: str = "",
+    target_branch: str = "",
+) -> str:
     mode = "full" if "full" in scan_mode else scan_mode[0]
-    return f"github-knowledge-{repo_name}-{mode}"
+    return f"github/{default_work_scope(target_branch)}/{mode}"
 
 
 def rag_source_report_name(topic: str) -> str:
@@ -471,7 +480,12 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
     settings = load_env(repo_root)
     repository = normalize_repository_value(args.repository)
     repo_name = repository_name(repository, default_github_owner(settings))
-    work_id = args.work_id or default_work_id(repository, args.scan_mode, default_github_owner(settings))
+    work_id = args.work_id or default_work_id(
+        repository,
+        args.scan_mode,
+        default_github_owner(settings),
+        args.target_branch,
+    )
     work_dir = repo_root / "work" / work_id
     if work_dir.exists() and not args.reuse_existing:
         raise FileExistsError(
@@ -640,7 +654,7 @@ def default_analysis(work_dir: Path) -> dict[str, Any]:
     return {
         "schema_version": "1.0",
         "workflow": "github-knowledge-maintenance",
-        "work_id": work_dir.name,
+        "work_id": assumption_map.get("work_id", work_dir.name),
         "repository": context.get("project", {}).get("repository", ""),
         "target_branch": assumption_map.get("target_branch", ""),
         "scan_mode": [mode for mode in assumption_map.get("scan_mode", "recent").split(",") if mode],
@@ -701,6 +715,7 @@ def analysis_path_for(work_dir: Path, raw_path: str) -> Path:
 def register_artifact(repo_root: Path, work_dir: Path, artifact_id: str, title: str, path: Path, artifact_type: str) -> None:
     context = read_json(work_dir / "context" / "agent-context.json", default={}) or {}
     project_name = context.get("project", {}).get("name", work_dir.name)
+    work_id = default_analysis(work_dir).get("work_id", work_dir.name)
     index = load_artifact_index(work_dir, project_name, "github-knowledge-maintenance")
     now = utc_now_iso()
     upsert_artifact(
@@ -725,7 +740,7 @@ def register_artifact(repo_root: Path, work_dir: Path, artifact_id: str, title: 
         register_context(
             repo_root,
             work_dir,
-            work_id=work_dir.name,
+            work_id=str(work_id),
             context_type="github-knowledge-analysis",
             path=path,
             required=True,

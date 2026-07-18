@@ -178,15 +178,14 @@ def test_repository_name_and_default_work_id_variants() -> None:
     assert github_knowledge_maintenance.repository_name("C:/src/Robot App.git") == "Robot-App"
     assert (
         github_knowledge_maintenance.default_work_id("owner/repo", ["issue", "full"], default_owner="")
-        == "github-knowledge-repo-full"
+        == "github/original/full"
     )
     assert (
-        github_knowledge_maintenance.default_work_id("repo", ["pull-request"], default_owner="owner")
-        == "github-knowledge-repo-pull-request"
+        github_knowledge_maintenance.default_work_id("repo", ["pull-request"], default_owner="owner", target_branch="dev/bk-01")
+        == "github/dev-bk-01/pull-request"
     )
     report_name = github_knowledge_maintenance.rag_source_report_name("Repo Topic!")
     assert re.fullmatch(r"\d{14}_[A-Z0-9]{6}_Repo-Topic\.md", report_name)
-
 
 def test_init_work_rejects_existing_without_reuse_and_script_load(tmp_path: Path) -> None:
     repo_root, work_dir = make_work_dir(tmp_path, "github-knowledge-repo-recent")
@@ -208,6 +207,25 @@ def test_init_work_rejects_existing_without_reuse_and_script_load(tmp_path: Path
 
     namespace = runpy.run_path(str(Path(github_knowledge_maintenance.__file__)))
     assert namespace["build_parser"]
+
+    result = github_knowledge_maintenance.init_work(
+        argparse.Namespace(
+            command="init",
+            repository="owner/repo",
+            target_branch="dev-bk-01",
+            scan_mode=["recent"],
+            repair_mode="proposal",
+            rag_output=False,
+            work_id=None,
+            repo_root=str(repo_root),
+            reuse_existing=False,
+            intent_summary="",
+        )
+    )
+    assert result["work_id"] == "github/dev-bk-01/recent"
+    assert result["work_dir"] == "work/github/dev-bk-01/recent"
+    analysis = github_knowledge_maintenance.default_analysis(repo_root / "work" / "github" / "dev-bk-01" / "recent")
+    assert analysis["work_id"] == "github/dev-bk-01/recent"
 
 
 def test_gate_and_tool_selection_proposal_mode_do_not_require_human_check() -> None:
