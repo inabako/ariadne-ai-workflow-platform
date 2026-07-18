@@ -157,8 +157,10 @@ def test_build_parser_parses_every_subcommand() -> None:
 
     assert parser.parse_args(["init", "--repository", "owner/repo"]).command == "init"
     assert parser.parse_args(["analysis-template", "--work-id", "w"]).command == "analysis-template"
+    assert parser.parse_args(["artifact-integrity", "--work-id", "w"]).command == "artifact-integrity"
     assert parser.parse_args(["repair-plan", "--work-id", "w"]).command == "repair-plan"
     assert parser.parse_args(["detect-rebase-candidates", "--work-id", "w"]).command == "detect-rebase-candidates"
+    assert parser.parse_args(["detect-rebase-candidates", "--work-id", "w", "--all-history"]).all_history is True
     assert parser.parse_args(["rebase-plan", "--work-id", "w"]).command == "rebase-plan"
     assert parser.parse_args(["rebase-review-intake", "--work-id", "w"]).command == "rebase-review-intake"
     assert parser.parse_args(["rebase-apply", "--work-id", "w", "--candidate-id", "HISTORY-1"]).command == "rebase-apply"
@@ -531,6 +533,7 @@ def test_create_detect_rebase_candidates_writes_analysis(monkeypatch: pytest.Mon
             head="HEAD",
             max_commits=80,
             max_files=3,
+            all_history=False,
             append=False,
             repo_root=str(repo_root),
         )
@@ -538,7 +541,28 @@ def test_create_detect_rebase_candidates_writes_analysis(monkeypatch: pytest.Mon
 
     updated = json.loads(analysis_path.read_text(encoding="utf-8"))
     assert result["candidate_count"] == 1
+    assert result["base"] == "HEAD~30"
+    assert result["all_history"] is False
     assert updated["history_rewrite_candidates"] == detected
+
+    result = github_knowledge_maintenance.create_detect_rebase_candidates(
+        argparse.Namespace(
+            command="detect-rebase-candidates",
+            work_id=work_dir.name,
+            analysis_path="",
+            git_repo=str(repo_root),
+            base="HEAD~30",
+            head="HEAD",
+            max_commits=200,
+            max_files=3,
+            all_history=True,
+            append=False,
+            repo_root=str(repo_root),
+        )
+    )
+
+    assert result["base"] == ""
+    assert result["all_history"] is True
 
 
 def test_create_repair_plan_writes_output_and_registers_artifact(tmp_path: Path) -> None:
@@ -589,6 +613,68 @@ def test_create_rebase_plan_writes_output_and_registers_artifact(tmp_path: Path)
     assert "再承認を求めません" in rebase_plan
     artifact_index = json.loads((work_dir / "context" / "artifact-index.json").read_text(encoding="utf-8-sig"))
     assert any(item["id"] == "GITHUB-HISTORY-REBASE-PLAN" for item in artifact_index["artifacts"])
+
+
+def test_create_artifact_integrity_report_passes_for_valid_analysis_and_rebase_plan(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis_path = work_dir / "context" / "github-knowledge-analysis.json"
+    write_json(analysis_path, sample_analysis())
+    plan_path = work_dir / "process-report" / "github-history-rebase-plan-20260718_000000.md"
+    plan_path.parent.mkdir(parents=True, exist_ok=True)
+    plan_path.write_text("# Plan\n\n## 候補別 OK / NG チェックリスト\n", encoding="utf-8")
+
+    result = github_knowledge_maintenance.create_artifact_integrity_report(
+        argparse.Namespace(
+            command="artifact-integrity",
+            work_id=work_dir.name,
+            analysis_path="",
+            output="",
+            fail_on_finding=False,
+            repo_root=str(repo_root),
+        )
+    )
+
+    assert result["status"] == "pass"
+    assert result["findings"] == []
+    assert result["report_path"].endswith(".md")
+    assert result["report_json"].endswith(".json")
+    assert result["gate_restart"]["gate"] == "github-knowledge-artifact-integrity-gate"
+    assert result["gate_restart"]["next_on_pass"] == "return-to-calling-workflow-after-gate"
+    assert any("ok-ng-checklist-present" in item["content_signals"] for item in result["artifacts"])
+
+
+def test_create_artifact_integrity_report_fails_for_invalid_analysis_json(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis_path = work_dir / "context" / "github-knowledge-analysis.json"
+    analysis_path.write_text("{invalid", encoding="utf-8")
+
+    result = github_knowledge_maintenance.create_artifact_integrity_report(
+        argparse.Namespace(
+            command="artifact-integrity",
+            work_id=work_dir.name,
+            analysis_path="",
+            output="",
+            fail_on_finding=False,
+            repo_root=str(repo_root),
+        )
+    )
+
+    assert result["status"] == "fail"
+    assert any("json-parse-failed" in finding for finding in result["findings"])
+    assert result["gate_restart"]["repair_available"] is True
+    assert result["gate_restart"]["next_on_fail"] == "stay-at-gate"
+
+    with pytest.raises(RuntimeError, match="artifact integrity failed"):
+        github_knowledge_maintenance.create_artifact_integrity_report(
+            argparse.Namespace(
+                command="artifact-integrity",
+                work_id=work_dir.name,
+                analysis_path="",
+                output="",
+                fail_on_finding=True,
+                repo_root=str(repo_root),
+            )
+        )
 
 
 def test_create_rebase_review_intake_reads_ok_ng_checklist(tmp_path: Path) -> None:
@@ -1100,6 +1186,7 @@ def test_create_sync_apply_requires_approval_and_records_result(tmp_path: Path) 
     updated = json.loads((work_dir / "context" / "github-knowledge-analysis.json").read_text(encoding="utf-8"))
     updated_action = updated["github_sync_actions"][0]
     assert result["executed"] is False
+    assert result["gate_restart"]["gate"] == "github-knowledge-sync-apply-gate"
     assert updated_action["execution_status"] == "dry-run"
     assert updated_action["execution_result"]["skipped"] is True
 
@@ -1165,6 +1252,7 @@ def test_create_rag_candidate_writes_explicit_output_with_ready_gate(tmp_path: P
 
     assert result["published"] is False
     assert result["rag_candidate"] == "candidate.md"
+    assert result["gate_restart"]["gate"] == "github-knowledge-rag-candidate-gate"
     assert output_path.exists()
 
 

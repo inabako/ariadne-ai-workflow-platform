@@ -12,7 +12,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.common import gate_restart, find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.paths import (  # noqa: E402
     CHUNKS_INDEX,
     DUCKDB_DEFAULT_PATH,
@@ -153,6 +153,11 @@ def execution_plan_gate(repo_root: Path, args: argparse.Namespace, work_dir: Pat
             "human_check_required": False,
             "execution_plan": "",
             "reason": "work-id was not provided",
+            "gate_restart": gate_restart.build_status_gate_restart(
+                "rag-execution-plan-gate",
+                status="not-required",
+                restart_reason="rag-execution-plan",
+            ),
         }
     execution_plan = execution_plan_reference(repo_root, work_dir)
     if execution_plan:
@@ -161,6 +166,11 @@ def execution_plan_gate(repo_root: Path, args: argparse.Namespace, work_dir: Pat
             "human_check_required": False,
             "execution_plan": execution_plan,
             "reason": "",
+            "gate_restart": gate_restart.build_status_gate_restart(
+                "rag-execution-plan-gate",
+                status="ready",
+                restart_reason="rag-execution-plan",
+            ),
         }
     return {
         "status": "human-check-required",
@@ -170,6 +180,12 @@ def execution_plan_gate(repo_root: Path, args: argparse.Namespace, work_dir: Pat
         "human_check_reasons": [
             "Confirm the RAG query plan manually because execution-plan context is missing.",
         ],
+        "gate_restart": gate_restart.build_status_gate_restart(
+            "rag-execution-plan-gate",
+            status="human-check-required",
+            restart_reason="rag-execution-plan",
+            repair_command=f"aiwfctl context init --work-id {args.work_id} --workflow /rag-load",
+        ),
     }
 
 

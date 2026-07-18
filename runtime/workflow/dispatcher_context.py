@@ -11,7 +11,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import registry_store  # noqa: E402
+from runtime.common import gate_restart, registry_store  # noqa: E402
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.schemas import (  # noqa: E402
     EXECUTION_PLAN_SCHEMA,
@@ -54,6 +54,15 @@ def load_tool_candidate_registry(repo_root: Path) -> dict[str, Any]:
 def normalize_command(value: str) -> str:
     value = value.strip()
     return value if not value or value.startswith("/") else f"/{value}"
+
+
+def dispatcher_gate_restart(gate: str, status: str, *, repair_command: str = "") -> dict[str, Any]:
+    return gate_restart.build_status_gate_restart(
+        gate,
+        status=status,
+        restart_reason=gate,
+        repair_command=repair_command,
+    )
 
 
 def workflow_names(item: dict[str, Any]) -> list[str]:
@@ -175,7 +184,7 @@ def workflow_candidates(
     return sorted(candidates, key=lambda item: (-int(item["score"]), item["command"]))[:limit]
 
 
-def select_workflow_record(
+def _select_workflow_record_without_gate(
     registry: dict[str, Any],
     workflow: str,
     intent_summary: str,
@@ -247,6 +256,29 @@ def select_workflow_record(
         "candidates": candidates,
         "ambiguity_margin": margin if candidates else None,
     }
+
+
+def select_workflow_record(
+    registry: dict[str, Any],
+    workflow: str,
+    intent_summary: str,
+    *,
+    candidate_limit: int,
+) -> dict[str, Any]:
+    record = _select_workflow_record_without_gate(
+        registry,
+        workflow,
+        intent_summary,
+        candidate_limit=candidate_limit,
+    )
+    record["gate_restart"] = dispatcher_gate_restart(
+        "workflow-selection-gate",
+        str(record.get("status", "")),
+        repair_command=f"aiwfctl context init --workflow {normalize_command(workflow)} --work-id <work-id>"
+        if record.get("human_check_required")
+        else "",
+    )
+    return record
 
 
 def default_tool_mode_for_workflow(workflow_name: str) -> str:
@@ -404,7 +436,7 @@ def split_tool(
     }
 
 
-def select_tool_records(
+def _select_tool_records_without_gate(
     registry: dict[str, Any],
     workflow_name: str,
     tools: list[str],
@@ -499,6 +531,39 @@ def select_tool_records(
     }
 
 
+def select_tool_records(
+    registry: dict[str, Any],
+    workflow_name: str,
+    tools: list[str],
+    *,
+    intent_summary: str,
+    default_mode: str,
+    default_purpose: str,
+    candidate_limit: int,
+) -> dict[str, Any]:
+    selection = _select_tool_records_without_gate(
+        registry,
+        workflow_name,
+        tools,
+        intent_summary=intent_summary,
+        default_mode=default_mode,
+        default_purpose=default_purpose,
+        candidate_limit=candidate_limit,
+    )
+    human_check_required = bool(selection.get("human_check_reasons"))
+    human_check_required = human_check_required or any(
+        item.get("human_check_required") for item in selection.get("tools", [])
+    )
+    selection["gate_restart"] = dispatcher_gate_restart(
+        "tool-selection-gate",
+        "human-check-required" if human_check_required else str(selection.get("status", "")),
+        repair_command=f"aiwfctl context init --workflow {normalize_command(workflow_name)} --work-id <work-id>"
+        if human_check_required
+        else "",
+    )
+    return selection
+
+
 def write_unless_exists(path: Path, data: dict[str, Any], *, force: bool) -> dict[str, Any]:
     if path.exists() and not force:
         existing = read_json(path, default={})
@@ -548,6 +613,14 @@ def workflow_selection_context(
             "registry": relative_to_repo(repo_root, workflow_help_registry_path(repo_root)),
             "schema": WORKFLOW_SELECTION_SCHEMA,
         },
+        "gate_restart": selection.get("gate_restart")
+        or dispatcher_gate_restart(
+            "workflow-selection-gate",
+            selection.get("status", "selected" if workflow_record else "human-check-required"),
+            repair_command=f"aiwfctl context init --workflow {normalize_command(workflow)} --work-id {work_id}"
+            if selection.get("human_check_required", not bool(workflow_record))
+            else "",
+        ),
     }
 
 
@@ -603,6 +676,14 @@ def tool_selection_context(
             "workflow_registry": relative_to_repo(repo_root, workflow_help_registry_path(repo_root)),
             "schema": TOOL_SELECTION_SCHEMA,
         },
+        "gate_restart": selection.get("gate_restart")
+        or dispatcher_gate_restart(
+            "tool-selection-gate",
+            "human-check-required" if human_check_required else selection["status"],
+            repair_command=f"aiwfctl context init --workflow {normalize_command(workflow_name)} --work-id {work_id}"
+            if human_check_required
+            else "",
+        ),
     }
 
 
@@ -673,6 +754,10 @@ def execution_plan_context(
             "Do not infer environment, tools, runtime, or execution order when Context is contradictory.",
         ],
         "next_commands": next_commands or [normalize_command(workflow_name)],
+        "gate_restart": dispatcher_gate_restart(
+            "dispatcher-execution-plan-gate",
+            "ready",
+        ),
     }
 
 
@@ -785,15 +870,25 @@ def run_init(args: argparse.Namespace) -> dict[str, Any]:
             schema=schema,
         )
     manifest_path = context_dir / "context-manifest.json"
-    return {
-        "status": "ready"
+    status = (
+        "ready"
         if not (workflow_context.get("human_check_required") or tool_context.get("human_check_required"))
-        else "human-check-required",
+        else "human-check-required"
+    )
+    return {
+        "status": status,
         "work_id": args.work_id,
         "workflow": workflow_name,
         "contexts": [item[0] for item in artifacts],
         "written": written,
         "manifest_path": relative_to_repo(repo_root, manifest_path),
+        "gate_restart": dispatcher_gate_restart(
+            "dispatcher-context-gate",
+            status,
+            repair_command=f"aiwfctl context init --workflow {normalize_command(args.workflow)} --work-id {args.work_id}"
+            if status == "human-check-required"
+            else "",
+        ),
     }
 
 

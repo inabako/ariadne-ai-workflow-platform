@@ -86,6 +86,7 @@ def test_human_gate_policy_check_blocks_pending_human_approval(tmp_path: Path) -
 
     result = human_gate_policy.run_check(args)
 
+    gate_restart = result.pop("gate_restart")
     assert result == {
         "status": "blocked",
         "gate": "close-prune",
@@ -93,6 +94,9 @@ def test_human_gate_policy_check_blocks_pending_human_approval(tmp_path: Path) -
         "actual": "pending",
         "reason": "削除操作には人間承認が必要です。",
     }
+    assert gate_restart["gate"] == "human-gate-check"
+    assert gate_restart["repair_available"] is True
+    assert "--human-check approved" in gate_restart["repair_command"]
 
 
 def test_human_gate_policy_check_approves_when_value_matches(tmp_path: Path) -> None:

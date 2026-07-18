@@ -744,6 +744,8 @@ def test_main_writes_report_and_returns_ready(monkeypatch: pytest.MonkeyPatch, t
     assert code == 0
     assert output["status"] == "ready"
     assert output["record_path"].startswith("work/issue-1/process-report/")
+    assert output["gate_restart"]["gate"] == "environment-preflight-gate"
+    assert output["gate_restart"]["repair_available"] is False
 
 
 def test_main_returns_two_when_required_check_missing(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -770,6 +772,9 @@ def test_main_returns_two_when_required_check_missing(monkeypatch: pytest.Monkey
     output = json.loads(captured.out)
     assert code == 2
     assert output["status"] == "install-list-required"
+    assert output["gate_restart"]["restart_from"] == "environment-preflight-gate"
+    assert output["gate_restart"]["repair_available"] is True
+    assert "--install --human-check approved" in output["gate_restart"]["repair_command"]
 
 
 def test_main_runs_install_after_human_approval_and_module_script_load(
@@ -795,6 +800,7 @@ def test_main_runs_install_after_human_approval_and_module_script_load(
     output = json.loads(capsys.readouterr().out)
     assert code == 2
     assert output["install_executions"] == [{"id": "exe:uv", "returncode": 0}]
+    assert output["gate_restart"]["next_on_fail"] == "stay-at-gate"
 
     namespace = runpy.run_path(str(Path(preflight.__file__)))
     assert namespace["build_parser"]

@@ -70,6 +70,9 @@ def test_context_first_require_reports_missing_dispatcher_context(tmp_path: Path
     assert result["status"] == "human-check-required"
     assert result["human_check_required"] is True
     assert result["missing"] == ["environment-selection"]
+    assert result["gate_restart"]["gate"] == "context-first-gate"
+    assert result["gate_restart"]["repair_available"] is True
+    assert result["gate_restart"]["next_on_fail"] == "stay-at-gate"
 
 
 def test_context_first_require_passes_when_context_exists(tmp_path: Path) -> None:
@@ -96,6 +99,7 @@ def test_context_first_require_passes_when_context_exists(tmp_path: Path) -> Non
     assert result["status"] == "ready"
     assert result["human_check_required"] is False
     assert result["missing"] == []
+    assert result["gate_restart"]["next_on_pass"] == "return-to-calling-workflow-after-gate"
 
 
 def test_context_first_loads_test_evidence_context(tmp_path: Path) -> None:

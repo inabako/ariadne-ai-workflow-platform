@@ -25,6 +25,23 @@ Use `aiwfctl` / `runtime/common/ctl.py` as the official runtime entrypoint for t
 
 If a needed operation is not exposed through `aiwfctl`, stop the current operation and create a self-improvement Feedback report first. Do not silently add `runtime/common/ctl.py` commands inside the active workflow; wait for Human Review / accepted self-improvement flow.
 
+## Mechanical Artifact Integrity Rule
+
+Do not judge JSON or Markdown corruption from PowerShell console rendering alone.
+
+- After generating or updating `github-knowledge-analysis.json` or Human-facing reports, run the official artifact check:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge artifact-integrity `
+  --work-id "<work-id>" `
+  --fail-on-finding
+```
+
+- Treat the saved file bytes and strict UTF-8 / JSON parse result from `artifact-integrity` as the source of truth.
+- Do not update `github-knowledge-analysis.json` with ad hoc PowerShell JSON fragments, text replacement, or temporary helper scripts.
+- Use dedicated runtime commands such as `analysis-template`, `detect-rebase`, `rebase-review-intake`, `rebase-package`, `rebase-apply`, `sync-apply`, and `rag-candidate` to write workflow JSON.
+- If an update path is missing, create Feedback first instead of hand-editing the JSON during the active workflow.
+
 ## Purpose
 
 GitHub Repositoryを、未来のAI workflowとRAGが再利用できるKnowledge Baseとして継続保守します。
@@ -290,6 +307,17 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
   --head "HEAD"
 ```
 
+If the human asks for all history, or if the branch was intentionally created for safe full-history maintenance, use the explicit full-history mode instead of increasing a recent-history number by hand:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge detect-rebase `
+  --work-id "<work-id>" `
+  --git-repo "." `
+  --all-history `
+  --head "origin/<target-branch>" `
+  --max-commits 200
+```
+
 This writes candidates to `history_rewrite_candidates` with `approval_status: pending`. Candidate records include `file_paths`, `suspect_commits`, `expected_commit`, `repair_goal`, `independent_responsibility`, `evidence_refs`, `recommended_action`, `reason`, `approval_status`, `completion_criteria`, `before_after_sha_mapping`, `rollback_plan`, `draft_commands`, and `verification_commands`.
 When commit subjects are thin, the runtime must inspect commit materials as well as the subject: changed paths, directories, extensions, repository domains, nearby commits, and related file sets. If a safe absorb target cannot be determined from that evidence, record `repair_goal: manual-review-required` and keep the candidate unresolved for Human Review. Do not use `no-rewrite` merely because automatic target detection failed.
 
@@ -332,6 +360,14 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
 ```
 
 This is a proposal. It does not mutate GitHub.
+
+Immediately verify the saved artifacts before reporting mojibake, JSON corruption, or checklist readiness:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge artifact-integrity `
+  --work-id "<work-id>" `
+  --fail-on-finding
+```
 
 After the single Human Check approval package is recorded in the generated OK / NG checklist, ingest that checklist through the official runtime entrypoint. Do not hand-edit `github-knowledge-analysis.json`:
 

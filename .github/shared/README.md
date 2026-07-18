@@ -1,5 +1,11 @@
 # Shared Agent Instructions
 
+## Added Shared Policy
+
+| File | Purpose |
+| --- | --- |
+| `gate-restart-policy.md` | workflow gate failure 後に、同じ gate へ留まり、修復後も同じ gate から再開する共通ルール |
+
 このディレクトリは、すべてのAgentが共通で読むべき運用ルールを格納します。
 
 `schemas/` は構造化された受け渡し契約、`shared/` はAgentの振る舞いと判断基準を定義します。

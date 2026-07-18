@@ -42,6 +42,23 @@ runtime/tests/test_ctl_help.py::test_windows_ps1_runtime_contract
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: `runtime/windows-ps1/aiwf.ps1` と `runtime/posix-bash/aiwf.sh` がOS別shell入口として固定され、通常workflow判断は `aiwfctl` / `runtime/common/ctl.py` へ委譲される。
 
+#### RT-UT-CASE-CTL-RUNTIME-PYTEST
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_pytest_config_and_cache_are_runtime_scoped
+```
+
+- 確認内容: pytest config と cache が repo root ではなく runtime 配下に閉じ込められることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックの node id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: なし
+  - parameter: names=なし case=なし
+  - inline input: `runtime/pytest.ini`, `runtime/.pytest_cache`
+- 期待結果: root `pytest.ini` / `.pytest_cache` へ生成物が漏れず、Windows PS1 runtime 入口から pytest を安全に実行できる。
+
 #### RT-UT-CASE-CTL-002
 
 - pytest node id:

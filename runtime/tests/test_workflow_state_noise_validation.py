@@ -388,6 +388,23 @@ def test_validate_output_language_main_fails_on_violation(
     assert code == 1
     assert "english_ratio=" in captured.out
 
+    json_code = validate_output_language.main(
+        [
+            "--repo-root",
+            str(repo),
+            "--paths",
+            "docs",
+            "--min-english-words",
+            "5",
+            "--fail-on-violation",
+            "--json",
+        ]
+    )
+    json_output = json.loads(capsys.readouterr().out)
+    assert json_code == 1
+    assert json_output["gate_restart"]["gate"] == "output-language-gate"
+    assert json_output["gate_restart"]["next_on_fail"] == "stay-at-gate"
+
 
 def test_validate_output_language_main_prints_absolute_external_path_and_script_load(
     tmp_path: Path,

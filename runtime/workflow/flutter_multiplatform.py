@@ -11,7 +11,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.common import gate_restart, find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.paths import WINDOWS_FLUTTER_BIN  # noqa: E402
 from runtime.constants.schemas import FLUTTER_DEVELOPMENT_CONTEXT_SCHEMA  # noqa: E402
 from runtime.constants.workspace import (  # noqa: E402
@@ -229,7 +229,18 @@ def tool_available(name: str) -> bool:
     return False
 
 
-def target_environment(target: str, host_os: str | None = None) -> dict[str, Any]:
+def flutter_target_gate_restart(status: str, target: str) -> dict[str, Any]:
+    return gate_restart.build_status_gate_restart(
+        "flutter-target-environment-gate",
+        status=status,
+        restart_reason="flutter-target-environment",
+        repair_command=f"aiwfctl env select {target} --work-id <work-id>"
+        if status in {"build_environment_required", "remote_build_required", "human_check_required"}
+        else "",
+    )
+
+
+def _target_environment_without_gate(target: str, host_os: str | None = None) -> dict[str, Any]:
     host = host_os or host_os_name()
     if target in {"android", "web"}:
         supported = host in {"windows", "macos", "linux"}
@@ -274,6 +285,12 @@ def target_environment(target: str, host_os: str | None = None) -> dict[str, Any
         "required_environment": "unknown",
         "reason": "未登録のFlutter targetです。",
     }
+
+
+def target_environment(target: str, host_os: str | None = None) -> dict[str, Any]:
+    record = _target_environment_without_gate(target, host_os)
+    record["gate_restart"] = flutter_target_gate_restart(str(record.get("status", "")), target)
+    return record
 
 
 def detect_flutter_project(target_repo: Path) -> dict[str, Any]:

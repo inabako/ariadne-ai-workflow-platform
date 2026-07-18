@@ -331,6 +331,40 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_rebase_plan_writ
   - inline input: `rebase_plan`, `artifact_index`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
+#### RT-UT-CASE-148-INTEGRITY-001
+
+- pytest node id:
+
+```text
+runtime/tests/test_github_knowledge_maintenance.py::test_create_artifact_integrity_report_passes_for_valid_analysis_and_rebase_plan
+```
+
+- 確認内容: GitHub knowledge maintenance の analysis JSON と rebase plan Markdown が UTF-8 / JSON / Markdown 契約を満たすとき、artifact integrity gate が pass することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_github_knowledge_maintenance.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: valid analysis JSON, valid rebase plan
+- 期待結果: artifact integrity report が findings なしで生成され、後続 workflow が表示文字化けに惑わされず本線へ戻れる。
+
+#### RT-UT-CASE-148-INTEGRITY-002
+
+- pytest node id:
+
+```text
+runtime/tests/test_github_knowledge_maintenance.py::test_create_artifact_integrity_report_fails_for_invalid_analysis_json
+```
+
+- 確認内容: analysis JSON が壊れている場合に、artifact integrity gate が fail として検出することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_github_knowledge_maintenance.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: invalid analysis JSON
+- 期待結果: JSON破損は握りつぶされず findings に記録され、AI が手作業更新を続けない判断材料になる。
+
 #### RT-UT-CASE-148A
 
 - pytest node id:

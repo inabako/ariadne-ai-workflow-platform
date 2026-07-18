@@ -11,7 +11,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import registry_store  # noqa: E402
+from runtime.common import gate_restart, registry_store, text_boundary  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
 from runtime.constants.paths import REGISTRY_DB_PATH  # noqa: E402
 from runtime.constants.schemas import (  # noqa: E402
@@ -19,6 +19,7 @@ from runtime.constants.schemas import (  # noqa: E402
     CORRECTIVE_ACTION_REPORT_SCHEMA,
     ENVIRONMENT_SELECTION_SCHEMA,
     EXECUTION_PLAN_SCHEMA,
+    GATE_RESTART_SCHEMA,
     GITHUB_OPERATION_GATE_SCHEMA,
     HUMAN_GATES_SCHEMA,
     PYTEST_UT_SPEC_SYNC_REPORT_SCHEMA,
@@ -119,6 +120,7 @@ def missing_required_files(repo_root: Path) -> list[str]:
         REGISTRY_DB_PATH.as_posix(),
         HUMAN_GATES_SCHEMA,
         WORKFLOW_HELP_SCHEMA,
+        GATE_RESTART_SCHEMA,
         TOOL_CANDIDATES_SCHEMA,
         CONTEXT_MANIFEST_SCHEMA,
         PYTEST_UT_SPEC_SYNC_REPORT_SCHEMA,
@@ -355,12 +357,26 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repo-root", default="")
     parser.add_argument("--fail-on-warning", action="store_true")
     parser.add_argument("--skip-ut-spec-sync", action="store_true", help="Skip pytest UT specification sync check.")
+    parser.add_argument("--repair-encoding", action="store_true", help="Repair safe text-boundary findings before returning doctor status.")
+    parser.add_argument(
+        "--encoding-paths",
+        nargs="+",
+        default=text_boundary.DEFAULT_PATHS,
+        help="Text-boundary paths to scan or repair.",
+    )
+    parser.add_argument(
+        "--encoding-extensions",
+        nargs="+",
+        default=sorted(text_boundary.TEXT_EXTENSIONS),
+        help="Text extensions included in text-boundary scan or repair.",
+    )
     return parser
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     warnings = []
+    repairs = []
     tracked_violations = tracked_policy_violations(repo_root)
     if tracked_violations:
         warnings.append(
@@ -440,11 +456,40 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "paths": sync_findings,
                 }
             )
+    encoding_paths = list(getattr(args, "encoding_paths", None) or text_boundary.DEFAULT_PATHS)
+    encoding_extensions = text_boundary.normalize_extensions(getattr(args, "encoding_extensions", None))
+    if getattr(args, "repair_encoding", False):
+        repair_result = text_boundary.repair_text_boundary(repo_root, encoding_paths, encoding_extensions)
+        repairs.append(repair_result)
+        boundary_findings = repair_result.get("remaining_findings", [])
+    else:
+        boundary_scan = text_boundary.scan_text_boundary(repo_root, encoding_paths, encoding_extensions)
+        boundary_findings = boundary_scan.get("findings", [])
+    if boundary_findings:
+        warnings.append(
+            {
+                "id": "text-boundary",
+                "message": "Text boundary findings remain. Run doctor with --repair-encoding for repairable encoding issues, then rerun doctor.",
+                "paths": [
+                    f"{item.get('path')}:{item.get('line')}: {item.get('kind')}"
+                    for item in boundary_findings
+                    if isinstance(item, dict)
+                ],
+            }
+        )
     status = "fail" if warnings and args.fail_on_warning else "warning" if warnings else "pass"
     return {
         "status": status,
         "warning_count": len(warnings),
         "warnings": warnings,
+        "repairs": repairs,
+        "gate_restart": gate_restart.build_gate_restart(
+            "doctor-gate",
+            restart_reason="failed-doctor-gate" if repairs else "normal-doctor-gate",
+            repair_available=True,
+            repair_command="aiwfctl doctor --repair-encoding --fail-on-warning",
+            status_after_restart=status,
+        ),
     }
 
 

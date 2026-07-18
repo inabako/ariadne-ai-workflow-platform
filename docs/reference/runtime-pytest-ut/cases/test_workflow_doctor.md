@@ -76,6 +76,23 @@ runtime/tests/test_workflow_doctor.py::test_missing_required_files_reports_core_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: required file欠落がwarningとして列挙される。
 
+#### RT-UT-CASE-DOCTOR-PYTEST-RUNTIME-BOUNDARY
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_pytest_runtime_boundary_findings_blocks_root_config_and_cache
+```
+
+- 確認内容: root `pytest.ini` / `.pytest_cache` を workflow noise として検出し、pytest 生成物を runtime 配下へ閉じ込めることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_workflow_doctor.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: root pytest config/cache and runtime pytest config/cache
+- 期待結果: root 生成物は warning path として報告され、runtime-local pytest 境界が守られる。
+
 #### RT-UT-CASE-DOCTOR-005
 
 - pytest node id:
@@ -327,6 +344,7 @@ runtime/tests/test_workflow_doctor.py::test_path_constant_literal_findings_ignor
   - parameter: names=なし, case=なし
   - inline input: constants / tests / helper runtimeの一時file
 - 期待結果: 許可されたconstants / tests配置ではpath-constant-literal warningが発生しない。
+
 #### RT-UT-CASE-DOCTOR-020
 
 - pytest node id:
@@ -377,6 +395,40 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_run_passes_without_w
   - parameter: names=なし, case=なし
   - inline input: `args`
 - 期待結果: statusがpassになり、warning_countが0になる。
+
+#### RT-UT-CASE-DOCTOR-TEXT-BOUNDARY-001
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_text_boundary_scan_and_repair_recovers_utf8_saved_mojibake
+```
+
+- 確認内容: UTF-8として保存された文字化け行を text-boundary repair が復元できることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_workflow_doctor.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: mojibake marker を含む Markdown file
+- 期待結果: repair 後に remaining findings が空になり、`.encoding-bak` backup が作成される。
+
+#### RT-UT-CASE-DOCTOR-TEXT-BOUNDARY-002
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_workflow_doctor_repair_encoding_clears_text_boundary_warning
+```
+
+- 確認内容: doctor gate が text-boundary warning で停止し、`--repair-encoding` 後に同じ doctor gate から pass へ復帰することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_workflow_doctor.py`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `repair_encoding=False` then `repair_encoding=True`
+- 期待結果: repair 後の `gate_restart` は `restart_from=doctor-gate` と `next_on_pass=return-to-calling-workflow-after-gate` を返す。
 
 #### RT-UT-CASE-DOCTOR-023
 

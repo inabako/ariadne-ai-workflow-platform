@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Gate Restart",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "gate",
+    "restart_from",
+    "restart_reason",
+    "repair_available",
+    "repair_command",
+    "status_after_restart",
+    "next_on_pass",
+    "next_on_fail"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "artifact_type": {
+      "const": "gate-restart"
+    },
+    "gate": {
+      "type": "string",
+      "minLength": 1
+    },
+    "restart_from": {
+      "type": "string",
+      "minLength": 1
+    },
+    "restart_reason": {
+      "type": "string"
+    },
+    "repair_available": {
+      "type": "boolean"
+    },
+    "repair_command": {
+      "type": "string"
+    },
+    "status_after_restart": {
+      "enum": [
+        "pass",
+        "warning",
+        "fail",
+        "unknown"
+      ]
+    },
+    "next_on_pass": {
+      "const": "return-to-calling-workflow-after-gate"
+    },
+    "next_on_fail": {
+      "const": "stay-at-gate"
+    }
+  },
+  "additionalProperties": true
+}

@@ -9,6 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.common import gate_restart  # noqa: E402
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.workspace import (  # noqa: E402
     CONTEXT_MANIFEST_FILE_NAME,
@@ -121,13 +122,30 @@ def register_context(
 def dispatcher_context_status(manifest: dict[str, Any], required_types: list[str]) -> dict[str, Any]:
     contexts = {item.get("type"): item for item in manifest.get("contexts", []) if isinstance(item, dict)}
     missing = [context_type for context_type in required_types if context_type not in contexts]
+    status = "ready" if not missing else "human-check-required"
     return {
-        "status": "ready" if not missing else "human-check-required",
+        "status": status,
         "missing": missing,
         "available": sorted(contexts),
         "human_check_required": bool(missing),
+        "gate_restart": context_first_gate_restart(status, missing),
         "human_check_reason": "必須Dispatcher Contextが不足しています。" if missing else "",
     }
+
+
+def context_first_gate_restart(status: str, missing: list[str] | None = None) -> dict[str, Any]:
+    missing_values = list(missing or [])
+    return gate_restart.build_gate_restart(
+        "context-first-gate",
+        restart_reason="missing-required-dispatcher-context" if missing_values else "normal-context-first-gate",
+        repair_available=bool(missing_values),
+        repair_command=(
+            "aiwfctl context init --work-id <work-id> --workflow <workflow-command>"
+            if missing_values
+            else ""
+        ),
+        status_after_restart="pass" if status == "ready" else "fail",
+    )
 
 
 def context_entry(manifest: dict[str, Any], context_type: str) -> dict[str, Any] | None:

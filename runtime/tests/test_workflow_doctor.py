@@ -5,6 +5,7 @@ import runpy
 import subprocess
 from pathlib import Path
 
+from runtime.common import text_boundary
 from runtime.workflow import close_archive, workflow_doctor
 
 
@@ -488,7 +489,96 @@ def test_workflow_doctor_run_passes_without_warnings(monkeypatch, tmp_path: Path
 
     result = workflow_doctor.run(args)
 
-    assert result == {"status": "pass", "warning_count": 0, "warnings": []}
+    assert result == {
+        "status": "pass",
+        "warning_count": 0,
+        "warnings": [],
+        "repairs": [],
+        "gate_restart": {
+            "schema_version": "1.0",
+            "artifact_type": "gate-restart",
+            "gate": "doctor-gate",
+            "restart_from": "doctor-gate",
+            "restart_reason": "normal-doctor-gate",
+            "repair_available": True,
+            "repair_command": "aiwfctl doctor --repair-encoding --fail-on-warning",
+            "status_after_restart": "pass",
+            "next_on_pass": "return-to-calling-workflow-after-gate",
+            "next_on_fail": "stay-at-gate",
+        },
+    }
+
+
+def test_text_boundary_scan_and_repair_recovers_utf8_saved_mojibake(tmp_path: Path) -> None:
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    mojibake = "こんにちは".encode("utf-8").decode("cp932")
+    target = docs / "guide.md"
+    target.write_text(f"# {mojibake}\n", encoding="utf-8")
+
+    scan = text_boundary.scan_text_boundary(tmp_path, ["docs"], {".md"})
+    assert scan["status"] == "finding"
+    assert scan["findings"][0]["kind"] == "semantic-mojibake-marker"
+    assert scan["findings"][0]["repairable"] is True
+
+    repair = text_boundary.repair_text_boundary(tmp_path, ["docs"], {".md"})
+
+    assert repair["status"] == "repaired"
+    assert repair["remaining_findings"] == []
+    assert target.read_text(encoding="utf-8") == "# こんにちは\n"
+    assert (docs / "guide.md.encoding-bak").exists()
+
+
+def test_workflow_doctor_repair_encoding_clears_text_boundary_warning(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "pytest_runtime_boundary_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "duckdb_read_model_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "workspace_layout_literal_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "path_constant_literal_findings", lambda repo_root: [])
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    mojibake = "こんにちは".encode("utf-8").decode("cp932")
+    target = docs / "guide.md"
+    target.write_text(f"# {mojibake}\n", encoding="utf-8")
+
+    warning = workflow_doctor.run(
+        argparse.Namespace(
+            repo_root=str(tmp_path),
+            fail_on_warning=True,
+            skip_ut_spec_sync=False,
+            repair_encoding=False,
+            encoding_paths=["docs"],
+            encoding_extensions=[".md"],
+        )
+    )
+    repaired = workflow_doctor.run(
+        argparse.Namespace(
+            repo_root=str(tmp_path),
+            fail_on_warning=True,
+            skip_ut_spec_sync=False,
+            repair_encoding=True,
+            encoding_paths=["docs"],
+            encoding_extensions=[".md"],
+        )
+    )
+
+    assert warning["status"] == "fail"
+    assert warning["warnings"][0]["id"] == "text-boundary"
+    assert warning["gate_restart"]["next_on_fail"] == "stay-at-gate"
+    assert repaired["status"] == "pass"
+    assert repaired["warning_count"] == 0
+    assert repaired["gate_restart"]["restart_from"] == "doctor-gate"
+    assert repaired["gate_restart"]["restart_reason"] == "failed-doctor-gate"
+    assert repaired["gate_restart"]["repair_available"] is True
+    assert repaired["gate_restart"]["repair_command"] == "aiwfctl doctor --repair-encoding --fail-on-warning"
+    assert repaired["gate_restart"]["next_on_pass"] == "return-to-calling-workflow-after-gate"
+    assert repaired["repairs"][0]["repairs"][0]["path"] == "docs/guide.md"
+    assert target.read_text(encoding="utf-8") == "# こんにちは\n"
 
 
 def test_workflow_doctor_main_prints_pass_json(monkeypatch, tmp_path: Path, capsys) -> None:

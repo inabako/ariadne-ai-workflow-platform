@@ -14,6 +14,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.common import gate_restart  # noqa: E402
 from runtime.common import env_value, find_repo_root, load_env, local_timestamp, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.paths import (  # noqa: E402
     WINDOWS_DART_EXECUTABLES,
@@ -288,6 +289,30 @@ def github_auth_status(checks: Sequence[Check]) -> str:
     if all(check.kind == "github-auth" for check in missing_required):
         return "auth-required"
     return "install-list-required"
+
+
+def preflight_gate_restart(status: str, profile: str) -> dict[str, Any]:
+    command = ""
+    repair_available = False
+    reason = "normal-environment-preflight"
+    if status == "auth-required":
+        repair_available = True
+        reason = "github-auth-required"
+        command = (
+            f".\\runtime\\windows-ps1\\aiwf.ps1 preflight --profile {profile} "
+            "--gh-login-from-env --human-check approved"
+        )
+    elif status == "install-list-required":
+        repair_available = True
+        reason = "required-tool-install-list"
+        command = f".\\runtime\\windows-ps1\\aiwf.ps1 preflight --profile {profile} --install --human-check approved"
+    return gate_restart.build_gate_restart(
+        "environment-preflight-gate",
+        restart_reason=reason,
+        repair_available=repair_available,
+        repair_command=command,
+        status_after_restart="pass" if status == "ready" else "fail",
+    )
 
 
 def gh_login_from_env(repo_root: Path, *, hostname: str) -> list[dict[str, Any]]:
@@ -667,6 +692,14 @@ def markdown_report(result: dict[str, Any]) -> str:
         f"- status: `{result['status']}`",
         f"- created_at: `{result['created_at']}`",
         "",
+        "## Gate Restart",
+        "",
+        f"- restart_from: `{result.get('gate_restart', {}).get('restart_from', '')}`",
+        f"- repair_available: `{result.get('gate_restart', {}).get('repair_available', False)}`",
+        f"- repair_command: `{result.get('gate_restart', {}).get('repair_command', '')}`",
+        f"- next_on_pass: `{result.get('gate_restart', {}).get('next_on_pass', '')}`",
+        f"- next_on_fail: `{result.get('gate_restart', {}).get('next_on_fail', '')}`",
+        "",
         "## Missing Required",
         "",
     ]
@@ -831,6 +864,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "checks": [check.to_dict() for check in checks],
         "install_executions": install_executions,
         "auth_executions": auth_executions,
+        "gate_restart": preflight_gate_restart(status, args.profile),
     }
     output: dict[str, Any] = dict(result)
     if args.work_id:

@@ -1,5 +1,11 @@
 # Shared Schemas
 
+## Added Shared Schema
+
+| File | Purpose |
+| --- | --- |
+| `gate-restart.schema.json` | workflow gate failure 後の修復可否、再開 gate、pass/fail 後の遷移を固定する共通契約 |
+
 このディレクトリは、Agent 間で情報を受け渡すための共通 schema を定義します。
 
 目的は、各Agentが別々の表現で判断、QA、finding、test evidence、artifact を書いてしまうことを防ぎ、次のAgentが迷わず読み取れる状態を作ることです。

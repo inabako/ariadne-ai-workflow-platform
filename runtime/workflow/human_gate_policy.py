@@ -9,7 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import registry_store  # noqa: E402
+from runtime.common import gate_restart, registry_store  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
 
 
@@ -57,6 +57,11 @@ def run_list(args: argparse.Namespace) -> dict[str, Any]:
         "status": "ok",
         "registry": relative_to_repo(repo_root, registry_path(repo_root)),
         "gates": registry.get("gates", []),
+        "gate_restart": gate_restart.build_status_gate_restart(
+            "human-gate-registry-gate",
+            status="ok",
+            restart_reason="human-gate-registry",
+        ),
     }
 
 
@@ -71,11 +76,25 @@ def run_check(args: argparse.Namespace) -> dict[str, Any]:
             "required": gate.get("approved_value", "approved"),
             "actual": args.human_check,
             "reason": gate.get("reason", ""),
+            "gate_restart": gate_restart.build_status_gate_restart(
+                "human-gate-check",
+                status="blocked",
+                restart_reason=args.gate,
+                repair_command=(
+                    "uv run --project runtime python runtime/workflow/human_gate_policy.py --repo-root . "
+                    f"check --gate {args.gate} --human-check {gate.get('approved_value', 'approved')}"
+                ),
+            ),
         }
     return {
         "status": "approved",
         "gate": args.gate,
         "actual": args.human_check,
+        "gate_restart": gate_restart.build_status_gate_restart(
+            "human-gate-check",
+            status="approved",
+            restart_reason=args.gate,
+        ),
     }
 
 

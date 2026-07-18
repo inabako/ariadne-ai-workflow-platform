@@ -393,7 +393,7 @@ If source files show mojibake or unreadable non-ASCII text during analysis or im
 
 Detection examples:
 
-- Japanese comments display as fragments such as `縺`, `繧`, `譁`, `謗`, or replacement characters such as `�`.
+- Japanese comments display as fragments such as `縺`, `繧`, `譁`, `謗`, or replacement characters such as `�`. <!-- text-boundary: allow-mojibake-example -->
 - Patch context fails because non-ASCII comments are unreadable or unstable.
 - PowerShell output and file content disagree about Japanese text.
 

@@ -21,6 +21,7 @@ from runtime.common import (  # noqa: E402
     default_github_owner,
     ensure_work_tree,
     find_repo_root,
+    gate_restart,
     load_artifact_index,
     load_env,
     local_timestamp,
@@ -68,6 +69,23 @@ from runtime.workflow.context_first import (  # noqa: E402
 SCAN_MODES = ["repository", "issue", "pull-request", "recent", "full"]
 REPAIR_MODES = ["proposal", "apply"]
 RAG_SOURCE_ID_ALPHABET = string.ascii_uppercase + string.digits
+
+
+def github_knowledge_gate_restart(
+    gate: str,
+    *,
+    status: str,
+    restart_reason: str,
+    repair_available: bool = False,
+    repair_command: str = "",
+) -> dict[str, Any]:
+    return gate_restart.build_gate_restart(
+        gate,
+        restart_reason=restart_reason,
+        repair_available=repair_available,
+        repair_command=repair_command,
+        status_after_restart="pass" if status in {"pass", "ready", "applied", "verified", "dry-run"} else "fail",
+    )
 
 
 def github_git_responsibility_boundary() -> dict[str, Any]:
@@ -175,6 +193,16 @@ def build_parser() -> argparse.ArgumentParser:
     analysis_parser.add_argument("--analysis-path", default="")
     analysis_parser.add_argument("--repo-root", default=None)
 
+    integrity_parser = subparsers.add_parser(
+        "artifact-integrity",
+        help="Verify analysis JSON and generated Markdown artifacts with strict UTF-8/file-content checks.",
+    )
+    integrity_parser.add_argument("--work-id", required=True)
+    integrity_parser.add_argument("--analysis-path", default="")
+    integrity_parser.add_argument("--output", default="")
+    integrity_parser.add_argument("--fail-on-finding", action="store_true")
+    integrity_parser.add_argument("--repo-root", default=None)
+
     repair_parser = subparsers.add_parser("repair-plan", help="Create a human review repair plan from analysis JSON.")
     repair_parser.add_argument("--work-id", required=True)
     repair_parser.add_argument("--analysis-path", default="")
@@ -192,6 +220,7 @@ def build_parser() -> argparse.ArgumentParser:
     detect_rebase_parser.add_argument("--head", default="HEAD")
     detect_rebase_parser.add_argument("--max-commits", type=int, default=80)
     detect_rebase_parser.add_argument("--max-files", type=int, default=3)
+    detect_rebase_parser.add_argument("--all-history", action="store_true", help="Scan the full reachable history from --head.")
     detect_rebase_parser.add_argument("--append", action="store_true")
     detect_rebase_parser.add_argument("--repo-root", default=None)
 
@@ -464,6 +493,11 @@ def github_tool_selection(
             "registry": REGISTRY_DB_PATH.as_posix(),
             "schema": TOOL_SELECTION_SCHEMA,
         },
+        "gate_restart": github_knowledge_gate_restart(
+            "github-knowledge-tool-selection-gate",
+            status="ready",
+            restart_reason="github-knowledge-tool-selection",
+        ),
     }
 
 
@@ -786,6 +820,182 @@ def create_analysis_template(args: argparse.Namespace) -> dict[str, Any]:
         "knowledge_asset_count": 0,
         "narrative_gap_count": 0,
     }
+
+
+MOJIBAKE_MARKERS = ("\u7e67", "\u7e3a", "\u8b41", "\u9015", "\u8373", "\u90b1", "\ufffd")
+INTEGRITY_MARKDOWN_PATTERNS = (
+    "github-knowledge-repair-plan-*.md",
+    "github-history-rebase-plan-*.md",
+    "github-documentation-sync-plan-*.md",
+    "github-knowledge-rag-candidate-*.md",
+    "github-history-rebase-replay-execution-*.md",
+)
+
+
+def inspect_utf8_text_artifact(repo_root: Path, path: Path, *, artifact_kind: str) -> dict[str, Any]:
+    record: dict[str, Any] = {
+        "path": relative_to_repo(repo_root, path),
+        "artifact_kind": artifact_kind,
+        "exists": path.exists(),
+        "utf8_decode": "not-checked",
+        "json_parse": "not-applicable",
+        "bom": False,
+        "mojibake_markers": [],
+        "content_signals": [],
+        "findings": [],
+    }
+    if not path.exists():
+        record["findings"].append("missing")
+        return record
+    raw = path.read_bytes()
+    record["bom"] = raw.startswith(b"\xef\xbb\xbf")
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        record["utf8_decode"] = "fail"
+        record["findings"].append(f"utf8-decode-failed: {exc}")
+        return record
+
+    record["utf8_decode"] = "pass"
+    markers = [marker for marker in MOJIBAKE_MARKERS if marker in text]
+    if markers:
+        record["mojibake_markers"] = markers
+        record["findings"].append("mojibake-marker-present")
+    if artifact_kind == "analysis-json":
+        try:
+            payload = json.loads(text)
+        except json.JSONDecodeError as exc:
+            record["json_parse"] = "fail"
+            record["findings"].append(f"json-parse-failed: {exc}")
+        else:
+            record["json_parse"] = "pass"
+            if isinstance(payload, dict):
+                candidates = payload.get("history_rewrite_candidates", [])
+                count = len(candidates) if isinstance(candidates, list) else "invalid"
+                record["content_signals"].append(f"history_rewrite_candidates:{count}")
+            else:
+                record["findings"].append("analysis-json-not-object")
+    elif artifact_kind == "rebase-plan":
+        if "候補別 OK / NG チェックリスト" in text:
+            record["content_signals"].append("ok-ng-checklist-present")
+        else:
+            record["findings"].append("ok-ng-checklist-missing")
+    return record
+
+
+def github_knowledge_artifact_paths(work_dir: Path, analysis_path: Path) -> list[tuple[str, Path]]:
+    process_dir = process_report_dir_for_work_dir(work_dir)
+    artifacts: list[tuple[str, Path]] = [("analysis-json", analysis_path)]
+    if process_dir.exists():
+        for pattern in INTEGRITY_MARKDOWN_PATTERNS:
+            kind = "rebase-plan" if pattern == "github-history-rebase-plan-*.md" else "markdown-report"
+            for path in sorted(process_dir.glob(pattern)):
+                artifacts.append((kind, path))
+    return artifacts
+
+
+def build_artifact_integrity_markdown(report: dict[str, Any]) -> str:
+    lines = [
+        "# GitHub Knowledge Artifact Integrity",
+        "",
+        "## Summary",
+        "",
+        f"- Status: `{report['status']}`",
+        f"- Work ID: `{report['work_id']}`",
+        f"- Checked artifacts: {len(report['artifacts'])}",
+        f"- Finding count: {len(report['findings'])}",
+        "",
+        "## Rule",
+        "",
+        "- Do not judge mojibake from console rendering alone.",
+        "- Verify saved file bytes with strict UTF-8 decode before reporting corruption.",
+        "- Do not hand-edit `github-knowledge-analysis.json`; use the official `github-knowledge` runtime commands.",
+        "",
+        "## Artifacts",
+        "",
+        "| Path | Kind | UTF-8 | JSON | BOM | Signals | Findings |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for artifact in report["artifacts"]:
+        signals = "<br>".join(artifact.get("content_signals", [])) or "-"
+        findings = "<br>".join(artifact.get("findings", [])) or "-"
+        lines.append(
+            "| "
+            + " | ".join(
+                [
+                    f"`{artifact['path']}`",
+                    str(artifact["artifact_kind"]),
+                    str(artifact["utf8_decode"]),
+                    str(artifact["json_parse"]),
+                    str(artifact["bom"]).lower(),
+                    signals,
+                    findings,
+                ]
+            )
+            + " |"
+        )
+    return "\n".join(lines)
+
+
+def create_artifact_integrity_report(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    work_dir = work_dir_for_id(repo_root, args.work_id)
+    if not work_dir.exists():
+        raise FileNotFoundError(f"Work directory does not exist: {work_dir}")
+    analysis_path = analysis_path_for(work_dir, args.analysis_path)
+    artifacts = [
+        inspect_utf8_text_artifact(repo_root, path, artifact_kind=kind)
+        for kind, path in github_knowledge_artifact_paths(work_dir, analysis_path)
+    ]
+    findings = [
+        f"{artifact['path']}: {finding}"
+        for artifact in artifacts
+        for finding in artifact.get("findings", [])
+    ]
+    status = "pass" if not findings else "fail"
+    report = {
+        "artifact_type": "github-knowledge-artifact-integrity",
+        "workflow": "github-knowledge-maintenance",
+        "work_id": args.work_id,
+        "status": status,
+        "analysis_path": relative_to_repo(repo_root, analysis_path),
+        "artifacts": artifacts,
+        "findings": findings,
+        "generated_at": utc_now_iso(),
+        "gate_restart": github_knowledge_gate_restart(
+            "github-knowledge-artifact-integrity-gate",
+            status=status,
+            restart_reason="artifact-integrity-findings" if findings else "normal-artifact-integrity-gate",
+            repair_available=bool(findings),
+            repair_command=(
+                "aiwfctl github-knowledge artifact-integrity --work-id "
+                f"{args.work_id} --fail-on-finding"
+                if findings
+                else ""
+            ),
+        ),
+    }
+    output_path = (
+        Path(args.output).resolve()
+        if args.output
+        else process_report_dir_for_work_dir(work_dir) / f"github-knowledge-artifact-integrity-{local_timestamp()}.md"
+    )
+    json_path = output_path.with_suffix(".json")
+    write_json(json_path, report)
+    report["report_json"] = relative_to_repo(repo_root, json_path)
+    write_markdown(output_path, build_artifact_integrity_markdown(report))
+    report["report_path"] = relative_to_repo(repo_root, output_path)
+    register_artifact(
+        repo_root,
+        work_dir,
+        "GITHUB-KNOWLEDGE-ARTIFACT-INTEGRITY",
+        "GitHub Knowledge Artifact Integrity",
+        output_path,
+        "report",
+    )
+    if args.fail_on_finding and findings:
+        raise RuntimeError("GitHub knowledge artifact integrity failed: " + "; ".join(findings))
+    return report
 
 
 def markdown_list(items: list[str]) -> str:
@@ -1412,9 +1622,10 @@ def create_detect_rebase_candidates(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     work_dir, analysis_path, analysis = load_analysis(repo_root, args.work_id, args.analysis_path)
     git_repo = Path(args.git_repo).resolve() if args.git_repo else repo_root
+    base = "" if getattr(args, "all_history", False) else args.base
     detected = detect_history_rewrite_candidates(
         repo_path=git_repo,
-        base=args.base,
+        base=base,
         head=args.head,
         max_commits=args.max_commits,
         max_files=args.max_files,
@@ -1433,6 +1644,9 @@ def create_detect_rebase_candidates(args: argparse.Namespace) -> dict[str, Any]:
     return {
         "analysis_path": relative_to_repo(repo_root, analysis_path),
         "git_repo": str(git_repo),
+        "base": base,
+        "head": args.head,
+        "all_history": bool(getattr(args, "all_history", False)),
         "candidate_count": len(detected),
         "total_candidate_count": len(analysis["history_rewrite_candidates"]),
     }
@@ -1555,6 +1769,11 @@ def create_rebase_apply(args: argparse.Namespace) -> dict[str, Any]:
         "verification_count": len(verification_results),
         "results": results,
         "verification_results": verification_results,
+        "gate_restart": github_knowledge_gate_restart(
+            "github-knowledge-rebase-apply-gate",
+            status="dry-run" if args.dry_run else "verified",
+            restart_reason="normal-rebase-apply-gate",
+        ),
     }
 
 
@@ -2295,6 +2514,11 @@ def create_rebase_replay_apply(args: argparse.Namespace) -> dict[str, Any]:
         write_json(analysis_path, analysis)
     result["analysis_path"] = relative_to_repo(repo_root, analysis_path)
     result["package_path"] = relative_to_repo(repo_root, package_path)
+    result["gate_restart"] = github_knowledge_gate_restart(
+        "github-knowledge-rebase-replay-gate",
+        status="dry-run" if args.dry_run else "verified",
+        restart_reason="normal-rebase-replay-gate",
+    )
     return result
 
 
@@ -2342,6 +2566,11 @@ def require_github_operation_gate(
         "tool_selection": relative_to_repo(repo_root, tool_path) if tool_entry else "",
         "require_mutation_gate": require_mutation_gate,
         "require_rag_gate": require_rag_gate,
+        "gate_restart": github_knowledge_gate_restart(
+            "github-knowledge-operation-gate",
+            status="ready",
+            restart_reason="normal-github-knowledge-operation-gate",
+        ),
     }
 
 
@@ -2819,6 +3048,11 @@ def create_sync_apply(args: argparse.Namespace) -> dict[str, Any]:
         "executed": not bool(args.dry_run),
         "context_gate": context_gate,
         "result": result,
+        "gate_restart": github_knowledge_gate_restart(
+            "github-knowledge-sync-apply-gate",
+            status="dry-run" if args.dry_run else "applied",
+            restart_reason="normal-github-sync-apply-gate",
+        ),
     }
 
 
@@ -2842,6 +3076,11 @@ def create_sync_plan(args: argparse.Namespace) -> dict[str, Any]:
         "analysis_path": relative_to_repo(repo_root, analysis_path),
         "action_count": len(analysis.get("github_sync_actions", []) or []),
         "context_gate": context_gate,
+        "gate_restart": github_knowledge_gate_restart(
+            "github-knowledge-sync-plan-gate",
+            status="ready",
+            restart_reason="normal-github-sync-plan-gate",
+        ),
     }
 
 
@@ -2912,6 +3151,11 @@ def create_rag_candidate(args: argparse.Namespace) -> dict[str, Any]:
         "analysis_path": relative_to_repo(repo_root, analysis_path),
         "published": bool(args.publish_rag),
         "context_gate": context_gate,
+        "gate_restart": github_knowledge_gate_restart(
+            "github-knowledge-rag-candidate-gate",
+            status="ready",
+            restart_reason="normal-rag-candidate-gate",
+        ),
     }
 
 
@@ -2920,6 +3164,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         return init_work(args)
     if args.command == "analysis-template":
         return create_analysis_template(args)
+    if args.command == "artifact-integrity":
+        return create_artifact_integrity_report(args)
     if args.command == "repair-plan":
         return create_repair_plan(args)
     if args.command == "detect-rebase-candidates":

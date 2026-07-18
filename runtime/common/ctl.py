@@ -11,7 +11,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import registry_store  # noqa: E402
+from runtime.common import gate_restart, registry_store  # noqa: E402
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.paths import (  # noqa: E402
     DUCKDB_REFERENCE_CHECK_WORK_DIR,
@@ -248,7 +248,21 @@ def environment_mapping_matches(mapping: dict[str, Any], target: str) -> bool:
     return False
 
 
-def select_environment(registry: dict[str, Any], target: str) -> dict[str, Any]:
+def environment_gate_restart(status: str, target: str, *, work_id: str = "") -> dict[str, Any]:
+    command = f"aiwfctl env select {target or '<environment-name>'}"
+    if work_id:
+        command = f"{command} --work-id {work_id}"
+    elif status == "human-check-required":
+        command = f"{command} --work-id <work-id>"
+    return gate_restart.build_status_gate_restart(
+        "environment-selection-gate",
+        status=status,
+        restart_reason="environment-selection",
+        repair_command=command if status == "human-check-required" else "",
+    )
+
+
+def _select_environment_without_gate(registry: dict[str, Any], target: str) -> dict[str, Any]:
     try:
         environment = find_public_environment(registry, target)
         profile = profile_by_id(registry, environment["backend"])
@@ -334,6 +348,12 @@ def select_environment(registry: dict[str, Any], target: str) -> dict[str, Any]:
         "human_check_required": False,
         "human_check_reasons": [],
     }
+
+
+def select_environment(registry: dict[str, Any], target: str) -> dict[str, Any]:
+    record = _select_environment_without_gate(registry, target)
+    record["gate_restart"] = environment_gate_restart(str(record.get("status", "")), target)
+    return record
 
 
 def environment_selection_record(registry: dict[str, Any], target: str) -> dict[str, Any]:
@@ -570,6 +590,8 @@ def environment_context_record(
             "schema": ENVIRONMENT_SELECTION_SCHEMA,
         },
         "initialization": record.get("initialization", {}),
+        "gate_restart": record.get("gate_restart")
+        or environment_gate_restart(status, str(environment.get("name", record.get("target", ""))), work_id=work_id),
     }
 
 
@@ -1204,6 +1226,15 @@ def build_parser() -> argparse.ArgumentParser:
     github_analysis.add_argument("--work-id", required=True)
     github_analysis.add_argument("--analysis-path", default="")
     github_analysis.add_argument("--json", action="store_true")
+    github_integrity = github_knowledge_sub.add_parser(
+        "artifact-integrity",
+        help="Verify analysis JSON and generated reports using strict UTF-8/file-content checks.",
+    )
+    github_integrity.add_argument("--work-id", required=True)
+    github_integrity.add_argument("--analysis-path", default="")
+    github_integrity.add_argument("--output", default="")
+    github_integrity.add_argument("--fail-on-finding", action="store_true")
+    github_integrity.add_argument("--json", action="store_true")
     github_repair_plan = github_knowledge_sub.add_parser("repair-plan", help="Create a human review repair plan.")
     github_repair_plan.add_argument("--work-id", required=True)
     github_repair_plan.add_argument("--analysis-path", default="")
@@ -1220,6 +1251,7 @@ def build_parser() -> argparse.ArgumentParser:
     github_detect_rebase.add_argument("--head", default="HEAD")
     github_detect_rebase.add_argument("--max-commits", type=int, default=80)
     github_detect_rebase.add_argument("--max-files", type=int, default=3)
+    github_detect_rebase.add_argument("--all-history", action="store_true")
     github_detect_rebase.add_argument("--append", action="store_true")
     github_detect_rebase.add_argument("--json", action="store_true")
     github_rebase_plan = github_knowledge_sub.add_parser("rebase-plan", help="Create a high-risk rebase review plan.")
@@ -1414,6 +1446,9 @@ def build_parser() -> argparse.ArgumentParser:
     doctor_cmd.add_argument("--json", action="store_true", help="Print doctor result as JSON.")
     doctor_cmd.add_argument("--fail-on-warning", action="store_true", help="Return non-zero when warnings are found.")
     doctor_cmd.add_argument("--skip-ut-spec-sync", action="store_true", help="Skip pytest UT specification sync check.")
+    doctor_cmd.add_argument("--repair-encoding", action="store_true", help="Repair safe text-boundary findings before returning doctor status.")
+    doctor_cmd.add_argument("--encoding-paths", nargs="+", default=None, help="Text-boundary paths to scan or repair.")
+    doctor_cmd.add_argument("--encoding-extensions", nargs="+", default=None, help="Text extensions included in text-boundary scan or repair.")
     return parser
 
 
@@ -1874,6 +1909,7 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 "  aiwfctl github-knowledge init --repository <owner/repo>\n"
                 "  default work folders: work/github/<target-branch>/<scan-mode> or work/github/original/<scan-mode>\n"
                 "  aiwfctl github-knowledge analysis-template --work-id <work-id>\n"
+                "  aiwfctl github-knowledge artifact-integrity --work-id <work-id>\n"
                 "  aiwfctl github-knowledge detect-rebase --work-id <work-id>\n"
                 "  aiwfctl github-knowledge repair-plan --work-id <work-id>\n"
                 "  aiwfctl github-knowledge rebase-plan --work-id <work-id>\n"
@@ -1896,6 +1932,7 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
             command_map = {
                 "init": "init",
                 "analysis-template": "analysis-template",
+                "artifact-integrity": "artifact-integrity",
                 "repair-plan": "repair-plan",
                 "detect-rebase": "detect-rebase-candidates",
                 "rebase-plan": "rebase-plan",
@@ -1933,6 +1970,12 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
             lines.append(f"RAG     : {result.get('rag_candidate', '')}")
         if "analysis_path" in result:
             lines.append(f"Analysis: {result.get('analysis_path', '')}")
+        if "status" in result:
+            lines.append(f"Status  : {result.get('status', '')}")
+        if "findings" in result:
+            lines.append(f"Findings: {len(result.get('findings', []))}")
+        if "report_json" in result:
+            lines.append(f"JSON    : {result.get('report_json', '')}")
         if "rebase_replay_package" in result:
             lines.append(f"Package : {result.get('rebase_replay_package', '')}")
             lines.append(f"Targets : {result.get('candidate_count', 0)} candidate(s)")
@@ -2142,6 +2185,9 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 repo_root=str(repo_root),
                 fail_on_warning=args.fail_on_warning,
                 skip_ut_spec_sync=args.skip_ut_spec_sync,
+                repair_encoding=args.repair_encoding,
+                encoding_paths=args.encoding_paths,
+                encoding_extensions=args.encoding_extensions,
             )
         )
         code = 1 if result.get("status") == "fail" else 0
@@ -2152,7 +2198,13 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
             "",
             f"Status        : {result.get('status', '')}",
             f"Warning Count : {result.get('warning_count', 0)}",
+            f"Repair Count  : {sum(len(item.get('repairs', [])) for item in result.get('repairs', []))}",
         ]
+        gate_restart = result.get("gate_restart", {})
+        if isinstance(gate_restart, dict):
+            lines.append(f"Restart From : {gate_restart.get('restart_from', '')}")
+            next_key = "next_on_pass" if result.get("status") == "pass" else "next_on_fail"
+            lines.append(f"Next         : {gate_restart.get(next_key, '')}")
         warnings = result.get("warnings", [])
         if warnings:
             lines.extend(["", "Warnings"])

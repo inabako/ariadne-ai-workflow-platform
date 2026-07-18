@@ -2,14 +2,17 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
+import json
 import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.common import gate_restart  # noqa: E402
 from runtime.constants.paths import (  # noqa: E402
     GENERATED_CHUNKS,
     GENERATED_EMBEDDINGS,
@@ -79,6 +82,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-japanese-chars", type=int, default=20)
     parser.add_argument("--fail-on-violation", action="store_true")
     parser.add_argument("--repo-root", default=None)
+    parser.add_argument("--json", action="store_true")
     return parser
 
 
@@ -158,10 +162,47 @@ def analyze(path: Path, args: argparse.Namespace) -> LanguageFinding | None:
     return LanguageFinding(path, japanese_chars, english_words, english_ratio, reason)
 
 
+def build_result(repo_root: Path, findings: list[LanguageFinding]) -> dict[str, Any]:
+    status = "fail" if findings else "pass"
+    records = []
+    for finding in findings:
+        try:
+            rel = finding.path.relative_to(repo_root)
+        except ValueError:
+            rel = finding.path
+        records.append(
+            {
+                "path": rel.as_posix(),
+                "japanese_chars": finding.japanese_chars,
+                "english_words": finding.english_words,
+                "english_ratio": finding.english_ratio,
+                "reason": finding.reason,
+            }
+        )
+    return {
+        "schema_version": "1.0",
+        "artifact_type": "output-language-check",
+        "status": status,
+        "finding_count": len(findings),
+        "findings": records,
+        "gate_restart": gate_restart.build_gate_restart(
+            "output-language-gate",
+            restart_reason="english-dominant-markdown" if findings else "normal-output-language-gate",
+            repair_available=False,
+            status_after_restart=status,
+        ),
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     repo_root = Path(args.repo_root).resolve() if args.repo_root else Path.cwd().resolve()
     findings = [finding for path in iter_markdown(args.paths, repo_root, args.exclude) if (finding := analyze(path, args))]
+    result = build_result(repo_root, findings)
+
+    if args.json:
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 1 if findings and args.fail_on_violation else 0
 
     if not findings:
         print("Output language check OK: English-dominant Markdown artifacts were not detected.")

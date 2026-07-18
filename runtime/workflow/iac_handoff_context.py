@@ -9,7 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.common import gate_restart, find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.schemas import EXECUTION_PLAN_SCHEMA, REALTIME_IAC_HANDOFF_SCHEMA  # noqa: E402
 from runtime.constants.workspace import context_dir_for_work_dir, work_dir_for_id  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
@@ -148,6 +148,12 @@ def create_execution_plan(
             f"--work-dir work/{work_id} --environment docker",
             "/realtime-iac",
         ],
+        "gate_restart": gate_restart.build_status_gate_restart(
+            "iac-handoff-execution-plan-gate",
+            status="ready-for-human-check",
+            restart_reason="iac-handoff-execution-plan",
+            repair_command=f"aiwfctl env select docker --work-id {work_id}",
+        ),
     }
 
 
@@ -222,6 +228,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "handoff_context": relative_to_repo(repo_root, handoff_path),
         "execution_plan": relative_to_repo(repo_root, execution_plan_path),
         "manifest_contexts": [item.get("type") for item in manifest.get("contexts", [])],
+        "gate_restart": gate_restart.build_status_gate_restart(
+            "iac-handoff-gate",
+            status="ready-for-human-check",
+            restart_reason="iac-handoff",
+            repair_command=f"aiwfctl env select docker --work-id {args.work_id}",
+        ),
     }
 
 

@@ -9,7 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.common import gate_restart, find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.workspace import context_file  # noqa: E402
 
 
@@ -29,7 +29,23 @@ def default_state(workflow: str, work_id: str, phase: str, status: str) -> dict[
         "artifacts": {},
         "updated_at": utc_now_iso(),
         "history": [],
+        "gate_restart": workflow_state_gate_restart(status, workflow, work_id, phase),
     }
+
+
+def workflow_state_gate_restart(status: str, workflow: str, work_id: str, phase: str) -> dict[str, Any]:
+    repair_command = ""
+    if status in {"blocked", "failed"}:
+        repair_command = (
+            "uv run --project runtime python runtime/workflow/workflow_state.py --repo-root . "
+            f"--work-dir work/{work_id} set --workflow {workflow} --work-id {work_id} --phase {phase} --status in-progress"
+        )
+    return gate_restart.build_status_gate_restart(
+        "workflow-state-gate",
+        status=status,
+        restart_reason="workflow-state",
+        repair_command=repair_command,
+    )
 
 
 def state_path_for_work_dir(work_dir: Path) -> Path:
@@ -49,6 +65,15 @@ def load_state(work_dir: Path, workflow: str = "", work_id: str = "", phase: str
         data.setdefault("next_human_action", "")
         data.setdefault("artifacts", {})
         data.setdefault("history", [])
+        data.setdefault(
+            "gate_restart",
+            workflow_state_gate_restart(
+                str(data.get("status", status)),
+                str(data.get("workflow", workflow)),
+                str(data.get("work_id", work_id)),
+                str(data.get("phase", phase)),
+            ),
+        )
         return data
     return default_state(workflow, work_id, phase, status)
 
@@ -81,6 +106,7 @@ def update_state(
             "blocking_reason": blocking_reason,
             "next_human_action": next_human_action,
             "updated_at": utc_now_iso(),
+            "gate_restart": workflow_state_gate_restart(status, workflow, work_id, phase),
         }
     )
     if artifacts:

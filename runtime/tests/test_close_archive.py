@@ -178,7 +178,7 @@ def test_file_and_markdown_helpers(tmp_path: Path) -> None:
     assert close_archive.first_paragraph(sample.read_text(encoding="utf-8"), max_chars=25) == "--- title: 'Meta Title' -"
     assert close_archive.markdown_headings(sample.read_text(encoding="utf-8")) == ["Detail", "More"]
     assert close_archive.markdown_bullets(sample.read_text(encoding="utf-8")) == ["Bullet A", "Bullet B", "Bullet C"]
-    assert close_archive.has_mojibake("縺")
+    assert close_archive.has_mojibake("縺")  # text-boundary: allow-mojibake-example
     assert not close_archive.has_mojibake("normal text")
     assert close_archive.bullet_paths(repo, []) == "- なし"
     assert close_archive.archive_title("issue-1", "improvement", "issue-1") == "improvement/issue-1 (issue-1)"
@@ -311,7 +311,7 @@ def test_rag_summary_formatting_and_report_builder(tmp_path: Path) -> None:
         "## Section A\n"
         "- Keep report only\n"
         "- Remove source checkout\n"
-        "縺\n",
+        "縺\n",  # text-boundary: allow-mojibake-example
         encoding="utf-8",
     )
     work = repo / "work" / "issue-9"
@@ -491,6 +491,8 @@ def test_audit_reports_readiness_and_prepare_no_auto_explicit_rag(tmp_path: Path
     prepared_stdout = json.loads(capsys.readouterr().out)
     assert prepared_stdout["status"] == "prepared"
     assert prepared_stdout["rag_sources"] == ["rag/manual.md"]
+    assert prepared_stdout["gate_restart"]["gate"] == "close-archive-gate"
+    assert prepared_stdout["gate_restart"]["repair_available"] is True
 
     audit_result = close_archive.main(
         [
@@ -507,6 +509,7 @@ def test_audit_reports_readiness_and_prepare_no_auto_explicit_rag(tmp_path: Path
     audit_stdout = json.loads(capsys.readouterr().out)
     assert audit_stdout["report_only_ready"] is True
     assert audit_stdout["missing_report_files"] == []
+    assert audit_stdout["gate_restart"]["next_on_pass"] == "return-to-calling-workflow-after-gate"
 
     (archive / "tmp").mkdir()
     audit_with_extra = close_archive.run_audit(
@@ -523,6 +526,7 @@ def test_audit_reports_readiness_and_prepare_no_auto_explicit_rag(tmp_path: Path
     )
     assert audit_with_extra["report_only_ready"] is False
     assert audit_with_extra["prune_target_count"] == 1
+    assert audit_with_extra["gate_restart"]["restart_from"] == "close-archive-gate"
 
 
 def test_prune_execute_removes_targets_and_refuses_missing_reports(tmp_path: Path) -> None:
@@ -554,6 +558,8 @@ def test_prune_execute_removes_targets_and_refuses_missing_reports(tmp_path: Pat
     assert not extra_dir.exists()
     assert not extra_file.exists()
     assert len(result["removed"]) == 2
+    assert result["gate_restart"]["gate"] == "close-archive-gate"
+    assert result["gate_restart"]["repair_available"] is False
 
     incomplete = repo / "work" / "close" / "improvement" / "issue-6"
     incomplete.mkdir(parents=True)

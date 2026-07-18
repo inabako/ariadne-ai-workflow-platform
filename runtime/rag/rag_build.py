@@ -9,7 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.common import gate_restart, find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.paths import (  # noqa: E402
     DUCKDB_INGESTION_EVIDENCE_DIR,
     DUCKDB_MIGRATION_EVIDENCE,
@@ -80,12 +80,13 @@ def build_run_artifact(
         human_check_reasons.append("clean-output was used for generated RAG artifact directories.")
     if should_standardize(args):
         human_check_reasons.append("source report filenames may be standardized before normalization.")
+    status = "completed"
     return {
         "schema_version": "1.0",
         "artifact_type": "rag-build-run",
         "architecture": "context-first",
         "created_at": utc_now_iso(),
-        "status": "completed",
+        "status": status,
         "pipeline": "file-based-rag-build",
         "work_id": args.work_id,
         "inputs": {
@@ -128,6 +129,14 @@ def build_run_artifact(
         "stages": stages,
         "human_check_required": bool(human_check_reasons),
         "human_check_reasons": human_check_reasons,
+        "gate_restart": gate_restart.build_status_gate_restart(
+            "rag-build-gate",
+            status="human-check-required" if human_check_reasons else status,
+            restart_reason="rag-build",
+            repair_command="uv run --project runtime python runtime/rag/rag_build.py --repo-root ."
+            if human_check_reasons
+            else "",
+        ),
     }
 
 
@@ -331,6 +340,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "duckdb_enabled": artifact["outputs"]["duckdb_enabled"],
         "duckdb_migration_summary": artifact["outputs"]["duckdb_migration_summary"],
         "stages": [item["name"] for item in stages],
+        "gate_restart": artifact["gate_restart"],
     }
 
 

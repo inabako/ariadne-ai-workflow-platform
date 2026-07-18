@@ -15,6 +15,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.common import gate_restart  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso  # noqa: E402
 from runtime.constants.paths import (  # noqa: E402
     KNOWLEDGE_SOURCE_RAG,
@@ -697,6 +698,22 @@ def build_reports(
     return reports
 
 
+def close_archive_gate_restart(
+    status: str,
+    *,
+    command: str,
+    repair_available: bool = False,
+    repair_command: str = "",
+) -> dict[str, Any]:
+    return gate_restart.build_gate_restart(
+        "close-archive-gate",
+        restart_reason=command,
+        repair_available=repair_available,
+        repair_command=repair_command,
+        status_after_restart="pass" if status in {"ok", "prepared", "closed", "pruned", "dry-run"} else "fail",
+    )
+
+
 def run_audit(args: argparse.Namespace) -> dict[str, Any]:
     repo_root, _source_work_dir, archive_dir, work_id, category, archive_id = resolve_paths(args)
     targets = list_prune_targets(archive_dir)
@@ -712,6 +729,7 @@ def run_audit(args: argparse.Namespace) -> dict[str, Any]:
         "prune_target_count": len(targets),
         "prune_targets": [safe_relative(repo_root, path) for path in targets[:200]],
         "report_only_ready": archive_dir.exists() and not missing_reports and not targets,
+        "gate_restart": close_archive_gate_restart("ok", command="audit"),
     }
 
 
@@ -758,6 +776,15 @@ def run_prepare(args: argparse.Namespace) -> dict[str, Any]:
         "rag_sources": [item["path"] for item in rag_context],
         "created_files": [safe_relative(repo_root, archive_dir / name) for name in REPORT_FILES],
         "next_action": "Review generated reports, then run prune with --execute --human-check approved if cleanup is approved.",
+        "gate_restart": close_archive_gate_restart(
+            "prepared",
+            command="prepare",
+            repair_available=True,
+            repair_command=(
+                f"aiwfctl close-archive prune --work-id {work_id} "
+                "--execute --human-check approved"
+            ),
+        ),
     }
 
 
@@ -792,6 +819,17 @@ def run_prune(args: argparse.Namespace) -> dict[str, Any]:
         "target_count": len(targets),
         "targets": [safe_relative(repo_root, path) for path in targets[:200]],
         "removed": removed,
+        "gate_restart": close_archive_gate_restart(
+            "pruned" if args.execute else "dry-run",
+            command="prune",
+            repair_available=bool(targets and not args.execute),
+            repair_command=(
+                f"aiwfctl close-archive prune --work-id {work_id} "
+                "--execute --human-check approved"
+                if targets and not args.execute
+                else ""
+            ),
+        ),
     }
 
 

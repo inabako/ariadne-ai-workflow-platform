@@ -51,11 +51,12 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_context_first.py](cases/test_context_first.md) | 34 |
 | [test_corrective_action_report.py](cases/test_corrective_action_report.md) | 6 |
 | [test_coverage_audit.py](cases/test_coverage_audit.md) | 14 |
-| [test_ctl_help.py](cases/test_ctl_help.md) | 43 |
+| [test_ctl_help.py](cases/test_ctl_help.md) | 47 |
 | [test_dispatcher_context.py](cases/test_dispatcher_context.md) | 12 |
 | [test_docs_sync_workflow.py](cases/test_docs_sync_workflow.md) | 11 |
 | [test_flutter_multiplatform.py](cases/test_flutter_multiplatform.md) | 16 |
-| [test_github_knowledge_maintenance.py](cases/test_github_knowledge_maintenance.md) | 36 |
+| [test_gate_restart.py](cases/test_gate_restart.md) | 4 |
+| [test_github_knowledge_maintenance.py](cases/test_github_knowledge_maintenance.md) | 38 |
 | [test_github_runtime.py](cases/test_github_runtime.md) | 36 |
 | [test_iac_template.py](cases/test_iac_template.md) | 6 |
 | [test_init_corrective_action_fix.py](cases/test_init_corrective_action_fix.md) | 9 |
@@ -83,7 +84,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_system_integration.py](cases/test_system_integration.md) | 15 |
 | [test_vscode_environment_workflow.py](cases/test_vscode_environment_workflow.md) | 10 |
 | [test_vscode_workspace.py](cases/test_vscode_workspace.md) | 2 |
-| [test_workflow_doctor.py](cases/test_workflow_doctor.md) | 25 |
+| [test_workflow_doctor.py](cases/test_workflow_doctor.md) | 32 |
 | [test_workflow_state_noise_validation.py](cases/test_workflow_state_noise_validation.md) | 21 |
 
 ## 更新ルール
