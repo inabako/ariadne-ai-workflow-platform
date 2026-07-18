@@ -211,26 +211,32 @@ Use:
 .github/agents/github-metadata-collector-agent.prompt.md
 ```
 
-Before metadata collection, check whether GitHub CLI is available:
+Before metadata collection, run the repository runtime GitHub CLI preflight. This separates `gh --version`, `gh auth status`, and token availability so the AI does not decide these steps ad hoc:
 
 ```powershell
-gh --version
+.\runtime\windows-ps1\aiwf.ps1 preflight `
+  --profile github-cli `
+  --work-id "<work-id>"
 ```
 
-If `gh` is not available, record the missing tool in the analysis JSON, ask for human approval, then install GitHub CLI with:
+If `gh --version` is missing, record the missing tool in the analysis JSON, ask for human approval, then install GitHub CLI with:
 
 ```powershell
 winget install --id GitHub.cli
 ```
 
-After installation, open a new terminal or refresh PATH, then verify:
+After installation, open a new terminal or refresh PATH, then rerun the preflight.
+
+If `gh auth status` reports unauthenticated and repository `.env` or process ENV contains `GITHUB_TOKEN`, `GH_TOKEN`, `GITHUB_API_TOKEN`, or `GITHUB_API_KEY`, run the ENV login action through preflight. Do not print token values:
 
 ```powershell
-gh --version
-gh auth status
+.\runtime\windows-ps1\aiwf.ps1 preflight `
+  --profile github-cli `
+  --gh-login-from-env `
+  --human-check approved
 ```
 
-If the repository `.env` contains `GITHUB_TOKEN`, note that the token is available to repository runtime helpers via `load_env()`, even when `$env:GITHUB_TOKEN` is not set in the current PowerShell process. Do not print token values.
+The runtime performs `gh auth login --with-token` from stdin and then `gh auth setup-git`. Use token ENV, not GitHub password ENV. If the repository `.env` contains a token key, note that the token is available to repository runtime helpers via `load_env()`, even when `$env:GITHUB_TOKEN` is not set in the current PowerShell process. Do not print token values.
 
 Prefer GitHub CLI/API:
 

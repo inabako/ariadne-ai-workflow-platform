@@ -13,9 +13,9 @@ coverage 推移と監査履歴は repository root の `Runtime pytest 分岐・C
 | 項目 | 値 |
 | --- | ---: |
 | pytest files | 39 |
-| pytest test functions | 675 |
-| pytest collected cases | 674 |
-| pytest result | `674 passed` |
+| pytest test functions | 678 |
+| pytest collected cases | 677 |
+| pytest result | `677 passed` |
 | statement coverage | 99.66% |
 | total coverage | 99.48% |
 
@@ -64,7 +64,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_mcp_boilerplate_templates.py](cases/test_mcp_boilerplate_templates.md) | 3 |
 | [test_mcp_server_group_workflow.py](cases/test_mcp_server_group_workflow.md) | 12 |
 | [test_observability_metrics.py](cases/test_observability_metrics.md) | 17 |
-| [test_preflight.py](cases/test_preflight.md) | 28 |
+| [test_preflight.py](cases/test_preflight.md) | 31 |
 | [test_pytest_ut_spec_sync.py](cases/test_pytest_ut_spec_sync.md) | 20 |
 | [test_rag_artifact_migration.py](cases/test_rag_artifact_migration.md) | 19 |
 | [test_rag_build.py](cases/test_rag_build.md) | 8 |

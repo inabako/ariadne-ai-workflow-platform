@@ -121,6 +121,26 @@ runtime/posix-bash/aiwf.sh
 
 `text_encoding_guard.py` は、UTF-8として読んだtextのdecode errorと、連続した疑問符のような不可逆欠落を検出します。固定のmojibake marker判定は行わず、保存済み文字化けの切り分けは `text_encoding_convert.py preview` に寄せます。
 
+## GitHub CLI Preflight
+
+`preflight.py` の `github-cli` profile は、`gh --version`、`gh auth status`、GitHub token ENV availabilityを別checkとして扱います。
+
+Windows 11:
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 preflight --profile github-cli --work-id "<work-id>"
+.\runtime\windows-ps1\aiwf.ps1 preflight --profile github-cli --gh-login-from-env --human-check approved
+```
+
+POSIX:
+
+```bash
+./runtime/posix-bash/aiwf.sh preflight --profile github-cli --work-id "<work-id>"
+./runtime/posix-bash/aiwf.sh preflight --profile github-cli --gh-login-from-env --human-check approved
+```
+
+未ログインで `GITHUB_TOKEN` / `GH_TOKEN` / `GITHUB_API_TOKEN` / `GITHUB_API_KEY` が repository `.env` または process ENV にある場合だけ、`gh auth login --with-token` と `gh auth setup-git` を実行します。token値はreportへ出力しません。
+
 ## Intake Role
 
 `runtime/intake/` は、投入された要件定義書を受け付け、受付ID単位の作業領域へ移動する責務を持ちます。

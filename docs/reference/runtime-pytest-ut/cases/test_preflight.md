@@ -110,6 +110,57 @@ runtime/tests/test_preflight.py::test_docker_compose_check_reports_compose_error
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
+#### RT-UT-CASE-230A
+
+- pytest node id:
+
+```text
+runtime/tests/test_preflight.py::test_github_cli_checks_split_version_auth_and_env_token
+```
+
+- 確認内容: GitHub CLI preflight が `gh --version`、`gh auth status`、GitHub token ENV availabilityを別checkとして扱い、未認証時に `auth-required` と ENV login actionを返すことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_preflight.py:139`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - parameter: names=なし case=なし
+  - inline input: `checks`, `calls`
+- 期待結果: `gh --version` と `gh auth status` が別commandとして実行され、token値は `configured (masked)` として扱われ、auth checkには `--gh-login-from-env` actionが記録される。
+
+#### RT-UT-CASE-230B
+
+- pytest node id:
+
+```text
+runtime/tests/test_preflight.py::test_gh_login_from_env_uses_token_stdin_and_sanitizes_report
+```
+
+- 確認内容: ENV token login runtime が tokenをstdinで `gh auth login --with-token` に渡し、実行reportにtoken値を出力しないことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_preflight.py:182`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - parameter: names=なし case=なし
+  - inline input: `commands`, `executions`
+- 期待結果: `gh auth login --hostname github.com --with-token` と `gh auth setup-git --hostname github.com` が実行され、execution JSONにtoken値が含まれない。
+
+#### RT-UT-CASE-230C
+
+- pytest node id:
+
+```text
+runtime/tests/test_preflight.py::test_main_gh_login_from_env_requires_human_approval
+```
+
+- 確認内容: `--gh-login-from-env` が credential設定を伴うため、`--human-check approved` なしでは実行されないことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_preflight.py:208`
+  - fixture/arg: `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
+  - parameter: names=なし case=なし
+  - inline input: `code`
+- 期待結果: return code 1となり、stderrに `--gh-login-from-env requires --human-check approved` が出力される。
+
 #### RT-UT-CASE-230
 
 - pytest node id:

@@ -16,6 +16,7 @@ script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 repo_root="$(cd -- "$script_dir/../.." && pwd -P)"
 runtime_root="$repo_root/runtime"
 ctl_path="$runtime_root/common/ctl.py"
+preflight_path="$runtime_root/environment/preflight.py"
 bom_tool_path="$runtime_root/tools/utf8_bom.py"
 spec_sync_path="$runtime_root/tools/pytest_ut_spec_sync.py"
 spec_path="$repo_root/docs/reference/runtime-pytest-ut/case-specification.md"
@@ -59,6 +60,7 @@ Usage:
   ./runtime/posix-bash/aiwf.sh ctl <aiwfctl-args>
   ./runtime/posix-bash/aiwf.sh doctor [aiwfctl-doctor-args]
   ./runtime/posix-bash/aiwf.sh pytest [pytest-args]
+  ./runtime/posix-bash/aiwf.sh preflight [preflight-args]
   ./runtime/posix-bash/aiwf.sh spec-check
   ./runtime/posix-bash/aiwf.sh bom-scan [utf8_bom scan args]
   ./runtime/posix-bash/aiwf.sh bom-strip [utf8_bom strip args]
@@ -86,6 +88,9 @@ case "$command_name" in
     ;;
   pytest)
     invoke_uv "$runtime_root" run pytest "$@"
+    ;;
+  preflight)
+    invoke_uv "$repo_root" run --project "$runtime_root" python "$preflight_path" --repo-root "$repo_root" "$@"
     ;;
   spec-check)
     invoke_uv "$repo_root" run --project "$runtime_root" python "$spec_sync_path" --spec "$spec_path" --runtime-root "$runtime_root" check "$@"

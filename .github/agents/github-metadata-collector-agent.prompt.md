@@ -18,16 +18,19 @@ You collect GitHub metadata using GitHub CLI and GitHub API for GitHub Repositor
 
 Before collection:
 
-- Check whether `gh --version` works.
-- If `gh` is missing, record the missing tool in `collection_plan` or `open_questions`.
+- Run `.\runtime\windows-ps1\aiwf.ps1 preflight --profile github-cli --work-id "<work-id>"` on Windows 11.
+- The runtime checks `gh --version`, `gh auth status`, and token ENV availability as separate items.
+- If `gh --version` is missing, record the missing tool in `collection_plan` or `open_questions`.
 - Do not install silently. After human approval, install GitHub CLI with:
 
 ```powershell
 winget install --id GitHub.cli
 ```
 
-- After installation, open a new terminal or refresh PATH, then verify `gh --version` and `gh auth status`.
-- If repository `.env` contains `GITHUB_TOKEN`, treat that as available to repository runtime helpers that call `load_env()`, even when `$env:GITHUB_TOKEN` is absent in the current PowerShell process.
+- After installation, open a new terminal or refresh PATH, then rerun the GitHub CLI preflight.
+- If `gh auth status` is unauthenticated and repository `.env` or process ENV contains `GITHUB_TOKEN`, `GH_TOKEN`, `GITHUB_API_TOKEN`, or `GITHUB_API_KEY`, run `.\runtime\windows-ps1\aiwf.ps1 preflight --profile github-cli --gh-login-from-env --human-check approved`.
+- The login runtime passes the token to `gh auth login --with-token` by stdin and then runs `gh auth setup-git`; do not use GitHub password ENV.
+- If repository `.env` contains a token key, treat that as available to repository runtime helpers that call `load_env()`, even when `$env:GITHUB_TOKEN` is absent in the current PowerShell process.
 - Never print token values.
 
 Collect relevant metadata from:

@@ -46,6 +46,23 @@ Linux / WSL / macOS で AI workflow を実行する場合は、まず bash nativ
 
 不足している操作がある場合、bash に直接 workflow logic を増やさず、先に `runtime/common/ctl.py` の正式入口を self-improvement Feedback 経由で拡張します。
 
+## GitHub CLI Preflight
+
+GitHub metadata / sync workflow では、`gh --version` と `gh auth status` を別々に判定します。
+Windows 11 では次を正式入口にします。
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 preflight --profile github-cli --work-id "<work-id>"
+```
+
+未ログインで `GITHUB_TOKEN` / `GH_TOKEN` / `GITHUB_API_TOKEN` / `GITHUB_API_KEY` が repository `.env` または process ENV にある場合は、次で `gh auth login --with-token` と `gh auth setup-git` を実行します。token値はreportへ出力しません。
+
+```powershell
+.\runtime\windows-ps1\aiwf.ps1 preflight --profile github-cli --gh-login-from-env --human-check approved
+```
+
+GitHub passwordをENVに保存しません。GitHub CLI/API と git remote の認証情報はtokenを共用できますが、runtimeは値をログ出力しないことを前提に扱います。
+
 ## Runtime Areas
 
 | Directory | Purpose |

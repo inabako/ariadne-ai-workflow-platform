@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("help", "ctl", "doctor", "pytest", "spec-check", "bom-scan", "bom-strip")]
+    [ValidateSet("help", "ctl", "doctor", "pytest", "preflight", "spec-check", "bom-scan", "bom-strip")]
     [string]$Command = "help",
 
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -15,11 +15,14 @@ $Utf8NoBom = [System.Text.UTF8Encoding]::new($false)
 [Console]::InputEncoding = $Utf8NoBom
 [Console]::OutputEncoding = $Utf8NoBom
 $OutputEncoding = $Utf8NoBom
+$env:PYTHONUTF8 = "1"
+$env:PYTHONIOENCODING = "utf-8"
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = (Resolve-Path (Join-Path $ScriptDir "../..")).Path
 $RuntimeRoot = Join-Path $RepoRoot "runtime"
 $CtlPath = Join-Path $RuntimeRoot "common/ctl.py"
+$PreflightPath = Join-Path $RuntimeRoot "environment/preflight.py"
 $BomToolPath = Join-Path $RuntimeRoot "tools/utf8_bom.py"
 $SpecSyncPath = Join-Path $RuntimeRoot "tools/pytest_ut_spec_sync.py"
 $SpecPath = Join-Path $RepoRoot "docs/reference/runtime-pytest-ut/case-specification.md"
@@ -111,6 +114,7 @@ Usage:
   .\runtime\windows-ps1\aiwf.ps1 ctl <aiwfctl-args>
   .\runtime\windows-ps1\aiwf.ps1 doctor [aiwfctl-doctor-args]
   .\runtime\windows-ps1\aiwf.ps1 pytest [pytest-args]
+  .\runtime\windows-ps1\aiwf.ps1 preflight [preflight-args]
   .\runtime\windows-ps1\aiwf.ps1 spec-check
   .\runtime\windows-ps1\aiwf.ps1 bom-scan [utf8_bom scan args]
   .\runtime\windows-ps1\aiwf.ps1 bom-strip [utf8_bom strip args]
@@ -148,6 +152,11 @@ switch ($Command) {
         $arguments = @("run", "pytest")
         $arguments += $RemainingArgs
         Invoke-AiwfUv -ArgumentList $arguments -WorkingDirectory $RuntimeRoot
+    }
+    "preflight" {
+        $arguments = @("run", "--project", $RuntimeRoot, "python", $PreflightPath, "--repo-root", $RepoRoot)
+        $arguments += $RemainingArgs
+        Invoke-AiwfUv -ArgumentList $arguments -WorkingDirectory $RepoRoot
     }
     "spec-check" {
         $arguments = @(

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -13,7 +14,14 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime.common import find_repo_root, load_env, local_timestamp, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.common import env_value, find_repo_root, load_env, local_timestamp, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+
+
+GITHUB_TOKEN_KEYS = ("GITHUB_TOKEN", "GH_TOKEN", "GITHUB_API_TOKEN", "GITHUB_API_KEY")
+TOKEN_REDACTION_PATTERNS = (
+    re.compile(r"github_pat_[A-Za-z0-9_*-]+"),
+    re.compile(r"gh[pousr]_[A-Za-z0-9_*-]+"),
+)
 
 
 @dataclass(frozen=True)
@@ -27,6 +35,7 @@ class Check:
     install_hint: str
     install_command: str | None = None
     fallback_command: str | None = None
+    action_command: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -39,6 +48,7 @@ class Check:
             "install_hint": self.install_hint,
             "install_command": self.install_command,
             "fallback_command": self.fallback_command,
+            "action_command": self.action_command,
         }
 
 
@@ -48,10 +58,31 @@ def run_command(command: Sequence[str], cwd: Path | None = None, env: dict[str, 
         cwd=str(cwd) if cwd else None,
         env=env,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         check=False,
     )
+
+
+def configure_utf8_stdout() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
+
+def redact_github_secrets(text: str | None, repo_root: Path | None = None) -> str:
+    safe = text or ""
+    for pattern in TOKEN_REDACTION_PATTERNS:
+        safe = pattern.sub("[REDACTED]", safe)
+    if repo_root:
+        settings = load_env(repo_root)
+        for key in GITHUB_TOKEN_KEYS:
+            value = settings.get(key, "").strip()
+            if value:
+                safe = safe.replace(value, "[REDACTED]")
+    return safe
 
 
 def which_check(
@@ -143,6 +174,169 @@ def docker_compose_check(*, required: bool) -> Check:
         install_hint="Install Docker Desktop with Compose support, then verify: docker compose version.",
         install_command="winget install --id Docker.DockerDesktop -e",
     )
+
+
+def github_cli_version_check(*, required: bool) -> Check:
+    if shutil.which("gh") is None:
+        return Check(
+            id="github-cli:version",
+            label="gh --version",
+            kind="github-cli",
+            required=required,
+            ok=False,
+            detected="",
+            install_hint="Install GitHub CLI, then verify with gh --version.",
+            install_command="winget install --id GitHub.cli",
+        )
+    completed = run_command(["gh", "--version"])
+    return Check(
+        id="github-cli:version",
+        label="gh --version",
+        kind="github-cli",
+        required=required,
+        ok=completed.returncode == 0,
+        detected=redact_github_secrets(
+            completed.stdout.splitlines()[0].strip() if completed.returncode == 0 and completed.stdout else (completed.stderr or "").strip()
+        ),
+        install_hint="GitHub CLI must be callable as gh --version before GitHub metadata collection.",
+        install_command="winget install --id GitHub.cli",
+    )
+
+
+def github_env_token_check(repo_root: Path, *, required: bool = False) -> Check:
+    settings = load_env(repo_root)
+    token = env_value(settings, *GITHUB_TOKEN_KEYS)
+    detected = "configured (masked)" if token.strip() else ""
+    return Check(
+        id="env:github-token",
+        label="GitHub token ENV",
+        kind="secret-env",
+        required=required,
+        ok=bool(token.strip()),
+        detected=detected,
+        install_hint="Set GITHUB_TOKEN or GH_TOKEN in process ENV or repository .env. Do not store passwords.",
+    )
+
+
+def github_cli_auth_check(repo_root: Path, *, required: bool, hostname: str = "github.com") -> Check:
+    action_command = (
+        "uv run --project runtime python runtime/environment/preflight.py "
+        "--profile github-cli --gh-login-from-env --human-check approved"
+    )
+    if hostname != "github.com":
+        action_command += f" --github-hostname {hostname}"
+    if shutil.which("gh") is None:
+        return Check(
+            id="github-cli:auth",
+            label="gh auth status",
+            kind="github-auth",
+            required=required,
+            ok=False,
+            detected="gh is not installed",
+            install_hint="Install GitHub CLI before checking GitHub authentication.",
+            action_command=action_command,
+        )
+    completed = run_command(["gh", "auth", "status", "--hostname", hostname])
+    if completed.returncode == 0:
+        detected = redact_github_secrets(
+            (completed.stdout or "").strip() or (completed.stderr or "").strip() or f"authenticated for {hostname}",
+            repo_root,
+        )
+        return Check(
+            id="github-cli:auth",
+            label="gh auth status",
+            kind="github-auth",
+            required=required,
+            ok=True,
+            detected=detected,
+            install_hint="GitHub CLI authentication is ready.",
+            action_command=action_command,
+        )
+    token_check = github_env_token_check(repo_root)
+    hint = (
+        "GitHub CLI is installed but not authenticated. "
+        "Set GITHUB_TOKEN or GH_TOKEN in process ENV or repository .env, then run the action command."
+    )
+    if not token_check.ok:
+        hint += " Token ENV is not currently detected."
+    return Check(
+        id="github-cli:auth",
+        label="gh auth status",
+        kind="github-auth",
+        required=required,
+        ok=False,
+        detected=redact_github_secrets(
+            (completed.stderr or "").strip() or (completed.stdout or "").strip() or f"not authenticated for {hostname}",
+            repo_root,
+        ),
+        install_hint=hint,
+        action_command=action_command,
+    )
+
+
+def github_auth_status(checks: Sequence[Check]) -> str:
+    missing_required = [check for check in checks if check.required and not check.ok]
+    if not missing_required:
+        return "ready"
+    if all(check.kind == "github-auth" for check in missing_required):
+        return "auth-required"
+    return "install-list-required"
+
+
+def gh_login_from_env(repo_root: Path, *, hostname: str) -> list[dict[str, Any]]:
+    settings = load_env(repo_root)
+    token = env_value(settings, *GITHUB_TOKEN_KEYS).strip()
+    if not token:
+        raise ValueError("GitHub token ENV is required. Set GITHUB_TOKEN or GH_TOKEN in process ENV or repository .env.")
+    version = github_cli_version_check(required=True)
+    if not version.ok:
+        raise RuntimeError("GitHub CLI is required before gh auth login can run.")
+
+    login_command = ["gh", "auth", "login", "--hostname", hostname, "--with-token"]
+    setup_command = ["gh", "auth", "setup-git", "--hostname", hostname]
+    login_completed = subprocess.run(
+        login_command,
+        input=token,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    executions = [
+        {
+            "id": "github-cli:auth-login",
+            "label": "gh auth login --with-token",
+            "command": "gh auth login --hostname <host> --with-token",
+            "returncode": login_completed.returncode,
+            "stdout": redact_github_secrets(login_completed.stdout, repo_root),
+            "stderr": redact_github_secrets(login_completed.stderr, repo_root),
+        }
+    ]
+    if login_completed.returncode != 0:
+        return executions
+
+    setup_completed = subprocess.run(
+        setup_command,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    executions.append(
+        {
+            "id": "github-cli:auth-setup-git",
+            "label": "gh auth setup-git",
+            "command": "gh auth setup-git --hostname <host>",
+            "returncode": setup_completed.returncode,
+            "stdout": redact_github_secrets(setup_completed.stdout, repo_root),
+            "stderr": redact_github_secrets(setup_completed.stderr, repo_root),
+        }
+    )
+    return executions
 
 
 def localty_protocol_check(args: argparse.Namespace, protocol_dir: Path | None, bash_path: Path) -> Check:
@@ -304,6 +498,12 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
             install_hint="Needed for local pytest execution. Prefer the runtime pyproject dev dependency group instead of global install.",
             install_command="uv run --project runtime --group dev pytest --version",
         ))
+
+    if args.profile in {"github-cli", "github-knowledge-maintenance"}:
+        hostname = getattr(args, "github_hostname", "github.com") or "github.com"
+        checks.append(github_cli_version_check(required=True))
+        checks.append(github_env_token_check(repo_root, required=False))
+        checks.append(github_cli_auth_check(repo_root, required=True, hostname=hostname))
 
     if args.profile == "vscode-environment":
         checks.append(which_check(
@@ -478,6 +678,8 @@ def markdown_report(result: dict[str, Any]) -> str:
                 f"  - hint: {item['install_hint']}",
                 f"  - command: `{item['install_command'] or 'manual install required'}`",
             ])
+            if item.get("action_command"):
+                lines.append(f"  - action: `{item['action_command']}`")
             if item.get("fallback_command"):
                 lines.append(f"  - fallback: `{item['fallback_command']}`")
     else:
@@ -490,6 +692,8 @@ def markdown_report(result: dict[str, Any]) -> str:
                 f"  - hint: {item['install_hint']}",
                 f"  - command: `{item['install_command'] or 'manual install required'}`",
             ])
+            if item.get("action_command"):
+                lines.append(f"  - action: `{item['action_command']}`")
     else:
         lines.append("- none")
     lines.extend(["", "## Checks", ""])
@@ -561,6 +765,8 @@ def build_parser() -> argparse.ArgumentParser:
             "docker-compose",
             "vscode-environment",
             "flutter",
+            "github-cli",
+            "github-knowledge-maintenance",
         ],
         default="corrective-action-fix",
     )
@@ -571,23 +777,51 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--msys2-root", default=r"C:\msys64")
     parser.add_argument("--repo-root", default="")
     parser.add_argument("--install", action="store_true")
+    parser.add_argument("--gh-login-from-env", action="store_true")
+    parser.add_argument("--github-hostname", default="github.com")
     parser.add_argument("--human-check", choices=["approved"], default=None)
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    configure_utf8_stdout()
     args = build_parser().parse_args(argv)
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     checks = build_checks(args, repo_root)
     missing_required = [check for check in checks if check.required and not check.ok]
     install_executions: list[dict[str, Any]] = []
+    auth_executions: list[dict[str, Any]] = []
     if args.install:
         if args.human_check != "approved":
             print("ERROR: --install requires --human-check approved", file=sys.stderr)
             return 1
         install_executions = install_missing(checks)
+    if args.gh_login_from_env:
+        if args.human_check != "approved":
+            print("ERROR: --gh-login-from-env requires --human-check approved", file=sys.stderr)
+            return 1
+        auth_check = next((check for check in checks if check.id == "github-cli:auth"), None)
+        if auth_check and auth_check.ok:
+            auth_executions = [
+                {
+                    "id": "github-cli:auth-login",
+                    "label": "gh auth login --with-token",
+                    "command": "skipped: gh auth status already authenticated",
+                    "returncode": 0,
+                    "stdout": "",
+                    "stderr": "",
+                }
+            ]
+        else:
+            try:
+                auth_executions = gh_login_from_env(repo_root, hostname=args.github_hostname)
+            except (RuntimeError, ValueError) as exc:
+                print(f"ERROR: {exc}", file=sys.stderr)
+                return 1
+            checks = build_checks(args, repo_root)
+            missing_required = [check for check in checks if check.required and not check.ok]
 
-    status = "ready" if not missing_required else "install-list-required"
+    status = github_auth_status(checks)
     result = {
         "schema_version": "1.0",
         "artifact_type": "environment-preflight",
@@ -597,6 +831,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "next_flow_allowed": not missing_required,
         "checks": [check.to_dict() for check in checks],
         "install_executions": install_executions,
+        "auth_executions": auth_executions,
     }
     output: dict[str, Any] = dict(result)
     if args.work_id:

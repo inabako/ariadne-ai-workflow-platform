@@ -14,9 +14,9 @@ pytest node id 単位の詳細な単体試験仕様は [Runtime pytest 単体試
 | --- | ---: |
 | pytest対象ディレクトリ | `runtime/tests` |
 | pytest files | 39 |
-| pytest test functions | 675 |
-| pytest collected tests | 674 |
-| pytest result | `674 passed` |
+| pytest test functions | 678 |
+| pytest collected tests | 677 |
+| pytest result | `677 passed` |
 | statement coverage | 96% |
 | total coverage | 96% |
 | missing lines | 397 |
@@ -68,7 +68,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | RT-UT-016 | `runtime/tests/test_mcp_boilerplate_templates.py` | 3 | 3 | `templates/boilerplates/*` | MCP layered template contract、boilerplate index、OpenTelemetry Collector template contract | repo-local boilerplateが索引と必須ファイル契約を満たしていることを確認する |
 | RT-UT-017 | `runtime/tests/test_mcp_server_group_workflow.py` | 12 | 12 | `runtime/workflow/mcp_server_group.py`、`runtime/common/ctl.py` | MCP server/client/agent template展開、境界分離、Context First evidence、CLI route | MCP関連boilerplateを用途別に分け、安全にwork配下へ展開する |
 | RT-UT-018 | `runtime/tests/test_observability_metrics.py` | 17 | 17 | `runtime/observability/*` | monthly rotation、JSONL append、token/context/cost、evidence、Context First registration、non-fatal warning | Runtime metricsをbridge instrumentationとして観測可能にする |
-| RT-UT-019 | `runtime/tests/test_preflight.py` | 26 | 28 | `runtime/environment/preflight.py` | Docker、Python、MSYS2、Localty protocol、Terraform ENV path、install approval、Markdown report | 実行環境不足を作業前に検出し、人間承認なしのinstallを防ぐ |
+| RT-UT-019 | `runtime/tests/test_preflight.py` | 29 | 31 | `runtime/environment/preflight.py` | Docker、Python、MSYS2、Localty protocol、Terraform ENV path、GitHub CLI auth、install approval、Markdown report | 実行環境不足を作業前に検出し、人間承認なしのinstallやcredential設定を防ぐ |
 | RT-UT-020 | `runtime/tests/test_pytest_ut_spec_sync.py` | 20 | 20 | `runtime/tools/pytest_ut_spec_sync.py` | pytest収集結果とUT仕様書の同期確認、入力値抽出、差分検知、Markdown report、Context First manifest登録 | UT仕様書がpytest実体からずれたときに検出し、コンテキストの可観測性を保つ |
 | RT-UT-021 | `runtime/tests/test_rag_artifact_migration.py` | 19 | 19 | `runtime/rag/migrate_retrieval_artifacts.py`、`standardize_corrective_report_names.py` | retrieval artifact移行、UUID化、Markdown jsonize、report名標準化、参照更新 | RAG資産の肥大化に耐える命名・参照・移行を守る |
 | RT-UT-022 | `runtime/tests/test_rag_build.py` | 8 | 8 | `runtime/rag/rag_build.py` | normalize/chunk/index/embed pipeline統合、standardize制御、DuckDB migration evidence、context登録、CLI | RAG buildを一貫したpipeline artifactとして残す |

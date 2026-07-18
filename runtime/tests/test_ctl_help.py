@@ -37,10 +37,14 @@ def test_windows_ps1_runtime_contract() -> None:
     assert "Set-StrictMode -Version Latest" in text
     assert "[System.Text.UTF8Encoding]::new($false)" in text
     assert "$OutputEncoding = $Utf8NoBom" in text
+    assert '$env:PYTHONUTF8 = "1"' in text
+    assert '$env:PYTHONIOENCODING = "utf-8"' in text
     assert "[Parameter(ValueFromRemainingArguments = $true)]" in text
     assert "Invoke-AiwfNative" in text
     assert '"common/ctl.py"' in text
+    assert '"environment/preflight.py"' in text
     assert '"--project", $RuntimeRoot, "python", $CtlPath, "--repo-root", $RepoRoot' in text
+    assert '"--project", $RuntimeRoot, "python", $PreflightPath, "--repo-root", $RepoRoot' in text
     assert '"run", "pytest"' in text
     assert "pytest_ut_spec_sync.py" in text
     assert "utf8_bom.py" in text
@@ -52,7 +56,9 @@ def test_windows_ps1_runtime_contract() -> None:
     assert "PYTHONUTF8=1" in bash_text
     assert "PYTHONIOENCODING=utf-8" in bash_text
     assert 'ctl_path="$runtime_root/common/ctl.py"' in bash_text
+    assert 'preflight_path="$runtime_root/environment/preflight.py"' in bash_text
     assert 'run --project "$runtime_root" python "$ctl_path" --repo-root "$repo_root"' in bash_text
+    assert 'run --project "$runtime_root" python "$preflight_path" --repo-root "$repo_root"' in bash_text
     assert 'run pytest "$@"' in bash_text
     assert "pytest_ut_spec_sync.py" in bash_text
     assert "utf8_bom.py" in bash_text

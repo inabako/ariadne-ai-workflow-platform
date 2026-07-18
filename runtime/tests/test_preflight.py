@@ -136,6 +136,113 @@ def test_docker_compose_check_reports_compose_error(monkeypatch: pytest.MonkeyPa
     assert check.detected == "compose missing"
 
 
+def test_github_cli_checks_split_version_auth_and_env_token(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    calls: list[list[str]] = []
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: f"C:/tools/{name}.exe")
+    monkeypatch.setattr(preflight, "load_env", lambda repo_root: {"GITHUB_TOKEN": "secret-token"})
+
+    def fake_run(command, cwd=None, env=None):
+        calls.append(list(command))
+        if command == ["gh", "--version"]:
+            return subprocess.CompletedProcess(command, 0, stdout="gh version 2.99.0\n", stderr="")
+        if command == ["gh", "auth", "status", "--hostname", "github.com"]:
+            return subprocess.CompletedProcess(command, 1, stdout="", stderr="not logged in ghp_exampletoken\n")
+        return subprocess.CompletedProcess(command, 0, stdout="ok\n", stderr="")
+
+    monkeypatch.setattr(preflight, "run_command", fake_run)
+
+    checks = preflight.build_checks(
+        argparse.Namespace(
+            profile="github-cli",
+            source_dir="",
+            protocol_dir="",
+            support_branch="develop",
+            msys2_root=str(tmp_path / "msys64"),
+            work_id="github-knowledge-repo-recent",
+            github_hostname="github.com",
+        ),
+        tmp_path,
+    )
+
+    version = next(check for check in checks if check.id == "github-cli:version")
+    token = next(check for check in checks if check.id == "env:github-token")
+    auth = next(check for check in checks if check.id == "github-cli:auth")
+    assert ["gh", "--version"] in calls
+    assert ["gh", "auth", "status", "--hostname", "github.com"] in calls
+    assert version.ok is True
+    assert token.ok is True
+    assert token.detected == "configured (masked)"
+    assert auth.ok is False
+    assert "ghp_exampletoken" not in auth.detected
+    assert auth.kind == "github-auth"
+    assert auth.install_command is None
+    assert "--gh-login-from-env" in (auth.action_command or "")
+    assert preflight.github_auth_status(checks) == "auth-required"
+
+
+def test_gh_login_from_env_uses_token_stdin_and_sanitizes_report(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    commands: list[tuple[list[str], str | None]] = []
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: f"C:/tools/{name}.exe")
+    monkeypatch.setattr(preflight, "load_env", lambda repo_root: {"GH_TOKEN": "secret-token"})
+    monkeypatch.setattr(
+        preflight,
+        "run_command",
+        lambda command, cwd=None, env=None: subprocess.CompletedProcess(command, 0, stdout="gh version 2.99.0\n", stderr=""),
+    )
+
+    def fake_subprocess_run(command, input=None, text=None, stdout=None, stderr=None, check=None, **kwargs):
+        commands.append((list(command), input))
+        return subprocess.CompletedProcess(command, 0, stdout="ok secret-token github_pat_example\n", stderr="")
+
+    monkeypatch.setattr(preflight.subprocess, "run", fake_subprocess_run)
+
+    executions = preflight.gh_login_from_env(tmp_path, hostname="github.com")
+
+    assert commands == [
+        (["gh", "auth", "login", "--hostname", "github.com", "--with-token"], "secret-token"),
+        (["gh", "auth", "setup-git", "--hostname", "github.com"], None),
+    ]
+    assert "secret-token" not in json.dumps(executions)
+    assert "github_pat_example" not in json.dumps(executions)
+    assert executions[0]["command"] == "gh auth login --hostname <host> --with-token"
+
+
+def test_main_gh_login_from_env_requires_human_approval(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    code = preflight.main(["--repo-root", str(tmp_path), "--profile", "github-cli", "--gh-login-from-env"])
+
+    captured = capsys.readouterr()
+    assert code == 1
+    assert "--gh-login-from-env requires --human-check approved" in captured.err
+
+    ready_auth = preflight.Check(
+        id="github-cli:auth",
+        label="gh auth status",
+        kind="github-auth",
+        required=True,
+        ok=True,
+        detected="authenticated",
+        install_hint="ready",
+    )
+
+    def fail_login(repo_root, hostname):
+        raise AssertionError("login should be skipped when gh auth status is ready")
+
+    monkeypatch = pytest.MonkeyPatch()
+    try:
+        monkeypatch.setattr(preflight, "build_checks", lambda args, repo_root: [ready_auth])
+        monkeypatch.setattr(preflight, "gh_login_from_env", fail_login)
+        code = preflight.main(
+            ["--repo-root", str(tmp_path), "--profile", "github-cli", "--gh-login-from-env", "--human-check", "approved"]
+        )
+    finally:
+        monkeypatch.undo()
+
+    output = json.loads(capsys.readouterr().out)
+    assert code == 0
+    assert output["status"] == "ready"
+    assert output["auth_executions"][0]["command"].startswith("skipped:")
+
+
 def test_localty_protocol_check_uses_msys2_python_when_available(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     bash_path = tmp_path / "usr" / "bin" / "bash.exe"
     bash_path.parent.mkdir(parents=True)
