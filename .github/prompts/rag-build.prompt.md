@@ -17,7 +17,7 @@ RAG Build Skill を使って、Ariadne AI Workflow の Markdown report を file-
 5. `runtime/rag/embed_chunks.py`
 6. 必要に応じて `runtime/rag/jsonize_rag_tree.py`
 
-`ingestion_optimizer.py` は、RAG吸収前のchunk候補を `ACCEPT / REWRITE / HUMAN_CHECK / REJECT` に分類し、`db/rag/evidence/ingestion` にEvidenceを保存します。通常は `ACCEPT` 済みの `db/rag/optimized-chunks/*.json` だけをindex / embedding対象にしてください。
+`ingestion_optimizer.py` は、RAG吸収前のchunk候補を `ACCEPT / REWRITE / HUMAN_CHECK / REJECT` に分類し、`db/rag/evidence/ingestion` にEvidenceを保存します。通常は `ACCEPT` 済みの `work/db/ariadne-knowledge-platform/rag/optimized-chunks/*.json` だけをindex / embedding対象にしてください。
 
 `work/db/ariadne-knowledge-platform/rag/corrective-action-report` 配下の Markdown report は、build前に `runtime/rag/standardize_corrective_report_names.py --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report --replace-references` で `YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md` に統一してください。標準は8桁です。
 

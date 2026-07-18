@@ -10,9 +10,14 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.workspace import (  # noqa: E402
+    CONTEXT_MANIFEST_FILE_NAME,
+    context_dir_for_work_dir as workspace_context_dir_for_work_dir,
+    manifest_path_for_work_dir as workspace_manifest_path_for_work_dir,
+)
 
 
-MANIFEST_FILE_NAME = "context-manifest.json"
+MANIFEST_FILE_NAME = CONTEXT_MANIFEST_FILE_NAME
 DISPATCHER_CONTEXT_TYPES = {
     "environment-selection",
     "workflow-selection",
@@ -23,11 +28,11 @@ DISPATCHER_CONTEXT_TYPES = {
 
 
 def context_dir_for_work_dir(work_dir: Path) -> Path:
-    return work_dir / "context"
+    return workspace_context_dir_for_work_dir(work_dir)
 
 
 def manifest_path_for_work_dir(work_dir: Path) -> Path:
-    return context_dir_for_work_dir(work_dir) / MANIFEST_FILE_NAME
+    return workspace_manifest_path_for_work_dir(work_dir)
 
 
 def default_manifest(work_id: str) -> dict[str, Any]:

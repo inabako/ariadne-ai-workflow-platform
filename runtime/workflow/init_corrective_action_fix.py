@@ -24,6 +24,17 @@ from runtime.common import (  # noqa: E402
     utc_now_iso,
     write_json,
 )
+from runtime.constants.schemas import (  # noqa: E402
+    AGENT_CONTEXT_SCHEMA,
+    ARTIFACT_INDEX_SCHEMA,
+    CORRECTIVE_ACTION_REPORT_SCHEMA,
+    HANDOFF_PACKAGE_SCHEMA,
+)
+from runtime.constants.workspace import (  # noqa: E402
+    context_dir_for_work_dir,
+    context_file,
+    work_dir_for_id,
+)
 from runtime.workflow.context_first import context_entry, context_path, load_manifest, register_context  # noqa: E402
 
 
@@ -99,7 +110,7 @@ def resolve_report_input(repo_root: Path, args: argparse.Namespace, work_id: str
         if not candidate_work_id or candidate_work_id in seen:
             continue
         seen.add(candidate_work_id)
-        context = report_context_from_work_dir(repo_root, repo_root / "work" / candidate_work_id)
+        context = report_context_from_work_dir(repo_root, work_dir_for_id(repo_root, candidate_work_id))
         if context:
             return context
     return {"report_path": "", "context_path": "", "resolution": "missing"}
@@ -121,7 +132,7 @@ def write_corrective_report_context(
     report_path = Path(report_rel)
     if not report_path.is_absolute():
         report_path = repo_root / report_path
-    context_path = work_dir / "context" / "corrective-action-report.json"
+    context_path = context_file(work_dir, "corrective-action-report.json")
     write_json(
         context_path,
         {
@@ -149,7 +160,7 @@ def write_corrective_report_context(
                 "source_context_path": source_context_path,
             },
             "source": {
-                "schema": ".github/schemas/corrective-action-report.schema.json",
+                "schema": CORRECTIVE_ACTION_REPORT_SCHEMA,
                 "registered_by": "corrective-action-fix-init",
             },
         },
@@ -163,30 +174,30 @@ def write_corrective_report_context(
         required=False,
         generated_by="corrective-action-fix-init",
         owner="workflow",
-        schema=".github/schemas/corrective-action-report.schema.json",
+        schema=CORRECTIVE_ACTION_REPORT_SCHEMA,
     )
 
 
 def register_initial_context_manifest(repo_root: Path, work_dir: Path, work_id: str) -> None:
-    context_dir = work_dir / "context"
+    context_dir = context_dir_for_work_dir(work_dir)
     registrations = [
         (
             "agent-context",
             context_dir / "agent-context.json",
             True,
-            ".github/schemas/agent-context.schema.json",
+            AGENT_CONTEXT_SCHEMA,
         ),
         (
             "artifact-index",
             context_dir / "artifact-index.json",
             True,
-            ".github/schemas/artifact-index.schema.json",
+            ARTIFACT_INDEX_SCHEMA,
         ),
         (
             "handoff-package",
             context_dir / "handoff-package.json",
             False,
-            ".github/schemas/handoff-package.schema.json",
+            HANDOFF_PACKAGE_SCHEMA,
         ),
         ("qa-records", context_dir / "qa-records.json", False, ""),
         ("finding-records", context_dir / "finding-records.json", False, ""),
@@ -213,14 +224,14 @@ def run(args: argparse.Namespace) -> dict[str, object]:
     repository = normalize_repository_value(args.repository)
     repo_name = repository_name(repository, default_github_owner(settings))
     work_id = args.work_id or branch_to_work_id(args.target_branch)
-    work_dir = repo_root / "work" / work_id
+    work_dir = work_dir_for_id(repo_root, work_id)
     if work_dir.exists() and not args.reuse_existing:
         raise FileExistsError(
             f"Work directory already exists: {work_dir}. "
             "原本または作業フォルダが既にあります。内容を確認してから、再利用する場合のみ --reuse-existing を指定してください。"
         )
     work_dir = ensure_work_tree(repo_root, work_id)
-    context_dir = work_dir / "context"
+    context_dir = context_dir_for_work_dir(work_dir)
     now = utc_now_iso()
     intent_summary = args.intent_summary or (
         f"Create corrective action report for {repository} {args.target_branch}, "

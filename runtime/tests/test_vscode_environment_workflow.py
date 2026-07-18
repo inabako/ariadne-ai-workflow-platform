@@ -116,7 +116,7 @@ def test_vscode_environment_rag_filename_and_template(monkeypatch: pytest.Monkey
             mode="custom-design",
             work_id="vscode-env",
         ),
-        "rag/workspace-environment/source.md",
+        "work/db/ariadne-knowledge-platform/rag/workspace-environment/source.md",
     )
 
     assert filename.endswith("_ABC123_local-env.md")
@@ -128,7 +128,7 @@ def test_vscode_environment_write_rag_template_requires_repo_local_source_dir(tm
     result = vscode_environment.write_rag_template(
         namespace(
             work_id="vscode-env",
-            source_dir="rag/workspace-environment",
+            source_dir="work/db/ariadne-knowledge-platform/rag/workspace-environment",
             topic="Local Env",
             repository="owner/repo",
             target_workspace="",

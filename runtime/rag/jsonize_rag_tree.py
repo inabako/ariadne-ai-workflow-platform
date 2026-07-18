@@ -13,7 +13,7 @@ if __package__ in {None, ""}:
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag.cleanup_guard import assert_safe_clean_output_target  # noqa: E402
-from runtime.rag.paths import GENERATED_JSONIZED, KNOWLEDGE_SOURCE_RAG  # noqa: E402
+from runtime.constants.paths import GENERATED_JSONIZED, KNOWLEDGE_SOURCE_RAG  # noqa: E402
 
 
 UUID_JSON_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.json$")

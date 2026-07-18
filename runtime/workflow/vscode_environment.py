@@ -13,12 +13,24 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo, slugify, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.paths import GENERATED_NORMALIZED, RAG_NORMALIZE_SCRIPT, SOURCE_WORKSPACE_ENVIRONMENT  # noqa: E402
+from runtime.constants.schemas import RUNTIME_CONTEXT_SCHEMA, VSCODE_ENVIRONMENT_STATE_SCHEMA  # noqa: E402
+from runtime.constants.workspace import (
+    CONTEXT_DIR_NAME,
+    DESIGN_DOCUMENT_DIR_NAME,
+    PROCESS_REPORT_DIR_NAME,
+    TEST_EVIDENCE_DIR_NAME,
+    context_file,
+    design_document_dir_for_work_dir,
+    process_report_dir_for_work_dir,
+    work_dir_for_id,
+)  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
 DEFAULT_DRAFT_DIR = "work/requirements/devlop-edit-draft"
 DEFAULT_DRAFT_SCAFFOLD = "README.md"
-DEFAULT_RAG_SOURCE_DIR = "rag/workspace-environment"
+DEFAULT_RAG_SOURCE_DIR = SOURCE_WORKSPACE_ENVIRONMENT.as_posix()
 CROCKFORD_BASE32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 UTF8_POWERSHELL_STARTUP = (
     "[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false); "
@@ -77,11 +89,17 @@ def repo_root_from(args: argparse.Namespace) -> Path:
 
 
 def work_dir(repo_root: Path, work_id: str) -> Path:
-    return repo_root / "work" / work_id
+    return work_dir_for_id(repo_root, work_id)
 
 
 def ensure_work_dirs(base: Path) -> None:
-    for name in ["context", "design-document", "process-report", "test-evidence", "test-evidence/evidence"]:
+    for name in [
+        CONTEXT_DIR_NAME,
+        DESIGN_DOCUMENT_DIR_NAME,
+        PROCESS_REPORT_DIR_NAME,
+        TEST_EVIDENCE_DIR_NAME,
+        f"{TEST_EVIDENCE_DIR_NAME}/evidence",
+    ]:
         (base / name).mkdir(parents=True, exist_ok=True)
 
 
@@ -146,7 +164,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
             "workspace-test.md",
         ],
     }
-    state_path = base / "context" / "vscode-environment-state.json"
+    state_path = context_file(base, "vscode-environment-state.json")
     write_json(state_path, state)
     runtime_context = {
         "schema_version": "1.0",
@@ -178,7 +196,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
             "custom-design mode requests personal paths, special terminals, or non-standard toolchains.",
         ],
     }
-    runtime_context_path = base / "context" / "runtime-context.json"
+    runtime_context_path = context_file(base, "runtime-context.json")
     write_json(runtime_context_path, runtime_context)
     register_context(
         repo_root,
@@ -189,7 +207,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
         required=True,
         generated_by="vscode-environment",
         owner="workflow",
-        schema=".github/schemas/vscode-environment-state.schema.json",
+        schema=VSCODE_ENVIRONMENT_STATE_SCHEMA,
     )
     register_context(
         repo_root,
@@ -200,7 +218,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
         required=True,
         generated_by="vscode-environment",
         owner="workflow",
-        schema=".github/schemas/runtime-context.schema.json",
+        schema=RUNTIME_CONTEXT_SCHEMA,
     )
     return {
         "work_dir": relative_to_repo(repo_root, base),
@@ -213,12 +231,10 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
 def draft_template_text() -> str:
     return """# VSCode Environment Custom Design Draft
 
-このdraftは `/vscode-environment` のcustom-design mode向けの任意入力です。
-引数なしのself-provision modeでは、current repositoryのrepo evidenceを読むため、記入済みdraftは必須ではありません。
+この draft は `/vscode-environment` の custom-design mode 向けの任意入力です。引数なしの self-provision mode では current repository の repo evidence を読むため、記入済み draft は必須ではありません。
 
 ## 目的
-
-- TODO: このworkspaceで何を再現可能にしたいか
+- TODO: この workspace で何を再現可能にしたいか
 
 ## Mode
 
@@ -226,7 +242,7 @@ def draft_template_text() -> str:
 
 ## 対象 Workspace
 
-- TODO: self-provisionならcurrent repository。target-workspace / custom-designなら例 `C:\\github\\localty-system-gui`
+- TODO: self-provision なら current repository。target-workspace / custom-design なら例 `C:\\github\\localty-system-gui`
 
 ## 起動したい AI Workflow
 
@@ -257,11 +273,9 @@ def draft_template_text() -> str:
 - Evidence:
 
 ## VSCode Task 案
-
 - TODO: task label と実行コマンド
 
 ## Debug / Launch 案
-
 - TODO: launch name と対象 program
 
 ## 試走したい内容
@@ -273,9 +287,9 @@ def draft_template_text() -> str:
 - TODO: 保存したいログ、スクリーンショット、human check
 
 ## 未確定
-
 - TODO
 """
+
 
 def write_draft_template(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = repo_root_from(args)
@@ -318,19 +332,19 @@ def open_questions_text(work_id: str, draft_dir: str, draft_paths: list[str]) ->
 
 ## 停止理由
 
-VSCode Environment workflowは、通常はrepo evidenceから開始できます。引数なしの `/vscode-environment` はself-provision modeとしてcurrent repositoryを対象にするため、記入済みdraftは必須ではありません。
+VSCode Environment workflow は、通常は repo evidence から開始できます。引数なしの `/vscode-environment` は self-provision mode として current repository を対象にするため、記入済み draft は必須ではありません。
 
-ただし、custom-design modeでterminal、Docker、extension、launch、multi-root、personal/local-only pathなどの設計選択がrepo evidenceから安全に判断できない場合は、人間確認が必要です。`{scaffold_path}` は任意のcustom-design scaffoldです。記入済みdraftは `README_*.md` を使います。legacy `.txt` draftがある場合も確認対象に含めます。
+ただし custom-design mode で terminal、Docker、extension、launch、multi-root、personal/local-only path などの設計選択が repo evidence から安全に判断できない場合は、人間確認が必要です。`{scaffold_path}` は任意の custom-design scaffold です。記入済み draft は `README_*.md` を使います。legacy `.txt` draft がある場合も確認対象に含めます。
 
 ## Scaffold File
 
 - `{scaffold_path}`
 
-## 任意のCustom Design Draft File
+## 任意 Custom Design Draft File
 
 {draft_list}
 
-## 確認Flow
+## 確認 Flow
 
 ```text
 self-provision / target-workspace
@@ -352,19 +366,18 @@ custom-design
 
 | ID | 不足項目 | 必要な理由 | 必須回答 |
 | --- | --- | --- | --- |
-| VSCODE-Q001 | target workspace path | target-workspace / custom-design modeでは具体的なtarget directoryが必要です。self-provision modeならcurrent repositoryでよいです。 | target repository / workspace のabsolute path、またはself-provision承認 |
-| VSCODE-Q002 | workflow entrypoints | `tasks.json` には明示的なAI workflow commandが必要です。 | 公開するslash commandまたはtask name |
-| VSCODE-Q003 | required tools / runtimes | preflightとtask commandがこれらのtoolに依存します。 | Git、Docker、Python、uv、Node.js、Java、MSYS2など |
-| VSCODE-Q004 | required VSCode extensions | `extensions.json` にはextension ID一覧が必要です。 | Extension ID list |
-| VSCODE-Q005 | terminal roles | terminal profileとdefault shellを明示する必要があります。 | Dispatcher / Software / IaC / Docker / Evidence terminal settings |
-| VSCODE-Q006 | trial run checks | 完了判断には具体的なevidenceが必要です。 | Tasks、launch configs、Docker/runtime checks、human checks |
+| VSCODE-Q001 | target workspace path | target-workspace / custom-design mode では具体的な target directory が必要です。self-provision mode なら current repository でよいです。 | target repository / workspace の absolute path、または self-provision 承認 |
+| VSCODE-Q002 | workflow entrypoints | `tasks.json` には明示的な AI workflow command が必要です。 | 公開する slash command または task name |
+| VSCODE-Q003 | required tools / runtimes | preflight と task command はこれらの tool に依存します。 | Git、Docker、Python、uv、Node.js、Java、MSYS2 など |
+| VSCODE-Q004 | required VSCode extensions | `extensions.json` には extension ID 一覧が必要です。 | Extension ID list |
+| VSCODE-Q005 | terminal roles | terminal profile と default shell を明示する必要があります。 | Dispatcher / Software / IaC / Docker / Evidence terminal settings |
+| VSCODE-Q006 | trial run checks | 完了判断には具体的な evidence が必要です。 | Tasks、launch configs、Docker/runtime checks、human checks |
 
 ## 人間への確認事項
 
 ### VSCODE-Q001
 
-VSCode environment filesを配置するworkspace / repositoryはどれですか。
-
+VSCode environment files を配置する workspace / repository はどれですか。
 回答:
 
 ```text
@@ -373,8 +386,7 @@ VSCode environment filesを配置するworkspace / repositoryはどれですか�
 
 ### VSCODE-Q002
 
-VSCode tasksから実行可能にするAI workflow commandsはどれですか。
-
+VSCode tasks から実行可能にする AI workflow commands はどれですか。
 回答:
 
 ```text
@@ -383,8 +395,7 @@ VSCode tasksから実行可能にするAI workflow commandsはどれですか。
 
 ### VSCODE-Q003
 
-このworkspaceに必要なtoolとruntimeはどれですか。
-
+この workspace に必要な tool と runtime はどれですか。
 回答:
 
 ```text
@@ -393,8 +404,7 @@ VSCode tasksから実行可能にするAI workflow commandsはどれですか。
 
 ### VSCODE-Q004
 
-必須または推奨するVSCode extensionsはどれですか。
-
+必須または推奨する VSCode extensions はどれですか。
 回答:
 
 ```text
@@ -403,8 +413,7 @@ VSCode tasksから実行可能にするAI workflow commandsはどれですか。
 
 ### VSCODE-Q005
 
-作成するterminal profileと役割は何ですか。
-
+作成する terminal profile と役割は何ですか。
 回答:
 
 ```text
@@ -413,8 +422,7 @@ VSCode tasksから実行可能にするAI workflow commandsはどれですか。
 
 ### VSCODE-Q006
 
-VSCode environmentが機能することを証明するtrial runは何ですか。
-
+VSCode environment が機能することを証明する trial run は何ですか。
 回答:
 
 ```text
@@ -423,7 +431,7 @@ VSCode environmentが機能することを証明するtrial runは何ですか�
 
 ## 再開手順
 
-人間の回答を追記し、承認後、確定したtargetでwork areaを初期化します。
+人間の回答を追記し、承認後、確定した target で work area を初期化します。
 
 ```powershell
 uv run --project runtime python runtime/workflow/vscode_environment.py init `
@@ -440,7 +448,7 @@ def write_open_questions(args: argparse.Namespace) -> dict[str, Any]:
     ensure_work_dirs(base)
     draft_dir = (repo_root / args.draft_dir).resolve()
     draft_paths = [relative_to_repo(repo_root, path) for path in discover_drafts(draft_dir)]
-    path = base / "design-document" / "open-questions.md"
+    path = design_document_dir_for_work_dir(base) / "open-questions.md"
     path.write_text(open_questions_text(args.work_id, args.draft_dir, draft_paths), encoding="utf-8")
     state = {
         "schema_version": "1.0",
@@ -453,7 +461,7 @@ def write_open_questions(args: argparse.Namespace) -> dict[str, Any]:
         "status": "blocked",
         "created_at": utc_now_iso(),
     }
-    state_path = base / "context" / "vscode-environment-draft-state.json"
+    state_path = context_file(base, "vscode-environment-draft-state.json")
     write_json(state_path, state)
     return {"open_questions_path": relative_to_repo(repo_root, path), "state_path": relative_to_repo(repo_root, state_path), "draft_files": draft_paths}
 
@@ -472,7 +480,7 @@ def rag_filename(topic: str) -> str:
 def rag_template_text(args: argparse.Namespace, source_path: str) -> str:
     target_workspace = args.target_workspace or "TBD"
     return f"""---
-title: Localty VSCode環境パターン
+title: Localty VSCode 環境パターン
 type: workspace-environment-pattern
 project: localty
 repository: {args.repository}
@@ -499,11 +507,11 @@ areas:
   - evidence
 ---
 
-# Localty VSCode環境パターン
+# Localty VSCode 環境パターン
 
 ## 要約
 
-Localty repositoryでは、VSCode設定をWorkspace as Codeとして扱います。通常はrepo evidenceから開始し、特殊な設計選択が必要な場合のみ任意draftや `open-questions.md` で人間確認を行います。
+Localty repository では、VSCode 設定を Workspace as Code として扱います。通常は repo evidence から開始し、特殊な設計選択が必要な場合のみ任意 draft や `open-questions.md` で人間確認を行います。
 
 ## 範囲
 
@@ -513,18 +521,18 @@ Localty repositoryでは、VSCode設定をWorkspace as Codeとして扱います
 - source_rag_path: `{source_path}`
 - source_type: internal project RAG
 
-## 受領パターン
+## 参照パターン
 
-1. `/vscode-environment` にtarget argumentが無い場合は、self-provision modeとしてcurrent repositoryを対象にする。
-2. `/vscode-environment <target-workspace>` の場合は、target-workspace modeとして対象repo evidenceを読む。
-3. 特殊なterminal、Docker、extension、launch、multi-root、local-only pathなどが必要な場合はcustom-design modeとして扱う。
-4. custom-design modeでは、任意で `work/requirements/devlop-edit-draft/README.md` scaffoldと `README_*.md` draftを使う。
-5. repo evidenceまたはdraftから安全に判断できない事項は `work/<work-id>/design-document/open-questions.md` に整理する。
+1. `/vscode-environment` に target argument がない場合は、self-provision mode として current repository を対象にする。
+2. `/vscode-environment <target-workspace>` の場合は、target-workspace mode として対象 repo evidence を読む。
+3. 特殊な terminal、Docker、extension、launch、multi-root、local-only path などが必要な場合は custom-design mode として扱う。
+4. custom-design mode では、任意で `work/requirements/devlop-edit-draft/README.md` scaffold と `README_*.md` draft を使う。
+5. repo evidence または draft から安全に判断できない事項は `work/<work-id>/design-document/open-questions.md` に整理する。
 6. 人間の回答と承認を待つ。
-7. 確定したtarget workspaceで `work/<work-id>` を初期化する。
-8. requirementsとvalidationが通った後にのみ、target `.vscode` filesを実装する。
+7. 確定した target workspace で `work/<work-id>` を初期化する。
+8. requirements と validation が通った後にのみ、target `.vscode` files を実装する。
 
-## 必須Workspace成果物
+## 必須 Workspace 成果物
 
 - `.vscode/settings.json`
 - `.vscode/tasks.json`
@@ -537,28 +545,28 @@ Localty repositoryでは、VSCode設定をWorkspace as Codeとして扱います
 - `work/<work-id>/context/workspace-shared-artifact-validation.json`
 - `work/<work-id>/test-evidence/workspace-test.md`
 
-## Localty Runtime方針
+## Localty Runtime 方針
 
-- shared protocol dependencyは、`localty-system-protocol>=0.1.0` のような公開済みPython packageを優先する。
-- package installまたはimport verificationに失敗した場合のみ、理由を記録してsupport repository fallbackを使う。
-- MSYS2、uv、Python、Docker、VSCodeの確認はpreflight evidenceに明示する。
-- token、secret、個人専用absolute pathをcommit対象workspace fileに保存しない。
+- shared protocol dependency は、`localty-system-protocol>=0.1.0` のような公開済み Python package を優先する。
+- package install または import verification に失敗した場合のみ、理由を記録して support repository fallback を使う。
+- MSYS2、uv、Python、Docker、VSCode の確認は preflight evidence に明示する。
+- token、secret、個人専用 absolute path を commit 対象 workspace file に保存しない。
 
-## Terminal役割パターン
+## Terminal 役割パターン
 
-推奨するterminal role:
+推奨する terminal role:
 
 | Role | 目的 |
 | --- | --- |
-| Dispatcher | AI workflow commandを実行し、artifactを調整する。 |
-| Software Workflow | Python、test、lint、application commandを実行する。 |
-| IaC Workflow | Docker、compose、gateway、network、deployment checkを実行する。 |
-| Docker Test | Docker Desktopとcompose validation commandを分離して実行する。 |
-| Evidence | log、screenshot、manual check、skipped-test noteを記録する。 |
+| Dispatcher | AI workflow command を実行し、artifact を調整する。 |
+| Software Workflow | Python、test、lint、application command を実行する。 |
+| IaC Workflow | Docker、compose、gateway、network、deployment check を実行する。 |
+| Docker Test | Docker Desktop と compose validation command を分離して実行する。 |
+| Evidence | log、screenshot、manual check、skipped-test note を記録する。 |
 
-## Taskパターン
+## Task パターン
 
-VSCode taskは、個人のshell履歴ではなく、安定したworkflow commandを公開します。workflow intentに対応するlabelを優先します。
+VSCode task は、個人の shell 履歴ではなく、安定した workflow command を公開します。Workflow intent に対応する label を優先します。
 
 - `workflow:vscode-open-questions`
 - `workflow:vscode-preflight`
@@ -568,7 +576,7 @@ VSCode taskは、個人のshell履歴ではなく、安定したworkflow command
 - `workflow:rag-load`
 - `workflow:rag-build`
 
-## Evidenceパターン
+## Evidence パターン
 
 試行証跡は次の場所へ記録します。
 
@@ -576,35 +584,35 @@ VSCode taskは、個人のshell履歴ではなく、安定したworkflow command
 work/<work-id>/test-evidence/
 ```
 
-Evidenceには、JSON妥当性、task label、terminal profile起動、launch configuration確認、runtime version確認、必要に応じたDocker確認、UI観察が必要なhuman-check項目を含めます。
+Evidence には、JSON 妥当性、task label、terminal profile 起動、launch configuration 確認、runtime version 確認、必要に応じた Docker 確認、AI 観察が必要な human-check 項目を含めます。
 
-## RAG保存ルール
+## RAG 保存ルール
 
-Localty VSCode環境パターンが再利用可能になった場合、Markdown sourceを次の場所へ保存します。
+Localty VSCode 環境パターンが再利用可能になった場合、Markdown source を次の場所へ保存します。
 
 ```text
-rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
+{DEFAULT_RAG_SOURCE_DIR}/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 ```
 
-その後、次の順序でRAG artifactを生成します。
+その後、次の順序で RAG artifact を生成します。
 
 ```powershell
 uv run --project runtime python runtime/rag/standardize_corrective_report_names.py `
-  --source-dir rag/workspace-environment `
+  --source-dir {DEFAULT_RAG_SOURCE_DIR} `
   --replace-references
 
-uv run --project runtime python runtime/rag/normalize_documents.py `
-  --source-dir rag/workspace-environment `
-  --output-dir rag/normalized `
+uv run --project runtime python {RAG_NORMALIZE_SCRIPT.as_posix()} `
+  --source-dir {DEFAULT_RAG_SOURCE_DIR} `
+  --output-dir {GENERATED_NORMALIZED.as_posix()} `
   --document-type workspace-environment-pattern
 ```
 
 ## 未解決事項
 
-- 最初のtargetはLocalty GUI、robot、simulator、protocol、multi-root workspaceのどれか。
-- 各repositoryのdefault terminal profileはどれか。
-- 必須taskと推奨taskをどう分けるか。
-- VSCode UI状態をCLIだけで証明できず、人間観察が必要なcheckはどれか。
+- 最初の target は Localty GUI、robot、simulator、protocol、multi-root workspace のどれか。
+- 各 repository の default terminal profile はどれか。
+- 必須 task と推奨 task をどう分けるか。
+- VSCode UI 状態を CLI だけで証明できず、人間観察が必要な check はどれか。
 """
 
 
@@ -623,7 +631,7 @@ def write_rag_template(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def requirements_text(work_id: str, mode: str) -> str:
-    return f"""# Workspace要件
+    return f"""# Workspace 要件
 
 - workflow: `vscode-environment`
 - work_id: `{work_id}`
@@ -633,23 +641,23 @@ def requirements_text(work_id: str, mode: str) -> str:
 
 ## 意図
 
-TODO: このVSCode workspaceが必要な理由と、支援するAI / human workflowを記載する。
+TODO: この VSCode workspace が必要な理由と、支援する AI / human workflow を記載する。
 
-## 対象Workspace
+## 対象 Workspace
 
 - path: TODO
 - repository: TODO
 - branch: TODO
 
-## Mode別方針
+## Mode 別方針
 
-- self-provision: 引数なし。current repositoryを対象にし、記入済み草案は不要。
-- target-workspace: 指定pathのrepositoryを対象にし、repo evidenceから安全な既定値を推定する。
-- custom-design: 特殊なterminal、Docker、extension、launch、multi-root、local-only pathなどを任意draftまたはHuman質問で補う。
+- self-provision: 引数なし。current repository を対象にし、記入済み草案は不要。
+- target-workspace: 指定 path の repository を対象にし、repo evidence から安全な既定値を推定する。
+- custom-design: 特殊な terminal、Docker、extension、launch、multi-root、local-only path などを任意 draft または human question で補う。
 
-## 必須Tool
+## 必要 Tool
 
-| Tool | 必須 | Version方針 | Install / Check Command | Notes |
+| Tool | 必須 | Version 方針 | Install / Check Command | Notes |
 | --- | --- | --- | --- | --- |
 | Git | yes | TODO | `git --version` | TODO |
 | Docker Desktop | TODO | TODO | `docker version` | TODO |
@@ -657,7 +665,7 @@ TODO: このVSCode workspaceが必要な理由と、支援するAI / human workf
 | Node.js | TODO | TODO | `node --version` | TODO |
 | Java | TODO | TODO | `java --version` | TODO |
 
-## 必須VSCode Extension
+## 必要 VSCode Extension
 
 | Extension ID | 必須 | 理由 |
 | --- | --- | --- |
@@ -665,7 +673,7 @@ TODO: このVSCode workspaceが必要な理由と、支援するAI / human workf
 
 ## Terminal Profile
 
-| Role | Profile名 | Shell | Working Directory | Startup Command |
+| Role | Profile 名 | Shell | Working Directory | Startup Command |
 | --- | --- | --- | --- | --- |
 | Dispatcher | TODO | TODO | TODO | TODO |
 | Software Workflow | TODO | TODO | TODO | TODO |
@@ -675,7 +683,7 @@ TODO: このVSCode workspaceが必要な理由と、支援するAI / human workf
 
 ## Terminal Environment
 
-Repo-local command toolsがある場合、VSCode統合ターミナルのPATHへ追加する。
+Repo-local command tools がある場合、VSCode integrated terminal の PATH へ追加する。
 
 ```json
 {{
@@ -690,7 +698,7 @@ Repo-local command toolsがある場合、VSCode統合ターミナルのPATHへ�
 
 ## UTF-8 First / Mojibake Prevention
 
-VSCode初期構築時点で、このworkspaceをUTF-8として扱う契約を明示する。日本語Markdown、prompt、JSON、workflow docsを含む場合、文字コードの自動推測に頼らない。
+VSCode 初期構築時点で、この workspace を UTF-8 として扱う前提を明示する。日本語 Markdown、prompt、JSON、workflow docs を含む場合、文字コードの自動推測に頼らない。
 
 `.vscode/settings.json` に必ず含める:
 
@@ -707,7 +715,7 @@ VSCode初期構築時点で、このworkspaceをUTF-8として扱う契約を明
 }}
 ```
 
-PowerShell terminal profileの起動時に必ず含める:
+PowerShell terminal profile の起動時に必ず含める:
 
 ```powershell
 [Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false)
@@ -728,9 +736,9 @@ charset = unset
 end_of_line = crlf
 ```
 
-Codexの `config.toml` はCodexが認識する設定だけに使う。UTF-8を強制するために独自の `[encoding]` tableを追加しても、Codex標準設定として解釈される前提にしない。
+Codex の `config.toml` は Codex が読む設定だけに使う。UTF-8 を強制するために独自の `[encoding]` table を追加しても、Codex 標準設定として解釈される前提にはしない。
 
-Codex向けにUTF-8方針を永続化したい場合は、`AGENTS.md` やworkflow docsへ「このrepositoryはUTF-8 Firstで扱う」と書き、機械チェックは `.vscode/settings.json`、`.editorconfig`、PowerShell profile、`aiwfctl doctor --fail-on-warning` で行う。
+Codex 向けに UTF-8 方針を永続化したい場合は、`AGENTS.md` や workflow docs へ「この repository は UTF-8 First で扱う」と書き、機械チェックは `.vscode/settings.json`、`.editorconfig`、PowerShell profile、`aiwfctl doctor --fail-on-warning` で行う。
 
 ## Tasks
 
@@ -741,30 +749,29 @@ Codex向けにUTF-8方針を永続化したい場合は、`AGENTS.md` やworkflo
 
 ## Debug / Launch Target
 
-| Name | Runtime | Program | 事前条件 |
+| Name | Runtime | Program | 前提条件 |
 | --- | --- | --- | --- |
 | TODO | TODO | TODO | TODO |
 
-## AI Workflow入口
+## AI Workflow 入口
 
 | Task Label | Workflow | Command | Evidence |
 | --- | --- | --- | --- |
 | TODO | TODO | TODO | TODO |
 
-## Docker / Runtime連携
+## Docker / Runtime 連携
 
-TODO: Docker Desktop、compose file、公開port、health check、logを記載する。
+TODO: Docker Desktop、compose file、公開 port、health check、log を記載する。
 
 ## Evidence Workflow
 
-TODO: test evidence、screenshot、log、human checkの保存先を記載する。
+TODO: test evidence、screenshot、log、human check の保存先を記載する。
 
-## 個人値とPlaceholder
+## 個人値と Placeholder
 
-TODO: placeholderのまま残すべきpath、secret、token、machine名、deviceを列挙する。
+TODO: placeholder のまま残すべき path、secret、token、machine 名、device を列挙する。
 
 ## 未解決事項
-
 - TODO
 """
 
@@ -773,7 +780,7 @@ def write_requirements_template(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = repo_root_from(args)
     base = work_dir(repo_root, args.work_id)
     ensure_work_dirs(base)
-    path = base / "design-document" / "workspace-requirements.md"
+    path = design_document_dir_for_work_dir(base) / "workspace-requirements.md"
     if not path.exists():
         path.write_text(requirements_text(args.work_id, args.mode), encoding="utf-8")
     return {"path": relative_to_repo(repo_root, path), "created": True}
@@ -813,24 +820,23 @@ def write_validation_template(args: argparse.Namespace) -> dict[str, Any]:
         "missing_required_items": [
             "必須tool一覧",
             "必須VSCode extension一覧",
-            "terminal profile構成",
-            "UTF-8 First設定（.vscode/settings.json、.editorconfig、PowerShell profile、Codex向け方針はAGENTS.md/docsへ記載）",
-            "AI workflow入口task一覧",
+            "terminal profile 構成",
+            "UTF-8 First 設定 (.vscode/settings.json、.editorconfig、PowerShell profile、Codex 向け方針の AGENTS.md/docs 記載)",
+            "AI workflow 入口 task 一覧",
         ],
         "conditions": [],
         "open_questions": [
-            "どのtarget workspaceへ .vscode files を配置するか。",
-            "VSCodeから利用可能にする必須taskはどれか。",
-            "Shift_JIS / CP932を保持する必要があるファイル種別はあるか。",
+            "どの target workspace へ .vscode files を配置するか。",
+            "VSCode から利用可能にする必須 task はどれか。",
+            "Shift_JIS / CP932 を保持する必要があるファイル種別はあるか。",
         ],
         "evidence": [],
     }
-    json_path = base / "context" / "workspace-shared-artifact-validation.json"
-    md_path = base / "process-report" / "workspace-shared-artifact-validation.md"
+    json_path = context_file(base, "workspace-shared-artifact-validation.json")
+    md_path = process_report_dir_for_work_dir(base) / "workspace-shared-artifact-validation.md"
     write_json(json_path, data)
     md_path.write_text(validation_markdown(data), encoding="utf-8")
     return {"json_path": relative_to_repo(repo_root, json_path), "markdown_path": relative_to_repo(repo_root, md_path)}
-
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()

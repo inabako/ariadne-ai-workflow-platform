@@ -123,8 +123,8 @@ runtime/tests/test_preflight.py::test_github_cli_checks_split_version_auth_and_e
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_preflight.py:139`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
-  - parameter: names=なし case=なし
-  - inline input: `checks`, `calls`
+  - parameter: names=なし, case=なし
+  - inline input: `calls`
 - 期待結果: `gh --version` と `gh auth status` が別commandとして実行され、token値は `configured (masked)` として扱われ、auth checkには `--gh-login-from-env` actionが記録される。
 
 #### RT-UT-CASE-230B
@@ -138,10 +138,10 @@ runtime/tests/test_preflight.py::test_gh_login_from_env_uses_token_stdin_and_san
 - 確認内容: ENV token login runtime が tokenをstdinで `gh auth login --with-token` に渡し、実行reportにtoken値を出力しないことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:182`
+  - source: `runtime/tests/test_preflight.py:183`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
-  - parameter: names=なし case=なし
-  - inline input: `commands`, `executions`
+  - parameter: names=なし, case=なし
+  - inline input: `commands`
 - 期待結果: `gh auth login --hostname github.com --with-token` と `gh auth setup-git --hostname github.com` が実行され、execution JSONにtoken値が含まれない。
 
 #### RT-UT-CASE-230C
@@ -155,10 +155,10 @@ runtime/tests/test_preflight.py::test_main_gh_login_from_env_requires_human_appr
 - 確認内容: `--gh-login-from-env` が credential設定を伴うため、`--human-check approved` なしでは実行されないことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:208`
+  - source: `runtime/tests/test_preflight.py:210`
   - fixture/arg: `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
-  - parameter: names=なし case=なし
-  - inline input: `code`
+  - parameter: names=なし, case=なし
+  - inline input: `output`
 - 期待結果: return code 1となり、stderrに `--gh-login-from-env requires --human-check approved` が出力される。
 
 #### RT-UT-CASE-230
@@ -172,7 +172,7 @@ runtime/tests/test_preflight.py::test_localty_protocol_check_uses_msys2_python_w
 - 確認内容: pytest case `localty protocol check uses msys2 python when available` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:139`
+  - source: `runtime/tests/test_preflight.py:246`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `calls`, `args`
@@ -189,7 +189,7 @@ runtime/tests/test_preflight.py::test_localty_protocol_check_uses_fallback_repos
 - 確認内容: pytest case `localty protocol check uses fallback repository` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:160`
+  - source: `runtime/tests/test_preflight.py:267`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -206,7 +206,7 @@ runtime/tests/test_preflight.py::test_localty_protocol_check_reports_missing_wit
 - 確認内容: pytest case `localty protocol check reports missing without work id` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:179`
+  - source: `runtime/tests/test_preflight.py:286`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -223,7 +223,7 @@ runtime/tests/test_preflight.py::test_localty_protocol_check_reports_missing_wit
 - 確認内容: pytest case `localty protocol check reports missing with fallback command` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:195`
+  - source: `runtime/tests/test_preflight.py:302`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -240,7 +240,7 @@ runtime/tests/test_preflight.py::test_msys2_package_check_missing_bash_and_succe
 - 確認内容: pytest case `msys2 package check missing bash and success` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:214`
+  - source: `runtime/tests/test_preflight.py:321`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -257,7 +257,7 @@ runtime/tests/test_preflight.py::test_docker_compose_profile_declares_required_d
 - 確認内容: pytest case `docker compose profile declares required docker checks` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:234`
+  - source: `runtime/tests/test_preflight.py:341`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -274,7 +274,7 @@ runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[
 - 確認内容: pytest case `build checks profiles add expected checks[corrective-action-fix-expected_ids0]` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:272`
+  - source: `runtime/tests/test_preflight.py:379`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=`profile`, `expected_ids`, case=`corrective-action-fix-expected_ids0`
   - inline input: `args`
@@ -291,7 +291,7 @@ runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[
 - 確認内容: pytest case `build checks profiles add expected checks[web-nextjs-expected_ids1]` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:272`
+  - source: `runtime/tests/test_preflight.py:379`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=`profile`, `expected_ids`, case=`web-nextjs-expected_ids1`
   - inline input: `args`
@@ -308,7 +308,7 @@ runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[
 - 確認内容: pytest case `build checks profiles add expected checks[vscode-environment-expected_ids2]` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:272`
+  - source: `runtime/tests/test_preflight.py:379`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=`profile`, `expected_ids`, case=`vscode-environment-expected_ids2`
   - inline input: `args`
@@ -325,7 +325,7 @@ runtime/tests/test_preflight.py::test_build_checks_localty_gui_and_profiles_with
 - 確認内容: pytest case `build checks localty gui and profiles without source dir` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:300`
+  - source: `runtime/tests/test_preflight.py:407`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `gui_args`, `localty_args`, `vscode_args`, `web_args`
@@ -342,7 +342,7 @@ runtime/tests/test_preflight.py::test_install_requires_human_approval_before_run
 - 確認内容: pytest case `install requires human approval before running commands` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:348`
+  - source: `runtime/tests/test_preflight.py:455`
   - fixture/arg: `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -359,7 +359,7 @@ runtime/tests/test_preflight.py::test_install_missing_runs_required_commands_and
 - 確認内容: pytest case `install missing runs required commands and fallback` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:360`
+  - source: `runtime/tests/test_preflight.py:467`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: `calls`, `checks`
@@ -376,7 +376,7 @@ runtime/tests/test_preflight.py::test_install_missing_breaks_without_fallback_or
 - 確認内容: pytest case `install missing breaks without fallback or when fallback fails` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:398`
+  - source: `runtime/tests/test_preflight.py:505`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: `calls`, `checks`
@@ -393,7 +393,7 @@ runtime/tests/test_preflight.py::test_install_missing_runs_msys2_package_with_ba
 - 確認内容: pytest case `install missing runs msys2 package with bash` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:452`
+  - source: `runtime/tests/test_preflight.py:559`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: `calls`
@@ -410,7 +410,7 @@ runtime/tests/test_preflight.py::test_markdown_report_includes_fallback_command
 - 確認内容: pytest case `markdown report includes fallback command` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:477`
+  - source: `runtime/tests/test_preflight.py:584`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `result`
@@ -427,7 +427,7 @@ runtime/tests/test_preflight.py::test_markdown_report_includes_missing_optional_
 - 確認内容: pytest case `markdown report includes missing optional items` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:505`
+  - source: `runtime/tests/test_preflight.py:612`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `result`
@@ -444,7 +444,7 @@ runtime/tests/test_preflight.py::test_markdown_report_iterates_multiple_required
 - 確認内容: pytest case `markdown report iterates multiple required missing items` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:540`
+  - source: `runtime/tests/test_preflight.py:647`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `result`
@@ -461,7 +461,7 @@ runtime/tests/test_preflight.py::test_markdown_report_reports_none_when_all_chec
 - 確認内容: pytest case `markdown report reports none when all checks ready` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:575`
+  - source: `runtime/tests/test_preflight.py:682`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `result`
@@ -478,7 +478,7 @@ runtime/tests/test_preflight.py::test_write_reports_creates_json_and_markdown
 - 確認内容: pytest case `write reports creates json and markdown` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:600`
+  - source: `runtime/tests/test_preflight.py:707`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `result`
@@ -495,7 +495,7 @@ runtime/tests/test_preflight.py::test_main_writes_report_and_returns_ready
 - 確認内容: pytest case `main writes report and returns ready` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:616`
+  - source: `runtime/tests/test_preflight.py:723`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `output`
@@ -512,7 +512,7 @@ runtime/tests/test_preflight.py::test_main_returns_two_when_required_check_missi
 - 確認内容: pytest case `main returns two when required check missing` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:642`
+  - source: `runtime/tests/test_preflight.py:749`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `output`
@@ -529,7 +529,7 @@ runtime/tests/test_preflight.py::test_main_runs_install_after_human_approval_and
 - 確認内容: pytest case `main runs install after human approval and module script load` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:668`
+  - source: `runtime/tests/test_preflight.py:775`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `output`

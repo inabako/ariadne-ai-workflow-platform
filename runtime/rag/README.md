@@ -52,7 +52,7 @@ Specialist review RAG also uses the same JSON pipeline. It is project-specific i
 ```powershell
 python runtime/rag/normalize_documents.py `
   --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
-  --output-dir db/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type corrective-action-report `
   --clean-output
 ```
@@ -61,8 +61,8 @@ python runtime/rag/normalize_documents.py `
 
 ```powershell
 python runtime/rag/chunk_documents.py `
-  --input-dir db/rag/normalized `
-  --output-dir db/rag/chunks `
+  --input-dir work/db/ariadne-knowledge-platform/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/chunks `
   --clean-output
 ```
 
@@ -71,7 +71,7 @@ External Web RAG normalize example:
 ```powershell
 python runtime/rag/normalize_documents.py `
   --source-dir work/db/ariadne-knowledge-platform/rag/external-web/network `
-  --output-dir db/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type external-web-knowledge
 ```
 
@@ -79,8 +79,8 @@ python runtime/rag/normalize_documents.py `
 
 ```powershell
 python runtime/rag/ingestion_optimizer.py `
-  --chunks-dir db/rag/chunks `
-  --output-dir db/rag/optimized-chunks `
+  --chunks-dir work/db/ariadne-knowledge-platform/rag/chunks `
+  --output-dir work/db/ariadne-knowledge-platform/rag/optimized-chunks `
   --evidence-dir db/rag/evidence/ingestion `
   --clean-output
 ```
@@ -91,16 +91,16 @@ This stage evaluates chunk candidates before indexing and embedding. It writes `
 
 ```powershell
 python runtime/rag/build_index.py `
-  --normalized-dir db/rag/normalized `
-  --chunks-dir db/rag/optimized-chunks `
-  --output-dir db/rag/indexes
+  --normalized-dir work/db/ariadne-knowledge-platform/rag/normalized `
+  --chunks-dir work/db/ariadne-knowledge-platform/rag/optimized-chunks `
+  --output-dir work/db/ariadne-knowledge-platform/rag/indexes
 ```
 
 Optional DuckDB read model:
 
 ```powershell
 python runtime/rag/duckdb_store.py init
-python runtime/rag/duckdb_store.py migrate --source db/rag/optimized-chunks
+python runtime/rag/duckdb_store.py migrate --source work/db/ariadne-knowledge-platform/rag/optimized-chunks
 python runtime/rag/duckdb_store.py rebuild --reset
 python runtime/rag/duckdb_store.py search --query "PyQt GUI smoke test" --limit 10
 python runtime/rag/duckdb_store.py export-context --query "PyQt GUI smoke test" --output work/issue-123/context/knowledge.json
@@ -123,7 +123,7 @@ aiwfctl knowledge export-context --query "PyQt GUI smoke test" --output work/iss
 aiwfctl knowledge verify --query workflow --query runtime --query RAG --source-repo work/db/ariadne-knowledge-platform --work-dir db/rag/evidence --work-id duckdb-reference-check
 ```
 
-`source clone` は `inabako/ariadne-knowledge-platform.git` を `work/db/ariadne-knowledge-platform` にcloneします。`source import-local --clean` は、既存のローカル `db/rag/chunks`、`db/rag/jsonized`、`db/rag/normalized` などをknowledge repo cloneへコピーします。
+`source clone` は `inabako/ariadne-knowledge-platform.git` を `work/db/ariadne-knowledge-platform` にcloneします。`source import-local --clean` は、既存のローカル `work/db/ariadne-knowledge-platform/rag/chunks`、`work/db/ariadne-knowledge-platform/rag/jsonized`、`work/db/ariadne-knowledge-platform/rag/normalized` などをknowledge repo cloneへコピーします。
 
 `rebuild --source-repo ... --reset` は、knowledge repo clone内の標準RAGソースから既存JSONを投入します。投入後の参照確認は `db/rag/evidence/reference-check.json` に保存されます。
 
@@ -167,16 +167,16 @@ Optional local embeddings:
 
 ```powershell
 python runtime/rag/embed_chunks.py `
-  --chunks-index db/rag/indexes/chunks.jsonl `
-  --output db/rag/embeddings/chunks-embeddings.jsonl
+  --chunks-index work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl `
+  --output work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl
 ```
 
 ```powershell
 python runtime/rag/retrieve_context.py `
   "MainWindow 分割 Qt smoke test" `
-  --chunks-index db/rag/indexes/chunks.jsonl `
-  --embeddings-index db/rag/embeddings/chunks-embeddings.jsonl `
-  --output-dir db/rag/retrieval `
+  --chunks-index work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl `
+  --embeddings-index work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl `
+  --output-dir work/db/ariadne-knowledge-platform/rag/retrieval `
   --search-mode hybrid `
   --top-k 5 `
   --max-chars 4000
@@ -223,7 +223,7 @@ python runtime/rag/rag_dispatcher.py `
 
 ```powershell
 python runtime/rag/rag_dispatcher.py `
-  --dispatch-plan db/rag/retrieval/<plan-uuid>.json `
+  --dispatch-plan work/db/ariadne-knowledge-platform/rag/retrieval/<plan-uuid>.json `
   --search-mode hybrid `
   --top-k 5 `
   --max-chars 4000
@@ -234,31 +234,42 @@ python runtime/rag/rag_dispatcher.py `
 ```powershell
 python runtime/rag/jsonize_rag_tree.py `
   --rag-dir work/db/ariadne-knowledge-platform/rag `
-  --output-dir db/rag/jsonized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/jsonized `
   --clean-output
 ```
 
 元の Markdown を削除する場合だけ、明示的に `--delete-source` を指定します。
 
+### 8. Migrate Legacy Root RAG Backups
+
+`work/db/ariadne-knowledge-platform/legacy-root-rag-*` に退避された旧 root RAG は、次のruntimeで標準RAG sourceへ統合します。新しい `legacy-root-rag-*` は作らず、出力先は常に `work/db/ariadne-knowledge-platform/rag/` です。
+
+```powershell
+python runtime/rag/migrate_legacy_root_rag.py `
+  --legacy-dir work/db/ariadne-knowledge-platform/legacy-root-rag-<timestamp>
+```
+
+同一pathに既存ファイルがある場合、SHA-256が一致するものだけlegacy側を削除します。内容が違う衝突は停止します。
+
 ## Output Files
 
 | Path | Purpose |
 | --- | --- |
-| `db/rag/normalized/*.json` | source report を metadata 付きのUUID名 RAG document として保存する最終knowledge record |
-| `db/rag/chunks/*.json` | retrieval しやすい単位に分割した raw chunk |
-| `db/rag/optimized-chunks/*.json` | RAG吸収最適化で `ACCEPT` された embedding 対象chunk |
+| `work/db/ariadne-knowledge-platform/rag/normalized/*.json` | source report を metadata 付きのUUID名 RAG document として保存する最終knowledge record |
+| `work/db/ariadne-knowledge-platform/rag/chunks/*.json` | retrieval しやすい単位に分割した raw chunk |
+| `work/db/ariadne-knowledge-platform/rag/optimized-chunks/*.json` | RAG吸収最適化で `ACCEPT` された embedding 対象chunk |
 | `db/rag/evidence/ingestion/*.json*` | chunk候補、評価、判定、Human Check、reject、summary |
 | `db/rag/evidence/migration-summary.json` | rag-buildからDuckDB read modelを再生成したmigration evidence |
-| `db/rag/indexes/documents.jsonl` | document-level index |
-| `db/rag/indexes/chunks.jsonl` | chunk-level index |
+| `work/db/ariadne-knowledge-platform/rag/indexes/documents.jsonl` | document-level index |
+| `work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl` | chunk-level index |
 | `db/rag/ariadne-knowledge.duckdb` | file-based RAG artifactから再生成するDuckDB read model |
 | `work/<work-id>/context/knowledge.json` | DuckDB read model検索結果から生成するAgent向けContext JSON |
-| `db/rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |
-| `db/rag/jsonized/*.json` | 非UUID JSON、JSONL、Markdown、text artifact を UUID名 JSON wrapper 化したもの |
-| `db/rag/retrieval/<uuid>.json` (`artifact_type: rag-dispatch-plan`) | 検索前のintent、metadata、semantic hint、query計画 |
-| `db/rag/retrieval/<uuid>.json` (`artifact_type: rag-load-dispatch`) | 複数query retrieval の集約結果 |
-| `db/rag/retrieval/<uuid>.json` (`artifact_type: rag-retrieval-result`) | query、selected chunks、dropped chunks、filters |
-| `db/rag/retrieval/<uuid>.json` (`artifact_type: rag-context-pack`) | Agent投入用の圧縮済みcontext pack |
+| `work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |
+| `work/db/ariadne-knowledge-platform/rag/jsonized/*.json` | 非UUID JSON、JSONL、Markdown、text artifact を UUID名 JSON wrapper 化したもの |
+| `work/db/ariadne-knowledge-platform/rag/retrieval/<uuid>.json` (`artifact_type: rag-dispatch-plan`) | 検索前のintent、metadata、semantic hint、query計画 |
+| `work/db/ariadne-knowledge-platform/rag/retrieval/<uuid>.json` (`artifact_type: rag-load-dispatch`) | 複数query retrieval の集約結果 |
+| `work/db/ariadne-knowledge-platform/rag/retrieval/<uuid>.json` (`artifact_type: rag-retrieval-result`) | query、selected chunks、dropped chunks、filters |
+| `work/db/ariadne-knowledge-platform/rag/retrieval/<uuid>.json` (`artifact_type: rag-context-pack`) | Agent投入用の圧縮済みcontext pack |
 | `work/db/ariadne-knowledge-platform/rag/external-web/<category>/*.md` | external-web claims / metadata / verification notes のsource Markdown |
 | `work/db/ariadne-knowledge-platform/rag/specialist-review/<domain>/*.md` | specialist review results and trusted external knowledge records |
 

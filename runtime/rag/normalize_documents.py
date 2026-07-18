@@ -13,7 +13,7 @@ if __package__ in {None, ""}:
 
 from runtime.common import find_repo_root, relative_to_repo, slugify, utc_now_iso, write_json  # noqa: E402
 from runtime.rag.cleanup_guard import assert_safe_clean_output_target  # noqa: E402
-from runtime.rag.paths import GENERATED_NORMALIZED, SOURCE_CORRECTIVE_ACTION_REPORTS  # noqa: E402
+from runtime.constants.paths import GENERATED_NORMALIZED, SOURCE_CORRECTIVE_ACTION_REPORTS  # noqa: E402
 
 
 FRONT_MATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?", re.DOTALL)

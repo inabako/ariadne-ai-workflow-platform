@@ -26,6 +26,12 @@ from runtime.common import (  # noqa: E402
     write_json,
     write_markdown_bom,
 )
+from runtime.constants.workspace import (  # noqa: E402
+    context_file,
+    process_report_dir_for_work_dir,
+    target_repository_dir_for_work_dir,
+    work_dir_for_id,
+)
 from runtime.github.api import github_api_json  # noqa: E402
 
 
@@ -54,7 +60,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def infer_flow_label(work_dir: Path) -> str:
-    context = read_json(work_dir / "context" / "agent-context.json", default={}) or {}
+    context = read_json(context_file(work_dir, "agent-context.json"), default={}) or {}
     workflow_name = str(context.get("workflow", {}).get("name", "")).lower()
     if "ariadne-new-system" in workflow_name or "new-system" in workflow_name:
         return ISSUE_TITLE_PREFIXES["initial-development"]
@@ -76,7 +82,7 @@ def normalize_issue_title(title: str, flow_label: str = "", explicit_prefix: str
 
 
 def collect_artifact_paths(work_dir: Path) -> list[str]:
-    index = read_json(work_dir / "context" / "artifact-index.json", default={}) or {}
+    index = read_json(context_file(work_dir, "artifact-index.json"), default={}) or {}
     artifacts = index.get("artifacts", [])
     return [artifact.get("path", "") for artifact in artifacts if artifact.get("path")]
 
@@ -86,7 +92,7 @@ def resolve_source_dir(repo_root: Path, work_dir: Path, scm_state: dict[str, Any
     if source_dir:
         path = Path(source_dir)
         return path.resolve() if path.is_absolute() else (repo_root / path).resolve()
-    return (work_dir / "source" / "repository").resolve()
+    return target_repository_dir_for_work_dir(work_dir).resolve()
 
 
 def project_issue_template_path(repo_root: Path, work_dir: Path, scm_state: dict[str, Any]) -> Path | None:
@@ -119,8 +125,8 @@ def fill_project_issue_template(template_text: str, scm_state: dict[str, Any], a
 
 
 def default_issue_body(repo_root: Path, work_dir: Path) -> str:
-    context = read_json(work_dir / "context" / "agent-context.json", default={}) or {}
-    scm_state = read_json(work_dir / "context" / "scm-state.json", default={}) or {}
+    context = read_json(context_file(work_dir, "agent-context.json"), default={}) or {}
+    scm_state = read_json(context_file(work_dir, "scm-state.json"), default={}) or {}
     artifact_paths = collect_artifact_paths(work_dir)
     template_path = project_issue_template_path(repo_root, work_dir, scm_state)
     if template_path:
@@ -168,7 +174,7 @@ def issue_body_from_args(repo_root: Path, work_dir: Path, args: argparse.Namespa
     if args.body_file:
         return Path(args.body_file).read_text(encoding="utf-8-sig"), "body-file", str(Path(args.body_file).resolve())
 
-    scm_state = read_json(work_dir / "context" / "scm-state.json", default={}) or {}
+    scm_state = read_json(context_file(work_dir, "scm-state.json"), default={}) or {}
     template_path = project_issue_template_path(repo_root, work_dir, scm_state)
     if template_path:
         return default_issue_body(repo_root, work_dir), "project-template", relative_to_repo(repo_root, template_path)
@@ -216,10 +222,10 @@ def create_issue_with_api(
 def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     settings = load_env(repo_root)
-    work_dir = repo_root / "work" / args.work_id
+    work_dir = work_dir_for_id(repo_root, args.work_id)
     if not work_dir.exists():
         raise FileNotFoundError(f"Work directory does not exist: {work_dir}")
-    scm_state = read_json(work_dir / "context" / "scm-state.json", default={}) or {}
+    scm_state = read_json(context_file(work_dir, "scm-state.json"), default={}) or {}
     owner = default_github_owner(settings)
     scm_github_repo = repository_to_github_slug(str(scm_state.get("repository", "")), owner)
     explicit_github_repo = repository_to_github_slug(args.github_repo, owner) if args.github_repo else None
@@ -246,8 +252,9 @@ def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
 
     body_text, body_source, template_path = issue_body_from_args(repo_root, work_dir, args)
     issue_id = f"github-issue-{local_timestamp()}"
-    draft_md = work_dir / "process-report" / f"{issue_id}.md"
-    draft_json = work_dir / "process-report" / f"{issue_id}.json"
+    report_dir = process_report_dir_for_work_dir(work_dir)
+    draft_md = report_dir / f"{issue_id}.md"
+    draft_json = report_dir / f"{issue_id}.json"
     write_markdown_bom(draft_md, body_text)
 
     issue_url = None
@@ -283,7 +290,7 @@ def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
     }
     write_json(draft_json, issue_record)
 
-    agent_context = read_json(work_dir / "context" / "agent-context.json", default={}) or {}
+    agent_context = read_json(context_file(work_dir, "agent-context.json"), default={}) or {}
     project_name = agent_context.get("project", {}).get("name", args.work_id)
     workflow_name = agent_context.get("workflow", {}).get("name", "")
     index = load_artifact_index(work_dir, project_name, workflow_name)
@@ -309,7 +316,7 @@ def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
                 "unresolved_items": [] if issue_number else ["Issue number is not available until created."],
             },
         )
-    write_json(work_dir / "context" / "artifact-index.json", index)
+    write_json(context_file(work_dir, "artifact-index.json"), index)
     return issue_record
 
 

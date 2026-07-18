@@ -49,14 +49,14 @@ work/db/ariadne-knowledge-platform/rag/external-web/architecture
 
 - `source-dir`: default `work/db/ariadne-knowledge-platform/rag/corrective-action-report`
 - `document-type`: default `corrective-action-report`
-- `normalized-dir`: default `db/rag/normalized`
-- `chunks-dir`: default `db/rag/chunks`
-- `optimized-chunks-dir`: default `db/rag/optimized-chunks`
-- `indexes-dir`: default `db/rag/indexes`
+- `normalized-dir`: default `work/db/ariadne-knowledge-platform/rag/normalized`
+- `chunks-dir`: default `work/db/ariadne-knowledge-platform/rag/chunks`
+- `optimized-chunks-dir`: default `work/db/ariadne-knowledge-platform/rag/optimized-chunks`
+- `indexes-dir`: default `work/db/ariadne-knowledge-platform/rag/indexes`
 - `ingestion-evidence-dir`: default `db/rag/evidence/ingestion`
 - `ingestion-policy`: default `runtime/rag/policies/knowledge-ingestion-policy.json`
-- `embeddings-output`: default `db/rag/embeddings/chunks-embeddings.jsonl`
-- `jsonized-dir`: default `db/rag/jsonized`
+- `embeddings-output`: default `work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl`
+- `jsonized-dir`: default `work/db/ariadne-knowledge-platform/rag/jsonized`
 
 If unspecified, use all defaults.
 
@@ -93,7 +93,7 @@ YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md
 ```powershell
 python runtime/rag/normalize_documents.py `
   --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
-  --output-dir db/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type corrective-action-report `
   --clean-output
 ```
@@ -103,7 +103,7 @@ For external-web RAG, normalize category Markdown into the same JSON document fo
 ```powershell
 python runtime/rag/normalize_documents.py `
   --source-dir work/db/ariadne-knowledge-platform/rag/external-web/network `
-  --output-dir db/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type external-web-knowledge
 ```
 
@@ -123,8 +123,8 @@ The normalizer preserves external-web front matter such as:
 
 ```powershell
 python runtime/rag/chunk_documents.py `
-  --input-dir db/rag/normalized `
-  --output-dir db/rag/chunks `
+  --input-dir work/db/ariadne-knowledge-platform/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/chunks `
   --clean-output
 ```
 
@@ -132,8 +132,8 @@ python runtime/rag/chunk_documents.py `
 
 ```powershell
 python runtime/rag/ingestion_optimizer.py `
-  --chunks-dir db/rag/chunks `
-  --output-dir db/rag/optimized-chunks `
+  --chunks-dir work/db/ariadne-knowledge-platform/rag/chunks `
+  --output-dir work/db/ariadne-knowledge-platform/rag/optimized-chunks `
   --evidence-dir db/rag/evidence/ingestion `
   --clean-output
 ```
@@ -145,17 +145,17 @@ It writes `ACCEPT / REWRITE / HUMAN_CHECK / REJECT` evidence and only `ACCEPT` c
 
 ```powershell
 python runtime/rag/build_index.py `
-  --normalized-dir db/rag/normalized `
-  --chunks-dir db/rag/optimized-chunks `
-  --output-dir db/rag/indexes
+  --normalized-dir work/db/ariadne-knowledge-platform/rag/normalized `
+  --chunks-dir work/db/ariadne-knowledge-platform/rag/optimized-chunks `
+  --output-dir work/db/ariadne-knowledge-platform/rag/indexes
 ```
 
 ### 5. Build Local Embeddings
 
 ```powershell
 python runtime/rag/embed_chunks.py `
-  --chunks-index db/rag/indexes/chunks.jsonl `
-  --output db/rag/embeddings/chunks-embeddings.jsonl
+  --chunks-index work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl `
+  --output work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl
 ```
 
 ### Optional: JSONize Existing RAG Markdown Files
@@ -165,7 +165,7 @@ Use this when existing non-UUID JSON, JSONL, Markdown, or text files under `work
 ```powershell
 python runtime/rag/jsonize_rag_tree.py `
   --rag-dir work/db/ariadne-knowledge-platform/rag `
-  --output-dir db/rag/jsonized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/jsonized `
   --clean-output
 ```
 
@@ -176,9 +176,9 @@ Do not pass `--delete-source` unless the user explicitly requests removing origi
 Expected outputs:
 
 ```text
-db/rag/normalized/*.json
-db/rag/chunks/*.json
-db/rag/optimized-chunks/*.json
+work/db/ariadne-knowledge-platform/rag/normalized/*.json
+work/db/ariadne-knowledge-platform/rag/chunks/*.json
+work/db/ariadne-knowledge-platform/rag/optimized-chunks/*.json
 db/rag/evidence/ingestion/source-manifest.json
 db/rag/evidence/ingestion/chunk-candidates.jsonl
 db/rag/evidence/ingestion/optimization-evaluations.jsonl
@@ -187,10 +187,10 @@ db/rag/evidence/ingestion/rewritten-chunks.jsonl
 db/rag/evidence/ingestion/human-check-required.jsonl
 db/rag/evidence/ingestion/rejected-chunks.jsonl
 db/rag/evidence/ingestion/ingestion-summary.json
-db/rag/indexes/documents.jsonl
-db/rag/indexes/chunks.jsonl
-db/rag/embeddings/chunks-embeddings.jsonl
-db/rag/jsonized/*.json
+work/db/ariadne-knowledge-platform/rag/indexes/documents.jsonl
+work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl
+work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl
+work/db/ariadne-knowledge-platform/rag/jsonized/*.json
 ```
 
 ## Workflow

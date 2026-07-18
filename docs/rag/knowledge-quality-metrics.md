@@ -67,9 +67,9 @@ Evidenceは、最適化スコアを絶対的な正解として扱うためでは
 
 ## Embedding連携
 
-`/rag-build` では、最適化後の `db/rag/optimized-chunks/*.json` だけを `build_index.py` に渡します。
+`/rag-build` では、最適化後の `work/db/ariadne-knowledge-platform/rag/optimized-chunks/*.json` だけを `build_index.py` に渡します。
 
-そのため、`db/rag/embeddings/chunks-embeddings.jsonl` へ流れるのは、初期実装では `ACCEPT` 済みchunkのみです。`HUMAN_CHECK` のchunkは、人間承認後にsourceを修正し、再度RAG buildする運用を基本にします。
+そのため、`work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl` へ流れるのは、初期実装では `ACCEPT` 済みchunkのみです。`HUMAN_CHECK` のchunkは、人間承認後にsourceを修正し、再度RAG buildする運用を基本にします。
 
 ## DuckDB移行方針
 

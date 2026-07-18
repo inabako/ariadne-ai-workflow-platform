@@ -23,7 +23,7 @@ You review remote access, authentication, authorization, tunnel, VPN, secret han
 ## Inputs
 
 - security review, remote gateway architecture, deployment plan, or Issue scope
-- internal RAG context from `db/rag/retrieval/`
+- internal RAG context from `work/db/ariadne-knowledge-platform/rag/retrieval/`
 - external-web RAG from `work/db/ariadne-knowledge-platform/rag/external-web/security/`, `network/`, or `platform/`
 - current repository evidence when available
 - deployment and operations assumptions

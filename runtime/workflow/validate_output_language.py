@@ -7,18 +7,31 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+if __package__ in {None, ""}:
+    sys.path.append(str(Path(__file__).resolve().parents[2]))
+
+from runtime.constants.paths import (  # noqa: E402
+    GENERATED_CHUNKS,
+    GENERATED_EMBEDDINGS,
+    GENERATED_INDEXES,
+    GENERATED_JSONIZED,
+    GENERATED_NORMALIZED,
+    GENERATED_OPTIMIZED_CHUNKS,
+    GENERATED_RETRIEVAL,
+)
 
 DEFAULT_PATHS = ["work", "rag", "docs"]
 DEFAULT_EXCLUDES = [
     ".git",
     ".venv",
     "__pycache__",
-    "rag/normalized",
-    "rag/chunks",
-    "rag/indexes",
-    "rag/embeddings",
-    "rag/retrieval",
-    "rag/jsonized",
+    GENERATED_NORMALIZED.as_posix(),
+    GENERATED_CHUNKS.as_posix(),
+    GENERATED_INDEXES.as_posix(),
+    GENERATED_EMBEDDINGS.as_posix(),
+    GENERATED_RETRIEVAL.as_posix(),
+    GENERATED_JSONIZED.as_posix(),
+    GENERATED_OPTIMIZED_CHUNKS.as_posix(),
     "work/*/source",
     "work/close/**/source",
     "templates/boilerplates",

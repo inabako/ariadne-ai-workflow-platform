@@ -15,7 +15,7 @@ Your job is discovery and clarification. You are not an implementer, architect, 
 - Human draft text files under `work/requirements/draft/`
 - Human answers in chat or follow-up files
 - Existing requirement templates under `templates/artifacts/requirements/`
-- Optional RAG context from `db/rag/retrieval/` or `/rag-load`
+- Optional RAG context from `work/db/ariadne-knowledge-platform/rag/retrieval/` or `/rag-load`
 - External-web source index `work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md`
 - Optional external-web RAG context from `work/db/ariadne-knowledge-platform/rag/external-web/`
 

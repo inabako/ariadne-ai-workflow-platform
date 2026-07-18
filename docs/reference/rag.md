@@ -13,17 +13,17 @@ After human approval, normalize approved notes with:
 ```powershell
 uv run --project runtime python runtime/rag/normalize_documents.py `
   --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment `
-  --output-dir db/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type workspace-environment-pattern
 ```
 
 The final durable knowledge record is the generated UUID-named JSON:
 
 ```text
-db/rag/normalized/<uuid>.json
+work/db/ariadne-knowledge-platform/rag/normalized/<uuid>.json
 ```
 
-Chunk JSON, indexes, embeddings, retrieval results, and context packs are derived from this normalized JSON. `db/rag/jsonized/<uuid>.json` is only a wrapper path for existing non-UUID artifacts and is not the primary final RAG knowledge record.
+Chunk JSON, indexes, embeddings, retrieval results, and context packs are derived from this normalized JSON. `work/db/ariadne-knowledge-platform/rag/jsonized/<uuid>.json` is only a wrapper path for existing non-UUID artifacts and is not the primary final RAG knowledge record.
 
 ## GitHub Knowledge Source
 
@@ -38,7 +38,7 @@ Normalize approved notes with:
 ```powershell
 uv run --project runtime python runtime/rag/normalize_documents.py `
   --source-dir work/db/ariadne-knowledge-platform/rag/github-knowledge `
-  --output-dir db/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type github-repository-knowledge
 ```
 
@@ -89,13 +89,13 @@ source markdown
 
 | Path | Purpose |
 | --- | --- |
-| `db/rag/normalized/*.json` | Markdown reportをmetadata付きUUID JSON documentに変換した最終knowledge record |
-| `db/rag/chunks/*.json` | retrieval / embeddings用chunk |
-| `db/rag/indexes/documents.jsonl` | document-level index |
-| `db/rag/indexes/chunks.jsonl` | chunk-level index |
-| `db/rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |
-| `db/rag/retrieval/*.json` | dispatch plan、retrieval result、dispatch aggregate、context pack |
-| `db/rag/jsonized/*.json` | 既存Markdown / JSONLなどをUUID名JSON wrapperにしたもの |
+| `work/db/ariadne-knowledge-platform/rag/normalized/*.json` | Markdown reportをmetadata付きUUID JSON documentに変換した最終knowledge record |
+| `work/db/ariadne-knowledge-platform/rag/chunks/*.json` | retrieval / embeddings用chunk |
+| `work/db/ariadne-knowledge-platform/rag/indexes/documents.jsonl` | document-level index |
+| `work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl` | chunk-level index |
+| `work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |
+| `work/db/ariadne-knowledge-platform/rag/retrieval/*.json` | dispatch plan、retrieval result、dispatch aggregate、context pack |
+| `work/db/ariadne-knowledge-platform/rag/jsonized/*.json` | 既存Markdown / JSONLなどをUUID名JSON wrapperにしたもの |
 | `work/db/ariadne-knowledge-platform/rag/external-web/<category>/*.md` | 外部Web一次情報から抽出したclaims / metadata / verification notes |
 | `work/db/ariadne-knowledge-platform/rag/external-web/retrieval/*.md` | 外部Web RAG dispatcher の集約結果 |
 | `work/db/ariadne-knowledge-platform/rag/specialist-review/<domain>/*.md` | 専門Agent review結果、採用した外部知識、検証結果 |
@@ -159,11 +159,11 @@ Specialist reviewには、必ず次を残します。
 
 ```text
 work/db/ariadne-knowledge-platform/rag/external-web/<category>/*.md
-  -> db/rag/normalized/*.json
-  -> db/rag/chunks/*.json
-  -> db/rag/indexes/*.jsonl
-  -> db/rag/embeddings/*.jsonl
-  -> db/rag/retrieval/*.json
+  -> work/db/ariadne-knowledge-platform/rag/normalized/*.json
+  -> work/db/ariadne-knowledge-platform/rag/chunks/*.json
+  -> work/db/ariadne-knowledge-platform/rag/indexes/*.jsonl
+  -> work/db/ariadne-knowledge-platform/rag/embeddings/*.jsonl
+  -> work/db/ariadne-knowledge-platform/rag/retrieval/*.json
 ```
 
 `normalize_documents.py` は external-web front matter を `metadata` に保持します。
@@ -205,23 +205,23 @@ python runtime/rag/standardize_corrective_report_names.py `
 
 python runtime/rag/normalize_documents.py `
   --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
-  --output-dir db/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type corrective-action-report `
   --clean-output
 
 python runtime/rag/chunk_documents.py `
-  --input-dir db/rag/normalized `
-  --output-dir db/rag/chunks `
+  --input-dir work/db/ariadne-knowledge-platform/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/chunks `
   --clean-output
 
 python runtime/rag/build_index.py `
-  --normalized-dir db/rag/normalized `
-  --chunks-dir db/rag/chunks `
-  --output-dir db/rag/indexes
+  --normalized-dir work/db/ariadne-knowledge-platform/rag/normalized `
+  --chunks-dir work/db/ariadne-knowledge-platform/rag/chunks `
+  --output-dir work/db/ariadne-knowledge-platform/rag/indexes
 
 python runtime/rag/embed_chunks.py `
-  --chunks-index db/rag/indexes/chunks.jsonl `
-  --output db/rag/embeddings/chunks-embeddings.jsonl
+  --chunks-index work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl `
+  --output work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl
 ```
 
 ## Load

@@ -14,10 +14,15 @@ if __package__ in {None, ""}:
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag.cleanup_guard import assert_safe_clean_output_target  # noqa: E402
-from runtime.rag.paths import GENERATED_CHUNKS, GENERATED_OPTIMIZED_CHUNKS  # noqa: E402
+from runtime.constants.paths import (  # noqa: E402
+    DUCKDB_INGESTION_EVIDENCE_DIR,
+    GENERATED_CHUNKS,
+    GENERATED_OPTIMIZED_CHUNKS,
+    RAG_INGESTION_POLICY_PATH,
+)
 
 
-DEFAULT_POLICY_PATH = Path("runtime/rag/policies/knowledge-ingestion-policy.json")
+DEFAULT_POLICY_PATH = RAG_INGESTION_POLICY_PATH
 DECISIONS = {"ACCEPT", "REWRITE", "HUMAN_CHECK", "REJECT"}
 MARKDOWN_DECORATION_RE = re.compile(r"^[\s#*\-`|:]+$")
 HEADING_ONLY_RE = re.compile(r"^\s*#{1,6}\s+.+?\s*$")
@@ -27,7 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Evaluate RAG chunk candidates before indexing and embedding.")
     parser.add_argument("--chunks-dir", default=str(GENERATED_CHUNKS))
     parser.add_argument("--output-dir", default=str(GENERATED_OPTIMIZED_CHUNKS))
-    parser.add_argument("--evidence-dir", default="db/rag/evidence/ingestion")
+    parser.add_argument("--evidence-dir", default=str(DUCKDB_INGESTION_EVIDENCE_DIR))
     parser.add_argument("--policy", default=str(DEFAULT_POLICY_PATH))
     parser.add_argument("--repo-root", default=None)
     parser.add_argument("--clean-output", action="store_true")
@@ -59,7 +64,7 @@ def content_hash(value: str) -> str:
 def load_policy(repo_root: Path, policy_path: str | Path) -> dict[str, Any]:
     path = resolve_repo_path(repo_root, policy_path)
     if not path.exists() and Path(policy_path).as_posix() == DEFAULT_POLICY_PATH.as_posix():
-        path = Path(__file__).resolve().parent / "policies" / "knowledge-ingestion-policy.json"
+        path = Path(__file__).resolve().parents[2] / DEFAULT_POLICY_PATH
     policy = read_json(path, default=None)
     if not isinstance(policy, dict):
         raise ValueError(f"Invalid RAG ingestion policy: {path}")

@@ -12,7 +12,10 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
-from runtime.rag.paths import GENERATED_JSONIZED, GENERATED_RETRIEVAL  # noqa: E402
+from runtime.constants.paths import GENERATED_JSONIZED, GENERATED_RETRIEVAL, LEGACY_RETRIEVAL_PREFIX  # noqa: E402
+
+
+CURRENT_RETRIEVAL_PREFIX = GENERATED_RETRIEVAL.as_posix() + "/"
 
 
 UUID_JSON_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.json$")
@@ -70,6 +73,10 @@ def replace_refs(value: Any, path_map: dict[str, str]) -> Any:
     if isinstance(value, dict):
         return {key: replace_refs(item, path_map) for key, item in value.items()}
     return value
+
+
+def is_retrieval_artifact_ref(source_path: str) -> bool:
+    return source_path.startswith((LEGACY_RETRIEVAL_PREFIX, CURRENT_RETRIEVAL_PREFIX))
 
 
 def companion_json_for_markdown(path: Path) -> Path | None:
@@ -135,7 +142,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             wrapper = read_json(wrapper_path)
             source_path = str(wrapper.get("source_path", ""))
             source_name = Path(source_path).name
-            if not source_path.startswith("rag/retrieval/"):
+            if not is_retrieval_artifact_ref(source_path):
                 continue
             if wrapper.get("source_format") != "json":
                 continue
@@ -203,7 +210,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             payload = read_json(artifact_path)
             legacy_paths = payload.get("legacy_artifact_paths", [])
             if isinstance(legacy_paths, list) and any(
-                isinstance(item, str) and item.startswith("rag/retrieval/") and not UUID_JSON_RE.match(Path(item).name.lower())
+                isinstance(item, str)
+                and is_retrieval_artifact_ref(item)
+                and not UUID_JSON_RE.match(Path(item).name.lower())
                 for item in legacy_paths
             ):
                 rel_artifact = relative_to_repo(repo_root, artifact_path)

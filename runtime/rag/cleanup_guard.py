@@ -3,11 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 
 from runtime.common import relative_to_repo
+from runtime.constants.paths import DUCKDB_DEFAULT_PATH, DUCKDB_RAG_ROOT, KNOWLEDGE_SOURCE_REPO
 
 
-DEFAULT_DUCKDB_PATH = Path("db/rag/ariadne-knowledge.duckdb")
+DEFAULT_DUCKDB_PATH = DUCKDB_DEFAULT_PATH
 PROTECTED_RAG_CLEANUP_DIRS = (
-    Path("db/rag"),
+    DUCKDB_RAG_ROOT,
 )
 
 
@@ -37,5 +38,5 @@ def assert_safe_clean_output_target(repo_root: Path, target: Path) -> None:
             "Refusing to clean protected RAG path "
             f"'{rel_target}' because it may remove the generated DuckDB read model '{rel_db}'. "
             "Use a narrower generated output directory, or rebuild the DuckDB read model explicitly "
-            "with `aiwfctl knowledge rebuild --source-repo work/db/ariadne-knowledge-platform --reset`."
+            f"with `aiwfctl knowledge rebuild --source-repo {KNOWLEDGE_SOURCE_REPO.as_posix()} --reset`."
         )

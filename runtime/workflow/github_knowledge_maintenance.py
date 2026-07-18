@@ -34,6 +34,28 @@ from runtime.common import (  # noqa: E402
     write_json,
     write_markdown,
 )
+from runtime.constants.paths import REGISTRY_DB_PATH, SOURCE_GITHUB_KNOWLEDGE  # noqa: E402
+from runtime.constants.schemas import (  # noqa: E402
+    AGENT_CONTEXT_SCHEMA,
+    ARTIFACT_INDEX_SCHEMA,
+    DECISION_RECORD_SCHEMA,
+    FINDING_RECORD_SCHEMA,
+    GITHUB_KNOWLEDGE_ANALYSIS_SCHEMA,
+    GITHUB_OPERATION_GATE_SCHEMA,
+    HANDOFF_PACKAGE_SCHEMA,
+    QA_RECORD_SCHEMA,
+    TEST_EVIDENCE_SCHEMA,
+    TOOL_SELECTION_SCHEMA,
+)
+from runtime.constants.workspace import (  # noqa: E402
+    context_dir_for_work_dir,
+    context_file,
+    context_path_pattern,
+    git_worktree_dir_for_work_dir,
+    git_worktree_path_pattern,
+    process_report_dir_for_work_dir,
+    work_dir_for_id,
+)
 from runtime.workflow.context_first import (  # noqa: E402
     context_entry,
     context_path,
@@ -439,25 +461,25 @@ def github_tool_selection(
             if item["human_check_required"]
         ],
         "source": {
-            "registry": "db/registries/registry.duckdb",
-            "schema": ".github/schemas/tool-selection.schema.json",
+            "registry": REGISTRY_DB_PATH.as_posix(),
+            "schema": TOOL_SELECTION_SCHEMA,
         },
     }
 
 
 def register_github_knowledge_contexts(repo_root: Path, work_dir: Path, work_id: str) -> None:
-    context_dir = work_dir / "context"
+    context_dir = context_dir_for_work_dir(work_dir)
     registrations = [
-        ("agent-context", context_dir / "agent-context.json", True, ".github/schemas/agent-context.schema.json"),
-        ("artifact-index", context_dir / "artifact-index.json", True, ".github/schemas/artifact-index.schema.json"),
-        ("handoff-package", context_dir / "handoff-package.json", False, ".github/schemas/handoff-package.schema.json"),
-        ("tool-selection", context_dir / "tool-selection.json", True, ".github/schemas/tool-selection.schema.json"),
-        ("github-operation-gate", context_dir / "github-operation-gate.json", True, ".github/schemas/github-operation-gate.schema.json"),
-        ("github-knowledge-analysis", context_dir / "github-knowledge-analysis.json", False, ".github/schemas/github-knowledge-analysis.schema.json"),
-        ("qa-records", context_dir / "qa-records.json", False, ".github/schemas/qa-record.schema.json"),
-        ("finding-records", context_dir / "finding-records.json", False, ".github/schemas/finding-record.schema.json"),
-        ("decision-records", context_dir / "decision-records.json", False, ".github/schemas/decision-record.schema.json"),
-        ("test-evidence", context_dir / "test-evidence.json", False, ".github/schemas/test-evidence.schema.json"),
+        ("agent-context", context_dir / "agent-context.json", True, AGENT_CONTEXT_SCHEMA),
+        ("artifact-index", context_dir / "artifact-index.json", True, ARTIFACT_INDEX_SCHEMA),
+        ("handoff-package", context_dir / "handoff-package.json", False, HANDOFF_PACKAGE_SCHEMA),
+        ("tool-selection", context_dir / "tool-selection.json", True, TOOL_SELECTION_SCHEMA),
+        ("github-operation-gate", context_dir / "github-operation-gate.json", True, GITHUB_OPERATION_GATE_SCHEMA),
+        ("github-knowledge-analysis", context_dir / "github-knowledge-analysis.json", False, GITHUB_KNOWLEDGE_ANALYSIS_SCHEMA),
+        ("qa-records", context_dir / "qa-records.json", False, QA_RECORD_SCHEMA),
+        ("finding-records", context_dir / "finding-records.json", False, FINDING_RECORD_SCHEMA),
+        ("decision-records", context_dir / "decision-records.json", False, DECISION_RECORD_SCHEMA),
+        ("test-evidence", context_dir / "test-evidence.json", False, TEST_EVIDENCE_SCHEMA),
     ]
     for context_type, path, required, schema in registrations:
         if not path.exists():
@@ -486,14 +508,14 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
         default_github_owner(settings),
         args.target_branch,
     )
-    work_dir = repo_root / "work" / work_id
+    work_dir = work_dir_for_id(repo_root, work_id)
     if work_dir.exists() and not args.reuse_existing:
         raise FileExistsError(
             f"Work directory already exists: {work_dir}. Confirm reuse, then rerun with --reuse-existing."
         )
 
     work_dir = ensure_work_tree(repo_root, work_id)
-    context_dir = work_dir / "context"
+    context_dir = context_dir_for_work_dir(work_dir)
     now = utc_now_iso()
     intent_summary = args.intent_summary or (
         f"{repository} のGitHub knowledge assetsを、Git historyを消さずsource codeを変更せずに保守する。"
@@ -644,7 +666,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def default_analysis(work_dir: Path) -> dict[str, Any]:
-    context = read_json(work_dir / "context" / "agent-context.json", default={}) or {}
+    context = read_json(context_file(work_dir, "agent-context.json"), default={}) or {}
     assumptions = context.get("assumptions", [])
     assumption_map = {}
     for item in assumptions:
@@ -709,11 +731,11 @@ def default_analysis(work_dir: Path) -> dict[str, Any]:
 
 
 def analysis_path_for(work_dir: Path, raw_path: str) -> Path:
-    return Path(raw_path).resolve() if raw_path else work_dir / "context" / "github-knowledge-analysis.json"
+    return Path(raw_path).resolve() if raw_path else context_file(work_dir, "github-knowledge-analysis.json")
 
 
 def register_artifact(repo_root: Path, work_dir: Path, artifact_id: str, title: str, path: Path, artifact_type: str) -> None:
-    context = read_json(work_dir / "context" / "agent-context.json", default={}) or {}
+    context = read_json(context_file(work_dir, "agent-context.json"), default={}) or {}
     project_name = context.get("project", {}).get("name", work_dir.name)
     work_id = default_analysis(work_dir).get("work_id", work_dir.name)
     index = load_artifact_index(work_dir, project_name, "github-knowledge-maintenance")
@@ -735,7 +757,7 @@ def register_artifact(repo_root: Path, work_dir: Path, artifact_id: str, title: 
             "unresolved_items": [],
         },
     )
-    write_json(work_dir / "context" / "artifact-index.json", index)
+    write_json(context_file(work_dir, "artifact-index.json"), index)
     if path.name == "github-knowledge-analysis.json":
         register_context(
             repo_root,
@@ -746,13 +768,13 @@ def register_artifact(repo_root: Path, work_dir: Path, artifact_id: str, title: 
             required=True,
             generated_by="github-knowledge-maintenance",
             owner="workflow",
-            schema=".github/schemas/github-knowledge-analysis.schema.json",
+            schema=GITHUB_KNOWLEDGE_ANALYSIS_SCHEMA,
         )
 
 
 def create_analysis_template(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
-    work_dir = repo_root / "work" / args.work_id
+    work_dir = work_dir_for_id(repo_root, args.work_id)
     if not work_dir.exists():
         raise FileNotFoundError(f"Work directory does not exist: {work_dir}")
     output_path = analysis_path_for(work_dir, args.analysis_path)
@@ -1188,7 +1210,7 @@ def unresolved_history_rewrite_candidates(analysis: dict[str, Any]) -> list[dict
 
 
 def load_analysis(repo_root: Path, work_id: str, raw_path: str) -> tuple[Path, Path, dict[str, Any]]:
-    work_dir = repo_root / "work" / work_id
+    work_dir = work_dir_for_id(repo_root, work_id)
     if not work_dir.exists():
         raise FileNotFoundError(f"Work directory does not exist: {work_dir}")
     path = analysis_path_for(work_dir, raw_path)
@@ -1201,7 +1223,7 @@ def load_analysis(repo_root: Path, work_id: str, raw_path: str) -> tuple[Path, P
 
 
 def latest_rebase_review_plan(work_dir: Path) -> Path:
-    report_dir = work_dir / "process-report"
+    report_dir = process_report_dir_for_work_dir(work_dir)
     paths = list(report_dir.glob("github-history-rebase-plan-*.md"))
     if not paths:
         raise FileNotFoundError(f"Rebase plan report does not exist under: {report_dir}")
@@ -1314,7 +1336,7 @@ def create_rebase_review_intake(args: argparse.Namespace) -> dict[str, Any]:
     work_dir, analysis_path, analysis = load_analysis(repo_root, args.work_id, args.analysis_path)
     if args.plan_path:
         plan_path = Path(args.plan_path).resolve()
-        ensure_child_path(work_dir / "process-report", plan_path, "rebase review plan")
+        ensure_child_path(process_report_dir_for_work_dir(work_dir), plan_path, "rebase review plan")
     else:
         plan_path = latest_rebase_review_plan(work_dir)
     decisions = parse_rebase_review_checklist(plan_path)
@@ -1553,7 +1575,7 @@ def ensure_child_path(parent: Path, child: Path, label: str) -> Path:
 
 
 def default_rebase_replay_package_path(work_dir: Path) -> Path:
-    return work_dir / "context" / "rebase-replay-package.json"
+    return context_file(work_dir, "rebase-replay-package.json")
 
 
 def load_rebase_replay_package(work_dir: Path, raw_path: str) -> tuple[Path, dict[str, Any]]:
@@ -1682,7 +1704,7 @@ def create_rebase_replay_package(args: argparse.Namespace) -> dict[str, Any]:
     work_dir, analysis_path, analysis = load_analysis(repo_root, args.work_id, args.analysis_path)
     candidates = selected_rebase_replay_candidates(analysis, [str(item) for item in args.candidate_id or []])
     output_path = Path(args.output).resolve() if args.output else default_rebase_replay_package_path(work_dir)
-    ensure_child_path(work_dir / "context", output_path, "rebase replay package")
+    ensure_child_path(context_dir_for_work_dir(work_dir), output_path, "rebase replay package")
     package = build_rebase_replay_package_from_candidates(
         analysis,
         candidates,
@@ -1983,7 +2005,7 @@ def run_approved_verification_command(repo_path: Path, command: str) -> dict[str
 
 
 def replay_worktree_path(work_dir: Path, target_branch: str) -> Path:
-    return work_dir / "git-worktree" / safe_branch_segment(target_branch)
+    return git_worktree_dir_for_work_dir(work_dir) / safe_branch_segment(target_branch)
 
 
 def prepare_replay_worktree(
@@ -1993,7 +2015,7 @@ def prepare_replay_worktree(
     *,
     reuse_worktree: bool,
 ) -> Path:
-    worktree_root = work_dir / "git-worktree"
+    worktree_root = git_worktree_dir_for_work_dir(work_dir)
     worktree_path = ensure_child_path(worktree_root, replay_worktree_path(work_dir, package["target_branch"]), "replay worktree")
     if worktree_path.exists() and not reuse_worktree:
         raise FileExistsError(f"Replay worktree already exists: {worktree_path}")
@@ -2058,7 +2080,7 @@ def build_rebase_replay_report(
             "",
             "## Runtime rule",
             "",
-            "The rewrite was executed by the built-in non-interactive replay runtime. No generated Python helper script under `work/<work-id>/context/` is required.",
+            f"The rewrite was executed by the built-in non-interactive replay runtime. No generated Python helper script under `{context_path_pattern()}` is required.",
         ]
     )
 
@@ -2149,7 +2171,7 @@ def execute_rebase_replay_package(
         git_text(worktree_path, ["branch", "-m", output_branch])
 
     timestamp = local_timestamp()
-    mapping_path = work_dir / "context" / f"github-history-rebase-replay-sha-map-{timestamp}.tsv"
+    mapping_path = context_file(work_dir, f"github-history-rebase-replay-sha-map-{timestamp}.tsv")
     mapping_path.write_text(
         "before\tafter\n" + "\n".join(f"{before}\t{after}" for before, after in mapping) + "\n",
         encoding="utf-8",
@@ -2178,7 +2200,7 @@ def execute_rebase_replay_package(
         remote_after = git_text(repo_root, ["ls-remote", "--heads", remote, package["target_branch"]]).split()[0]
         push_result = {"command": "git " + " ".join(push_command), "stdout": push_output, "remote_after": remote_after}
 
-    report_path = work_dir / "process-report" / f"github-history-rebase-replay-execution-{timestamp}.md"
+    report_path = process_report_dir_for_work_dir(work_dir) / f"github-history-rebase-replay-execution-{timestamp}.md"
     write_markdown(
         report_path,
         build_rebase_replay_report(
@@ -2299,9 +2321,9 @@ def require_github_operation_gate(
             + f" before this operation. Re-run init or repair the manifest: {manifest_path}"
         )
 
-    gate_path = context_path(repo_root, gate_entry) if gate_entry else work_dir / "context" / "github-operation-gate.json"
+    gate_path = context_path(repo_root, gate_entry) if gate_entry else context_file(work_dir, "github-operation-gate.json")
     gate = read_json(gate_path, default={}) or {}
-    tool_path = context_path(repo_root, tool_entry) if tool_entry else work_dir / "context" / "tool-selection.json"
+    tool_path = context_path(repo_root, tool_entry) if tool_entry else context_file(work_dir, "tool-selection.json")
     tool_selection = read_json(tool_path, default={}) or {}
     reasons = []
     if require_mutation_gate and not bool(gate.get("mutation_allowed")):
@@ -2429,7 +2451,7 @@ def create_repair_plan(args: argparse.Namespace) -> dict[str, Any]:
     output_path = (
         Path(args.output).resolve()
         if args.output
-        else work_dir / "process-report" / f"github-knowledge-repair-plan-{local_timestamp()}.md"
+        else process_report_dir_for_work_dir(work_dir) / f"github-knowledge-repair-plan-{local_timestamp()}.md"
     )
     write_markdown(output_path, build_repair_plan(analysis))
     register_artifact(repo_root, work_dir, "GITHUB-KNOWLEDGE-REPAIR-PLAN", "GitHub Knowledge Repair Plan", output_path, "report")
@@ -2467,8 +2489,8 @@ def build_rebase_plan(analysis: dict[str, Any]) -> str:
             "- Git CLI remote: fetch、ls-remote、push、force-with-leaseで検証済みlocal graphをGitHub branchへ反映する。remote操作なので認証が必要。",
             "- GitHub APIではcommit graph rewriteやrebaseはできない。GitHub tokenの有無とlocal rebase editorの要否は別問題として扱う。",
             "- runtime自動化では `git rebase -i` のeditor hookに依存しない。非対話のGit CLI local commandで履歴を作り、local verification後にGit CLI remote commandで承認済みbranchへ反映する。",
-            "- Approved small-commit packages should be generated with `aiwfctl github-knowledge rebase-package` and executed with `aiwfctl github-knowledge rebase-apply`; use JSON data under `work/<work-id>/context/`, not generated Python helper scripts.",
-            "- Replay verification worktrees must live under `work/<work-id>/git-worktree/<target-branch>/`; the main checkout is only for reports and context artifacts.",
+            f"- Approved small-commit packages should be generated with `aiwfctl github-knowledge rebase-package` and executed with `aiwfctl github-knowledge rebase-apply`; use JSON data under `{context_path_pattern()}`, not generated Python helper scripts.",
+            f"- Replay verification worktrees must live under `{git_worktree_path_pattern()}/`; the main checkout is only for reports and context artifacts.",
             f"- 承認回数: {boundary['approval_model']['human_check_count']} approval package。対象repository、対象branch、rewrite action、local verification、rollback、exact remote update commandを1つの承認単位にまとめる。",
             "- 運用ルール: approval packageが承認済みなら、後続のlocal rewrite、verification、approved remote updateで人間への再承認依頼を出さない。CLIの `--human-check approved` は承認済み事実をruntimeへ渡す実行ガードとして扱う。",
             "",
@@ -2608,7 +2630,7 @@ def create_rebase_plan(args: argparse.Namespace) -> dict[str, Any]:
     output_path = (
         Path(args.output).resolve()
         if args.output
-        else work_dir / "process-report" / f"github-history-rebase-plan-{local_timestamp()}.md"
+        else process_report_dir_for_work_dir(work_dir) / f"github-history-rebase-plan-{local_timestamp()}.md"
     )
     candidates = history_rewrite_candidates(analysis)
     validation_errors = validate_history_rewrite_candidates(candidates)
@@ -2811,7 +2833,7 @@ def create_sync_plan(args: argparse.Namespace) -> dict[str, Any]:
     output_path = (
         Path(args.output).resolve()
         if args.output
-        else work_dir / "process-report" / f"github-documentation-sync-plan-{local_timestamp()}.md"
+        else process_report_dir_for_work_dir(work_dir) / f"github-documentation-sync-plan-{local_timestamp()}.md"
     )
     write_markdown(output_path, build_sync_plan(analysis))
     register_artifact(repo_root, work_dir, "GITHUB-DOCUMENTATION-SYNC-PLAN", "GitHub Documentation Sync Plan", output_path, "report")
@@ -2880,9 +2902,9 @@ def create_rag_candidate(args: argparse.Namespace) -> dict[str, Any]:
     if args.output:
         output_path = Path(args.output).resolve()
     elif args.publish_rag:
-        output_path = repo_root / "rag" / "github-knowledge" / rag_source_report_name(topic)
+        output_path = repo_root / SOURCE_GITHUB_KNOWLEDGE / rag_source_report_name(topic)
     else:
-        output_path = work_dir / "process-report" / f"github-knowledge-rag-candidate-{local_timestamp()}.md"
+        output_path = process_report_dir_for_work_dir(work_dir) / f"github-knowledge-rag-candidate-{local_timestamp()}.md"
     write_markdown(output_path, build_rag_candidate(analysis, topic))
     register_artifact(repo_root, work_dir, "GITHUB-KNOWLEDGE-RAG-CANDIDATE", "GitHub Knowledge RAG Candidate", output_path, "report")
     return {

@@ -12,6 +12,26 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.schemas import (  # noqa: E402
+    EMULATOR_HEALTH_CONTEXT_SCHEMA,
+    EMULATOR_SETUP_CONTEXT_SCHEMA,
+    INTEGRATION_FINALIZATION_CONTEXT_SCHEMA,
+    INTEGRATION_TEST_PLAN_CONTEXT_SCHEMA,
+    SYSTEM_INTEGRATION_CONTEXT_SCHEMA,
+)
+from runtime.constants.workspace import (  # noqa: E402
+    DEFAULT_TARGET_REPO_HELP,
+    TARGET_REPOSITORY_PATTERN,
+    WORK_DIR_PATTERN,
+    context_file,
+    manifest_path_for_work_dir,
+    reports_dir_for_work_dir,
+    resolve_work_dir as workspace_resolve_work_dir,
+    target_repository_dir_for_work_dir,
+    test_environment_dir_for_work_dir,
+    test_evidence_dir_for_work_dir,
+    work_path_pattern,
+)
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
@@ -21,11 +41,11 @@ EMULATOR_CONTEXT_ARTIFACT_TYPE = "emulator-setup-context"
 EMULATOR_HEALTH_ARTIFACT_TYPE = "emulator-health-context"
 INTEGRATION_TEST_PLAN_ARTIFACT_TYPE = "integration-test-plan-context"
 INTEGRATION_FINALIZATION_ARTIFACT_TYPE = "integration-finalization-context"
-DEFAULT_CONTEXT_SCHEMA = ".github/schemas/system-integration-context.schema.json"
-DEFAULT_EMULATOR_SCHEMA = ".github/schemas/emulator-setup-context.schema.json"
-DEFAULT_EMULATOR_HEALTH_SCHEMA = ".github/schemas/emulator-health-context.schema.json"
-DEFAULT_TEST_PLAN_SCHEMA = ".github/schemas/integration-test-plan-context.schema.json"
-DEFAULT_FINALIZATION_SCHEMA = ".github/schemas/integration-finalization-context.schema.json"
+DEFAULT_CONTEXT_SCHEMA = SYSTEM_INTEGRATION_CONTEXT_SCHEMA
+DEFAULT_EMULATOR_SCHEMA = EMULATOR_SETUP_CONTEXT_SCHEMA
+DEFAULT_EMULATOR_HEALTH_SCHEMA = EMULATOR_HEALTH_CONTEXT_SCHEMA
+DEFAULT_TEST_PLAN_SCHEMA = INTEGRATION_TEST_PLAN_CONTEXT_SCHEMA
+DEFAULT_FINALIZATION_SCHEMA = INTEGRATION_FINALIZATION_CONTEXT_SCHEMA
 
 AWS_EMULATOR_SERVICES = {
     "s3": "LocalStack S3",
@@ -52,19 +72,17 @@ def resolve_repo_path(repo_root: Path, value: str | Path) -> Path:
 
 
 def resolve_work_dir(repo_root: Path, work_id: str, work_dir: str = "") -> Path:
-    if work_dir:
-        return resolve_repo_path(repo_root, work_dir)
     if not work_id:
         raise ValueError("--work-id is required when --work-dir is not specified.")
-    return repo_root / "work" / work_id
+    return workspace_resolve_work_dir(repo_root, work_id, work_dir)
 
 
 def default_target_repo(work_dir: Path) -> Path:
-    return work_dir / "source" / "repository"
+    return target_repository_dir_for_work_dir(work_dir)
 
 
 def load_context(work_dir: Path, name: str) -> dict[str, Any]:
-    data = read_json(work_dir / "context" / name, default={})
+    data = read_json(context_file(work_dir, name), default={})
     return data if isinstance(data, dict) else {}
 
 
@@ -151,7 +169,7 @@ def emulator_candidates(cloud: dict[str, Any], payment: dict[str, Any], *, with_
                 "provider": "aws",
                 "emulator": "LocalStack",
                 "template_path": "templates/boilerplates/integration/cloud-emulators/localstack",
-                "recommended_work_path": "work/<work-id>/test-environment/emulator/localstack",
+                "recommended_work_path": work_path_pattern("test-environment", "emulator", "localstack"),
                 "activation": "manual-or-parent-workflow",
                 "required": with_emulator,
                 "services": selected,
@@ -170,7 +188,7 @@ def emulator_candidates(cloud: dict[str, Any], payment: dict[str, Any], *, with_
                 "provider": "gcp",
                 "emulator": "Google Cloud emulators / service-specific test doubles",
                 "template_path": "templates/boilerplates/integration/cloud-emulators/gcp-emulators",
-                "recommended_work_path": "work/<work-id>/test-environment/emulator/gcp-emulators",
+                "recommended_work_path": work_path_pattern("test-environment", "emulator", "gcp-emulators"),
                 "activation": "manual-or-parent-workflow",
                 "required": with_emulator,
                 "services": selected,
@@ -188,7 +206,7 @@ def emulator_candidates(cloud: dict[str, Any], payment: dict[str, Any], *, with_
                 "provider": "stripe",
                 "emulator": "Stripe CLI / test mode",
                 "template_path": "templates/boilerplates/integration/cloud-emulators/stripe-cli",
-                "recommended_work_path": "work/<work-id>/test-environment/emulator/stripe-cli",
+                "recommended_work_path": work_path_pattern("test-environment", "emulator", "stripe-cli"),
                 "activation": "manual-or-parent-workflow",
                 "required": with_emulator,
                 "services": services,
@@ -395,8 +413,8 @@ def render_report(context: dict[str, Any]) -> str:
 
 
 def write_outputs(repo_root: Path, work_dir: Path, context: dict[str, Any]) -> dict[str, str]:
-    report_path = work_dir / "reports" / "system-integration-report.md"
-    context_path = work_dir / "context" / "integration-context.json"
+    report_path = reports_dir_for_work_dir(work_dir) / "system-integration-report.md"
+    context_path = context_file(work_dir, "integration-context.json")
     artifacts = {
         "report": relative_to_repo(repo_root, report_path),
         "context": relative_to_repo(repo_root, context_path),
@@ -410,17 +428,18 @@ def write_outputs(repo_root: Path, work_dir: Path, context: dict[str, Any]) -> d
 
 def emulator_destination(work_dir: Path, candidate: dict[str, Any]) -> Path:
     recommended = str(candidate.get("recommended_work_path", ""))
-    suffix = recommended.replace("work/<work-id>/", "", 1) if recommended.startswith("work/<work-id>/") else ""
+    prefix = f"{WORK_DIR_PATTERN}/"
+    suffix = recommended.replace(prefix, "", 1) if recommended.startswith(prefix) else ""
     if suffix:
         return work_dir / suffix
     provider = str(candidate.get("provider", "emulator")).strip() or "emulator"
-    return work_dir / "test-environment" / "emulator" / provider
+    return test_environment_dir_for_work_dir(work_dir) / "emulator" / provider
 
 
 def copy_emulator_template(repo_root: Path, work_dir: Path, candidate: dict[str, Any], *, force: bool = False) -> dict[str, Any]:
     template_path = resolve_repo_path(repo_root, str(candidate.get("template_path", "")))
     destination = emulator_destination(work_dir, candidate)
-    evidence_dir = work_dir / "test-evidence" / "emulator" / str(candidate.get("provider", "emulator"))
+    evidence_dir = test_evidence_dir_for_work_dir(work_dir) / "emulator" / str(candidate.get("provider", "emulator"))
     evidence_dir.mkdir(parents=True, exist_ok=True)
     if not template_path.exists() or not template_path.is_dir():
         return {
@@ -507,7 +526,7 @@ def prepare_emulator(
             "do_not_use_production_credentials": True,
         },
     }
-    context_path = work_path / "context" / "emulator-context.json"
+    context_path = context_file(work_path, "emulator-context.json")
     write_json(context_path, context)
     manifest = register_context(
         repo_root,
@@ -522,7 +541,7 @@ def prepare_emulator(
         status=status,
     )
     context["artifacts"] = {"context": relative_to_repo(repo_root, context_path)}
-    context["manifest_path"] = relative_to_repo(repo_root, work_path / "context" / "context-manifest.json")
+    context["manifest_path"] = relative_to_repo(repo_root, manifest_path_for_work_dir(work_path))
     context["manifest_contexts"] = [item.get("type") for item in manifest.get("contexts", []) if isinstance(item, dict)]
     write_json(context_path, context)
     return context
@@ -579,7 +598,7 @@ def emulator_health(
     probe_docker: bool = False,
 ) -> dict[str, Any]:
     work_path = resolve_work_dir(repo_root, work_id, work_dir)
-    setup_context_path = work_path / "context" / "emulator-context.json"
+    setup_context_path = context_file(work_path, "emulator-context.json")
     setup_context = read_json(setup_context_path, default={})
     if not isinstance(setup_context, dict) or setup_context.get("artifact_type") != EMULATOR_CONTEXT_ARTIFACT_TYPE:
         context = {
@@ -700,8 +719,8 @@ def render_emulator_health_summary(context: dict[str, Any]) -> str:
 
 
 def write_emulator_health_outputs(repo_root: Path, work_dir: Path, context: dict[str, Any]) -> dict[str, Any]:
-    context_path = work_dir / "context" / "emulator-health-context.json"
-    evidence_path = work_dir / "test-evidence" / "emulator" / "health-summary.md"
+    context_path = context_file(work_dir, "emulator-health-context.json")
+    evidence_path = test_evidence_dir_for_work_dir(work_dir) / "emulator" / "health-summary.md"
     context["artifacts"] = {
         "context": relative_to_repo(repo_root, context_path),
         "evidence": relative_to_repo(repo_root, evidence_path),
@@ -721,7 +740,7 @@ def write_emulator_health_outputs(repo_root: Path, work_dir: Path, context: dict
         schema=DEFAULT_EMULATOR_HEALTH_SCHEMA,
         status=str(context.get("status", "")),
     )
-    context["manifest_path"] = relative_to_repo(repo_root, work_dir / "context" / "context-manifest.json")
+    context["manifest_path"] = relative_to_repo(repo_root, manifest_path_for_work_dir(work_dir))
     context["manifest_contexts"] = [item.get("type") for item in manifest.get("contexts", []) if isinstance(item, dict)]
     write_json(context_path, context)
     return context
@@ -835,7 +854,7 @@ def render_integration_test_runbook(context: dict[str, Any]) -> str:
         "- 本番credential、本番クラウド、本番決済、本番networkを使わない。",
         "- Docker composeや対象システム起動はHuman Check後に実行する。",
         "- emulator成功を本番等価として扱わない。",
-        "- 証跡は `work/<work-id>/test-evidence/` 配下へ保存する。",
+        f"- 証跡は `{work_path_pattern('test-evidence')}/` 配下へ保存する。",
         "",
         "## Phase",
         "",
@@ -861,8 +880,8 @@ def render_integration_test_runbook(context: dict[str, Any]) -> str:
 
 
 def write_integration_test_plan_outputs(repo_root: Path, work_dir: Path, context: dict[str, Any]) -> dict[str, Any]:
-    context_path = work_dir / "context" / "integration-test-plan-context.json"
-    runbook_path = work_dir / "test-evidence" / "integration-test" / "integration-test-runbook.md"
+    context_path = context_file(work_dir, "integration-test-plan-context.json")
+    runbook_path = test_evidence_dir_for_work_dir(work_dir) / "integration-test" / "integration-test-runbook.md"
     context["artifacts"] = {
         "context": relative_to_repo(repo_root, context_path),
         "runbook": relative_to_repo(repo_root, runbook_path),
@@ -882,7 +901,7 @@ def write_integration_test_plan_outputs(repo_root: Path, work_dir: Path, context
         schema=DEFAULT_TEST_PLAN_SCHEMA,
         status=str(context.get("status", "")),
     )
-    context["manifest_path"] = relative_to_repo(repo_root, work_dir / "context" / "context-manifest.json")
+    context["manifest_path"] = relative_to_repo(repo_root, manifest_path_for_work_dir(work_dir))
     context["manifest_contexts"] = [item.get("type") for item in manifest.get("contexts", []) if isinstance(item, dict)]
     write_json(context_path, context)
     return context
@@ -897,8 +916,8 @@ def integration_test_plan(
 ) -> dict[str, Any]:
     work_path = resolve_work_dir(repo_root, work_id, work_dir)
     target_path = resolve_repo_path(repo_root, target_repo) if target_repo else default_target_repo(work_path)
-    integration_context_path = work_path / "context" / "integration-context.json"
-    emulator_health_path = work_path / "context" / "emulator-health-context.json"
+    integration_context_path = context_file(work_path, "integration-context.json")
+    emulator_health_path = context_file(work_path, "emulator-health-context.json")
     integration_context = read_json(integration_context_path, default={})
     emulator_health_context = read_json(emulator_health_path, default={})
     human_checks: list[str] = []
@@ -910,7 +929,7 @@ def integration_test_plan(
     elif emulator_health_context.get("status") == "human-check-required":
         human_checks.append("emulator health が human-check-required です。Integration Test実行前にhealthのHuman Checkを解消してください。")
     if not target_path.exists():
-        human_checks.append("対象repositoryが見つかりません。--target-repo または work/<work-id>/source/repository を確認してください。")
+        human_checks.append(f"対象repositoryが見つかりません。--target-repo または {TARGET_REPOSITORY_PATTERN} を確認してください。")
     phases = integration_test_phases(emulator_health_context, target_path)
     human_checks.extend(
         [
@@ -957,7 +976,7 @@ def integration_test_plan(
 
 def collect_evidence_files(repo_root: Path, work_dir: Path, target_repo: Path) -> list[dict[str, Any]]:
     roots = [
-        ("work-test-evidence", work_dir / "test-evidence"),
+        ("work-test-evidence", test_evidence_dir_for_work_dir(work_dir)),
         ("work-evidence", work_dir / "evidence"),
         ("target-docs-evidence", target_repo / "docs" / "evidence"),
     ]
@@ -1181,8 +1200,8 @@ def render_finalization_report(context: dict[str, Any]) -> str:
 
 
 def write_finalization_outputs(repo_root: Path, work_dir: Path, context: dict[str, Any]) -> dict[str, Any]:
-    context_path = work_dir / "context" / "integration-finalization-context.json"
-    report_path = work_dir / "reports" / "system-integration-final-report.md"
+    context_path = context_file(work_dir, "integration-finalization-context.json")
+    report_path = reports_dir_for_work_dir(work_dir) / "system-integration-final-report.md"
     context["artifacts"] = {
         "context": relative_to_repo(repo_root, context_path),
         "report": relative_to_repo(repo_root, report_path),
@@ -1202,7 +1221,7 @@ def write_finalization_outputs(repo_root: Path, work_dir: Path, context: dict[st
         schema=DEFAULT_FINALIZATION_SCHEMA,
         status=str(context.get("status", "")),
     )
-    context["manifest_path"] = relative_to_repo(repo_root, work_dir / "context" / "context-manifest.json")
+    context["manifest_path"] = relative_to_repo(repo_root, manifest_path_for_work_dir(work_dir))
     context["manifest_contexts"] = [item.get("type") for item in manifest.get("contexts", []) if isinstance(item, dict)]
     write_json(context_path, context)
     return context
@@ -1217,9 +1236,9 @@ def finalize_integration(
 ) -> dict[str, Any]:
     work_path = resolve_work_dir(repo_root, work_id, work_dir)
     target_path = resolve_repo_path(repo_root, target_repo) if target_repo else default_target_repo(work_path)
-    integration_context_path = work_path / "context" / "integration-context.json"
-    emulator_health_path = work_path / "context" / "emulator-health-context.json"
-    test_plan_path = work_path / "context" / "integration-test-plan-context.json"
+    integration_context_path = context_file(work_path, "integration-context.json")
+    emulator_health_path = context_file(work_path, "emulator-health-context.json")
+    test_plan_path = context_file(work_path, "integration-test-plan-context.json")
     integration_context = read_json(integration_context_path, default={})
     emulator_health_context = read_json(emulator_health_path, default={})
     test_plan_context = read_json(test_plan_path, default={})
@@ -1288,7 +1307,7 @@ def finalize_integration(
 
 def expected_evidence(work_dir: Path, target_repo: Path) -> list[dict[str, str]]:
     candidates = [
-        work_dir / "test-evidence",
+        test_evidence_dir_for_work_dir(work_dir),
         work_dir / "evidence",
         target_repo / "docs" / "evidence",
         target_repo / "tests",
@@ -1365,7 +1384,7 @@ def build_context(
         work_path,
         work_id=work_id,
         context_type="system-integration",
-        path=work_path / "context" / "integration-context.json",
+        path=context_file(work_path, "integration-context.json"),
         required=False,
         generated_by="system-integration-quality",
         owner="system-integration-quality",
@@ -1373,9 +1392,9 @@ def build_context(
         status=context["status"],
     )
     context["artifacts"] = artifacts
-    context["manifest_path"] = relative_to_repo(repo_root, work_path / "context" / "context-manifest.json")
+    context["manifest_path"] = relative_to_repo(repo_root, manifest_path_for_work_dir(work_path))
     context["manifest_contexts"] = [item.get("type") for item in manifest.get("contexts", []) if isinstance(item, dict)]
-    write_json(work_path / "context" / "integration-context.json", context)
+    write_json(context_file(work_path, "integration-context.json"), context)
     return context
 
 
@@ -1510,25 +1529,25 @@ def build_parser() -> argparse.ArgumentParser:
         cmd = sub.add_parser(name)
         cmd.add_argument("--work-id", required=True)
         cmd.add_argument("--work-dir", default="")
-        cmd.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+        cmd.add_argument("--target-repo", default="", help=DEFAULT_TARGET_REPO_HELP)
         cmd.add_argument("--with-emulator", action="store_true", help="Include emulator suitability classification.")
         cmd.add_argument("--json", action="store_true")
     plan = sub.add_parser("test-plan", help="Create Integration Test runbook and Context First plan.")
     plan.add_argument("--work-id", required=True)
     plan.add_argument("--work-dir", default="")
-    plan.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+    plan.add_argument("--target-repo", default="", help=DEFAULT_TARGET_REPO_HELP)
     plan.add_argument("--json", action="store_true")
     finalize = sub.add_parser("finalize", help="Collect evidence, detect discomfort, and create final integration report.")
     finalize.add_argument("--work-id", required=True)
     finalize.add_argument("--work-dir", default="")
-    finalize.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+    finalize.add_argument("--target-repo", default="", help=DEFAULT_TARGET_REPO_HELP)
     finalize.add_argument("--json", action="store_true")
-    emulator = sub.add_parser("emulator", help="Prepare emulator templates under work/<work-id>.")
+    emulator = sub.add_parser("emulator", help=f"Prepare emulator templates under {work_path_pattern()}.")
     emulator_sub = emulator.add_subparsers(dest="emulator_command", required=True)
     prepare = emulator_sub.add_parser("prepare", help="Copy selected emulator boilerplates to the work area.")
     prepare.add_argument("--work-id", required=True)
     prepare.add_argument("--work-dir", default="")
-    prepare.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+    prepare.add_argument("--target-repo", default="", help=DEFAULT_TARGET_REPO_HELP)
     prepare.add_argument("--force", action="store_true", help="Refresh existing copied emulator template directories.")
     prepare.add_argument("--json", action="store_true")
     health = emulator_sub.add_parser("health", help="Check copied emulator templates and write health evidence.")

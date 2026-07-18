@@ -13,14 +13,14 @@ def make_args(tmp_path: Path, **overrides: object) -> argparse.Namespace:
         "repo_root": str(tmp_path),
         "work_id": "",
         "work_dir": "",
-        "source_dir": "rag/corrective-action-report",
+        "source_dir": "work/db/ariadne-knowledge-platform/rag/corrective-action-report",
         "document_type": "corrective-action-report",
-        "normalized_dir": "rag/normalized",
-        "chunks_dir": "rag/chunks",
-        "optimized_chunks_dir": "rag/optimized-chunks",
-        "indexes_dir": "rag/indexes",
-        "embeddings_output": "rag/embeddings/chunks-embeddings.jsonl",
-        "output": "rag/retrieval/rag-build-run-latest.json",
+        "normalized_dir": "work/db/ariadne-knowledge-platform/rag/normalized",
+        "chunks_dir": "work/db/ariadne-knowledge-platform/rag/chunks",
+        "optimized_chunks_dir": "work/db/ariadne-knowledge-platform/rag/optimized-chunks",
+        "indexes_dir": "work/db/ariadne-knowledge-platform/rag/indexes",
+        "embeddings_output": "work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl",
+        "output": "work/db/ariadne-knowledge-platform/rag/retrieval/rag-build-run-latest.json",
         "ingestion_evidence_dir": "db/rag/evidence/ingestion",
         "ingestion_policy": "runtime/rag/policies/knowledge-ingestion-policy.json",
         "skip_optimization": False,
@@ -104,7 +104,11 @@ def test_rag_build_artifact_defaults_and_human_check_reasons(tmp_path: Path) -> 
         ),
         rag_build.stage_record(
             "build-index",
-            {"documents_index": "rag/indexes/documents.jsonl", "chunks_index": "rag/indexes/chunks.jsonl", "chunk_count": 4},
+            {
+                "documents_index": "work/db/ariadne-knowledge-platform/rag/indexes/documents.jsonl",
+                "chunks_index": "work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl",
+                "chunk_count": 4,
+            },
         ),
         rag_build.stage_record("embed-chunks", {"embedding_count": 5}),
         rag_build.stage_record(
@@ -214,7 +218,11 @@ def test_rag_build_run_with_standardize_and_context_registration(monkeypatch, tm
         "run",
         record_stage(
             "index",
-            {"documents_index": "rag/indexes/documents.jsonl", "chunks_index": "rag/indexes/chunks.jsonl", "chunk_count": 8},
+            {
+                "documents_index": "work/db/ariadne-knowledge-platform/rag/indexes/documents.jsonl",
+                "chunks_index": "work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl",
+                "chunk_count": 8,
+            },
         ),
     )
     monkeypatch.setattr(
@@ -250,15 +258,15 @@ def test_rag_build_run_with_standardize_and_context_registration(monkeypatch, tm
     assert stage_calls[0][1].random_length == 7
     assert stage_calls[1][1].clean_output is True
     assert stage_calls[2][1].chunk_size == 500
-    assert stage_calls[3][1].output_dir == "rag/optimized-chunks"
-    assert stage_calls[4][1].chunks_dir == "rag/optimized-chunks"
-    assert stage_calls[5][1].chunks_index.endswith(str(Path("rag/indexes/chunks.jsonl")))
+    assert stage_calls[3][1].output_dir == "work/db/ariadne-knowledge-platform/rag/optimized-chunks"
+    assert stage_calls[4][1].chunks_dir == "work/db/ariadne-knowledge-platform/rag/optimized-chunks"
+    assert stage_calls[5][1].chunks_index.endswith(str(Path("work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl")))
     assert stage_calls[5][1].dimensions == 64
 
     artifact_path = tmp_path / result["rag_build_run"]
     artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
     assert artifact["human_check_required"] is True
-    assert artifact["outputs"]["documents_index"] == "rag/indexes/documents.jsonl"
+    assert artifact["outputs"]["documents_index"] == "work/db/ariadne-knowledge-platform/rag/indexes/documents.jsonl"
     manifest = json.loads((tmp_path / "work" / "issue-22" / "context" / "context-manifest.json").read_text(encoding="utf-8"))
     assert manifest["contexts"][0]["type"] == "rag-build-run"
 
@@ -354,7 +362,7 @@ def test_rag_build_run_can_skip_ingestion_optimization(monkeypatch, tmp_path: Pa
     )
 
     assert result["stages"] == ["normalize-documents", "chunk-documents", "build-index", "embed-chunks"]
-    assert stage_names == ["normalize", "chunk", "index:rag/chunks", "embed"]
+    assert stage_names == ["normalize", "chunk", "index:work/db/ariadne-knowledge-platform/rag/chunks", "embed"]
     artifact = json.loads((tmp_path / result["rag_build_run"]).read_text(encoding="utf-8"))
     assert artifact["outputs"]["chunk_count"] == 2
     assert artifact["outputs"]["accepted_chunk_count"] == 0
@@ -404,7 +412,7 @@ def test_rag_build_run_can_register_duckdb_migration_context(monkeypatch, tmp_pa
             "status": "completed",
             "artifact_type": "rag-duckdb-migration-summary",
             "db": "db/rag/test.duckdb",
-            "source": "rag/optimized-chunks",
+            "source": "work/db/ariadne-knowledge-platform/rag/optimized-chunks",
             "target_file_count": 2,
             "registered_count": 2,
             "updated_count": 0,
@@ -432,7 +440,9 @@ def test_rag_build_run_can_register_duckdb_migration_context(monkeypatch, tmp_pa
     assert result["duckdb_enabled"] is True
     assert result["duckdb_migration_summary"] == "db/rag/evidence/migration-summary.json"
     assert migration_calls[0]["db_path"] == tmp_path / "db" / "rag" / "test.duckdb"
-    assert migration_calls[0]["source"] == tmp_path / "rag" / "optimized-chunks"
+    assert migration_calls[0]["source"] == (
+        tmp_path / "work" / "db" / "ariadne-knowledge-platform" / "rag" / "optimized-chunks"
+    )
     evidence = json.loads((tmp_path / "db" / "rag" / "evidence" / "migration-summary.json").read_text(encoding="utf-8"))
     assert evidence["artifact_type"] == "rag-duckdb-migration"
     assert evidence["migration"]["registered_count"] == 2
@@ -474,7 +484,7 @@ def test_rag_build_parser_and_main_paths(monkeypatch, tmp_path: Path, capsys) ->
     monkeypatch.setattr(
         rag_build,
         "run",
-        lambda args: {"status": "completed", "rag_build_run": "rag/retrieval/run.json"},
+        lambda args: {"status": "completed", "rag_build_run": "work/db/ariadne-knowledge-platform/rag/retrieval/run.json"},
     )
     assert rag_build.main(["--repo-root", str(tmp_path)]) == 0
     assert '"status": "completed"' in capsys.readouterr().out

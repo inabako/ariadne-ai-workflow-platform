@@ -22,13 +22,20 @@ from runtime.common import (  # noqa: E402
     utc_now_iso,
     write_json,
 )
+from runtime.constants.workspace import (  # noqa: E402
+    context_dir_for_work_dir,
+    process_report_dir_for_work_dir,
+    source_dir_for_work_dir,
+    work_dir_for_id,
+    work_path_pattern,
+)
 from runtime.scm.scm_utils import current_branch, current_commit, github_token_git_env, is_git_repository, require_success, run_git  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Prepare a support repository under work/<id>/source.")
+    parser = argparse.ArgumentParser(description=f"Prepare a support repository under {work_path_pattern('source', work_id='<id>')}.")
     parser.add_argument("--work-id", required=True)
-    parser.add_argument("--name", required=True, help="Directory name under work/<id>/source.")
+    parser.add_argument("--name", required=True, help=f"Directory name under {work_path_pattern('source', work_id='<id>')}.")
     parser.add_argument("--repository", required=True, help="GitHub URL, git URL, owner/name, or repository name.")
     parser.add_argument("--branch", default=None)
     parser.add_argument("--remote", default=None)
@@ -51,13 +58,13 @@ def clone_repository(repository: str, branch: str, source_dir: Path, token: str,
 def prepare_support_repository(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     settings = load_env(repo_root)
-    work_dir = repo_root / "work" / args.work_id
+    work_dir = work_dir_for_id(repo_root, args.work_id)
     if not work_dir.exists():
         raise FileNotFoundError(f"Work directory does not exist: {work_dir}")
 
     branch = args.branch or env_value(settings, "DEFAULT_GIT_TARGET_BRANCH", "GIT_TARGET_BRANCH") or "main"
     remote = args.remote or env_value(settings, "DEFAULT_GIT_REMOTE_NAME", "GIT_REMOTE_NAME") or "origin"
-    source_dir = Path(args.source_dir).resolve() if args.source_dir else work_dir / "source" / args.name
+    source_dir = Path(args.source_dir).resolve() if args.source_dir else source_dir_for_work_dir(work_dir) / args.name
 
     if source_dir.exists() and not is_git_repository(source_dir):
         raise RuntimeError(f"Support source directory exists but is not a git repository: {source_dir}")
@@ -89,7 +96,7 @@ def prepare_support_repository(args: argparse.Namespace) -> dict[str, Any]:
         "dry_run": bool(args.dry_run),
     }
 
-    context_dir = work_dir / "context"
+    context_dir = context_dir_for_work_dir(work_dir)
     support_state_path = context_dir / "support-repositories.json"
     support_state = read_json(support_state_path, default={"schema_version": "1.0", "repositories": []}) or {}
     repositories = support_state.setdefault("repositories", [])
@@ -97,7 +104,7 @@ def prepare_support_repository(args: argparse.Namespace) -> dict[str, Any]:
     repositories.append(result)
     write_json(support_state_path, support_state)
 
-    report_path = work_dir / "process-report" / f"support-repository-{args.name}.json"
+    report_path = process_report_dir_for_work_dir(work_dir) / f"support-repository-{args.name}.json"
     write_json(report_path, result)
 
     agent_context = read_json(context_dir / "agent-context.json", default={}) or {}

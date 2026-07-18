@@ -22,6 +22,13 @@ from runtime.common import (  # noqa: E402
     write_json,
     write_markdown_bom,
 )
+from runtime.constants.schemas import ARTIFACT_INDEX_SCHEMA  # noqa: E402
+from runtime.constants.workspace import (  # noqa: E402
+    context_dir_for_work_dir,
+    process_report_dir_for_work_dir,
+    test_evidence_dir_for_work_dir,
+    work_dir_for_id,
+)
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
@@ -79,7 +86,7 @@ def resolve_repo_root(args: argparse.Namespace) -> Path:
 
 
 def feedback_dir(repo_root: Path) -> Path:
-    return repo_root / "work" / "feedback"
+    return work_dir_for_id(repo_root, "feedback")
 
 
 def template_path(repo_root: Path, name: str) -> Path:
@@ -358,10 +365,10 @@ def run_branch_name(args: argparse.Namespace) -> dict[str, Any]:
 
 def run_evidence_scaffold(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = resolve_repo_root(args)
-    work_dir = repo_root / "work" / args.work_id
-    process_dir = work_dir / "process-report" / "self-improvement"
-    evidence_dir = work_dir / "test-evidence" / "self-improvement"
-    context_dir = work_dir / "context"
+    work_dir = work_dir_for_id(repo_root, args.work_id)
+    process_dir = process_report_dir_for_work_dir(work_dir) / "self-improvement"
+    evidence_dir = test_evidence_dir_for_work_dir(work_dir) / "self-improvement"
+    context_dir = context_dir_for_work_dir(work_dir)
     process_dir.mkdir(parents=True, exist_ok=True)
     evidence_dir.mkdir(parents=True, exist_ok=True)
     context_dir.mkdir(parents=True, exist_ok=True)
@@ -405,7 +412,7 @@ def run_evidence_scaffold(args: argparse.Namespace) -> dict[str, Any]:
         required=True,
         generated_by="self-improvement",
         owner="workflow",
-        schema=".github/schemas/artifact-index.schema.json",
+        schema=ARTIFACT_INDEX_SCHEMA,
     )
     return {
         "work_id": args.work_id,

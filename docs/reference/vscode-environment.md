@@ -214,14 +214,14 @@ Human approval後、最終的なUUID名RAG knowledge JSONへnormalizeします�
 ```powershell
 uv run --project runtime python runtime/rag/normalize_documents.py `
   --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment `
-  --output-dir db/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type workspace-environment-pattern
 ```
 
 最終着地:
 
 ```text
-db/rag/normalized/<uuid>.json
+work/db/ariadne-knowledge-platform/rag/normalized/<uuid>.json
 ```
 
 Chunk JSON、indexes、embeddings、retrieval packsは派生artifactです。

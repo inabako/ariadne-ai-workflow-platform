@@ -10,6 +10,8 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.schemas import EXECUTION_PLAN_SCHEMA, REALTIME_IAC_HANDOFF_SCHEMA  # noqa: E402
+from runtime.constants.workspace import context_dir_for_work_dir, work_dir_for_id  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
@@ -46,7 +48,7 @@ def resolve_repo_root(raw_repo_root: str) -> Path:
 
 
 def resolve_work_dir(repo_root: Path, work_id: str) -> Path:
-    return repo_root / "work" / work_id
+    return work_dir_for_id(repo_root, work_id)
 
 
 def resolve_path(repo_root: Path, raw_path: str, default_path: Path) -> Path:
@@ -152,7 +154,7 @@ def create_execution_plan(
 def run(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = resolve_repo_root(args.repo_root)
     work_dir = resolve_work_dir(repo_root, args.work_id)
-    context_dir = work_dir / "context"
+    context_dir = context_dir_for_work_dir(work_dir)
     context_dir.mkdir(parents=True, exist_ok=True)
     validation_path = resolve_path(
         repo_root,
@@ -201,7 +203,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         required=True,
         generated_by="ariadne-new-system-iac",
         owner="workflow",
-        schema=".github/schemas/realtime-iac-handoff.schema.json",
+        schema=REALTIME_IAC_HANDOFF_SCHEMA,
     )
     manifest = register_context(
         repo_root,
@@ -212,7 +214,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         required=True,
         generated_by="ariadne-new-system-iac",
         owner="workflow",
-        schema=".github/schemas/execution-plan.schema.json",
+        schema=EXECUTION_PLAN_SCHEMA,
     )
     return {
         "status": "ready-for-human-check",

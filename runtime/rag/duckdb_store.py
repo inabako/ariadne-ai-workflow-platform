@@ -15,18 +15,37 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso  # noqa: E402
+from runtime.constants.paths import (  # noqa: E402
+    CHUNKS_DIR_NAME,
+    DUCKDB_DEFAULT_PATH,
+    DUCKDB_ERROR_LOG,
+    DUCKDB_REFERENCE_CHECK_OUTPUT,
+    DUCKDB_REFERENCE_CHECK_WORK_DIR,
+    JSONIZED_DIR_NAME,
+    KNOWLEDGE_SOURCE_REPO,
+    KNOWLEDGE_SOURCE_REPO_URL,
+    LOCAL_GENERATED_STANDARD_DIRS,
+    NORMALIZED_DIR_NAME,
+    OPTIMIZED_CHUNKS_DIR_NAME,
+    SOURCE_REPO_STANDARD_DIRS,
+)
+from runtime.constants.schemas import RAG_DUCKDB_REFERENCE_CHECK_SCHEMA  # noqa: E402
+from runtime.constants.workspace import (  # noqa: E402
+    context_path_pattern,
+    manifest_path_for_work_dir,
+    work_dir_for_id,
+)
 from runtime.rag import ingestion_optimizer  # noqa: E402
-from runtime.rag.paths import LOCAL_GENERATED_STANDARD_DIRS, SOURCE_REPO_STANDARD_DIRS  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
-DEFAULT_DB_PATH = Path("db/rag/ariadne-knowledge.duckdb")
-DEFAULT_ERROR_LOG = Path("db/rag/migration-errors.jsonl")
-DEFAULT_REFERENCE_CHECK_OUTPUT = Path("db/rag/evidence/reference-check.json")
-DEFAULT_REFERENCE_CHECK_WORK_DIR = Path("db/rag/evidence")
+DEFAULT_DB_PATH = DUCKDB_DEFAULT_PATH
+DEFAULT_ERROR_LOG = DUCKDB_ERROR_LOG
+DEFAULT_REFERENCE_CHECK_OUTPUT = DUCKDB_REFERENCE_CHECK_OUTPUT
+DEFAULT_REFERENCE_CHECK_WORK_DIR = DUCKDB_REFERENCE_CHECK_WORK_DIR
 DEFAULT_REFERENCE_CHECK_WORK_ID = "duckdb-reference-check"
-DEFAULT_SOURCE_REPO_URL = "https://github.com/inabako/ariadne-knowledge-platform.git"
-DEFAULT_SOURCE_REPO_PATH = Path("work/db/ariadne-knowledge-platform")
+DEFAULT_SOURCE_REPO_URL = KNOWLEDGE_SOURCE_REPO_URL
+DEFAULT_SOURCE_REPO_PATH = KNOWLEDGE_SOURCE_REPO
 SCHEMA_VERSION = "1.1"
 STANDARD_SOURCE_DIRS = SOURCE_REPO_STANDARD_DIRS
 LOCAL_STANDARD_SOURCE_DIRS = LOCAL_GENERATED_STANDARD_DIRS
@@ -122,7 +141,7 @@ def build_parser() -> argparse.ArgumentParser:
     verify.add_argument("--min-results", type=int, default=1)
     verify.add_argument("--limit", type=int, default=5)
     verify.add_argument("--output", default=str(DEFAULT_REFERENCE_CHECK_OUTPUT))
-    verify.add_argument("--work-id", default="", help="Register reference check evidence under work/<work-id>/context.")
+    verify.add_argument("--work-id", default="", help=f"Register reference check evidence under {context_path_pattern()}.")
     verify.add_argument("--work-dir", default="", help="Explicit work directory for Context First registration.")
     verify.add_argument("--source-repo", default="", help="Local knowledge source repository clone used for the DB.")
     return parser
@@ -152,7 +171,7 @@ def resolve_work_dir(repo_root: Path, work_id: str = "", work_dir: str = "") -> 
         path = Path(work_dir)
         return path if path.is_absolute() else repo_root / path
     if work_id:
-        return repo_root / "work" / work_id
+        return work_dir_for_id(repo_root, work_id)
     return None
 
 
@@ -290,6 +309,16 @@ def import_local_rag_sources(
         if not source.exists():
             continue
         target = target_root / target_relative
+        if source.resolve() == target.resolve():
+            imports.append(
+                {
+                    "source": relative_to_repo(repo_root, source),
+                    "target": relative_to_repo(repo_root, target),
+                    "copied_files": 0,
+                    "skipped": "source and target are identical",
+                }
+            )
+            continue
         result = copy_tree_contents(source, target, clean=clean)
         total_files += result["copied_files"]
         imports.append(
@@ -446,13 +475,13 @@ def list_text(value: Any) -> list[str]:
 
 def source_kind_from_path(path: Path) -> str:
     parent_names = {part.lower() for part in path.parts}
-    if "optimized-chunks" in parent_names:
+    if OPTIMIZED_CHUNKS_DIR_NAME in parent_names:
         return "optimized-chunk"
-    if "chunks" in parent_names:
+    if CHUNKS_DIR_NAME in parent_names:
         return "chunk"
-    if "normalized" in parent_names:
+    if NORMALIZED_DIR_NAME in parent_names:
         return "normalized-document"
-    if "jsonized" in parent_names:
+    if JSONIZED_DIR_NAME in parent_names:
         return "jsonized-artifact"
     return "knowledge-json"
 
@@ -1091,11 +1120,11 @@ def register_reference_check_context(
         required=False,
         generated_by="runtime-rag-duckdb",
         owner="workflow",
-        schema=".github/schemas/rag-duckdb-reference-check.schema.json",
+        schema=RAG_DUCKDB_REFERENCE_CHECK_SCHEMA,
         status="available" if evidence.get("status") == "completed" else "human-check-required",
     )
     return {
-        "context_manifest": relative_to_repo(repo_root, work_dir / "context" / "context-manifest.json"),
+        "context_manifest": relative_to_repo(repo_root, manifest_path_for_work_dir(work_dir)),
         "manifest_contexts": [item.get("type") for item in manifest.get("contexts", [])],
     }
 

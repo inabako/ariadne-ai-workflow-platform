@@ -14,7 +14,7 @@ RAG Load Skill を使って、開発フローに入る前に file-based RAG か�
 2. `runtime/rag/rag_dispatcher.py` を実行する。
 3. dispatcher が `runtime/rag/retrieve_context.py` をクエリごとに並列実行する。
 4. RAG 圧縮は `retrieve_context.py` の既存 context pack 生成を使う。
-5. 生成された `artifact_type: rag-load-dispatch` の `db/rag/retrieval/<uuid>.json` と、参照先の `artifact_type: rag-context-pack` の `db/rag/retrieval/<uuid>.json` を読み、開発前の前提知識として要約する。
+5. 生成された `artifact_type: rag-load-dispatch` の `work/db/ariadne-knowledge-platform/rag/retrieval/<uuid>.json` と、参照先の `artifact_type: rag-context-pack` の `work/db/ariadne-knowledge-platform/rag/retrieval/<uuid>.json` を読み、開発前の前提知識として要約する。
 
 検索はファイル名ではなく JSON の `content` と metadata を対象にしてください。RAG artifact のファイル名は UUID です。
 

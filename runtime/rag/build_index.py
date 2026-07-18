@@ -10,7 +10,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo  # noqa: E402
-from runtime.rag.paths import GENERATED_CHUNKS, GENERATED_INDEXES, GENERATED_NORMALIZED  # noqa: E402
+from runtime.constants.paths import GENERATED_CHUNKS, GENERATED_INDEXES, GENERATED_NORMALIZED  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:

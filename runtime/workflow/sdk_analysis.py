@@ -20,6 +20,15 @@ except ModuleNotFoundError:  # pragma: no cover
     tomllib = None  # type: ignore[assignment]
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.schemas import SDK_ANALYSIS_CONTEXT_SCHEMA, SDK_EXTERNAL_DISCOVERY_SCHEMA  # noqa: E402
+from runtime.constants.workspace import (  # noqa: E402
+    context_dir_for_work_dir,
+    context_file,
+    manifest_path_for_work_dir,
+    reports_dir_for_work_dir,
+    requirements_dir_for_work_dir,
+    resolve_work_dir as workspace_resolve_work_dir,
+)
 from runtime.rag import duckdb_store  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
@@ -29,8 +38,8 @@ ARTIFACT_TYPE = "sdk-analysis-context"
 DISCOVERY_ARTIFACT_TYPE = "sdk-external-discovery"
 KNOWLEDGE_ARTIFACT_TYPE = "sdk-analysis-knowledge"
 DEFAULT_SOURCE_DIR = Path("work/requirements/sdk")
-DEFAULT_CONTEXT_SCHEMA = ".github/schemas/sdk-analysis-context.schema.json"
-DEFAULT_DISCOVERY_SCHEMA = ".github/schemas/sdk-external-discovery.schema.json"
+DEFAULT_CONTEXT_SCHEMA = SDK_ANALYSIS_CONTEXT_SCHEMA
+DEFAULT_DISCOVERY_SCHEMA = SDK_EXTERNAL_DISCOVERY_SCHEMA
 DEFAULT_KNOWLEDGE_DIR = duckdb_store.DEFAULT_SOURCE_REPO_PATH / "rag" / "jsonized"
 ANALYZABLE_EXTENSIONS = {
     ".bat",
@@ -284,11 +293,9 @@ def resolve_repo_path(repo_root: Path, value: str | Path) -> Path:
 
 
 def resolve_work_dir(repo_root: Path, work_id: str, work_dir: str = "") -> Path:
-    if work_dir:
-        return resolve_repo_path(repo_root, work_dir)
     if not work_id:
         raise ValueError("--work-id is required when --work-dir is not specified.")
-    return repo_root / "work" / work_id
+    return workspace_resolve_work_dir(repo_root, work_id, work_dir)
 
 
 def default_source_dir(repo_root: Path) -> Path:
@@ -1057,9 +1064,9 @@ def render_external_requirements(context: dict[str, Any]) -> str:
 
 
 def write_discovery_outputs(repo_root: Path, work_dir: Path, context: dict[str, Any]) -> dict[str, str]:
-    report_path = work_dir / "reports" / "sdk-external-discovery-report.md"
-    context_path = work_dir / "context" / "sdk-external-discovery.json"
-    requirements_path = work_dir / "requirements" / "sdk-external-requirements.md"
+    report_path = reports_dir_for_work_dir(work_dir) / "sdk-external-discovery-report.md"
+    context_path = context_dir_for_work_dir(work_dir) / "sdk-external-discovery.json"
+    requirements_path = requirements_dir_for_work_dir(work_dir) / "sdk-external-requirements.md"
     artifacts = {
         "report": relative_to_repo(repo_root, report_path),
         "context": relative_to_repo(repo_root, context_path),
@@ -1106,7 +1113,7 @@ def run_discovery(
         }
         artifacts = write_discovery_outputs(repo_root, work_path, context)
         context["artifacts"] = artifacts
-        write_json(work_path / "context" / "sdk-external-discovery.json", context)
+        write_json(context_file(work_path, "sdk-external-discovery.json"), context)
         return context
 
     samples = {path: read_text_sample(path, max_bytes=max_bytes) for path in files}
@@ -1154,7 +1161,7 @@ def run_discovery(
         work_path,
         work_id=work_id,
         context_type="sdk-external-discovery",
-        path=work_path / "context" / "sdk-external-discovery.json",
+        path=context_file(work_path, "sdk-external-discovery.json"),
         required=False,
         generated_by="sdk-discovery",
         owner="requirement-discovery",
@@ -1162,9 +1169,9 @@ def run_discovery(
         status=status,
     )
     context["artifacts"] = artifacts
-    context["manifest_path"] = relative_to_repo(repo_root, work_path / "context" / "context-manifest.json")
+    context["manifest_path"] = relative_to_repo(repo_root, manifest_path_for_work_dir(work_path))
     context["manifest_contexts"] = [item.get("type") for item in manifest.get("contexts", []) if isinstance(item, dict)]
-    write_json(work_path / "context" / "sdk-external-discovery.json", context)
+    write_json(context_file(work_path, "sdk-external-discovery.json"), context)
     return context
 
 
@@ -1387,10 +1394,10 @@ def write_outputs(
     knowledge_dir: Path,
     write_knowledge: bool,
 ) -> dict[str, str]:
-    report_path = work_dir / "reports" / "sdk-analysis-report.md"
-    context_path = work_dir / "context" / "sdk-analysis-context.json"
-    inventory_path = work_dir / "context" / "sdk-files.json"
-    requirements_path = work_dir / "requirements" / "sdk-integration-requirements.md"
+    report_path = reports_dir_for_work_dir(work_dir) / "sdk-analysis-report.md"
+    context_path = context_dir_for_work_dir(work_dir) / "sdk-analysis-context.json"
+    inventory_path = context_dir_for_work_dir(work_dir) / "sdk-files.json"
+    requirements_path = requirements_dir_for_work_dir(work_dir) / "sdk-integration-requirements.md"
 
     artifacts = {
         "report": relative_to_repo(repo_root, report_path),
@@ -1422,7 +1429,7 @@ def write_outputs(
         write_json(knowledge_path, record)
         artifacts["knowledge_json"] = relative_to_repo(repo_root, knowledge_path)
         artifacts["duckdb_rebuild_command"] = (
-            "aiwfctl knowledge rebuild --source-repo work/db/ariadne-knowledge-platform --reset"
+            f"aiwfctl knowledge rebuild --source-repo {duckdb_store.DEFAULT_SOURCE_REPO_PATH.as_posix()} --reset"
         )
         context["artifacts"] = artifacts
         write_json(context_path, context)
@@ -1513,7 +1520,7 @@ def run_analysis(
         work_path,
         work_id=work_id,
         context_type="sdk-analysis",
-        path=work_path / "context" / "sdk-analysis-context.json",
+        path=context_file(work_path, "sdk-analysis-context.json"),
         required=False,
         generated_by="sdk-analysis",
         owner="requirement-discovery",
@@ -1521,9 +1528,9 @@ def run_analysis(
         status=status,
     )
     context["artifacts"] = artifacts
-    context["manifest_path"] = relative_to_repo(repo_root, work_path / "context" / "context-manifest.json")
+    context["manifest_path"] = relative_to_repo(repo_root, manifest_path_for_work_dir(work_path))
     context["manifest_contexts"] = [item.get("type") for item in manifest.get("contexts", []) if isinstance(item, dict)]
-    write_json(work_path / "context" / "sdk-analysis-context.json", context)
+    write_json(context_file(work_path, "sdk-analysis-context.json"), context)
     return context
 
 
@@ -1584,7 +1591,7 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("--work-id", required=True)
     analyze.add_argument("--source", default="", help="SDK program directory. Default: work/requirements/sdk")
     analyze.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
-    analyze.add_argument("--knowledge-dir", default="", help="Knowledge JSON output directory. Default: work/db/ariadne-knowledge-platform/rag/jsonized")
+    analyze.add_argument("--knowledge-dir", default="", help=f"Knowledge JSON output directory. Default: {DEFAULT_KNOWLEDGE_DIR.as_posix()}")
     analyze.add_argument("--no-knowledge", action="store_true", help="Do not write Knowledge JSON.")
     analyze.add_argument("--skip-sdk-analysis", action="store_true")
     analyze.add_argument("--max-files", type=int, default=200)

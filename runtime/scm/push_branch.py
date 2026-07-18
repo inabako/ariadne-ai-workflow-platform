@@ -10,6 +10,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import env_value, find_repo_root, load_env, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.workspace import TARGET_REPOSITORY_PATTERN, context_file, process_report_dir_for_work_dir, target_repository_dir_for_work_dir, work_dir_for_id  # noqa: E402
 from runtime.scm.scm_utils import current_branch, github_token_git_env, require_success, run_git  # noqa: E402
 
 
@@ -29,14 +30,15 @@ def build_parser() -> argparse.ArgumentParser:
 def push_branch(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     settings = load_env(repo_root)
-    work_dir = repo_root / "work" / args.work_id
-    source_dir = Path(args.source_dir).resolve() if args.source_dir else work_dir / "source" / "repository"
+    work_dir = work_dir_for_id(repo_root, args.work_id)
+    source_dir = Path(args.source_dir).resolve() if args.source_dir else target_repository_dir_for_work_dir(work_dir)
     if not source_dir.exists():
         raise FileNotFoundError(f"Source repository does not exist: {source_dir}")
     if source_dir.resolve() == repo_root.resolve():
-        raise ValueError("Refusing to push the workflow repository itself. Set --source-dir to work/issue-<number>/source/repository.")
+        raise ValueError(f"Refusing to push the workflow repository itself. Set --source-dir to {TARGET_REPOSITORY_PATTERN}.")
 
-    scm_state = read_json(work_dir / "context" / "scm-state.json", default={}) or {}
+    scm_state_path = context_file(work_dir, "scm-state.json")
+    scm_state = read_json(scm_state_path, default={}) or {}
     remote = args.remote or scm_state.get("remote") or "origin"
     branch = args.branch or scm_state.get("working_branch") or current_branch(source_dir)
     if not branch.startswith("feature/issue-"):
@@ -61,10 +63,10 @@ def push_branch(args: argparse.Namespace) -> dict[str, Any]:
         "pushed_at": utc_now_iso(),
         "dry_run": bool(args.dry_run),
     }
-    record_path = work_dir / "process-report" / f"push-record-{local_timestamp()}.json"
+    record_path = process_report_dir_for_work_dir(work_dir) / f"push-record-{local_timestamp()}.json"
     write_json(record_path, record)
     state = {**scm_state, "pushed_branch": branch, "pushed_at": record["pushed_at"], "push_record": relative_to_repo(repo_root, record_path)}
-    write_json(work_dir / "context" / "scm-state.json", state)
+    write_json(scm_state_path, state)
     return {**record, "record_path": relative_to_repo(repo_root, record_path)}
 
 

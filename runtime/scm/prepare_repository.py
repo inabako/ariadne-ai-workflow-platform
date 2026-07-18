@@ -25,6 +25,8 @@ from runtime.common import (  # noqa: E402
     utc_now_iso,
     write_json,
 )
+from runtime.constants.schemas import SCM_STATE_SCHEMA  # noqa: E402
+from runtime.constants.workspace import TARGET_REPOSITORY_PATTERN, context_dir_for_work_dir, target_repository_dir_for_work_dir, work_dir_for_id  # noqa: E402
 from runtime.scm.scm_utils import current_branch, current_commit, github_token_git_env, is_git_repository, require_success, run_git  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
@@ -37,7 +39,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--remote", default=None)
     parser.add_argument("--requirements", nargs="*", help="Requirement files used to resolve repository settings.")
     parser.add_argument("--repo-root", default=None)
-    parser.add_argument("--source-dir", default=None, help="Default: work/<id>/source/repository")
+    parser.add_argument("--source-dir", default=None, help=f"Default: {TARGET_REPOSITORY_PATTERN}")
     parser.add_argument("--no-pull", action="store_true", help="Fetch only; do not pull after checkout.")
     parser.add_argument("--dry-run", action="store_true")
     return parser
@@ -56,7 +58,7 @@ def prepare_repository(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     settings = load_env(repo_root)
     default_owner = default_github_owner(settings)
-    work_dir = repo_root / "work" / args.work_id
+    work_dir = work_dir_for_id(repo_root, args.work_id)
     if not work_dir.exists():
         raise FileNotFoundError(f"Work directory does not exist: {work_dir}")
     requirement_files = [
@@ -77,7 +79,7 @@ def prepare_repository(args: argparse.Namespace) -> dict[str, Any]:
             "Repository is required. Set --repository, requirement Repository Control, "
             "or reject the requirement during intake."
         )
-    source_dir = Path(args.source_dir).resolve() if args.source_dir else work_dir / "source" / "repository"
+    source_dir = Path(args.source_dir).resolve() if args.source_dir else target_repository_dir_for_work_dir(work_dir)
 
     if source_dir.exists() and not is_git_repository(source_dir):
         raise RuntimeError(f"Source directory exists but is not a git repository: {source_dir}")
@@ -108,7 +110,7 @@ def prepare_repository(args: argparse.Namespace) -> dict[str, Any]:
         "dry_run": bool(args.dry_run),
     }
 
-    context_dir = work_dir / "context"
+    context_dir = context_dir_for_work_dir(work_dir)
     scm_state_path = context_dir / "scm-state.json"
     write_json(scm_state_path, state)
     register_context(
@@ -120,7 +122,7 @@ def prepare_repository(args: argparse.Namespace) -> dict[str, Any]:
         required=True,
         generated_by="runtime-scm",
         owner="workflow",
-        schema=".github/schemas/scm-state.schema.json",
+        schema=SCM_STATE_SCHEMA,
     )
 
     agent_context = read_json(context_dir / "agent-context.json", default={}) or {}

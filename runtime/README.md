@@ -106,11 +106,11 @@ runtime/posix-bash/aiwf.sh
 
 `chunk_documents.py` は、normalized document を retrieval しやすい chunk JSON に分割します。
 
-`build_index.py` は、document / chunk を JSONL index として `db/rag/indexes/` に集約します。
+`build_index.py` は、document / chunk を JSONL index として `work/db/ariadne-knowledge-platform/rag/indexes/` に集約します。
 
-`embed_chunks.py` は、chunk index から deterministic sparse embedding を生成し、`db/rag/embeddings/` に出力します。
+`embed_chunks.py` は、chunk index から deterministic sparse embedding を生成し、`work/db/ariadne-knowledge-platform/rag/embeddings/` に出力します。
 
-`retrieve_context.py` は、JSONL chunk index と local embeddings から query に合うchunkを選び、Agent投入用の圧縮済みcontext packを `db/rag/retrieval/` に出力します。
+`retrieve_context.py` は、JSONL chunk index と local embeddings から query に合うchunkを選び、Agent投入用の圧縮済みcontext packを `work/db/ariadne-knowledge-platform/rag/retrieval/` に出力します。
 
 `rag_dispatcher.py` は、開発前RAG読み込み用に複数queryを計画し、`retrieve_context.py` を並列実行して、圧縮済みcontext packを集約します。
 

@@ -53,7 +53,7 @@ runtime/tests/test_rag_build.py::test_register_rag_build_context_uses_work_dir_n
 - 確認内容: pytest case `register rag build context uses work dir name` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_build.py:156`
+  - source: `runtime/tests/test_rag_build.py:160`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `calls`
@@ -70,7 +70,7 @@ runtime/tests/test_rag_build.py::test_rag_build_run_with_standardize_and_context
 - 確認内容: pytest case `rag build run with standardize and context registration` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_build.py:182`
+  - source: `runtime/tests/test_rag_build.py:186`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `stage_calls`, `artifact`, `manifest`
@@ -87,7 +87,7 @@ runtime/tests/test_rag_build.py::test_rag_build_run_skip_standardize_and_explici
 - 確認内容: pytest case `rag build run skip standardize and explicit work dir` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_build.py:266`
+  - source: `runtime/tests/test_rag_build.py:274`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `stage_names`, `manifest`
@@ -104,7 +104,7 @@ runtime/tests/test_rag_build.py::test_rag_build_run_can_skip_ingestion_optimizat
 - 確認内容: pytest case `rag build run can skip ingestion optimization` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_build.py:317`
+  - source: `runtime/tests/test_rag_build.py:325`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `stage_names`, `artifact`
@@ -121,7 +121,7 @@ runtime/tests/test_rag_build.py::test_rag_build_run_can_register_duckdb_migratio
 - 確認内容: pytest case `rag build run can register duckdb migration context` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_build.py:363`
+  - source: `runtime/tests/test_rag_build.py:371`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `stage_names`, `migration_calls`, `evidence`, `artifact`, `manifest`
@@ -137,7 +137,7 @@ runtime/tests/test_rag_build.py::test_rag_build_parser_and_main_paths
 - 確認内容: pytest case `rag build parser and main paths` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_build.py:446`
+  - source: `runtime/tests/test_rag_build.py:456`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `args`

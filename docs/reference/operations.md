@@ -114,7 +114,7 @@ RAG sourceを必ず反映したい場合:
 ```powershell
 uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
   --issue issue-<issue-number> `
-  --source-rag db/rag/normalized/<rag-source>.md `
+  --source-rag work/db/ariadne-knowledge-platform/rag/normalized/<rag-source>.json `
   --require-rag
 ```
 

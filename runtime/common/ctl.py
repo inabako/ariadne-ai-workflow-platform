@@ -13,6 +13,28 @@ if __package__ in {None, ""}:
 
 from runtime.common import registry_store  # noqa: E402
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.paths import (  # noqa: E402
+    DUCKDB_REFERENCE_CHECK_WORK_DIR,
+    GENERATED_JSONIZED,
+    GENERATED_OPTIMIZED_CHUNKS,
+    KNOWLEDGE_SOURCE_REPO,
+)
+from runtime.constants.schemas import ENVIRONMENT_SELECTION_SCHEMA  # noqa: E402
+from runtime.constants.workspace import (  # noqa: E402
+    DEFAULT_TARGET_REPO_HELP,
+    DEFAULT_WORK_DIR_HELP,
+    context_file,
+    context_path_pattern,
+    implementation_path_pattern,
+    manifest_path_for_work_dir,
+    process_report_dir_for_work_dir,
+    process_report_path_pattern,
+    reports_path_pattern,
+    requirements_path_pattern,
+    test_evidence_path_pattern,
+    work_dir_for_id,
+    work_path_pattern,
+)
 from runtime.rag import duckdb_store  # noqa: E402
 from runtime.workflow import close_archive  # noqa: E402
 from runtime.workflow import flutter_multiplatform  # noqa: E402
@@ -412,7 +434,7 @@ def format_public_environment_detail(registry: dict[str, Any], environment: dict
             "Context Output",
             "",
             "Path",
-            "  work/<work-id>/context/environment-selection.json",
+            f"  {context_path_pattern('environment-selection.json')}",
             "",
             "JSON",
             *[f"  {line}" for line in json.dumps(context_example, ensure_ascii=False, indent=2).splitlines()],
@@ -545,7 +567,7 @@ def environment_context_record(
         "context_path": f"work/{work_id}/context/environment-selection.json",
         "source": {
             "registry": registry_store.REGISTRY_DB_PATH.as_posix(),
-            "schema": ".github/schemas/environment-selection.schema.json",
+            "schema": ENVIRONMENT_SELECTION_SCHEMA,
         },
         "initialization": record.get("initialization", {}),
     }
@@ -675,11 +697,12 @@ def write_environment_selection(
     written: list[str] = []
     if work_id:
         record["work_id"] = work_id
-        base = repo_root / "work" / work_id / "process-report"
+        work_path = work_dir_for_id(repo_root, work_id)
+        base = process_report_dir_for_work_dir(work_path)
         stamp = local_timestamp()
         json_path = base / f"environment-selection-{stamp}.json"
         md_path = base / f"environment-selection-{stamp}.md"
-        context_path = repo_root / "work" / work_id / "context" / "environment-selection.json"
+        context_path = context_file(work_path, "environment-selection.json")
         context = environment_context_record(
             record,
             work_id=work_id,
@@ -695,7 +718,7 @@ def write_environment_selection(
             {
                 "status": "written",
                 "path": relative_to_repo(repo_root, context_path),
-                "schema": ".github/schemas/environment-selection.schema.json",
+                "schema": ENVIRONMENT_SELECTION_SCHEMA,
                 "warnings": warnings,
             }
         )
@@ -704,18 +727,18 @@ def write_environment_selection(
         write_json(context_path, context)
         manifest = register_context(
             repo_root,
-            repo_root / "work" / work_id,
+            work_dir_for_id(repo_root, work_id),
             work_id=work_id,
             context_type="environment-selection",
             path=context_path,
             required=True,
             generated_by="environment-dispatcher",
             owner="dispatcher",
-            schema=".github/schemas/environment-selection.schema.json",
+            schema=ENVIRONMENT_SELECTION_SCHEMA,
             status="available" if not context.get("human_check_required") else "human-check-required",
         )
         record["context_manifest"] = {
-            "path": relative_to_repo(repo_root, repo_root / "work" / work_id / "context" / "context-manifest.json"),
+            "path": relative_to_repo(repo_root, manifest_path_for_work_dir(work_dir_for_id(repo_root, work_id))),
             "context_count": len(manifest.get("contexts", [])),
         }
         write_json(json_path, record)
@@ -726,7 +749,7 @@ def write_environment_selection(
                 relative_to_repo(repo_root, json_path),
                 relative_to_repo(repo_root, md_path),
                 relative_to_repo(repo_root, context_path),
-                relative_to_repo(repo_root, repo_root / "work" / work_id / "context" / "context-manifest.json"),
+                relative_to_repo(repo_root, manifest_path_for_work_dir(work_dir_for_id(repo_root, work_id))),
             ]
         )
     if output:
@@ -1009,7 +1032,7 @@ def build_parser() -> argparse.ArgumentParser:
     env_select = env_sub.add_parser("select", help="Select an execution environment for a workflow, extension, or keyword.")
     env_select.add_argument("target")
     env_select.add_argument("--json", action="store_true", help="Print selection as JSON.")
-    env_select.add_argument("--work-id", default="", help="Write selection artifacts under work/<work-id>/process-report/.")
+    env_select.add_argument("--work-id", default="", help=f"Write selection artifacts under {process_report_path_pattern()}.")
     env_select.add_argument("--output", default="", help="Write selection artifact to an explicit .md or .json path.")
     env_select.add_argument("--selected-by", choices=["dispatcher", "human", "workflow"], default="dispatcher")
     env_select.add_argument("--selection-mode", choices=["manual", "auto", "human-check"], default="manual")
@@ -1017,7 +1040,7 @@ def build_parser() -> argparse.ArgumentParser:
     env_check = env_sub.add_parser("check", help="Alias of env select for pre-execution checks.")
     env_check.add_argument("target")
     env_check.add_argument("--json", action="store_true", help="Print selection as JSON.")
-    env_check.add_argument("--work-id", default="", help="Write selection artifacts under work/<work-id>/process-report/.")
+    env_check.add_argument("--work-id", default="", help=f"Write selection artifacts under {process_report_path_pattern()}.")
     env_check.add_argument("--output", default="", help="Write selection artifact to an explicit .md or .json path.")
     env_check.add_argument("--selected-by", choices=["dispatcher", "human", "workflow"], default="dispatcher")
     env_check.add_argument("--selection-mode", choices=["manual", "auto", "human-check"], default="manual")
@@ -1112,11 +1135,11 @@ def build_parser() -> argparse.ArgumentParser:
     sdk_analyze = sdk_sub.add_parser("analyze", help="Analyze work/requirements/sdk and create SDK analysis context.")
     sdk_analyze.add_argument("--work-id", required=True)
     sdk_analyze.add_argument("--source", default="", help="SDK program directory. Default: work/requirements/sdk")
-    sdk_analyze.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    sdk_analyze.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
     sdk_analyze.add_argument(
         "--knowledge-dir",
         default="",
-        help="Knowledge JSON output directory. Default: work/db/ariadne-knowledge-platform/rag/jsonized",
+        help=f"Knowledge JSON output directory. Default: {GENERATED_JSONIZED.as_posix()}",
     )
     sdk_analyze.add_argument("--no-knowledge", action="store_true", help="Do not write Knowledge JSON.")
     sdk_analyze.add_argument("--skip-sdk-analysis", action="store_true")
@@ -1126,7 +1149,7 @@ def build_parser() -> argparse.ArgumentParser:
     sdk_discover = sdk_sub.add_parser("discover", help="Create external source discovery plan from work/requirements/sdk.")
     sdk_discover.add_argument("--work-id", required=True)
     sdk_discover.add_argument("--source", default="", help="SDK program directory. Default: work/requirements/sdk")
-    sdk_discover.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    sdk_discover.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
     sdk_discover.add_argument("--max-files", type=int, default=200)
     sdk_discover.add_argument("--max-bytes", type=int, default=120_000)
     sdk_discover.add_argument("--json", action="store_true")
@@ -1136,8 +1159,8 @@ def build_parser() -> argparse.ArgumentParser:
     for name in ["analyze", "init", "verify", "build", "run-workflow"]:
         flutter_item = flutter_sub.add_parser(name)
         flutter_item.add_argument("--work-id", required=True)
-        flutter_item.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
-        flutter_item.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+        flutter_item.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
+        flutter_item.add_argument("--target-repo", default="", help=DEFAULT_TARGET_REPO_HELP)
         flutter_item.add_argument("--targets", default="", help="Comma-separated Flutter targets: android,ios,web,windows,macos,linux")
         flutter_item.add_argument("--mode", choices=flutter_multiplatform.BUILD_MODES, default="debug")
         flutter_item.add_argument("--force", action="store_true", help="Refresh copied boilerplate during init.")
@@ -1147,8 +1170,8 @@ def build_parser() -> argparse.ArgumentParser:
         flutter_item.add_argument("--json", action="store_true")
     flutter_finalize = flutter_sub.add_parser("finalize", help="Judge Flutter verification/build evidence completion.")
     flutter_finalize.add_argument("--work-id", required=True)
-    flutter_finalize.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
-    flutter_finalize.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+    flutter_finalize.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
+    flutter_finalize.add_argument("--target-repo", default="", help=DEFAULT_TARGET_REPO_HELP)
     flutter_finalize.add_argument("--json", action="store_true")
 
     mcp_group_cmd = sub.add_parser("mcp-group", help="Prepare MCP server group implementation templates and boundary checks.")
@@ -1156,7 +1179,7 @@ def build_parser() -> argparse.ArgumentParser:
     for name in ["analyze", "init", "run-workflow"]:
         mcp_group_item = mcp_group_sub.add_parser(name)
         mcp_group_item.add_argument("--work-id", required=True)
-        mcp_group_item.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+        mcp_group_item.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
         mcp_group_item.add_argument(
             "--components",
             default="",
@@ -1336,16 +1359,16 @@ def build_parser() -> argparse.ArgumentParser:
     iac_template_sub = iac_template_cmd.add_subparsers(dest="iac_template_command", required=True)
     iac_template_list = iac_template_sub.add_parser("list", help="List available IaC templates.")
     iac_template_list.add_argument("--json", action="store_true")
-    iac_template_prepare = iac_template_sub.add_parser("prepare", help="Copy an IaC template to work/<work-id>.")
+    iac_template_prepare = iac_template_sub.add_parser("prepare", help=f"Copy an IaC template to {work_path_pattern()}.")
     iac_template_prepare.add_argument("--template", default="opentelemetry-collector")
     iac_template_prepare.add_argument("--work-id", required=True)
-    iac_template_prepare.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    iac_template_prepare.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
     iac_template_prepare.add_argument("--force", action="store_true", help="Refresh an existing copied template directory.")
     iac_template_prepare.add_argument("--json", action="store_true")
     iac_template_health = iac_template_sub.add_parser("health", help="Check a copied IaC template without starting services.")
     iac_template_health.add_argument("--template", default="opentelemetry-collector")
     iac_template_health.add_argument("--work-id", required=True)
-    iac_template_health.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    iac_template_health.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
     iac_template_health.add_argument("--probe-tools", action="store_true", help="Run non-mutating tool version checks.")
     iac_template_health.add_argument("--json", action="store_true")
 
@@ -1353,37 +1376,37 @@ def build_parser() -> argparse.ArgumentParser:
     integration_sub = integration_cmd.add_subparsers(dest="integration_command")
     integration_analyze = integration_sub.add_parser("analyze", help="Analyze system integration points and emulator candidates.")
     integration_analyze.add_argument("--work-id", required=True)
-    integration_analyze.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
-    integration_analyze.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+    integration_analyze.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
+    integration_analyze.add_argument("--target-repo", default="", help=DEFAULT_TARGET_REPO_HELP)
     integration_analyze.add_argument("--with-emulator", action="store_true", help="Include emulator suitability classification.")
     integration_analyze.add_argument("--json", action="store_true")
     integration_verify = integration_sub.add_parser("verify", help="Verify system integration evidence and emulator suitability.")
     integration_verify.add_argument("--work-id", required=True)
-    integration_verify.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
-    integration_verify.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+    integration_verify.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
+    integration_verify.add_argument("--target-repo", default="", help=DEFAULT_TARGET_REPO_HELP)
     integration_verify.add_argument("--with-emulator", action="store_true", help="Include emulator suitability classification.")
     integration_verify.add_argument("--json", action="store_true")
     integration_test_plan = integration_sub.add_parser("test-plan", help="Create Integration Test runbook and Context First plan.")
     integration_test_plan.add_argument("--work-id", required=True)
-    integration_test_plan.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
-    integration_test_plan.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+    integration_test_plan.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
+    integration_test_plan.add_argument("--target-repo", default="", help=DEFAULT_TARGET_REPO_HELP)
     integration_test_plan.add_argument("--json", action="store_true")
     integration_finalize = integration_sub.add_parser("finalize", help="Collect evidence, detect discomfort, and create final integration report.")
     integration_finalize.add_argument("--work-id", required=True)
-    integration_finalize.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
-    integration_finalize.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+    integration_finalize.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
+    integration_finalize.add_argument("--target-repo", default="", help=DEFAULT_TARGET_REPO_HELP)
     integration_finalize.add_argument("--json", action="store_true")
     integration_emulator = integration_sub.add_parser("emulator", help="Prepare or inspect emulator work-area templates.")
     integration_emulator_sub = integration_emulator.add_subparsers(dest="emulator_command", required=True)
-    integration_emulator_prepare = integration_emulator_sub.add_parser("prepare", help="Copy emulator templates to work/<work-id>/test-environment/emulator.")
+    integration_emulator_prepare = integration_emulator_sub.add_parser("prepare", help=f"Copy emulator templates to {work_path_pattern('test-environment', 'emulator')}.")
     integration_emulator_prepare.add_argument("--work-id", required=True)
-    integration_emulator_prepare.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
-    integration_emulator_prepare.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+    integration_emulator_prepare.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
+    integration_emulator_prepare.add_argument("--target-repo", default="", help=DEFAULT_TARGET_REPO_HELP)
     integration_emulator_prepare.add_argument("--force", action="store_true", help="Refresh existing copied emulator template directories.")
     integration_emulator_prepare.add_argument("--json", action="store_true")
     integration_emulator_health = integration_emulator_sub.add_parser("health", help="Check copied emulator templates and write health evidence.")
     integration_emulator_health.add_argument("--work-id", required=True)
-    integration_emulator_health.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
+    integration_emulator_health.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
     integration_emulator_health.add_argument("--probe-docker", action="store_true", help="Run non-mutating docker version checks.")
     integration_emulator_health.add_argument("--json", action="store_true")
 
@@ -1482,6 +1505,9 @@ def knowledge_namespace(args: argparse.Namespace, repo_root: Path) -> argparse.N
 
 
 def format_knowledge_usage() -> str:
+    source_repo = KNOWLEDGE_SOURCE_REPO.as_posix()
+    optimized_chunks = GENERATED_OPTIMIZED_CHUNKS.as_posix()
+    reference_work_dir = DUCKDB_REFERENCE_CHECK_WORK_DIR.as_posix()
     return "\n".join(
         [
             "Knowledge Management",
@@ -1492,15 +1518,15 @@ def format_knowledge_usage() -> str:
             "  aiwfctl knowledge source clone",
             "  aiwfctl knowledge source pull",
             "  aiwfctl knowledge source import-local --clean",
-            "  aiwfctl knowledge migrate --source rag/optimized-chunks",
-            "  aiwfctl knowledge rebuild --source-repo work/db/ariadne-knowledge-platform --reset",
-            "  aiwfctl knowledge ingest --file rag/optimized-chunks/<id>.json",
+            f"  aiwfctl knowledge rebuild --source-repo {source_repo} --reset",
+            f"  aiwfctl knowledge migrate --source {optimized_chunks}",
+            f"  aiwfctl knowledge ingest --file {optimized_chunks}/<chunk-id>.json",
             "  aiwfctl knowledge search --query \"PyQt GUI smoke test\" --limit 10",
-            "  aiwfctl knowledge export-context --query \"PyQt GUI smoke test\" --output work/<work-id>/context/knowledge.json",
-            "  aiwfctl knowledge verify --query workflow --query runtime --work-dir db/rag/evidence --work-id duckdb-reference-check",
+            f"  aiwfctl knowledge export-context --query \"PyQt GUI smoke test\" --output {context_path_pattern('knowledge.json')}",
+            f"  aiwfctl knowledge verify --query workflow --query runtime --work-dir {reference_work_dir} --work-id duckdb-reference-check",
             "",
             "DuckDBファイルは生成read modelです。source of truthはfile-based RAG artifactです。",
-            "外部Knowledge正本は ariadne-knowledge-platform を work/db/ariadne-knowledge-platform にcloneして使います。",
+            f"外部Knowledge正本は ariadne-knowledge-platform を {source_repo} にcloneして使います。",
         ]
     ) + "\n"
 
@@ -1650,9 +1676,9 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 "Context Management\n\n"
                 "Usage:\n"
                 "  aiwfctl context init --work-id <work-id> --workflow <workflow>\n"
-                "  aiwfctl context show --work-dir work/<work-id>\n"
-                "  aiwfctl context require --work-dir work/<work-id> --context environment-selection\n"
-                "  aiwfctl context require-environment --work-dir work/<work-id> --environment docker\n\n"
+                f"  aiwfctl context show --work-dir {work_path_pattern()}\n"
+                f"  aiwfctl context require --work-dir {work_path_pattern()} --context environment-selection\n"
+                f"  aiwfctl context require-environment --work-dir {work_path_pattern()} --environment docker\n\n"
                 "Example:\n"
                 "  aiwfctl context init --work-id issue-123 --workflow /docs-sync --tool gh:read-only:GitHub metadata collection\n"
             )
@@ -1766,12 +1792,12 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 "  aiwfctl sdk discover --work-id <work-id>\n"
                 "  aiwfctl sdk analyze --work-id <work-id> --source work/requirements/sdk\n\n"
                 "Outputs:\n"
-                "  work/<work-id>/reports/sdk-analysis-report.md\n"
-                "  work/<work-id>/context/sdk-analysis-context.json\n"
-                "  work/<work-id>/requirements/sdk-integration-requirements.md\n"
-                "  work/<work-id>/reports/sdk-external-discovery-report.md\n"
-                "  work/<work-id>/context/sdk-external-discovery.json\n"
-                "  work/<work-id>/requirements/sdk-external-requirements.md\n"
+                f"  {reports_path_pattern('sdk-analysis-report.md')}\n"
+                f"  {context_path_pattern('sdk-analysis-context.json')}\n"
+                f"  {requirements_path_pattern('sdk-integration-requirements.md')}\n"
+                f"  {reports_path_pattern('sdk-external-discovery-report.md')}\n"
+                f"  {context_path_pattern('sdk-external-discovery.json')}\n"
+                f"  {requirements_path_pattern('sdk-external-requirements.md')}\n"
             )
         try:
             sdk_args = argparse.Namespace(**vars(args))
@@ -1797,9 +1823,9 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 "  aiwfctl flutter finalize --work-id <work-id>\n"
                 "  aiwfctl flutter run-workflow --work-id <work-id> --targets android,web,windows\n\n"
                 "Outputs:\n"
-                "  work/<work-id>/context/flutter-development-context.json\n"
-                "  work/<work-id>/reports/flutter-multiplatform-report.md\n"
-                "  work/<work-id>/evidence/flutter/common/verification-plan.md\n"
+                f"  {context_path_pattern('flutter-development-context.json')}\n"
+                f"  {reports_path_pattern('flutter-multiplatform-report.md')}\n"
+                f"  {work_path_pattern('evidence', 'flutter', 'common', 'verification-plan.md')}\n"
             )
         try:
             flutter_args = argparse.Namespace(**vars(args))
@@ -1823,9 +1849,9 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 "  aiwfctl mcp-group init --work-id <work-id> --components local-model-mcp-server,mcp-client\n"
                 "  aiwfctl mcp-group run-workflow --work-id <work-id> --components local-model-mcp-server,mcp-client,local-ai-agent-runtime,discord-gateway\n\n"
                 "Outputs:\n"
-                "  work/<work-id>/context/mcp-server-group-implementation-context.json\n"
-                "  work/<work-id>/reports/mcp-server-group-implementation-report.md\n"
-                "  work/<work-id>/implementation/mcp-server-group/<component>/\n"
+                f"  {context_path_pattern('mcp-server-group-implementation-context.json')}\n"
+                f"  {reports_path_pattern('mcp-server-group-implementation-report.md')}\n"
+                f"  {implementation_path_pattern('mcp-server-group', '<component>')}/\n"
             )
         try:
             mcp_args = argparse.Namespace(**vars(args))
@@ -1858,12 +1884,12 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 "  aiwfctl github-knowledge rebase-apply --work-id <work-id> --human-check approved\n\n"
                 "  aiwfctl github-knowledge rag-candidate --work-id <work-id>\n\n"
                 "Outputs:\n"
-                "  work/<work-id>/context/github-knowledge-analysis.json\n"
-                "  work/<work-id>/process-report/github-knowledge-repair-plan-*.md\n"
-                "  work/<work-id>/process-report/github-documentation-sync-plan-*.md\n"
-                "  work/<work-id>/context/rebase-replay-package.json\n"
-                "  work/<work-id>/process-report/github-history-rebase-replay-execution-*.md\n"
-                "  work/<work-id>/process-report/github-knowledge-rag-candidate-*.md\n"
+                f"  {context_path_pattern('github-knowledge-analysis.json')}\n"
+                f"  {process_report_path_pattern('github-knowledge-repair-plan-*.md')}\n"
+                f"  {process_report_path_pattern('github-documentation-sync-plan-*.md')}\n"
+                f"  {context_path_pattern('rebase-replay-package.json')}\n"
+                f"  {process_report_path_pattern('github-history-rebase-replay-execution-*.md')}\n"
+                f"  {process_report_path_pattern('github-knowledge-rag-candidate-*.md')}\n"
             )
         try:
             github_args = argparse.Namespace(**vars(args))
@@ -2026,10 +2052,10 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 "  aiwfctl iac template prepare --template opentelemetry-collector --work-id <work-id>\n"
                 "  aiwfctl iac template health --template opentelemetry-collector --work-id <work-id>\n\n"
                 "Outputs:\n"
-                "  work/<work-id>/source/infrastructure/opentelemetry-collector/\n"
-                "  work/<work-id>/context/iac-template-context.json\n"
-                "  work/<work-id>/context/iac-template-health-context.json\n"
-                "  work/<work-id>/test-evidence/infrastructure/opentelemetry-collector/health-summary.md\n"
+                f"  {work_path_pattern('source', 'infrastructure', 'opentelemetry-collector')}/\n"
+                f"  {context_path_pattern('iac-template-context.json')}\n"
+                f"  {context_path_pattern('iac-template-health-context.json')}\n"
+                f"  {test_evidence_path_pattern('infrastructure/opentelemetry-collector/health-summary.md')}\n"
             )
         template_command = getattr(args, "iac_template_command", None)
         try:
@@ -2088,15 +2114,15 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 "  aiwfctl integration test-plan --work-id <work-id>\n\n"
                 "  aiwfctl integration finalize --work-id <work-id>\n\n"
                 "Outputs:\n"
-                "  work/<work-id>/reports/system-integration-report.md\n"
-                "  work/<work-id>/context/integration-context.json\n"
-                "  work/<work-id>/context/emulator-context.json\n"
-                "  work/<work-id>/context/emulator-health-context.json\n"
-                "  work/<work-id>/test-evidence/emulator/health-summary.md\n"
-                "  work/<work-id>/context/integration-test-plan-context.json\n"
-                "  work/<work-id>/test-evidence/integration-test/integration-test-runbook.md\n"
-                "  work/<work-id>/context/integration-finalization-context.json\n"
-                "  work/<work-id>/reports/system-integration-final-report.md\n"
+                f"  {reports_path_pattern('system-integration-report.md')}\n"
+                f"  {context_path_pattern('integration-context.json')}\n"
+                f"  {context_path_pattern('emulator-context.json')}\n"
+                f"  {context_path_pattern('emulator-health-context.json')}\n"
+                f"  {test_evidence_path_pattern('emulator/health-summary.md')}\n"
+                f"  {context_path_pattern('integration-test-plan-context.json')}\n"
+                f"  {test_evidence_path_pattern('integration-test/integration-test-runbook.md')}\n"
+                f"  {context_path_pattern('integration-finalization-context.json')}\n"
+                f"  {reports_path_pattern('system-integration-final-report.md')}\n"
             )
         try:
             integration_args = argparse.Namespace(**vars(args))

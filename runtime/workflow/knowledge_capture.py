@@ -10,6 +10,12 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.schemas import KNOWLEDGE_CAPTURE_SCHEMA  # noqa: E402
+from runtime.constants.workspace import (  # noqa: E402
+    process_report_dir_for_work_dir,
+    target_repository_dir_for_work_dir,
+    work_dir_for_id,
+)
 from runtime.workflow.context_first import (  # noqa: E402
     context_entry,
     context_path,
@@ -75,7 +81,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def close_archive_target(repo_root: Path, issue: str) -> Path:
-    return repo_root / "work" / "close" / "improvement" / issue
+    return work_dir_for_id(repo_root, "close") / "improvement" / issue
 
 
 def list_files(path: Path) -> list[Path]:
@@ -172,9 +178,9 @@ def scaffold_evidence_docs(docs_root: Path, dry_run: bool) -> list[dict[str, Any
 
 
 def latest_issue_title(repo_root: Path, work_dir: Path, base_work_id: str = "") -> str:
-    issue_records = sorted((work_dir / "process-report").glob("github-issue-*.json"))
+    issue_records = sorted(process_report_dir_for_work_dir(work_dir).glob("github-issue-*.json"))
     if base_work_id:
-        issue_records.extend(sorted((repo_root / "work" / base_work_id / "process-report").glob("github-issue-*.json")))
+        issue_records.extend(sorted(process_report_dir_for_work_dir(work_dir_for_id(repo_root, base_work_id)).glob("github-issue-*.json")))
     for path in reversed(issue_records):
         record = read_json(path, default={}) or {}
         title = str(record.get("title", "")).strip()
@@ -315,12 +321,12 @@ def relative_status(repo_root: Path, status: dict[str, Any]) -> dict[str, Any]:
 
 def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
-    work_dir = repo_root / "work" / args.issue
+    work_dir = work_dir_for_id(repo_root, args.issue)
     close_target = close_archive_target(repo_root, args.issue)
     if not work_dir.exists() and close_target.exists():
         work_dir = close_target
     if not work_dir.exists():
-        raise FileNotFoundError(f"Work directory does not exist: {repo_root / 'work' / args.issue}")
+        raise FileNotFoundError(f"Work directory does not exist: {work_dir_for_id(repo_root, args.issue)}")
 
     archive_mode = work_dir.resolve() == close_target.resolve()
     scm_state, scm_resolution = read_context_with_fallback(
@@ -332,12 +338,12 @@ def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
         allow_legacy_fallback=archive_mode or bool(getattr(args, "allow_legacy_scm_fallback", False)),
     )
     test_evidence_context = load_test_evidence_context(repo_root, work_dir)
-    source_dir = Path(args.source_dir).resolve() if args.source_dir else work_dir / "source" / "repository"
+    source_dir = Path(args.source_dir).resolve() if args.source_dir else target_repository_dir_for_work_dir(work_dir)
     repository = args.repository or scm_state.get("github_repo") or scm_state.get("repository") or ""
     branch = args.branch or scm_state.get("working_branch") or scm_state.get("current_branch") or ""
     base_work_id = args.base_work_id or str(scm_state.get("base_work_id", ""))
 
-    process_report_dir = work_dir / "process-report"
+    process_report_dir = process_report_dir_for_work_dir(work_dir)
     docs_root = source_dir / "docs" / "evidence" / args.issue
     scaffold_status = scaffold_evidence_docs(docs_root, args.dry_run)
     docs_status = {
@@ -382,8 +388,8 @@ def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
         candidate["source_path"] = relative_to_repo(repo_root, Path(candidate["source_path"]))
 
     archive_status = "already-archived" if work_dir.resolve() == close_target.resolve() else "report-only-ready"
-    base_work_dir = repo_root / "work" / base_work_id if base_work_id else None
-    base_process_report_dir = base_work_dir / "process-report" if base_work_dir else None
+    base_work_dir = work_dir_for_id(repo_root, base_work_id) if base_work_id else None
+    base_process_report_dir = process_report_dir_for_work_dir(base_work_dir) if base_work_dir else None
     base_archive_target = close_target if base_work_id else None
     base_work_status = {
         "base_work_id": base_work_id,
@@ -548,7 +554,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
             required=False,
             generated_by="knowledge-capture",
             owner="workflow",
-            schema=".github/schemas/knowledge-capture.schema.json",
+            schema=KNOWLEDGE_CAPTURE_SCHEMA,
         )
     return result
 

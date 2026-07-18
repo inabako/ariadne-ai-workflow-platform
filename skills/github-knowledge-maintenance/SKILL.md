@@ -117,7 +117,7 @@ Normalize:
 ```powershell
 uv run --project runtime python runtime/rag/normalize_documents.py `
   --source-dir work/db/ariadne-knowledge-platform/rag/github-knowledge `
-  --output-dir db/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type github-repository-knowledge
 ```
 
@@ -125,31 +125,31 @@ Chunk:
 
 ```powershell
 uv run --project runtime python runtime/rag/chunk_documents.py `
-  --input-dir db/rag/normalized `
-  --output-dir db/rag/chunks
+  --input-dir work/db/ariadne-knowledge-platform/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/chunks
 ```
 
 Index:
 
 ```powershell
 uv run --project runtime python runtime/rag/build_index.py `
-  --normalized-dir db/rag/normalized `
-  --chunks-dir db/rag/chunks `
-  --output-dir db/rag/indexes
+  --normalized-dir work/db/ariadne-knowledge-platform/rag/normalized `
+  --chunks-dir work/db/ariadne-knowledge-platform/rag/chunks `
+  --output-dir work/db/ariadne-knowledge-platform/rag/indexes
 ```
 
 Embedding:
 
 ```powershell
 uv run --project runtime python runtime/rag/embed_chunks.py `
-  --chunks-index db/rag/indexes/chunks.jsonl `
-  --output db/rag/embeddings/chunks-embeddings.jsonl
+  --chunks-index work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl `
+  --output work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl
 ```
 
 Final durable landing:
 
 ```text
-db/rag/normalized/<uuid>.json
+work/db/ariadne-knowledge-platform/rag/normalized/<uuid>.json
 ```
 
 ## Workflow

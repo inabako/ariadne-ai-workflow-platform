@@ -11,6 +11,14 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import ensure_work_tree, find_repo_root, read_json, relative_to_repo, slugify, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.schemas import CORRECTIVE_ACTION_REPORT_SCHEMA  # noqa: E402
+from runtime.constants.workspace import (  # noqa: E402
+    context_dir_for_work_dir,
+    context_file,
+    manifest_path_for_work_dir,
+    resolve_work_dir as workspace_resolve_work_dir,
+    work_dir_for_id,
+)
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
@@ -90,11 +98,10 @@ def resolve_repo_path(repo_root: Path, value: str) -> Path:
 
 def resolve_work_dir(repo_root: Path, args: argparse.Namespace) -> tuple[str, Path]:
     if args.work_dir:
-        raw = Path(args.work_dir)
-        work_dir = raw if raw.is_absolute() else repo_root / raw
+        work_dir = workspace_resolve_work_dir(repo_root, args.work_id or "", args.work_dir)
         return args.work_id or work_dir.name, work_dir
     work_id = args.work_id or branch_to_work_id(args.target_branch)
-    return work_id, repo_root / "work" / work_id
+    return work_id, workspace_resolve_work_dir(repo_root, work_id)
 
 
 def build_report_context(repo_root: Path, args: argparse.Namespace, report_path: Path) -> dict[str, Any]:
@@ -125,7 +132,7 @@ def build_report_context(repo_root: Path, args: argparse.Namespace, report_path:
         },
         "front_matter": front_matter,
         "source": {
-            "schema": ".github/schemas/corrective-action-report.schema.json",
+            "schema": CORRECTIVE_ACTION_REPORT_SCHEMA,
             "registered_by": "runtime-workflow-corrective-action-report",
         },
     }
@@ -141,7 +148,7 @@ def register_report_context(repo_root: Path, work_dir: Path, work_id: str, conte
         required=False,
         generated_by="corrective-action-report",
         owner="workflow",
-        schema=".github/schemas/corrective-action-report.schema.json",
+        schema=CORRECTIVE_ACTION_REPORT_SCHEMA,
     )
 
 
@@ -149,11 +156,11 @@ def run_register(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     report_path = resolve_repo_path(repo_root, args.report_path).resolve()
     work_id, work_dir = resolve_work_dir(repo_root, args)
-    if work_dir == repo_root / "work" / work_id:
+    if work_dir == work_dir_for_id(repo_root, work_id):
         ensure_work_tree(repo_root, work_id)
     else:
-        (work_dir / "context").mkdir(parents=True, exist_ok=True)
-    context_path = work_dir / "context" / "corrective-action-report.json"
+        (context_dir_for_work_dir(work_dir)).mkdir(parents=True, exist_ok=True)
+    context_path = context_file(work_dir, "corrective-action-report.json")
     context = build_report_context(repo_root, args, report_path)
     write_json(context_path, context)
     register_report_context(repo_root, work_dir, work_id, context_path)
@@ -163,14 +170,14 @@ def run_register(args: argparse.Namespace) -> dict[str, Any]:
         "work_dir": relative_to_repo(repo_root, work_dir),
         "context_path": relative_to_repo(repo_root, context_path),
         "report_path": context["report_path"],
-        "manifest_path": relative_to_repo(repo_root, work_dir / "context" / "context-manifest.json"),
+        "manifest_path": relative_to_repo(repo_root, manifest_path_for_work_dir(work_dir)),
     }
 
 
 def run_show(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     work_id, work_dir = resolve_work_dir(repo_root, args)
-    context_path = work_dir / "context" / "corrective-action-report.json"
+    context_path = context_file(work_dir, "corrective-action-report.json")
     context = read_json(context_path, default={})
     return {
         "status": "ok" if context else "missing",

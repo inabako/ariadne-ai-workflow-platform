@@ -1,4 +1,4 @@
-﻿.PHONY: run test lint build docker-build docker-up docker-down
+.PHONY: run test lint build docker-build docker-up docker-down
 
 run:
 	go run ./cmd/gateway

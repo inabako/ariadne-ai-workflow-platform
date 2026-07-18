@@ -16,7 +16,7 @@ if __package__ in {None, ""}:
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
-from runtime.rag.paths import CHUNKS_INDEX, EMBEDDINGS_INDEX, GENERATED_RETRIEVAL  # noqa: E402
+from runtime.constants.paths import CHUNKS_INDEX, EMBEDDINGS_INDEX, GENERATED_RETRIEVAL, RAG_EMBED_SCRIPT  # noqa: E402
 
 
 WORD_RE = re.compile(r"[A-Za-z0-9_.:-]+|[\u3040-\u30ff\u3400-\u9fff]+")
@@ -400,7 +400,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         embeddings, dimensions = read_embeddings(embeddings_index)
         if args.search_mode == "semantic" and not embeddings:
             raise FileNotFoundError(
-                f"Semantic search requires embeddings index. Run runtime/rag/embed_chunks.py first: {embeddings_index}"
+                f"Semantic search requires embeddings index. Run {RAG_EMBED_SCRIPT.as_posix()} first: {embeddings_index}"
             )
         selected, dropped = retrieve(rows, embeddings, dimensions, args)
     context, sources = build_context(selected, args)

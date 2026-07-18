@@ -111,15 +111,15 @@ work/db/ariadne-knowledge-platform/rag/specialist-review/<domain>/*.md
 
 ## JSON Pipeline
 
-外部Web RAGの吸収内容は、内部RAGと同じ `db/rag/normalized/*.json` 形式へ変換します。
+外部Web RAGの吸収内容は、内部RAGと同じ `work/db/ariadne-knowledge-platform/rag/normalized/*.json` 形式へ変換します。
 
 ```text
 work/db/ariadne-knowledge-platform/rag/external-web/<category>/*.md
-  -> db/rag/normalized/*.json
-  -> db/rag/chunks/*.json
-  -> db/rag/indexes/*.jsonl
-  -> db/rag/embeddings/*.jsonl
-  -> db/rag/retrieval/*.json
+  -> work/db/ariadne-knowledge-platform/rag/normalized/*.json
+  -> work/db/ariadne-knowledge-platform/rag/chunks/*.json
+  -> work/db/ariadne-knowledge-platform/rag/indexes/*.jsonl
+  -> work/db/ariadne-knowledge-platform/rag/embeddings/*.jsonl
+  -> work/db/ariadne-knowledge-platform/rag/retrieval/*.json
 ```
 
 Normalize example:
@@ -127,7 +127,7 @@ Normalize example:
 ```powershell
 python runtime/rag/normalize_documents.py `
   --source-dir work/db/ariadne-knowledge-platform/rag/external-web/network `
-  --output-dir db/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type external-web-knowledge
 ```
 
@@ -218,7 +218,7 @@ review_agent: network-realtime-protocol-specialist-agent
 reviewed_artifacts:
   - work/issue-123/design-document/network-design.md
 internal_rag_used:
-  - db/rag/retrieval/<context-pack>.json
+  - work/db/ariadne-knowledge-platform/rag/retrieval/<context-pack>.json
 external_web_rag_used:
   - work/db/ariadne-knowledge-platform/rag/external-web/network/<knowledge>.md
 tags:

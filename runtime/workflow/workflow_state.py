@@ -10,6 +10,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.workspace import context_file  # noqa: E402
 
 
 STATE_FILE_NAME = "workflow-state.json"
@@ -32,7 +33,7 @@ def default_state(workflow: str, work_id: str, phase: str, status: str) -> dict[
 
 
 def state_path_for_work_dir(work_dir: Path) -> Path:
-    return work_dir / "context" / STATE_FILE_NAME
+    return context_file(work_dir, STATE_FILE_NAME)
 
 
 def load_state(work_dir: Path, workflow: str = "", work_id: str = "", phase: str = "", status: str = "not-started") -> dict[str, Any]:

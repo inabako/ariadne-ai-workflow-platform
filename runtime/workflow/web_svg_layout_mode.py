@@ -22,6 +22,12 @@ from runtime.common import (  # noqa: E402
     write_json,
     write_markdown_bom,
 )
+from runtime.constants.schemas import WEB_SVG_LAYOUT_STATE_SCHEMA  # noqa: E402
+from runtime.constants.workspace import (  # noqa: E402
+    context_file,
+    resolve_work_dir as workspace_resolve_work_dir,
+    svg_input_dir,
+)
 from runtime.workflow.context_first import register_context, require_environment_selection  # noqa: E402
 
 
@@ -754,11 +760,11 @@ def input_readme() -> str:
 
 
 def resolve_work_dir(repo_root: Path, issue_id: str, raw_work_dir: str | None) -> Path:
-    return Path(raw_work_dir).resolve() if raw_work_dir else repo_root / "work" / issue_id
+    return workspace_resolve_work_dir(repo_root, issue_id, raw_work_dir or "")
 
 
 def resolve_svg_input_dir(repo_root: Path, raw_input_dir: str | None) -> Path:
-    return Path(raw_input_dir).resolve() if raw_input_dir else repo_root / "work" / "requirements" / "svg-input"
+    return Path(raw_input_dir).resolve() if raw_input_dir else svg_input_dir(repo_root)
 
 
 def input_prefix_for_mode(mode: str) -> str:
@@ -876,7 +882,7 @@ def write_artifacts(
         },
     }
     write_json(output_dir / "web-svg-layout-state.json", state)
-    write_json(work_dir / "context" / "web-svg-layout-state.json", state)
+    write_json(context_file(work_dir, "web-svg-layout-state.json"), state)
 
     artifact_index = load_artifact_index(work_dir, issue_id, "web-svg-layout-mode")
     for artifact_id, title, relative, artifact_type in [
@@ -906,7 +912,7 @@ def write_artifacts(
                 "unresolved_items": ["Human review is required before source integration."],
             },
         )
-    write_json(work_dir / "context" / "artifact-index.json", artifact_index)
+    write_json(context_file(work_dir, "artifact-index.json"), artifact_index)
     return state
 
 
@@ -999,7 +1005,7 @@ def run_generate(args: argparse.Namespace) -> dict[str, Any]:
                 "integration_policy": "review-generated-candidates-before-copy",
             },
         }
-        state_path = work_dir / "context" / "web-svg-layout-state.json"
+        state_path = context_file(work_dir, "web-svg-layout-state.json")
         write_json(state_path, state)
         register_context(
             repo_root,
@@ -1010,7 +1016,7 @@ def run_generate(args: argparse.Namespace) -> dict[str, Any]:
             required=False,
             generated_by="web-svg-layout-mode",
             owner="workflow",
-            schema=".github/schemas/web-svg-layout-state.schema.json",
+            schema=WEB_SVG_LAYOUT_STATE_SCHEMA,
             status="skipped",
         )
         return state
@@ -1023,7 +1029,7 @@ def run_generate(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError(f"Generated Web SVG layout artifacts failed validation: {validation['errors']}")
     state["validation"] = validation
     write_json(output_dir / "web-svg-layout-state.json", state)
-    state_path = work_dir / "context" / "web-svg-layout-state.json"
+    state_path = context_file(work_dir, "web-svg-layout-state.json")
     write_json(state_path, state)
     register_context(
         repo_root,
@@ -1034,7 +1040,7 @@ def run_generate(args: argparse.Namespace) -> dict[str, Any]:
         required=False,
         generated_by="web-svg-layout-mode",
         owner="workflow",
-        schema=".github/schemas/web-svg-layout-state.schema.json",
+        schema=WEB_SVG_LAYOUT_STATE_SCHEMA,
     )
     return state
 
@@ -1102,5 +1108,4 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
 

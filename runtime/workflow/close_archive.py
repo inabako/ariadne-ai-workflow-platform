@@ -16,6 +16,18 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso  # noqa: E402
+from runtime.constants.paths import (  # noqa: E402
+    KNOWLEDGE_SOURCE_RAG,
+    KNOWLEDGE_SOURCE_REPO,
+    SOURCE_GITHUB_KNOWLEDGE,
+    SOURCE_WORKSPACE_ENVIRONMENT,
+)
+from runtime.constants.workspace import (  # noqa: E402
+    context_dir_for_work_dir,
+    process_report_dir_for_work_dir,
+    test_evidence_dir_for_work_dir,
+    work_dir_for_id,
+)
 
 
 REPORT_FILES = [
@@ -53,12 +65,15 @@ SUMMARY_CANDIDATES = [
     "process-report/simulator-workspace-setup-20260607.md",
 ]
 RAG_SOURCE_DIRS_BY_CATEGORY = {
-    "github": ["rag/github-knowledge"],
-    "vscode": ["rag/workspace-environment"],
-    "improvement": ["rag"],
-    "new-system-dev": ["rag"],
+    "github": [SOURCE_GITHUB_KNOWLEDGE.as_posix()],
+    "vscode": [SOURCE_WORKSPACE_ENVIRONMENT.as_posix()],
+    "improvement": [KNOWLEDGE_SOURCE_RAG.as_posix()],
+    "new-system-dev": [KNOWLEDGE_SOURCE_RAG.as_posix()],
 }
-RAG_REF_PATTERN = re.compile(r"(?P<path>rag/[^\s)>\]\"']+?\.md)", re.IGNORECASE)
+RAG_REF_PATTERN = re.compile(
+    rf"(?P<path>(?:{re.escape(KNOWLEDGE_SOURCE_REPO.as_posix() + '/')})?rag/[^\s)>\]\"']+?\.md)",
+    re.IGNORECASE,
+)
 MARKDOWN_LINK_PATTERN = re.compile(r"\[([^\]]+)\]\(([^)]+\.md)\)")
 MOJIBAKE_TOKENS = [
     "\u7e3a",
@@ -155,11 +170,11 @@ def resolve_paths(args: argparse.Namespace) -> tuple[Path, Path, Path, str, str,
     work_id = resolve_work_id(args)
     category = derive_category(work_id, args.category)
     archive_id = derive_archive_id(args.command, work_id, category, args.archive_id, args.archive_dir)
-    source_work_dir = Path(args.source_work_dir).resolve() if args.source_work_dir else repo_root / "work" / work_id
+    source_work_dir = Path(args.source_work_dir).resolve() if args.source_work_dir else work_dir_for_id(repo_root, work_id)
     archive_dir = (
         Path(args.archive_dir).resolve()
         if args.archive_dir
-        else repo_root / "work" / "close" / category / archive_id
+        else work_dir_for_id(repo_root, "close") / category / archive_id
     )
     return repo_root, source_work_dir, archive_dir, work_id, category, archive_id
 
@@ -301,9 +316,9 @@ def score_rag_candidate(path: Path, repo_root: Path, work_id: str, category: str
     score = 0
     if work_id.lower() in rel or work_id.lower() in text:
         score += 12
-    if category == "github" and rel.startswith("rag/github-knowledge/"):
+    if category == "github" and rel.startswith(SOURCE_GITHUB_KNOWLEDGE.as_posix() + "/"):
         score += 5
-    if category == "vscode" and rel.startswith("rag/workspace-environment/"):
+    if category == "vscode" and rel.startswith(SOURCE_WORKSPACE_ENVIRONMENT.as_posix() + "/"):
         score += 5
     for token in tokens:
         if token in rel:
@@ -490,10 +505,10 @@ def build_reports(
     rag_context: Sequence[dict[str, Any]],
     auto_rag_enabled: bool,
 ) -> dict[str, str]:
-    process_files = collect_files(source_work_dir / "process-report")
+    process_files = collect_files(process_report_dir_for_work_dir(source_work_dir))
     test_spec_files = collect_files(source_work_dir / "test-specifications")
-    test_evidence_files = collect_files(source_work_dir / "test-evidence")
-    context_files = collect_files(source_work_dir / "context")
+    test_evidence_files = collect_files(test_evidence_dir_for_work_dir(source_work_dir))
+    context_files = collect_files(context_dir_for_work_dir(source_work_dir))
     summary_text = ""
     for relative in SUMMARY_CANDIDATES:
         summary_text = read_sample(source_work_dir / relative)

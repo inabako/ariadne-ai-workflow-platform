@@ -23,7 +23,7 @@ You review robot safety-control assumptions in requirements, architecture, corre
 ## Inputs
 
 - requirements, safety design, runtime design, corrective action report, or Issue scope
-- internal RAG context from `db/rag/retrieval/`
+- internal RAG context from `work/db/ariadne-knowledge-platform/rag/retrieval/`
 - current repository evidence when available
 - test specification and integration evidence plan
 - external-web RAG only when standards or vendor docs are relevant

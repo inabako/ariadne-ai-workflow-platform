@@ -8,6 +8,11 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
+if __package__ in {None, ""}:
+    sys.path.append(str(Path(__file__).resolve().parents[2]))
+
+from runtime.constants.paths import WINDOWS_GO_EXE, WINDOWS_MSYS2_BASH  # noqa: E402
+
 
 def repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
@@ -115,7 +120,7 @@ def run_helper_help(_: argparse.Namespace) -> int:
 
 
 def run_msys2_localty_smoke(_: argparse.Namespace) -> int:
-    bash_path = Path(r"C:\msys64\usr\bin\bash.exe")
+    bash_path = WINDOWS_MSYS2_BASH
     if not bash_path.exists():
         print(f"ERROR: MSYS2 bash was not found: {bash_path}", file=sys.stderr)
         return 1
@@ -136,7 +141,7 @@ def run_docker_version(_: argparse.Namespace) -> int:
 
 def run_go_version(_: argparse.Namespace) -> int:
     env = refreshed_env()
-    go = find_executable("go", env, [Path(r"C:\Program Files\Go\bin\go.exe")])
+    go = find_executable("go", env, [WINDOWS_GO_EXE])
     if not go:
         print("ERROR: go executable was not found. Restart VSCode or install Go.", file=sys.stderr)
         return 1

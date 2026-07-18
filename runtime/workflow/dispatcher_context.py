@@ -13,6 +13,13 @@ if __package__ in {None, ""}:
 
 from runtime.common import registry_store  # noqa: E402
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.schemas import (  # noqa: E402
+    EXECUTION_PLAN_SCHEMA,
+    RUNTIME_CONTEXT_SCHEMA,
+    TOOL_SELECTION_SCHEMA,
+    WORKFLOW_SELECTION_SCHEMA,
+)
+from runtime.constants.workspace import context_dir_for_work_dir, work_dir_for_id  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
@@ -539,7 +546,7 @@ def workflow_selection_context(
         },
         "source": {
             "registry": relative_to_repo(repo_root, workflow_help_registry_path(repo_root)),
-            "schema": ".github/schemas/workflow-selection.schema.json",
+            "schema": WORKFLOW_SELECTION_SCHEMA,
         },
     }
 
@@ -594,7 +601,7 @@ def tool_selection_context(
         "source": {
             "registry": relative_to_repo(repo_root, tool_candidate_registry_path(repo_root)),
             "workflow_registry": relative_to_repo(repo_root, workflow_help_registry_path(repo_root)),
-            "schema": ".github/schemas/tool-selection.schema.json",
+            "schema": TOOL_SELECTION_SCHEMA,
         },
     }
 
@@ -701,8 +708,8 @@ def run_init(args: argparse.Namespace) -> dict[str, Any]:
         args.intent_summary,
         candidate_limit=getattr(args, "candidate_limit", 5),
     )
-    work_dir = repo_root / "work" / args.work_id
-    context_dir = work_dir / "context"
+    work_dir = work_dir_for_id(repo_root, args.work_id)
+    context_dir = context_dir_for_work_dir(work_dir)
     context_dir.mkdir(parents=True, exist_ok=True)
     workflow_context = workflow_selection_context(
         repo_root,
@@ -742,25 +749,25 @@ def run_init(args: argparse.Namespace) -> dict[str, Any]:
             "workflow-selection",
             context_dir / "workflow-selection.json",
             workflow_context,
-            ".github/schemas/workflow-selection.schema.json",
+            WORKFLOW_SELECTION_SCHEMA,
         ),
         (
             "tool-selection",
             context_dir / "tool-selection.json",
             tool_context,
-            ".github/schemas/tool-selection.schema.json",
+            TOOL_SELECTION_SCHEMA,
         ),
         (
             "runtime-context",
             context_dir / "runtime-context.json",
             runtime,
-            ".github/schemas/runtime-context.schema.json",
+            RUNTIME_CONTEXT_SCHEMA,
         ),
         (
             "execution-plan",
             context_dir / "execution-plan.json",
             plan,
-            ".github/schemas/execution-plan.schema.json",
+            EXECUTION_PLAN_SCHEMA,
         ),
     ]
     written: list[str] = []

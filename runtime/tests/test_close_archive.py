@@ -205,7 +205,7 @@ def test_file_and_markdown_helpers(tmp_path: Path) -> None:
 
 def test_rag_reference_and_candidate_discovery(tmp_path: Path) -> None:
     repo = make_repo(tmp_path)
-    rag = repo / "rag"
+    rag = repo / "work" / "db" / "ariadne-knowledge-platform" / "rag"
     github_rag = rag / "github-knowledge"
     vscode_rag = rag / "workspace-environment"
     github_rag.mkdir(parents=True)
@@ -217,9 +217,18 @@ def test_rag_reference_and_candidate_discovery(tmp_path: Path) -> None:
     vscode_source.write_text("# VSCode\n\nvscode environment terminal path\n", encoding="utf-8")
     source_work = repo / "work" / "github-knowledge-localty-system-robot-recent"
     source_work.mkdir(parents=True)
-    (source_work / "note.md").write_text("ref rag/github-knowledge/20260707000000_localty-system-robot.md", encoding="utf-8")
-    (source_work / "note.json").write_text('{"link":"rag/workspace-environment/vscode-environment.md"}', encoding="utf-8")
-    (source_work / "skip.bin").write_text("rag/github-knowledge/missing.md", encoding="utf-8")
+    (source_work / "note.md").write_text(
+        "ref work/db/ariadne-knowledge-platform/rag/github-knowledge/20260707000000_localty-system-robot.md",
+        encoding="utf-8",
+    )
+    (source_work / "note.json").write_text(
+        '{"link":"work/db/ariadne-knowledge-platform/rag/workspace-environment/vscode-environment.md"}',
+        encoding="utf-8",
+    )
+    (source_work / "skip.bin").write_text(
+        "work/db/ariadne-knowledge-platform/rag/github-knowledge/missing.md",
+        encoding="utf-8",
+    )
 
     refs = close_archive.collect_referenced_rag_sources(repo, source_work)
     assert refs == [vscode_source, github_source]
@@ -257,8 +266,11 @@ def test_defensive_specimen_rag_discovery_keeps_missing_refs_and_low_scores_out(
     repo = make_repo(tmp_path)
     source_work = repo / "work" / "github-knowledge-localty-system-robot-recent"
     source_work.mkdir(parents=True)
-    (source_work / "missing-ref.md").write_text("rag/github-knowledge/missing.md", encoding="utf-8")
-    rag_dir = repo / "rag" / "github-knowledge"
+    (source_work / "missing-ref.md").write_text(
+        "work/db/ariadne-knowledge-platform/rag/github-knowledge/missing.md",
+        encoding="utf-8",
+    )
+    rag_dir = repo / "work" / "db" / "ariadne-knowledge-platform" / "rag" / "github-knowledge"
     rag_dir.mkdir(parents=True)
     low_score = rag_dir / "unrelated.md"
     low_score.write_text("# Other\n\nlocalty appears only in text\n", encoding="utf-8")
@@ -368,7 +380,7 @@ def test_prepare_requires_rag_when_requested(tmp_path: Path) -> None:
 
 def test_prepare_writes_rag_enriched_report_and_metadata(tmp_path: Path) -> None:
     repo = make_repo(tmp_path)
-    rag_dir = repo / "rag" / "github-knowledge"
+    rag_dir = repo / "work" / "db" / "ariadne-knowledge-platform" / "rag" / "github-knowledge"
     rag_dir.mkdir(parents=True)
     (rag_dir / "README.md").write_text("# README\n\n自動検出対象外です。\n", encoding="utf-8")
     source = rag_dir / "20260704000000_DEMO_localty-system-robot.md"
@@ -403,7 +415,9 @@ def test_prepare_writes_rag_enriched_report_and_metadata(tmp_path: Path) -> None
     assert "RAGから抽出した要約" in summary
     assert "supervisor / worker" in summary
     assert metadata["rag_source_count"] == 1
-    assert metadata["rag_sources"] == ["rag/github-knowledge/20260704000000_DEMO_localty-system-robot.md"]
+    assert metadata["rag_sources"] == [
+        "work/db/ariadne-knowledge-platform/rag/github-knowledge/20260704000000_DEMO_localty-system-robot.md"
+    ]
 
 
 def test_prune_requires_human_approval_for_execute(tmp_path: Path) -> None:

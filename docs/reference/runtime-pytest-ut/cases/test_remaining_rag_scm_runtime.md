@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 10 |
+| cases | 11 |
 
 ## ケース一覧
 
@@ -98,19 +98,36 @@ runtime/tests/test_remaining_rag_scm_runtime.py::test_jsonize_rag_tree_parser_pa
 - pytest node id:
 
 ```text
+runtime/tests/test_remaining_rag_scm_runtime.py::test_migrate_legacy_root_rag_moves_into_standard_rag_and_blocks_conflicts
+```
+
+- 確認内容: pytest case `migrate legacy root rag moves into standard rag and blocks conflicts` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_remaining_rag_scm_runtime.py:187`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `duplicate`, `parsed`
+- 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
+
+#### RT-UT-CASE-403
+
+- pytest node id:
+
+```text
 runtime/tests/test_remaining_rag_scm_runtime.py::test_compare_requirements_safe_git_returns_error_text
 ```
 
 - 確認内容: pytest case `compare requirements safe git returns error text` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_rag_scm_runtime.py:187`
+  - source: `runtime/tests/test_remaining_rag_scm_runtime.py:235`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-403
+#### RT-UT-CASE-404
 
 - pytest node id:
 
@@ -121,13 +138,13 @@ runtime/tests/test_remaining_rag_scm_runtime.py::test_compare_requirements_parse
 - 確認内容: pytest case `compare requirements parser main script and no requirements` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_rag_scm_runtime.py:204`
+  - source: `runtime/tests/test_remaining_rag_scm_runtime.py:252`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `parsed`, `markdown`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-404
+#### RT-UT-CASE-405
 
 - pytest node id:
 
@@ -138,13 +155,13 @@ runtime/tests/test_remaining_rag_scm_runtime.py::test_compare_requirements_first
 - 確認内容: pytest case `compare requirements first lines limits and reports read errors` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_rag_scm_runtime.py:265`
+  - source: `runtime/tests/test_remaining_rag_scm_runtime.py:313`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-405
+#### RT-UT-CASE-406
 
 - pytest node id:
 
@@ -155,13 +172,13 @@ runtime/tests/test_remaining_rag_scm_runtime.py::test_compare_requirements_write
 - 確認内容: pytest case `compare requirements writes reports and artifact index` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_rag_scm_runtime.py:273`
+  - source: `runtime/tests/test_remaining_rag_scm_runtime.py:321`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `json_report`, `markdown`, `artifact_index`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
-#### RT-UT-CASE-406
+#### RT-UT-CASE-407
 
 - pytest node id:
 
@@ -172,7 +189,7 @@ runtime/tests/test_remaining_rag_scm_runtime.py::test_compare_requirements_requi
 - 確認内容: pytest case `compare requirements requires work and source dirs` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_remaining_rag_scm_runtime.py:328`
+  - source: `runtime/tests/test_remaining_rag_scm_runtime.py:376`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`

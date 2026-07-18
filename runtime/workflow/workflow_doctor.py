@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -12,9 +13,61 @@ if __package__ in {None, ""}:
 
 from runtime.common import registry_store  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
+from runtime.constants.paths import REGISTRY_DB_PATH  # noqa: E402
+from runtime.constants.schemas import (  # noqa: E402
+    CONTEXT_MANIFEST_SCHEMA,
+    CORRECTIVE_ACTION_REPORT_SCHEMA,
+    ENVIRONMENT_SELECTION_SCHEMA,
+    EXECUTION_PLAN_SCHEMA,
+    GITHUB_OPERATION_GATE_SCHEMA,
+    HUMAN_GATES_SCHEMA,
+    PYTEST_UT_SPEC_SYNC_REPORT_SCHEMA,
+    RAG_BUILD_RUN_SCHEMA,
+    RAG_DISPATCH_PLAN_SCHEMA,
+    RAG_LOAD_DISPATCH_SCHEMA,
+    REALTIME_IAC_HANDOFF_SCHEMA,
+    RUNTIME_CONTEXT_SCHEMA,
+    RUNTIME_METRICS_SCHEMA,
+    TOOL_CANDIDATES_SCHEMA,
+    TOOL_SELECTION_SCHEMA,
+    VSCODE_ENVIRONMENT_STATE_SCHEMA,
+    WORKFLOW_ENVIRONMENT_PROFILES_SCHEMA,
+    WORKFLOW_HELP_SCHEMA,
+    WORKFLOW_SELECTION_SCHEMA,
+)
+from runtime.constants.workspace import (  # noqa: E402
+    work_dir_for_id,
+)
 from runtime.rag import duckdb_store  # noqa: E402
 from runtime.tools import pytest_ut_spec_sync  # noqa: E402
 from runtime.workflow.close_archive import REPORT_FILES  # noqa: E402
+
+WORKSPACE_LAYOUT_LITERAL_PATTERNS: tuple[tuple[str, str], ...] = (
+    (r"repo_root\s*/\s*['\"]work['\"]", "use runtime.constants.workspace.work_dir_for_id"),
+    (r"\b(?:work_dir|work_path|base)\s*/\s*['\"]context['\"]", "use context_dir_for_work_dir or context_file"),
+    (r"\b(?:work_dir|work_path|base)\s*/\s*['\"]process-report['\"]", "use process_report_dir_for_work_dir"),
+    (r"\b(?:work_dir|work_path|base)\s*/\s*['\"]reports['\"]", "use reports_dir_for_work_dir"),
+    (r"\b(?:work_dir|work_path|base)\s*/\s*['\"]test-evidence['\"]", "use test_evidence_dir_for_work_dir"),
+    (r"\b(?:work_dir|work_path|base)\s*/\s*['\"]test-environment['\"]", "use test_environment_dir_for_work_dir"),
+    (r"\b(?:work_dir|work_path|base)\s*/\s*['\"]design-document['\"]", "use design_document_dir_for_work_dir"),
+    (r"\b(?:work_dir|work_path|base)\s*/\s*['\"]requirements['\"]", "use requirements_dir_for_work_dir"),
+    (r"\b(?:work_dir|work_path|base)\s*/\s*['\"]implementation['\"]", "use implementation_dir_for_work_dir"),
+    (r"\b(?:work_dir|work_path|base)\s*/\s*['\"]git-worktree['\"]", "use git_worktree_dir_for_work_dir"),
+    (r"\b(?:work_dir|work_path|base)\s*/\s*['\"]source['\"]\s*/\s*['\"]repository['\"]", "use target_repository_dir_for_work_dir"),
+)
+
+WORKSPACE_LAYOUT_GUARD_EXCLUDED_PARTS = {
+    "constants",
+    "tests",
+    "__pycache__",
+}
+
+PATH_CONSTANT_LITERAL_PATTERNS: tuple[tuple[str, str], ...] = (
+    (r"['\"]db/registries/registry\.duckdb['\"]", "use runtime.constants.paths.REGISTRY_DB_PATH"),
+    (r"['\"]db/rag/ariadne-knowledge\.duckdb['\"]", "use runtime.constants.paths.DUCKDB_DEFAULT_PATH"),
+    (r"['\"]work/db/ariadne-knowledge-platform['\"]", "use runtime.constants.paths.KNOWLEDGE_SOURCE_REPO"),
+    (r"['\"]\.github/schemas/[^'\"]+\.schema\.json['\"]", "use runtime.constants.schemas constants"),
+)
 
 
 def run_git(repo_root: Path, args: list[str]) -> list[str]:
@@ -63,26 +116,26 @@ def missing_required_files(repo_root: Path) -> list[str]:
         ".github/agents/runtime-quality-gate-agent.prompt.md",
         "docs/workflows/runtime-health-check.md",
         "db/registries/README.md",
-        "db/registries/registry.duckdb",
-        ".github/schemas/human-gates.schema.json",
-        ".github/schemas/workflow-help.schema.json",
-        ".github/schemas/tool-candidates.schema.json",
-        ".github/schemas/context-manifest.schema.json",
-        ".github/schemas/pytest-ut-spec-sync-report.schema.json",
-        ".github/schemas/environment-selection.schema.json",
-        ".github/schemas/workflow-selection.schema.json",
-        ".github/schemas/tool-selection.schema.json",
-        ".github/schemas/runtime-context.schema.json",
-        ".github/schemas/runtime-metrics.schema.json",
-        ".github/schemas/execution-plan.schema.json",
-        ".github/schemas/realtime-iac-handoff.schema.json",
-        ".github/schemas/vscode-environment-state.schema.json",
-        ".github/schemas/workflow-environment-profiles.schema.json",
-        ".github/schemas/github-operation-gate.schema.json",
-        ".github/schemas/corrective-action-report.schema.json",
-        ".github/schemas/rag-build-run.schema.json",
-        ".github/schemas/rag-dispatch-plan.schema.json",
-        ".github/schemas/rag-load-dispatch.schema.json",
+        REGISTRY_DB_PATH.as_posix(),
+        HUMAN_GATES_SCHEMA,
+        WORKFLOW_HELP_SCHEMA,
+        TOOL_CANDIDATES_SCHEMA,
+        CONTEXT_MANIFEST_SCHEMA,
+        PYTEST_UT_SPEC_SYNC_REPORT_SCHEMA,
+        ENVIRONMENT_SELECTION_SCHEMA,
+        WORKFLOW_SELECTION_SCHEMA,
+        TOOL_SELECTION_SCHEMA,
+        RUNTIME_CONTEXT_SCHEMA,
+        RUNTIME_METRICS_SCHEMA,
+        EXECUTION_PLAN_SCHEMA,
+        REALTIME_IAC_HANDOFF_SCHEMA,
+        VSCODE_ENVIRONMENT_STATE_SCHEMA,
+        WORKFLOW_ENVIRONMENT_PROFILES_SCHEMA,
+        GITHUB_OPERATION_GATE_SCHEMA,
+        CORRECTIVE_ACTION_REPORT_SCHEMA,
+        RAG_BUILD_RUN_SCHEMA,
+        RAG_DISPATCH_PLAN_SCHEMA,
+        RAG_LOAD_DISPATCH_SCHEMA,
         "runtime/workflow/gui_mode.py",
         "templates/workflows/noise-reduction/README.md",
         "docs/reference/human-gates.md",
@@ -118,7 +171,7 @@ def human_gate_registry_findings(repo_root: Path) -> list[str]:
 
 def close_archive_findings(repo_root: Path) -> list[str]:
     findings: list[str] = []
-    close_root = repo_root / "work" / "close"
+    close_root = work_dir_for_id(repo_root, "close")
     if not close_root.exists():
         return findings
     for archive_dir in [path for path in close_root.rglob("*") if path.is_dir()]:
@@ -206,8 +259,52 @@ def duckdb_read_model_findings(repo_root: Path) -> list[str]:
     return [
         f"missing:{relative_to_repo(repo_root, db_path)}",
         f"source:{relative_to_repo(repo_root, source_repo)}",
-        "rebuild:aiwfctl knowledge rebuild --source-repo work/db/ariadne-knowledge-platform --reset",
+        f"rebuild:aiwfctl knowledge rebuild --source-repo {duckdb_store.DEFAULT_SOURCE_REPO_PATH.as_posix()} --reset",
     ]
+
+
+def workspace_layout_literal_findings(repo_root: Path) -> list[str]:
+    runtime_root = repo_root / "runtime"
+    if not runtime_root.exists():
+        return []
+    compiled = [(re.compile(pattern), hint) for pattern, hint in WORKSPACE_LAYOUT_LITERAL_PATTERNS]
+    findings: list[str] = []
+    for path in sorted(runtime_root.rglob("*.py"), key=lambda item: item.as_posix()):
+        relative_parts = set(path.relative_to(runtime_root).parts)
+        if relative_parts & WORKSPACE_LAYOUT_GUARD_EXCLUDED_PARTS:
+            continue
+        text = path.read_text(encoding="utf-8-sig", errors="replace")
+        for line_number, line in enumerate(text.splitlines(), start=1):
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            for pattern, hint in compiled:
+                if pattern.search(line):
+                    findings.append(f"{relative_to_repo(repo_root, path)}:{line_number}: {hint}")
+                    break
+    return findings
+
+
+def path_constant_literal_findings(repo_root: Path) -> list[str]:
+    runtime_root = repo_root / "runtime"
+    if not runtime_root.exists():
+        return []
+    compiled = [(re.compile(pattern), hint) for pattern, hint in PATH_CONSTANT_LITERAL_PATTERNS]
+    findings: list[str] = []
+    for path in sorted(runtime_root.rglob("*.py"), key=lambda item: item.as_posix()):
+        relative_parts = set(path.relative_to(runtime_root).parts)
+        if relative_parts & WORKSPACE_LAYOUT_GUARD_EXCLUDED_PARTS:
+            continue
+        text = path.read_text(encoding="utf-8-sig", errors="replace")
+        for line_number, line in enumerate(text.splitlines(), start=1):
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            for pattern, hint in compiled:
+                if pattern.search(line):
+                    findings.append(f"{relative_to_repo(repo_root, path)}:{line_number}: {hint}")
+                    break
+    return findings
 
 
 def ut_spec_sync_findings(repo_root: Path) -> list[str]:
@@ -283,6 +380,24 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "id": "rag-duckdb-read-model-missing",
                 "message": "knowledge sourceが存在しますが、生成DuckDB read modelが見つかりません。rag cleanup後はrebuildが必要です。",
                 "paths": duckdb_findings,
+            }
+        )
+    layout_findings = workspace_layout_literal_findings(repo_root)
+    if layout_findings:
+        warnings.append(
+            {
+                "id": "workspace-layout-literal",
+                "message": "runtime implementation contains hard-coded work layout path literals. Use runtime.constants.workspace helpers first.",
+                "paths": layout_findings,
+            }
+        )
+    path_constant_findings = path_constant_literal_findings(repo_root)
+    if path_constant_findings:
+        warnings.append(
+            {
+                "id": "path-constant-literal",
+                "message": "runtime implementation contains hard-coded canonical path literals. Use runtime.constants.paths or runtime.constants.schemas first.",
+                "paths": path_constant_findings,
             }
         )
     if not getattr(args, "skip_ut_spec_sync", False):

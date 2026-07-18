@@ -154,13 +154,13 @@ feature/issue-<issue-number>
 
 `/rag-load` では、`runtime/rag/rag_dispatcher.py` を実行します。dispatcher は対象 repository、branch、要件の intent、影響コンポーネント、安全・STOP・通信断・rollback・test gap などから 3〜5 個の検索クエリを作り、可能なら並列検索します。
 
-検索結果は `runtime/rag/retrieve_context.py` の既存圧縮機能で `artifact_type: rag-context-pack` の `db/rag/retrieval/<uuid>.json` として保存します。dispatcher はそれらを集約して `artifact_type: rag-load-dispatch` の `db/rag/retrieval/<uuid>.json` を作り、開発本体flowに入る前に要約します。
+検索結果は `runtime/rag/retrieve_context.py` の既存圧縮機能で `artifact_type: rag-context-pack` の `work/db/ariadne-knowledge-platform/rag/retrieval/<uuid>.json` として保存します。dispatcher はそれらを集約して `artifact_type: rag-load-dispatch` の `work/db/ariadne-knowledge-platform/rag/retrieval/<uuid>.json` を作り、開発本体flowに入る前に要約します。
 
 確認:
 
 - RAG index / embedding が存在しない場合は `/rag-build` を先に実行したか
-- `artifact_type: rag-load-dispatch` の `db/rag/retrieval/<uuid>.json` が生成されたか
-- `artifact_type: rag-context-pack` の `db/rag/retrieval/<uuid>.json` が生成されたか
+- `artifact_type: rag-load-dispatch` の `work/db/ariadne-knowledge-platform/rag/retrieval/<uuid>.json` が生成されたか
+- `artifact_type: rag-context-pack` の `work/db/ariadne-knowledge-platform/rag/retrieval/<uuid>.json` が生成されたか
 - RAG から得た prior finding / risk / test gap が開発計画へ反映されたか
 - safety-critical な未解決指摘がある場合、implementation に進まず blocker として扱ったか
 

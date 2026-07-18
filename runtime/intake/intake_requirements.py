@@ -21,6 +21,12 @@ from runtime.common import (  # noqa: E402
     utc_now_iso,
     write_json,
 )
+from runtime.constants.schemas import AGENT_CONTEXT_SCHEMA, ARTIFACT_INDEX_SCHEMA, HANDOFF_PACKAGE_SCHEMA  # noqa: E402
+from runtime.constants.workspace import (  # noqa: E402
+    context_dir_for_work_dir,
+    design_document_dir_for_work_dir,
+    work_requirements_dir,
+)
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 REQUIREMENT_EXTENSIONS = {".md", ".markdown", ".txt"}
@@ -218,7 +224,7 @@ def initialize_context(
     intent_summary: str,
     risk_level: str,
 ) -> None:
-    context_dir = work_dir / "context"
+    context_dir = context_dir_for_work_dir(work_dir)
     command = command_for_workflow(workflow)
     open_safety_questions = open_questions_for_workflow(workflow)
     agent_context = {
@@ -296,25 +302,25 @@ def initialize_context(
 
 
 def register_initial_context_manifest(repo_root: Path, work_dir: Path, receipt_id: str) -> None:
-    context_dir = work_dir / "context"
+    context_dir = context_dir_for_work_dir(work_dir)
     registrations = [
         (
             "agent-context",
             context_dir / "agent-context.json",
             True,
-            ".github/schemas/agent-context.schema.json",
+            AGENT_CONTEXT_SCHEMA,
         ),
         (
             "artifact-index",
             context_dir / "artifact-index.json",
             True,
-            ".github/schemas/artifact-index.schema.json",
+            ARTIFACT_INDEX_SCHEMA,
         ),
         (
             "handoff-package",
             context_dir / "handoff-package.json",
             False,
-            ".github/schemas/handoff-package.schema.json",
+            HANDOFF_PACKAGE_SCHEMA,
         ),
         ("qa-records", context_dir / "qa-records.json", False, ""),
         ("finding-records", context_dir / "finding-records.json", False, ""),
@@ -345,7 +351,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         requirements_dir = None
     else:
         requirements_dir = (
-            Path(args.requirements_dir).resolve() if args.requirements_dir else repo_root / "work" / "requirements"
+            Path(args.requirements_dir).resolve() if args.requirements_dir else work_requirements_dir(repo_root)
         )
         requirement_sources = discover_requirement_documents(requirements_dir)
 
@@ -356,7 +362,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
     project_repository = args.project_repository or requirement_config["repository"]
 
     work_dir = ensure_work_tree(repo_root, receipt_id)
-    design_dir = work_dir / "design-document"
+    design_dir = design_document_dir_for_work_dir(work_dir)
 
     initialize_context(
         repo_root=repo_root,
@@ -401,7 +407,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
             },
         )
 
-    context_dir = work_dir / "context"
+    context_dir = context_dir_for_work_dir(work_dir)
     handoff_data = json.loads((context_dir / "handoff-package.json").read_text(encoding="utf-8-sig"))
     handoff_data["artifacts"] = accepted_files
     write_json(context_dir / "handoff-package.json", handoff_data)

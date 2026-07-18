@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from runtime.constants.workspace import (  # noqa: E402
+    context_file,
+)
 from .common import read_json
 
 
@@ -88,7 +91,7 @@ def extract_repository_config_from_files(paths: list[Path]) -> dict[str, str]:
 
 
 def requirement_files_from_artifact_index(repo_root: Path, work_dir: Path) -> list[Path]:
-    index = read_json(work_dir / "context" / "artifact-index.json", default={}) or {}
+    index = read_json(context_file(work_dir, "artifact-index.json"), default={}) or {}
     paths = []
     for artifact in index.get("artifacts", []):
         if artifact.get("type") != "requirement":

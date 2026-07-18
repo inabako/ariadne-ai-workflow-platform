@@ -104,7 +104,7 @@ runtime/tests/test_close_archive.py::test_defensive_specimen_rag_discovery_keeps
 - 確認内容: defensive specimen rag discovery keeps missing refs and low scores out を検証する。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_close_archive.py:256`
+  - source: `runtime/tests/test_close_archive.py:265`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -121,7 +121,7 @@ runtime/tests/test_close_archive.py::test_defensive_specimen_first_heading_empty
 - 確認内容: defensive specimen first heading empty after prefix removal を検証する。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_close_archive.py:271`
+  - source: `runtime/tests/test_close_archive.py:283`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -138,7 +138,7 @@ runtime/tests/test_close_archive.py::test_rag_summary_formatting_and_report_buil
 - 確認内容: pytest case `rag summary formatting and report builder` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_close_archive.py:291`
+  - source: `runtime/tests/test_close_archive.py:303`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `metadata`
@@ -155,7 +155,7 @@ runtime/tests/test_close_archive.py::test_prepare_requires_rag_when_requested
 - 確認内容: pytest case `prepare requires rag when requested` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_close_archive.py:352`
+  - source: `runtime/tests/test_close_archive.py:364`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -172,7 +172,7 @@ runtime/tests/test_close_archive.py::test_prepare_writes_rag_enriched_report_and
 - 確認内容: pytest case `prepare writes rag enriched report and metadata` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_close_archive.py:369`
+  - source: `runtime/tests/test_close_archive.py:381`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `summary`, `metadata`
@@ -189,7 +189,7 @@ runtime/tests/test_close_archive.py::test_prune_requires_human_approval_for_exec
 - 確認内容: pytest case `prune requires human approval for execute` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_close_archive.py:409`
+  - source: `runtime/tests/test_close_archive.py:423`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -206,7 +206,7 @@ runtime/tests/test_close_archive.py::test_prune_dry_run_keeps_targets
 - 確認内容: pytest case `prune dry run keeps targets` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_close_archive.py:433`
+  - source: `runtime/tests/test_close_archive.py:447`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -223,7 +223,7 @@ runtime/tests/test_close_archive.py::test_audit_reports_readiness_and_prepare_no
 - 確認内容: pytest case `audit reports readiness and prepare no auto explicit rag` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_close_archive.py:455`
+  - source: `runtime/tests/test_close_archive.py:469`
   - fixture/arg: `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `prepared_stdout`, `audit_stdout`
@@ -240,7 +240,7 @@ runtime/tests/test_close_archive.py::test_prune_execute_removes_targets_and_refu
 - 確認内容: pytest case `prune execute removes targets and refuses missing reports` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_close_archive.py:514`
+  - source: `runtime/tests/test_close_archive.py:528`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -257,7 +257,7 @@ runtime/tests/test_close_archive.py::test_prune_execute_skips_disappeared_target
 - 確認内容: pytest case `prune execute skips disappeared target` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_close_archive.py:564`
+  - source: `runtime/tests/test_close_archive.py:578`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -274,7 +274,7 @@ runtime/tests/test_close_archive.py::test_remove_helpers_retry_permission_errors
 - 確認内容: pytest case `remove helpers retry permission errors` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_close_archive.py:592`
+  - source: `runtime/tests/test_close_archive.py:606`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `calls`, `rmtree_calls`

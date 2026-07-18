@@ -13,14 +13,26 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
-from runtime.rag.paths import (  # noqa: E402
+from runtime.constants.paths import (  # noqa: E402
     CHUNKS_INDEX,
+    DUCKDB_DEFAULT_PATH,
     EMBEDDINGS_INDEX,
     GENERATED_CHUNKS,
     GENERATED_INDEXES,
     GENERATED_NORMALIZED,
     GENERATED_RETRIEVAL,
+    RAG_BUILD_INDEX_SCRIPT,
+    RAG_CHUNK_SCRIPT,
+    RAG_EMBED_SCRIPT,
+    RAG_NORMALIZE_SCRIPT,
+    RAG_RETRIEVE_CONTEXT_SCRIPT,
     SOURCE_CORRECTIVE_ACTION_REPORTS,
+)
+from runtime.constants.schemas import RAG_DISPATCH_PLAN_SCHEMA, RAG_LOAD_DISPATCH_SCHEMA  # noqa: E402
+from runtime.constants.workspace import (  # noqa: E402
+    context_dir_for_work_dir,
+    context_file,
+    resolve_work_dir as workspace_resolve_work_dir,
 )
 from runtime.workflow.context_first import context_entry, context_path, load_manifest, manifest_path_for_work_dir, register_context  # noqa: E402
 
@@ -65,7 +77,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--chunks-index", default=str(CHUNKS_INDEX))
     parser.add_argument("--embeddings-index", default=str(EMBEDDINGS_INDEX))
     parser.add_argument("--retrieval-backend", default="file", choices=["file", "duckdb"])
-    parser.add_argument("--duckdb-path", default="db/rag/ariadne-knowledge.duckdb")
+    parser.add_argument("--duckdb-path", default=str(DUCKDB_DEFAULT_PATH))
     parser.add_argument("--semantic-hint", default="")
     parser.add_argument("--document-type", default="")
     parser.add_argument("--environment", default="")
@@ -115,9 +127,9 @@ def collect_work_context(work_dir: Path) -> str:
 
 def default_work_dir(repo_root: Path, args: argparse.Namespace) -> Path | None:
     if args.work_dir:
-        return resolve_path(repo_root, args.work_dir)
+        return workspace_resolve_work_dir(repo_root, "", args.work_dir)
     if args.work_id:
-        return repo_root / "work" / args.work_id
+        return workspace_resolve_work_dir(repo_root, args.work_id)
     return None
 
 
@@ -130,7 +142,7 @@ def execution_plan_reference(repo_root: Path, work_dir: Path | None) -> str:
         entry = context_entry(manifest, "execution-plan")
         if entry:
             return relative_to_repo(repo_root, context_path(repo_root, entry))
-    fallback = work_dir / "context" / "execution-plan.json"
+    fallback = context_file(work_dir, "execution-plan.json")
     return relative_to_repo(repo_root, fallback) if fallback.exists() else ""
 
 
@@ -424,7 +436,7 @@ def register_rag_contexts(
     work_dir = default_work_dir(repo_root, args)
     if work_dir is None or not args.work_id:
         return
-    context_dir = work_dir / "context"
+    context_dir = context_dir_for_work_dir(work_dir)
     context_dir.mkdir(parents=True, exist_ok=True)
     register_context(
         repo_root,
@@ -435,7 +447,7 @@ def register_rag_contexts(
         required=False,
         generated_by="rag-load",
         owner="workflow",
-        schema=".github/schemas/rag-dispatch-plan.schema.json",
+        schema=RAG_DISPATCH_PLAN_SCHEMA,
     )
     if dispatch_result_path:
         register_context(
@@ -447,7 +459,7 @@ def register_rag_contexts(
             required=False,
             generated_by="rag-load",
             owner="workflow",
-            schema=".github/schemas/rag-load-dispatch.schema.json",
+            schema=RAG_LOAD_DISPATCH_SCHEMA,
         )
 
 
@@ -491,7 +503,7 @@ def ensure_indexes(args: argparse.Namespace, repo_root: Path) -> None:
     build_commands = [
         [
             args.python,
-            "runtime/rag/normalize_documents.py",
+            RAG_NORMALIZE_SCRIPT.as_posix(),
             "--source-dir",
             str(SOURCE_CORRECTIVE_ACTION_REPORTS),
             "--output-dir",
@@ -502,7 +514,7 @@ def ensure_indexes(args: argparse.Namespace, repo_root: Path) -> None:
         ],
         [
             args.python,
-            "runtime/rag/chunk_documents.py",
+            RAG_CHUNK_SCRIPT.as_posix(),
             "--input-dir",
             str(GENERATED_NORMALIZED),
             "--output-dir",
@@ -511,7 +523,7 @@ def ensure_indexes(args: argparse.Namespace, repo_root: Path) -> None:
         ],
         [
             args.python,
-            "runtime/rag/build_index.py",
+            RAG_BUILD_INDEX_SCRIPT.as_posix(),
             "--normalized-dir",
             str(GENERATED_NORMALIZED),
             "--chunks-dir",
@@ -521,7 +533,7 @@ def ensure_indexes(args: argparse.Namespace, repo_root: Path) -> None:
         ],
         [
             args.python,
-            "runtime/rag/embed_chunks.py",
+            RAG_EMBED_SCRIPT.as_posix(),
             "--chunks-index",
             str(CHUNKS_INDEX),
             "--output",
@@ -540,7 +552,7 @@ def retrieval_command(args: argparse.Namespace, query_item: dict[str, Any]) -> l
     search_mode = str(query_item.get("search_mode") or args.search_mode)
     command = [
         args.python,
-        "runtime/rag/retrieve_context.py",
+        RAG_RETRIEVE_CONTEXT_SCRIPT.as_posix(),
         query,
         "--chunks-index",
         args.chunks_index,
@@ -549,7 +561,7 @@ def retrieval_command(args: argparse.Namespace, query_item: dict[str, Any]) -> l
         "--backend",
         getattr(args, "retrieval_backend", "file"),
         "--duckdb-path",
-        getattr(args, "duckdb_path", "db/rag/ariadne-knowledge.duckdb"),
+        getattr(args, "duckdb_path", str(DUCKDB_DEFAULT_PATH)),
         "--output-dir",
         args.output_dir,
         "--search-mode",

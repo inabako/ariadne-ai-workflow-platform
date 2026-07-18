@@ -108,8 +108,8 @@ Reference: [VSCode Environment](../reference/vscode-environment.md)
 14. evidenceを記録する。
 15. setup / troubleshooting docsを更新する。
 16. 再利用可能なworkspace knowledgeを `work/db/ariadne-knowledge-platform/rag/workspace-environment/` にhuman-review可能なsource Markdownとして保存する。
-17. Human approval後、source Markdownを `db/rag/normalized/` のUUID名JSONへnormalizeする。
-18. `db/rag/normalized/<uuid>.json` を最終machine-readable knowledge artifactとして扱う。chunk、index、embedding、retrieval filesは派生物です。
+17. Human approval後、source Markdownを `work/db/ariadne-knowledge-platform/rag/normalized/` のUUID名JSONへnormalizeする。
+18. `work/db/ariadne-knowledge-platform/rag/normalized/<uuid>.json` を最終machine-readable knowledge artifactとして扱う。chunk、index、embedding、retrieval filesは派生物です。
 
 ## Stop Rules
 
@@ -251,31 +251,31 @@ Human approval後、`workspace-environment-pattern` としてnormalizeします�
 ```powershell
 uv run --project runtime python runtime/rag/normalize_documents.py `
   --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment `
-  --output-dir db/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type workspace-environment-pattern
 ```
 
 最終着地:
 
 ```text
-db/rag/normalized/<uuid>.json
+work/db/ariadne-knowledge-platform/rag/normalized/<uuid>.json
 ```
 
 normalize後、必要に応じて派生RAG artifactを生成します。
 
 ```powershell
 uv run --project runtime python runtime/rag/chunk_documents.py `
-  --input-dir db/rag/normalized `
-  --output-dir db/rag/chunks
+  --input-dir work/db/ariadne-knowledge-platform/rag/normalized `
+  --output-dir work/db/ariadne-knowledge-platform/rag/chunks
 
 uv run --project runtime python runtime/rag/build_index.py `
-  --normalized-dir db/rag/normalized `
-  --chunks-dir db/rag/chunks `
-  --output-dir db/rag/indexes
+  --normalized-dir work/db/ariadne-knowledge-platform/rag/normalized `
+  --chunks-dir work/db/ariadne-knowledge-platform/rag/chunks `
+  --output-dir work/db/ariadne-knowledge-platform/rag/indexes
 
 uv run --project runtime python runtime/rag/embed_chunks.py `
-  --chunks-index db/rag/indexes/chunks.jsonl `
-  --output db/rag/embeddings/chunks-embeddings.jsonl
+  --chunks-index work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl `
+  --output work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl
 ```
 
 ## Source Skill

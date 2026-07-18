@@ -14,7 +14,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
-from runtime.rag.paths import CHUNKS_INDEX, EMBEDDINGS_INDEX  # noqa: E402
+from runtime.constants.paths import CHUNKS_INDEX, EMBEDDINGS_INDEX  # noqa: E402
 
 
 WORD_RE = re.compile(r"[A-Za-z0-9_.:-]+|[\u3040-\u30ff\u3400-\u9fff]+")

@@ -6,6 +6,8 @@ from time import perf_counter
 from typing import Any
 
 from runtime.common import relative_to_repo, write_json
+from runtime.constants.schemas import RUNTIME_METRICS_SCHEMA
+from runtime.constants.workspace import context_file, manifest_path_for_work_dir, test_evidence_dir_for_work_dir
 from runtime.observability.logger import append_jsonl, resolve_log_path
 from runtime.observability.schema import (
     ARTIFACT_TYPE,
@@ -17,10 +19,6 @@ from runtime.observability.schema import (
     token_usage,
     utc_now_iso,
 )
-
-
-RUNTIME_METRICS_SCHEMA = ".github/schemas/runtime-metrics.schema.json"
-
 
 def _duration_ms(started: float | None) -> int:
     if started is None:
@@ -237,8 +235,8 @@ class RuntimeMetricsCollector:
         if self.work_dir is None:
             return {"status": "skipped", "reason": "work_dir is not set"}
         payload = self.summary(status=status)
-        test_evidence_path = self.work_dir / "test-evidence" / "runtime-metrics.json"
-        context_path = self.work_dir / "context" / "runtime-metrics.json"
+        test_evidence_path = test_evidence_dir_for_work_dir(self.work_dir) / "runtime-metrics.json"
+        context_path = context_file(self.work_dir, "runtime-metrics.json")
         try:
             write_json(test_evidence_path, payload)
             write_json(context_path, payload)
@@ -254,7 +252,7 @@ class RuntimeMetricsCollector:
                 "status": "ok",
                 "test_evidence_path": relative_to_repo(self.repo_root, test_evidence_path),
                 "context_path": relative_to_repo(self.repo_root, context_path),
-                "context_manifest": relative_to_repo(self.repo_root, self.work_dir / "context" / "context-manifest.json") if manifest else "",
+                "context_manifest": relative_to_repo(self.repo_root, manifest_path_for_work_dir(self.work_dir)) if manifest else "",
             }
         except OSError as exc:
             warning = {"status": "warning", "warning": f"runtime metrics evidence write failed: {exc}"}

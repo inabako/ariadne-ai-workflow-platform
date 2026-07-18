@@ -10,16 +10,21 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
-from runtime.rag import build_index, chunk_documents, duckdb_store, embed_chunks, ingestion_optimizer, normalize_documents  # noqa: E402
-from runtime.rag.paths import (  # noqa: E402
+from runtime.constants.paths import (  # noqa: E402
+    DUCKDB_INGESTION_EVIDENCE_DIR,
+    DUCKDB_MIGRATION_EVIDENCE,
     EMBEDDINGS_INDEX,
     GENERATED_CHUNKS,
     GENERATED_INDEXES,
     GENERATED_NORMALIZED,
     GENERATED_OPTIMIZED_CHUNKS,
+    RAG_INGESTION_POLICY_PATH,
     RAG_BUILD_RUN_LATEST,
     SOURCE_CORRECTIVE_ACTION_REPORTS,
 )
+from runtime.constants.schemas import RAG_BUILD_RUN_SCHEMA, RAG_DUCKDB_MIGRATION_SCHEMA  # noqa: E402
+from runtime.constants.workspace import resolve_work_dir as workspace_resolve_work_dir  # noqa: E402
+from runtime.rag import build_index, chunk_documents, duckdb_store, embed_chunks, ingestion_optimizer, normalize_documents  # noqa: E402
 from runtime.rag import standardize_corrective_report_names  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
@@ -30,11 +35,10 @@ def resolve_repo_path(repo_root: Path, value: str) -> Path:
 
 
 def resolve_work_dir(repo_root: Path, work_id: str, work_dir: str) -> Path | None:
-    if work_dir:
-        raw = Path(work_dir)
-        return raw if raw.is_absolute() else repo_root / raw
     if work_id:
-        return repo_root / "work" / work_id
+        return workspace_resolve_work_dir(repo_root, work_id, work_dir)
+    if work_dir:
+        return workspace_resolve_work_dir(repo_root, "", work_dir)
     return None
 
 
@@ -145,7 +149,7 @@ def register_rag_build_context(
         required=False,
         generated_by="runtime-rag-build",
         owner="workflow",
-        schema=".github/schemas/rag-build-run.schema.json",
+        schema=RAG_BUILD_RUN_SCHEMA,
     )
 
 
@@ -168,7 +172,7 @@ def register_duckdb_migration_context(
         required=False,
         generated_by="runtime-rag-build",
         owner="workflow",
-        schema=".github/schemas/rag-duckdb-migration.schema.json",
+        schema=RAG_DUCKDB_MIGRATION_SCHEMA,
         status="available" if migration_result.get("failed_count", 0) == 0 else "human-check-required",
     )
 
@@ -241,8 +245,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             argparse.Namespace(
                 chunks_dir=args.chunks_dir,
                 output_dir=getattr(args, "optimized_chunks_dir", str(GENERATED_OPTIMIZED_CHUNKS)),
-                evidence_dir=getattr(args, "ingestion_evidence_dir", "db/rag/evidence/ingestion"),
-                policy=getattr(args, "ingestion_policy", "runtime/rag/policies/knowledge-ingestion-policy.json"),
+                evidence_dir=getattr(args, "ingestion_evidence_dir", str(DUCKDB_INGESTION_EVIDENCE_DIR)),
+                policy=getattr(args, "ingestion_policy", str(RAG_INGESTION_POLICY_PATH)),
                 repo_root=str(repo_root),
                 clean_output=args.clean_output,
             )
@@ -286,7 +290,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         duckdb_policy_value = getattr(args, "duckdb_policy", "") or getattr(
             args,
             "ingestion_policy",
-            "runtime/rag/policies/knowledge-ingestion-policy.json",
+            str(RAG_INGESTION_POLICY_PATH),
         )
         duckdb_policy = ingestion_optimizer.load_policy(repo_root, duckdb_policy_value)
         raw_duckdb_result = duckdb_store.migrate_directory(
@@ -298,7 +302,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
         evidence_path = resolve_repo_path(
             repo_root,
-            getattr(args, "duckdb_evidence_output", "db/rag/evidence/migration-summary.json"),
+            getattr(args, "duckdb_evidence_output", str(DUCKDB_MIGRATION_EVIDENCE)),
         ).resolve()
         duckdb_migration_result = write_duckdb_migration_evidence(
             repo_root,
@@ -343,14 +347,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--indexes-dir", default=str(GENERATED_INDEXES))
     parser.add_argument("--embeddings-output", default=str(EMBEDDINGS_INDEX))
     parser.add_argument("--output", default=str(RAG_BUILD_RUN_LATEST))
-    parser.add_argument("--ingestion-evidence-dir", default="db/rag/evidence/ingestion")
-    parser.add_argument("--ingestion-policy", default="runtime/rag/policies/knowledge-ingestion-policy.json")
+    parser.add_argument("--ingestion-evidence-dir", default=str(DUCKDB_INGESTION_EVIDENCE_DIR))
+    parser.add_argument("--ingestion-policy", default=str(RAG_INGESTION_POLICY_PATH))
     parser.add_argument("--skip-optimization", action="store_true")
     parser.add_argument("--duckdb-migrate", action="store_true")
     parser.add_argument("--duckdb-path", default=str(duckdb_store.DEFAULT_DB_PATH))
     parser.add_argument("--duckdb-source-dir", default="")
     parser.add_argument("--duckdb-error-log", default=str(duckdb_store.DEFAULT_ERROR_LOG))
-    parser.add_argument("--duckdb-evidence-output", default="db/rag/evidence/migration-summary.json")
+    parser.add_argument("--duckdb-evidence-output", default=str(DUCKDB_MIGRATION_EVIDENCE))
     parser.add_argument("--duckdb-policy", default="")
     parser.add_argument("--project", default="")
     parser.add_argument("--repository", default="")

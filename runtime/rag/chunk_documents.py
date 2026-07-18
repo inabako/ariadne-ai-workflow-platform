@@ -13,7 +13,7 @@ if __package__ in {None, ""}:
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, write_json  # noqa: E402
 from runtime.rag.cleanup_guard import assert_safe_clean_output_target  # noqa: E402
-from runtime.rag.paths import GENERATED_CHUNKS, GENERATED_NORMALIZED  # noqa: E402
+from runtime.constants.paths import GENERATED_CHUNKS, GENERATED_NORMALIZED  # noqa: E402
 
 
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")

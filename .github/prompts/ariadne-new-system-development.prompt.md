@@ -29,7 +29,7 @@
 - Issue番号から `feature/issue-<issue-number>` branch を作成した
 - `work/<採番ID>/context/scm-state.json` にbranch情報が記録されている
 - `/rag-load` を実行し、過去の corrective action report から関連する prior finding / risk / test gap / architecture concern を読み込んだ
-- `artifact_type: rag-context-pack` の `db/rag/retrieval/<uuid>.json` の圧縮済み context を確認し、設計前提に反映した
+- `artifact_type: rag-context-pack` の `work/db/ariadne-knowledge-platform/rag/retrieval/<uuid>.json` の圧縮済み context を確認し、設計前提に反映した
 - 必要な場合、Specialist Agent reviewを実行し、専門前提と採用した外部知識を `work/<採番ID>/process-report/` に記録した
 
 この準備が未完了の場合、implementation へ進みません。

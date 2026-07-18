@@ -24,6 +24,13 @@ from runtime.common import (  # noqa: E402
     write_json,
     write_markdown_bom,
 )
+from runtime.constants.schemas import GUI_MODE_STATE_SCHEMA  # noqa: E402
+from runtime.constants.workspace import (  # noqa: E402
+    context_file,
+    resolve_work_dir as workspace_resolve_work_dir,
+    svg_input_dir,
+    work_dir_for_id,
+)
 from runtime.workflow.context_first import register_context, require_environment_selection  # noqa: E402
 
 
@@ -952,14 +959,14 @@ def input_readme() -> str:
 
 
 def resolve_work_dir(repo_root: Path, issue_id: str, raw_work_dir: str | None) -> Path:
-    return Path(raw_work_dir).resolve() if raw_work_dir else repo_root / "work" / issue_id
+    return workspace_resolve_work_dir(repo_root, issue_id, raw_work_dir or "")
 
 
 def resolve_svg_input_dir(repo_root: Path, raw_input_dir: str | None) -> Path:
     return (
         Path(raw_input_dir).resolve()
         if raw_input_dir
-        else repo_root / "work" / "requirements" / "svg-input"
+        else svg_input_dir(repo_root)
     )
 
 
@@ -1179,7 +1186,7 @@ def write_artifacts(
         },
     }
     write_json(output_dir / "gui-mode-state.json", state)
-    write_json(work_dir / "context" / "gui-mode-state.json", state)
+    write_json(context_file(work_dir, "gui-mode-state.json"), state)
 
     artifact_index = load_artifact_index(work_dir, issue_id, "gac-uac-gui-mode")
     artifact_definitions = [
@@ -1210,7 +1217,7 @@ def write_artifacts(
                 "unresolved_items": ["Human review is required before source integration."],
             },
         )
-    write_json(work_dir / "context" / "artifact-index.json", artifact_index)
+    write_json(context_file(work_dir, "artifact-index.json"), artifact_index)
     return state
 
 
@@ -1338,7 +1345,7 @@ def run_generate(args: argparse.Namespace) -> dict[str, Any]:
                 "integration_policy": "review-generated-candidates-before-copy",
             },
         }
-        state_path = work_dir / "context" / "gui-mode-state.json"
+        state_path = context_file(work_dir, "gui-mode-state.json")
         write_json(state_path, state)
         register_context(
             repo_root,
@@ -1349,7 +1356,7 @@ def run_generate(args: argparse.Namespace) -> dict[str, Any]:
             required=False,
             generated_by="gui-mode",
             owner="workflow",
-            schema=".github/schemas/gui-mode-state.schema.json",
+            schema=GUI_MODE_STATE_SCHEMA,
             status="skipped",
         )
         return state
@@ -1373,7 +1380,7 @@ def run_generate(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError(f"Generated GUI mode artifacts failed validation: {validation['errors']}")
     state["validation"] = validation
     write_json(output_dir / "gui-mode-state.json", state)
-    state_path = work_dir / "context" / "gui-mode-state.json"
+    state_path = context_file(work_dir, "gui-mode-state.json")
     write_json(state_path, state)
     register_context(
         repo_root,
@@ -1384,7 +1391,7 @@ def run_generate(args: argparse.Namespace) -> dict[str, Any]:
         required=False,
         generated_by="gui-mode",
         owner="workflow",
-        schema=".github/schemas/gui-mode-state.schema.json",
+        schema=GUI_MODE_STATE_SCHEMA,
     )
     return state
 
@@ -1436,16 +1443,16 @@ def run_self_test(args: argparse.Namespace) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="gui-mode-self-test-") as raw_root:
         repo_root = Path(raw_root)
 
-        (repo_root / "work" / "SYS-0001").mkdir(parents=True)
+        (work_dir_for_id(repo_root, "SYS-0001")).mkdir(parents=True)
         skipped = run_generate(make_self_test_args(repo_root, "SYS-0001"))
         assert_self_test(skipped["status"] == "skipped", "missing SVG should skip")
         assert_self_test(
-            (repo_root / "work" / "SYS-0001" / "context" / "gui-mode-state.json").exists(),
+            (work_dir_for_id(repo_root, "SYS-0001") / "context" / "gui-mode-state.json").exists(),
             "skipped state should be written",
         )
         checks.append("skip-without-svg")
 
-        svg_input = repo_root / "work" / "requirements" / "svg-input"
+        svg_input = svg_input_dir(repo_root)
         svg_input.mkdir(parents=True)
         other_flow_svg = svg_input / "FEAT_other-flow.svg"
         other_flow_svg.write_text(SELF_TEST_SVG, encoding="utf-8")
@@ -1461,9 +1468,9 @@ def run_self_test(args: argparse.Namespace) -> dict[str, Any]:
         assert_self_test(generated["mode"] == "feature-development", "FEAT mode mismatch")
         assert_self_test(generated["input_prefix"] == "FEAT", "FEAT input prefix mismatch")
         assert_self_test(not source_svg.exists(), "claimed SVG should be moved from inbox")
-        issue_svg = repo_root / "work" / "FEAT-0001" / "input" / "gui" / "FEAT_robot-console.svg"
+        issue_svg = work_dir_for_id(repo_root, "FEAT-0001") / "input" / "gui" / "FEAT_robot-console.svg"
         assert_self_test(issue_svg.exists(), "claimed SVG should exist under issue input/gui")
-        output_dir = repo_root / "work" / "FEAT-0001" / "gac-uac"
+        output_dir = work_dir_for_id(repo_root, "FEAT-0001") / "gac-uac"
         assert_self_test((output_dir / "layout-spec.md").exists(), "layout spec missing")
         assert_self_test(
             (output_dir / "generated" / "pyqt6" / "widgets" / "__init__.py").exists(),
@@ -1475,7 +1482,7 @@ def run_self_test(args: argparse.Namespace) -> dict[str, Any]:
         assert_self_test("setGeometry(" not in pyqt_source, "generated source must not use setGeometry")
         assert_self_test("connect_button_text =" not in pyqt_source, "button text should merge into button")
         assert_self_test(
-            validate_outputs(repo_root / "work" / "FEAT-0001")["status"] == "pass",
+            validate_outputs(work_dir_for_id(repo_root, "FEAT-0001"))["status"] == "pass",
             "generated outputs should validate",
         )
         checks.append("generate-and-validate")

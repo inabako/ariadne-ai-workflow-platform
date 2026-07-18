@@ -153,7 +153,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 ```powershell
 uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
   --issue issue-11 `
-  --source-rag rag/normalized/issue-11.md `
+  --source-rag work/db/ariadne-knowledge-platform/rag/normalized/issue-11.json `
   --require-rag
 ```
 

@@ -23,7 +23,7 @@ You review platform, packaging, startup, deployment, and environment assumptions
 ## Inputs
 
 - deployment architecture, runtime design, corrective action scope, or startup plan
-- internal RAG context from `db/rag/retrieval/`
+- internal RAG context from `work/db/ariadne-knowledge-platform/rag/retrieval/`
 - external-web RAG from `work/db/ariadne-knowledge-platform/rag/external-web/platform/`
 - current repository evidence when available
 - preflight, startup logs, or planned integration evidence

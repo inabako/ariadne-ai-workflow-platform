@@ -110,7 +110,7 @@ def test_ctl_knowledge_usage_and_search_export_context(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     db = root / "db" / "rag" / "knowledge.duckdb"
-    source = root / "db" / "rag" / "optimized-chunks" / "knowledge.json"
+    source = root / "work" / "db" / "ariadne-knowledge-platform" / "rag" / "optimized-chunks" / "knowledge.json"
     source.parent.mkdir(parents=True)
     source.write_text(
         json.dumps(
@@ -204,7 +204,7 @@ def test_ctl_knowledge_usage_and_search_export_context(tmp_path: Path) -> None:
             str(db),
             "rebuild",
             "--source",
-            "rag/optimized-chunks",
+            "work/db/ariadne-knowledge-platform/rag/optimized-chunks",
             "--source-repo",
             "work/db/ariadne-knowledge-platform",
             "--reset",

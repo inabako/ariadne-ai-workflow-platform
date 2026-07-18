@@ -12,14 +12,20 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, load_env, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.schemas import IAC_TEMPLATE_HEALTH_CONTEXT_SCHEMA, IAC_TEMPLATE_SETUP_CONTEXT_SCHEMA  # noqa: E402
+from runtime.constants.workspace import (  # noqa: E402
+    context_file,
+    manifest_path_for_work_dir,
+    resolve_work_dir as workspace_resolve_work_dir,
+)
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
 SCHEMA_VERSION = "1.0"
 SETUP_ARTIFACT_TYPE = "iac-template-setup-context"
 HEALTH_ARTIFACT_TYPE = "iac-template-health-context"
-DEFAULT_SETUP_SCHEMA = ".github/schemas/iac-template-setup-context.schema.json"
-DEFAULT_HEALTH_SCHEMA = ".github/schemas/iac-template-health-context.schema.json"
+DEFAULT_SETUP_SCHEMA = IAC_TEMPLATE_SETUP_CONTEXT_SCHEMA
+DEFAULT_HEALTH_SCHEMA = IAC_TEMPLATE_HEALTH_CONTEXT_SCHEMA
 TOOL_ENV_VARS: dict[str, list[str]] = {
     "terraform": ["AIWF_TERRAFORM_EXE"],
 }
@@ -67,11 +73,9 @@ def resolve_repo_path(repo_root: Path, value: str | Path) -> Path:
 
 
 def resolve_work_dir(repo_root: Path, work_id: str, work_dir: str = "") -> Path:
-    if work_dir:
-        return resolve_repo_path(repo_root, work_dir)
     if not work_id:
         raise ValueError("--work-id is required when --work-dir is not specified.")
-    return repo_root / "work" / work_id
+    return workspace_resolve_work_dir(repo_root, work_id, work_dir)
 
 
 def template_definition(name: str) -> dict[str, Any]:
@@ -176,7 +180,7 @@ def prepare_template(
             "do_not_start_collector_in_prepare": True,
         },
     }
-    context_path = work_path / "context" / "iac-template-context.json"
+    context_path = context_file(work_path, "iac-template-context.json")
     write_json(context_path, context)
     manifest = register_context(
         repo_root,
@@ -191,7 +195,7 @@ def prepare_template(
         status=status,
     )
     context["artifacts"] = {"context": relative_to_repo(repo_root, context_path)}
-    context["manifest_path"] = relative_to_repo(repo_root, work_path / "context" / "context-manifest.json")
+    context["manifest_path"] = relative_to_repo(repo_root, manifest_path_for_work_dir(work_path))
     context["manifest_contexts"] = [item.get("type") for item in manifest.get("contexts", []) if isinstance(item, dict)]
     write_json(context_path, context)
     return context
@@ -324,7 +328,7 @@ def health_template(
             "probe_tools_only_checks_versions": True,
         },
     }
-    context_path = work_path / "context" / "iac-template-health-context.json"
+    context_path = context_file(work_path, "iac-template-health-context.json")
     evidence_path = evidence_dir / "health-summary.md"
     context["artifacts"] = {
         "context": relative_to_repo(repo_root, context_path),
@@ -344,7 +348,7 @@ def health_template(
         schema=DEFAULT_HEALTH_SCHEMA,
         status=status,
     )
-    context["manifest_path"] = relative_to_repo(repo_root, work_path / "context" / "context-manifest.json")
+    context["manifest_path"] = relative_to_repo(repo_root, manifest_path_for_work_dir(work_path))
     context["manifest_contexts"] = [item.get("type") for item in manifest.get("contexts", []) if isinstance(item, dict)]
     write_json(context_path, context)
     return context

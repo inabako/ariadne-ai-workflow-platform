@@ -6,14 +6,23 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from runtime.constants.workspace import (
+    CONTEXT_DIR_NAME,
+    DESIGN_DOCUMENT_DIR_NAME,
+    PROCESS_REPORT_DIR_NAME,
+    SOURCE_DIR_NAME,
+    TEST_EVIDENCE_DIR_NAME,
+    context_file,
+    work_dir_for_id,
+)
 
 WORK_DIRECTORIES = [
-    "design-document",
-    "process-report",
-    "test-evidence",
+    DESIGN_DOCUMENT_DIR_NAME,
+    PROCESS_REPORT_DIR_NAME,
+    TEST_EVIDENCE_DIR_NAME,
     "test-specifications",
-    "source",
-    "context",
+    SOURCE_DIR_NAME,
+    CONTEXT_DIR_NAME,
 ]
 
 
@@ -43,7 +52,7 @@ def make_receipt_id(prefix: str = "WF") -> str:
 
 
 def ensure_work_tree(repo_root: Path, receipt_id: str) -> Path:
-    work_dir = repo_root / "work" / receipt_id
+    work_dir = work_dir_for_id(repo_root, receipt_id)
     for name in WORK_DIRECTORIES:
         (work_dir / name).mkdir(parents=True, exist_ok=True)
     return work_dir
@@ -71,7 +80,7 @@ def relative_to_repo(repo_root: Path, path: Path) -> str:
 
 
 def load_artifact_index(work_dir: Path, project_name: str, workflow_name: str) -> dict[str, Any]:
-    path = work_dir / "context" / "artifact-index.json"
+    path = context_file(work_dir, "artifact-index.json")
     data = read_json(path)
     if isinstance(data, dict):
         data.setdefault("schema_version", "1.0")

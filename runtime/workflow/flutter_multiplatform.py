@@ -12,12 +12,25 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.paths import WINDOWS_FLUTTER_BIN  # noqa: E402
+from runtime.constants.schemas import FLUTTER_DEVELOPMENT_CONTEXT_SCHEMA  # noqa: E402
+from runtime.constants.workspace import (  # noqa: E402
+    DEFAULT_TARGET_REPO_HELP,
+    context_file,
+    implementation_dir_for_work_dir,
+    implementation_path_pattern,
+    manifest_path_for_work_dir,
+    reports_dir_for_work_dir,
+    resolve_work_dir as workspace_resolve_work_dir,
+    target_repository_dir_for_work_dir,
+)
+from runtime.constants.workspace import target_repository_dir_for_work_dir  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
 SCHEMA_VERSION = "1.0"
 ARTIFACT_TYPE = "flutter-development-context"
-DEFAULT_SCHEMA = ".github/schemas/flutter-development-context.schema.json"
+DEFAULT_SCHEMA = FLUTTER_DEVELOPMENT_CONTEXT_SCHEMA
 TARGET_DECLARATION = "requirements/flutter-targets.yaml"
 TARGETS = ["android", "ios", "web", "windows", "macos", "linux"]
 BUILD_MODES = ["debug", "profile", "release"]
@@ -32,15 +45,13 @@ def resolve_repo_path(repo_root: Path, value: str | Path) -> Path:
 
 
 def resolve_work_dir(repo_root: Path, work_id: str, work_dir: str = "") -> Path:
-    if work_dir:
-        return resolve_repo_path(repo_root, work_dir)
     if not work_id:
         raise ValueError("--work-id is required when --work-dir is not specified.")
-    return repo_root / "work" / work_id
+    return workspace_resolve_work_dir(repo_root, work_id, work_dir)
 
 
 def default_target_repo(work_dir: Path) -> Path:
-    return work_dir / "source" / "repository"
+    return target_repository_dir_for_work_dir(work_dir)
 
 
 def normalize_target(value: str) -> str:
@@ -192,7 +203,7 @@ def host_os_name() -> str:
 
 
 def default_flutter_bin() -> Path:
-    return Path(r"C:\flutter\bin")
+    return WINDOWS_FLUTTER_BIN
 
 
 def command_environment() -> dict[str, str]:
@@ -301,7 +312,7 @@ def select_boilerplate(targets: list[str]) -> dict[str, str]:
         "name": name,
         "template_name": template_name,
         "template_path": f"templates/boilerplates/apps/flutter-app-template/{template_name}",
-        "destination": "work/<work-id>/implementation/flutter-project",
+        "destination": implementation_path_pattern("flutter-project"),
     }
 
 
@@ -481,7 +492,7 @@ def run_captured_command(
 def execution_project_dir(work_dir: Path, target_repo: Path) -> Path | None:
     if (target_repo / "pubspec.yaml").exists():
         return target_repo
-    copied = work_dir / "implementation" / "flutter-project"
+    copied = implementation_dir_for_work_dir(work_dir) / "flutter-project"
     if (copied / "pubspec.yaml").exists():
         return copied
     return None
@@ -708,7 +719,7 @@ def write_verification_evidence(plan: dict[str, Any]) -> str:
 
 def copy_boilerplate(repo_root: Path, work_dir: Path, boilerplate: dict[str, str], *, force: bool = False) -> dict[str, Any]:
     source = resolve_repo_path(repo_root, boilerplate["template_path"])
-    destination = work_dir / "implementation" / "flutter-project"
+    destination = implementation_dir_for_work_dir(work_dir) / "flutter-project"
     if not source.exists():
         return {"status": "template-missing", "source": relative_to_repo(repo_root, source), "destination": relative_to_repo(repo_root, destination)}
     if destination.exists() and not force:
@@ -721,8 +732,8 @@ def copy_boilerplate(repo_root: Path, work_dir: Path, boilerplate: dict[str, str
 
 
 def write_outputs(repo_root: Path, work_dir: Path, context: dict[str, Any]) -> dict[str, str]:
-    report_path = work_dir / "reports" / "flutter-multiplatform-report.md"
-    context_path = work_dir / "context" / "flutter-development-context.json"
+    report_path = reports_dir_for_work_dir(work_dir) / "flutter-multiplatform-report.md"
+    context_path = context_file(work_dir, "flutter-development-context.json")
     artifacts = {
         "report": relative_to_repo(repo_root, report_path),
         "context": relative_to_repo(repo_root, context_path),
@@ -749,7 +760,7 @@ def write_outputs(repo_root: Path, work_dir: Path, context: dict[str, Any]) -> d
         schema=DEFAULT_SCHEMA,
         status=str(context.get("status", "")),
     )
-    context["manifest_path"] = relative_to_repo(repo_root, work_dir / "context" / "context-manifest.json")
+    context["manifest_path"] = relative_to_repo(repo_root, manifest_path_for_work_dir(work_dir))
     context["manifest_contexts"] = [item.get("type") for item in manifest.get("contexts", []) if isinstance(item, dict)]
     write_json(context_path, context)
     return artifacts
@@ -771,7 +782,7 @@ def build_context(
 ) -> dict[str, Any]:
     work_path = resolve_work_dir(repo_root, work_id, work_dir)
     target_path = resolve_repo_path(repo_root, target_repo) if target_repo else default_target_repo(work_path)
-    previous_context = read_json(work_path / "context" / "flutter-development-context.json", default={})
+    previous_context = read_json(context_file(work_path, "flutter-development-context.json"), default={})
     previous_context = previous_context if isinstance(previous_context, dict) else {}
     declaration = load_target_declaration(work_path, targets)
     selected_targets = declaration["targets"]
@@ -866,7 +877,7 @@ def build_context(
 def finalize_context(repo_root: Path, *, work_id: str, work_dir: str = "", target_repo: str = "") -> dict[str, Any]:
     work_path = resolve_work_dir(repo_root, work_id, work_dir)
     target_path = resolve_repo_path(repo_root, target_repo) if target_repo else default_target_repo(work_path)
-    context_path = work_path / "context" / "flutter-development-context.json"
+    context_path = context_file(work_path, "flutter-development-context.json")
     previous = read_json(context_path, default={})
     previous = previous if isinstance(previous, dict) else {}
     checks: list[dict[str, str]] = []
@@ -1010,7 +1021,7 @@ def build_parser() -> argparse.ArgumentParser:
         cmd = sub.add_parser(name)
         cmd.add_argument("--work-id", required=True)
         cmd.add_argument("--work-dir", default="")
-        cmd.add_argument("--target-repo", default="", help="Target repository. Default: work/<work-id>/source/repository")
+        cmd.add_argument("--target-repo", default="", help=DEFAULT_TARGET_REPO_HELP)
         cmd.add_argument("--targets", default="", help="Comma-separated Flutter targets: android,ios,web,windows,macos,linux")
         cmd.add_argument("--mode", choices=BUILD_MODES, default="debug")
         cmd.add_argument("--force", action="store_true", help="Refresh copied boilerplate during init.")

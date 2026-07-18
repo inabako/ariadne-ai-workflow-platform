@@ -15,7 +15,7 @@ work/db/**
 
 # Legacy root RAG workspace
 # RAG source of truth belongs under work/db/ariadne-knowledge-platform/rag/.
-# Generated local read models and retrieval artifacts belong under db/rag/.
+# Generated local read models and evidence belong under db/rag/.
 # Keep accidental root rag/ regeneration untracked.
 rag/**
 

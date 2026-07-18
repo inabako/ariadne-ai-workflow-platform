@@ -22,6 +22,7 @@ from runtime.common import (  # noqa: E402
     write_json,
     write_markdown_bom,
 )
+from runtime.constants.workspace import context_file, process_report_dir_for_work_dir, work_dir_for_id  # noqa: E402
 from runtime.github.api import github_api_json  # noqa: E402
 
 
@@ -44,10 +45,10 @@ def read_text(path: Path) -> str:
 
 
 def latest_issue_title(repo_root: Path, work_dir: Path) -> str:
-    issue_records = sorted((work_dir / "process-report").glob("github-issue-*.json"))
-    base_work_id = str((read_json(work_dir / "context" / "scm-state.json", default={}) or {}).get("base_work_id", ""))
+    issue_records = sorted(process_report_dir_for_work_dir(work_dir).glob("github-issue-*.json"))
+    base_work_id = str((read_json(context_file(work_dir, "scm-state.json"), default={}) or {}).get("base_work_id", ""))
     if base_work_id:
-        issue_records.extend(sorted((repo_root / "work" / base_work_id / "process-report").glob("github-issue-*.json")))
+        issue_records.extend(sorted(process_report_dir_for_work_dir(work_dir_for_id(repo_root, base_work_id)).glob("github-issue-*.json")))
     for path in reversed(issue_records):
         record = read_json(path, default={}) or {}
         title = str(record.get("title", "")).strip()
@@ -57,7 +58,7 @@ def latest_issue_title(repo_root: Path, work_dir: Path) -> str:
 
 
 def default_pr_title(repo_root: Path, work_dir: Path) -> str:
-    title_file = work_dir / "process-report" / "pull-request-title.md"
+    title_file = process_report_dir_for_work_dir(work_dir) / "pull-request-title.md"
     if title_file.exists():
         return read_text(title_file)
     issue_title = latest_issue_title(repo_root, work_dir)
@@ -67,7 +68,7 @@ def default_pr_title(repo_root: Path, work_dir: Path) -> str:
 
 
 def default_pr_body(work_dir: Path) -> str:
-    body_file = work_dir / "process-report" / "pull-request-description.md"
+    body_file = process_report_dir_for_work_dir(work_dir) / "pull-request-description.md"
     if body_file.exists():
         return read_text(body_file)
     return f"""# Pull Request
@@ -119,11 +120,12 @@ def create_pull_request_with_api(
 def manage_pull_request(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     settings = load_env(repo_root)
-    work_dir = repo_root / "work" / args.work_id
+    work_dir = work_dir_for_id(repo_root, args.work_id)
     if not work_dir.exists():
         raise FileNotFoundError(f"Work directory does not exist: {work_dir}")
 
-    scm_state = read_json(work_dir / "context" / "scm-state.json", default={}) or {}
+    scm_state_path = context_file(work_dir, "scm-state.json")
+    scm_state = read_json(scm_state_path, default={}) or {}
     owner = default_github_owner(settings)
     github_repo = repository_to_github_slug(args.github_repo, owner) if args.github_repo else str(scm_state.get("github_repo", ""))
     if not github_repo:
@@ -156,14 +158,15 @@ def manage_pull_request(args: argparse.Namespace) -> dict[str, Any]:
         "title": title,
         "base": args.base,
         "head": head,
-        "body_file": relative_to_repo(repo_root, Path(args.body_file).resolve()) if args.body_file else relative_to_repo(repo_root, work_dir / "process-report" / "pull-request-description.md"),
+        "body_file": relative_to_repo(repo_root, Path(args.body_file).resolve()) if args.body_file else relative_to_repo(repo_root, process_report_dir_for_work_dir(work_dir) / "pull-request-description.md"),
         "status": status,
         "pull_request_url": pr_url,
         "pull_request_number": pr_number,
         "created_at": utc_now_iso(),
     }
-    record_path = work_dir / "process-report" / f"pull-request-{local_timestamp()}.json"
-    markdown_path = work_dir / "process-report" / f"pull-request-{local_timestamp()}.md"
+    report_dir = process_report_dir_for_work_dir(work_dir)
+    record_path = report_dir / f"pull-request-{local_timestamp()}.json"
+    markdown_path = report_dir / f"pull-request-{local_timestamp()}.md"
     write_json(record_path, record)
     write_markdown_bom(
         markdown_path,
@@ -183,7 +186,7 @@ def manage_pull_request(args: argparse.Namespace) -> dict[str, Any]:
     state = {**scm_state, "pull_request_record": relative_to_repo(repo_root, record_path)}
     if pr_url:
         state.update({"pull_request_url": pr_url, "pull_request_number": pr_number})
-    write_json(work_dir / "context" / "scm-state.json", state)
+    write_json(scm_state_path, state)
     return {**record, "record_path": relative_to_repo(repo_root, record_path)}
 
 

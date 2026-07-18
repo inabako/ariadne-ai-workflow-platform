@@ -20,6 +20,12 @@ from runtime.common import (  # noqa: E402
     write_json,
     write_markdown_bom,
 )
+from runtime.constants.workspace import (  # noqa: E402
+    context_file,
+    process_report_dir_for_work_dir,
+    target_repository_dir_for_work_dir,
+    work_dir_for_id,
+)
 from runtime.scm.scm_utils import current_branch, current_commit, run_git  # noqa: E402
 
 
@@ -49,14 +55,14 @@ def first_lines(path: Path, max_lines: int = 40) -> str:
 
 def compare_requirements(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
-    work_dir = repo_root / "work" / args.work_id
-    source_dir = Path(args.source_dir).resolve() if args.source_dir else work_dir / "source" / "repository"
+    work_dir = work_dir_for_id(repo_root, args.work_id)
+    source_dir = Path(args.source_dir).resolve() if args.source_dir else target_repository_dir_for_work_dir(work_dir)
     if not work_dir.exists():
         raise FileNotFoundError(f"Work directory does not exist: {work_dir}")
     if not source_dir.exists():
         raise FileNotFoundError(f"Source repository does not exist: {source_dir}")
 
-    artifact_index = read_json(work_dir / "context" / "artifact-index.json", default={}) or {}
+    artifact_index = read_json(context_file(work_dir, "artifact-index.json"), default={}) or {}
     requirement_paths = args.requirements or [
         artifact.get("path")
         for artifact in artifact_index.get("artifacts", [])
@@ -75,8 +81,9 @@ def compare_requirements(args: argparse.Namespace) -> dict[str, Any]:
     file_count = safe_git(["ls-files"], source_dir).splitlines()
 
     report_name = f"requirement-comparison-{local_timestamp()}"
-    md_path = work_dir / "process-report" / f"{report_name}.md"
-    json_path = work_dir / "process-report" / f"{report_name}.json"
+    report_dir = process_report_dir_for_work_dir(work_dir)
+    md_path = report_dir / f"{report_name}.md"
+    json_path = report_dir / f"{report_name}.json"
 
     comparison = {
         "schema_version": "1.0",
@@ -152,7 +159,7 @@ def compare_requirements(args: argparse.Namespace) -> dict[str, Any]:
     )
     write_markdown_bom(md_path, "\n".join(lines))
 
-    agent_context = read_json(work_dir / "context" / "agent-context.json", default={}) or {}
+    agent_context = read_json(context_file(work_dir, "agent-context.json"), default={}) or {}
     project_name = agent_context.get("project", {}).get("name", args.work_id)
     workflow_name = agent_context.get("workflow", {}).get("name", "")
     index = load_artifact_index(work_dir, project_name, workflow_name)
@@ -178,7 +185,7 @@ def compare_requirements(args: argparse.Namespace) -> dict[str, Any]:
                 "unresolved_items": [],
             },
         )
-    write_json(work_dir / "context" / "artifact-index.json", index)
+    write_json(context_file(work_dir, "artifact-index.json"), index)
     return {
         "work_id": args.work_id,
         "markdown_report": relative_to_repo(repo_root, md_path),

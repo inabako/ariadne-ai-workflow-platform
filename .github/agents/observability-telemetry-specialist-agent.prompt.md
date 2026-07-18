@@ -22,7 +22,7 @@ You review whether logs, metrics, traces, telemetry, and evidence plans are suff
 ## Inputs
 
 - observability design, test specification, implementation plan, or corrective report
-- internal RAG context from `db/rag/retrieval/`
+- internal RAG context from `work/db/ariadne-knowledge-platform/rag/retrieval/`
 - external-web RAG from `work/db/ariadne-knowledge-platform/rag/external-web/observability/`
 - current repository evidence when available
 - logs, screenshots, metrics, or planned evidence

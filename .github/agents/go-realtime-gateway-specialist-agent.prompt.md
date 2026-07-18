@@ -25,7 +25,7 @@ You review Go runtime, networking, concurrency, and gateway-service assumptions 
 
 - remote gateway architecture or implementation plan
 - boilerplate-template-selection.md when go-microservice-template is considered
-- internal RAG context from `db/rag/retrieval/`
+- internal RAG context from `work/db/ariadne-knowledge-platform/rag/retrieval/`
 - external-web RAG from `work/db/ariadne-knowledge-platform/rag/external-web/go-runtime/` and `work/db/ariadne-knowledge-platform/rag/external-web/network/`
 - current repository evidence when available
 - planned test specification

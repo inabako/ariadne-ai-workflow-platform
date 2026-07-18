@@ -188,7 +188,7 @@ current repository evidence、human answer、safety gateを上書きしません
 
 ```powershell
 python runtime/rag/rag_dispatcher.py `
-  --dispatch-plan db/rag/retrieval/<plan-uuid>.json `
+  --dispatch-plan work/db/ariadne-knowledge-platform/rag/retrieval/<plan-uuid>.json `
   --search-mode hybrid `
   --top-k 5 `
   --max-chars 4000

@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 25 |
+| cases | 29 |
 
 ## ケース一覧
 
@@ -268,6 +268,70 @@ runtime/tests/test_workflow_doctor.py::test_duckdb_read_model_findings_accepts_m
 - pytest node id:
 
 ```text
+runtime/tests/test_workflow_doctor.py::test_workspace_layout_literal_findings_reports_runtime_path_joins
+```
+
+- 確認内容: workspace layout literal guardがruntime内の直接的なpath joinを報告することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_workflow_doctor.py:307`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: work / context / source repositoryを直書きした一時runtime file
+- 期待結果: hard-coded workspace layout literalがhelper hint付きで報告される。
+#### RT-UT-CASE-DOCTOR-017
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_workspace_layout_literal_findings_ignores_constants_and_tests
+```
+
+- 確認内容: workspace layout literal guardがconstantsとtestsを検知対象外にすることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_workflow_doctor.py:329`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: constants / tests / helper runtimeの一時file
+- 期待結果: 許可されたhelper配置ではworkspace-layout-literal warningが発生しない。
+#### RT-UT-CASE-DOCTOR-018
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_path_constant_literal_findings_reports_runtime_path_constants
+```
+
+- 確認内容: canonical path literal guardがruntime内のRAG / DB / schema系直書きpathを報告することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_workflow_doctor.py:348`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: RAG / DB / knowledge source / schemaを直書きした一時runtime file
+- 期待結果: hard-coded canonical path literalがconstants hint付きで報告される。
+#### RT-UT-CASE-DOCTOR-019
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_path_constant_literal_findings_ignores_constants_and_tests
+```
+
+- 確認内容: canonical path literal guardがconstantsとtestsを検知対象外にすることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_workflow_doctor.py:371`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: constants / tests / helper runtimeの一時file
+- 期待結果: 許可されたconstants / tests配置ではpath-constant-literal warningが発生しない。
+#### RT-UT-CASE-DOCTOR-020
+
+- pytest node id:
+
+```text
 runtime/tests/test_workflow_doctor.py::test_workflow_doctor_fail_on_warning_turns_warning_into_fail
 ```
 
@@ -280,7 +344,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_fail_on_warning_turn
   - inline input: `args`
 - 期待結果: warningがある場合にdoctor statusがfailへ変換される。
 
-#### RT-UT-CASE-DOCTOR-017
+#### RT-UT-CASE-DOCTOR-021
 
 - pytest node id:
 
@@ -297,7 +361,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_run_reports_all_warn
   - inline input: `args`
 - 期待結果: policy、required files、archive、UTF-8、DuckDBなどのwarningが集約される。
 
-#### RT-UT-CASE-DOCTOR-018
+#### RT-UT-CASE-DOCTOR-022
 
 - pytest node id:
 
@@ -314,7 +378,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_run_passes_without_w
   - inline input: `args`
 - 期待結果: statusがpassになり、warning_countが0になる。
 
-#### RT-UT-CASE-DOCTOR-019
+#### RT-UT-CASE-DOCTOR-023
 
 - pytest node id:
 
@@ -331,7 +395,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_main_prints_pass_jso
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: mainがJSONをstdoutへ出力し、成功exit codeを返す。
 
-#### RT-UT-CASE-DOCTOR-020
+#### RT-UT-CASE-DOCTOR-024
 
 - pytest node id:
 
@@ -348,7 +412,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_main_returns_one_on_
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: fail-on-warning指定時にexit code 1が返る。
 
-#### RT-UT-CASE-DOCTOR-021
+#### RT-UT-CASE-DOCTOR-025
 
 - pytest node id:
 
@@ -365,7 +429,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_ut_spec_sync_finding
   - inline input: `args`
 - 期待結果: sync不整合がwarningになり、skip指定時は検査を省略できる。
 
-#### RT-UT-CASE-DOCTOR-022
+#### RT-UT-CASE-DOCTOR-026
 
 - pytest node id:
 
@@ -382,7 +446,7 @@ runtime/tests/test_workflow_doctor.py::test_defensive_specimen_workflow_doctor_r
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 入力値欄欠落がdoctor warningとして出る。
 
-#### RT-UT-CASE-DOCTOR-023
+#### RT-UT-CASE-DOCTOR-027
 
 - pytest node id:
 
@@ -399,7 +463,7 @@ runtime/tests/test_workflow_doctor.py::test_defensive_specimen_workflow_doctor_r
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: stale nodeとbad input positionがwarningに反映される。
 
-#### RT-UT-CASE-DOCTOR-024
+#### RT-UT-CASE-DOCTOR-028
 
 - pytest node id:
 
@@ -416,7 +480,7 @@ runtime/tests/test_workflow_doctor.py::test_defensive_specimen_workflow_doctor_r
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: stale nodeだけがwarningとして報告される。
 
-#### RT-UT-CASE-DOCTOR-025
+#### RT-UT-CASE-DOCTOR-029
 
 - pytest node id:
 

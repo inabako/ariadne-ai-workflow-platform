@@ -10,12 +10,20 @@ if __package__ in {None, ""}:  # pragma: no cover - direct script execution fall
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.schemas import MCP_SERVER_GROUP_IMPLEMENTATION_CONTEXT_SCHEMA  # noqa: E402
+from runtime.constants.workspace import (  # noqa: E402
+    context_file,
+    implementation_dir_for_work_dir,
+    manifest_path_for_work_dir,
+    reports_dir_for_work_dir,
+    resolve_work_dir as workspace_resolve_work_dir,
+)
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
 SCHEMA_VERSION = "1.0"
 ARTIFACT_TYPE = "mcp-server-group-implementation-context"
-DEFAULT_SCHEMA = ".github/schemas/mcp-server-group-implementation-context.schema.json"
+DEFAULT_SCHEMA = MCP_SERVER_GROUP_IMPLEMENTATION_CONTEXT_SCHEMA
 COMPONENTS = {
     "local-model-mcp-server": {
         "template_path": "templates/boilerplates/mcp/local-model-mcp-server-template",
@@ -47,11 +55,9 @@ def resolve_repo_path(repo_root: Path, value: str | Path) -> Path:
 
 
 def resolve_work_dir(repo_root: Path, work_id: str, work_dir: str = "") -> Path:
-    if work_dir:
-        return resolve_repo_path(repo_root, work_dir)
     if not work_id:
         raise ValueError("--work-id is required when --work-dir is not specified.")
-    return repo_root / "work" / work_id
+    return workspace_resolve_work_dir(repo_root, work_id, work_dir)
 
 
 def parse_components(value: str | None) -> tuple[list[str], list[str]]:
@@ -140,7 +146,7 @@ def boundary_checks(components: list[str], unknown: list[str]) -> list[dict[str,
 
 
 def copy_templates(repo_root: Path, work_dir: Path, components: list[str], *, force: bool = False) -> list[dict[str, str]]:
-    output_root = work_dir / "implementation" / "mcp-server-group"
+    output_root = implementation_dir_for_work_dir(work_dir) / "mcp-server-group"
     output_root.mkdir(parents=True, exist_ok=True)
     copies: list[dict[str, str]] = []
     for component in components:
@@ -202,9 +208,9 @@ def render_report(context: dict[str, Any]) -> str:
 
 
 def write_outputs(repo_root: Path, work_dir: Path, context: dict[str, Any]) -> None:
-    context_path = work_dir / "context" / "mcp-server-group-implementation-context.json"
-    report_path = work_dir / "reports" / "mcp-server-group-implementation-report.md"
-    manifest_path = work_dir / "context" / "context-manifest.json"
+    context_path = context_file(work_dir, "mcp-server-group-implementation-context.json")
+    report_path = reports_dir_for_work_dir(work_dir) / "mcp-server-group-implementation-report.md"
+    manifest_path = manifest_path_for_work_dir(work_dir)
     context["artifacts"] = {
         "context": relative_to_repo(repo_root, context_path),
         "report": relative_to_repo(repo_root, report_path),

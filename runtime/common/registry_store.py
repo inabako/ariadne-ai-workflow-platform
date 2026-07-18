@@ -10,12 +10,10 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso  # noqa: E402
+from runtime.constants.paths import KNOWLEDGE_SOURCE_REGISTRIES, REGISTRY_DB_PATH  # noqa: E402
 
 
-REGISTRY_DB_PATH = Path("db/registries/registry.duckdb")
-DEFAULT_LEGACY_JSON_SOURCE_DIR = Path(
-    "work/db/ariadne-knowledge-platform/registries"
-)
+DEFAULT_LEGACY_JSON_SOURCE_DIR = KNOWLEDGE_SOURCE_REGISTRIES
 
 
 def registry_db_path(repo_root: Path) -> Path:

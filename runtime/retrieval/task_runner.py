@@ -23,6 +23,7 @@ from runtime.common import (  # noqa: E402
     write_json,
     write_markdown_bom,
 )
+from runtime.constants.workspace import context_dir_for_work_dir, process_report_dir_for_work_dir, work_dir_for_id, work_path_pattern  # noqa: E402
 
 
 TERMINAL_FAILURE = {"failed", "blocked"}
@@ -47,7 +48,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Run workflow tasks sequentially or in parallel and write process reports."
     )
-    parser.add_argument("--work-id", required=True, help="Receipt/work ID under work/<id>.")
+    parser.add_argument("--work-id", required=True, help=f"Receipt/work ID under {work_path_pattern(work_id='<id>')}.")
     parser.add_argument("--task-file", required=True, help="JSON task plan file.")
     parser.add_argument("--repo-root", default=None)
     parser.add_argument(
@@ -327,7 +328,7 @@ def write_reports(
     mode: str,
     results: list[TaskResult],
 ) -> tuple[Path, Path]:
-    report_root = work_dir / "process-report"
+    report_root = process_report_dir_for_work_dir(work_dir)
     run_id = f"task-run-{local_timestamp()}"
     json_path = report_root / f"{run_id}.json"
     md_path = report_root / f"{run_id}.md"
@@ -384,7 +385,7 @@ def write_reports(
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
-    work_dir = repo_root / "work" / args.work_id
+    work_dir = work_dir_for_id(repo_root, args.work_id)
     if not work_dir.exists():
         raise FileNotFoundError(f"Work directory does not exist: {work_dir}")
     task_file = Path(args.task_file).resolve()
@@ -394,7 +395,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if selected_mode == "auto":
         selected_mode = str(plan.get("execution", {}).get("mode") or "parallel")
 
-    report_dir = work_dir / "process-report"
+    report_dir = process_report_dir_for_work_dir(work_dir)
     if selected_mode == "sequential":
         results = run_sequential(tasks, repo_root, work_dir, report_dir, args.dry_run, args.stop_on_failure)
     elif selected_mode == "parallel":
@@ -412,7 +413,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     json_report, md_report = write_reports(repo_root, work_dir, task_file, selected_mode, results)
 
-    context_dir = work_dir / "context"
+    context_dir = context_dir_for_work_dir(work_dir)
     agent_context = read_json(context_dir / "agent-context.json", default={}) or {}
     project_name = agent_context.get("project", {}).get("name", args.work_id)
     workflow_name = agent_context.get("workflow", {}).get("name", "")
@@ -470,4 +471,3 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

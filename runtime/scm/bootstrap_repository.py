@@ -30,6 +30,7 @@ from runtime.scm.scm_utils import (  # noqa: E402
     require_success,
     run_git,
 )
+from runtime.constants.workspace import context_file, process_report_dir_for_work_dir, target_repository_dir_for_work_dir, work_dir_for_id  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -85,11 +86,12 @@ def bootstrap_repository(args: argparse.Namespace) -> dict[str, Any]:
 
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     settings = load_env(repo_root)
-    work_dir = repo_root / "work" / args.work_id
+    work_dir = work_dir_for_id(repo_root, args.work_id)
     if not work_dir.exists():
         raise FileNotFoundError(f"Work directory does not exist: {work_dir}")
-    scm_state = read_json(work_dir / "context" / "scm-state.json", default={}) or {}
-    source_dir = Path(args.source_dir).resolve() if args.source_dir else work_dir / "source" / "repository"
+    scm_state_path = context_file(work_dir, "scm-state.json")
+    scm_state = read_json(scm_state_path, default={}) or {}
+    source_dir = Path(args.source_dir).resolve() if args.source_dir else target_repository_dir_for_work_dir(work_dir)
     if source_dir.resolve() == repo_root.resolve():
         raise ValueError("Refusing to initialize or push the workflow repository itself.")
 
@@ -143,7 +145,7 @@ def bootstrap_repository(args: argparse.Namespace) -> dict[str, Any]:
         "created_at": utc_now_iso(),
         "dry_run": bool(args.dry_run),
     }
-    record_path = work_dir / "process-report" / f"bootstrap-repository-{local_timestamp()}.json"
+    record_path = process_report_dir_for_work_dir(work_dir) / f"bootstrap-repository-{local_timestamp()}.json"
     write_json(record_path, record)
     scm_state.update(
         {
@@ -160,7 +162,7 @@ def bootstrap_repository(args: argparse.Namespace) -> dict[str, Any]:
             "initial_push_complete": bool(args.push and not args.dry_run),
         }
     )
-    write_json(work_dir / "context" / "scm-state.json", scm_state)
+    write_json(scm_state_path, scm_state)
     return {**record, "record_path": relative_to_repo(repo_root, record_path)}
 
 

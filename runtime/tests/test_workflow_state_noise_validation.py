@@ -278,7 +278,7 @@ def test_validate_output_language_ignores_code_blocks_and_allowed_terms(tmp_path
 def test_validate_output_language_iter_markdown_skips_missing_non_md_and_excluded_paths(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     docs = repo / "docs"
-    rag_chunks = repo / "rag" / "chunks"
+    rag_chunks = repo / "work" / "db" / "ariadne-knowledge-platform" / "rag" / "chunks"
     work_source = repo / "work" / "issue-1" / "source"
     docs.mkdir(parents=True)
     rag_chunks.mkdir(parents=True)
@@ -293,7 +293,7 @@ def test_validate_output_language_iter_markdown_skips_missing_non_md_and_exclude
     non_md.write_text("not markdown\n", encoding="utf-8")
 
     results = validate_output_language.iter_markdown(
-        ["docs", "missing", str(non_md)],
+        ["docs", "work", "missing", str(non_md)],
         repo,
         validate_output_language.DEFAULT_EXCLUDES,
     )

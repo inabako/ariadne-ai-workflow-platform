@@ -23,7 +23,7 @@ You review realtime network and protocol assumptions that affect robot control, 
 ## Inputs
 
 - network architecture, migration plan, protocol spec, or Issue scope
-- internal RAG context from `db/rag/retrieval/`
+- internal RAG context from `work/db/ariadne-knowledge-platform/rag/retrieval/`
 - external-web RAG from `work/db/ariadne-knowledge-platform/rag/external-web/network/`
 - current repository evidence when available
 - logs, packet captures, or planned packet evidence

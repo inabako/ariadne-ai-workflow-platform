@@ -36,7 +36,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_rewrites
 - 確認内容: pytest case `ingestion optimizer rewrites noise then accepts` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_ingestion_optimizer.py:89`
+  - source: `runtime/tests/test_rag_ingestion_optimizer.py:99`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `rewritten_rows`
@@ -53,7 +53,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_routes_g
 - 確認内容: pytest case `ingestion optimizer routes governance conflict to human check` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_ingestion_optimizer.py:106`
+  - source: `runtime/tests/test_rag_ingestion_optimizer.py:116`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `human_rows`
@@ -70,7 +70,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_rejects_
 - 確認内容: pytest case `ingestion optimizer rejects duplicates and credentials` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_ingestion_optimizer.py:123`
+  - source: `runtime/tests/test_rag_ingestion_optimizer.py:133`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `content`, `rejected`
@@ -87,7 +87,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_helpers_
 - 確認内容: pytest case `ingestion optimizer helpers and cli paths` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_ingestion_optimizer.py:139`
+  - source: `runtime/tests/test_rag_ingestion_optimizer.py:149`
   - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `parsed`
@@ -104,7 +104,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_missing_
 - 確認内容: pytest case `ingestion optimizer missing and invalid policy paths` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_ingestion_optimizer.py:164`
+  - source: `runtime/tests/test_rag_ingestion_optimizer.py:174`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -121,7 +121,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_scoring_
 - 確認内容: pytest case `ingestion optimizer scoring boundary specimens` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_ingestion_optimizer.py:185`
+  - source: `runtime/tests/test_rag_ingestion_optimizer.py:195`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `empty_chunk`, `heading_chunk`, `low_trust_chunk`
@@ -138,7 +138,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_rewrite_
 - 確認内容: pytest case `ingestion optimizer rewrite retry limit and duplicate line specimen` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_ingestion_optimizer.py:224`
+  - source: `runtime/tests/test_rag_ingestion_optimizer.py:234`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `duplicate_text`, `rewrite_policy`, `chunk`
@@ -155,7 +155,7 @@ runtime/tests/test_rag_ingestion_optimizer.py::test_ingestion_optimizer_clean_ou
 - 確認内容: pytest case `ingestion optimizer clean output empty run and invalid chunk specimens` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_rag_ingestion_optimizer.py:267`
+  - source: `runtime/tests/test_rag_ingestion_optimizer.py:277`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル

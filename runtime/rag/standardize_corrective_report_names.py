@@ -13,7 +13,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
-from runtime.rag.paths import SOURCE_CORRECTIVE_ACTION_REPORTS  # noqa: E402
+from runtime.constants.paths import KNOWLEDGE_SOURCE_RAG, SOURCE_CORRECTIVE_ACTION_REPORTS  # noqa: E402
 
 
 CROCKFORD_BASE32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
@@ -92,10 +92,11 @@ def replacement_name(path: Path, text: str, random_length: int) -> str:
 
 def replace_text_references(repo_root: Path, path_map: dict[str, str]) -> list[str]:
     updated: list[str] = []
+    knowledge_rag_dir = repo_root / KNOWLEDGE_SOURCE_RAG
     targets = [
-        *repo_root.glob("rag/**/*.json"),
-        *repo_root.glob("rag/**/*.jsonl"),
-        *repo_root.glob("rag/**/*.md"),
+        *knowledge_rag_dir.glob("**/*.json"),
+        *knowledge_rag_dir.glob("**/*.jsonl"),
+        *knowledge_rag_dir.glob("**/*.md"),
         repo_root / "README.md",
         repo_root / "AGENT.md",
         *repo_root.glob("skills/**/*.md"),

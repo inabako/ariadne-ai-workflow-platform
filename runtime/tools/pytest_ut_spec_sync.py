@@ -13,6 +13,11 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json
+from runtime.constants.schemas import PYTEST_UT_SPEC_SYNC_REPORT_SCHEMA
+from runtime.constants.workspace import (  # noqa: E402
+    context_file,
+    manifest_path_for_work_dir,
+)
 from runtime.workflow import context_first
 
 
@@ -21,7 +26,7 @@ CONFIRM_PREFIX = "- 確認内容:"
 INPUT_PREFIX = "- 入力値:"
 EXPECTED_PREFIX = "- 期待結果:"
 TEXT_FENCE = "```text"
-REPORT_SCHEMA = ".github/schemas/pytest-ut-spec-sync-report.schema.json"
+REPORT_SCHEMA = PYTEST_UT_SPEC_SYNC_REPORT_SCHEMA
 
 FIXTURE_MEANINGS = {
     "tmp_path": "temporary filesystem",
@@ -350,7 +355,7 @@ def resolve_work_dir(repo_root: Path, value: str | Path) -> Path:
 
 
 def default_report_path(work_dir: Path) -> Path:
-    return work_dir / "context" / "pytest-ut-spec-sync-report.json"
+    return context_file(work_dir, "pytest-ut-spec-sync-report.json")
 
 
 def default_markdown_path(report_path: Path) -> Path:

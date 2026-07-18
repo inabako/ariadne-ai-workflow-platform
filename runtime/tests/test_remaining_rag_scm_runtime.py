@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from runtime.rag import jsonize_rag_tree
+from runtime.rag import jsonize_rag_tree, migrate_legacy_root_rag
 from runtime.scm import compare_requirements
 
 
@@ -181,6 +181,54 @@ def test_jsonize_rag_tree_parser_payload_clean_missing_main_and_script_paths(
     assert "ERROR: boom" in capsys.readouterr().err
 
     namespace = runpy.run_path(str(Path(jsonize_rag_tree.__file__)))
+    assert namespace["build_parser"]
+
+
+def test_migrate_legacy_root_rag_moves_into_standard_rag_and_blocks_conflicts(tmp_path: Path) -> None:
+    repo, _ = make_repo(tmp_path)
+    legacy = repo / "work" / "db" / "ariadne-knowledge-platform" / "legacy-root-rag-20260718150645"
+    target = repo / "work" / "db" / "ariadne-knowledge-platform" / "rag"
+    (legacy / "chunks").mkdir(parents=True)
+    (legacy / "github-knowledge").mkdir()
+    (target / "github-knowledge").mkdir(parents=True)
+    (legacy / "chunks" / "one.json").write_text('{"chunk": 1}', encoding="utf-8")
+    duplicate = "20260718102122_XTE9KH_github-knowledge-ariadne-ai-workflow-platform.md"
+    (legacy / "github-knowledge" / duplicate).write_text("# same\n", encoding="utf-8")
+    (target / "github-knowledge" / duplicate).write_text("# same\n", encoding="utf-8")
+
+    result = migrate_legacy_root_rag.migrate_legacy_root_rag(
+        argparse.Namespace(
+            repo_root=str(repo),
+            legacy_dir=str(legacy.relative_to(repo)),
+            target_rag_dir="work/db/ariadne-knowledge-platform/rag",
+            keep_legacy_dir=False,
+        )
+    )
+
+    assert result["moved"] == ["chunks/one.json"]
+    assert result["duplicate_removed"] == [f"github-knowledge/{duplicate}"]
+    assert result["legacy_dir_removed"] is True
+    assert (target / "chunks" / "one.json").exists()
+    assert not legacy.exists()
+
+    conflict = repo / "work" / "db" / "ariadne-knowledge-platform" / "legacy-root-rag-20260718160000"
+    (conflict / "chunks").mkdir(parents=True)
+    (conflict / "chunks" / "one.json").write_text('{"chunk": 2}', encoding="utf-8")
+    with pytest.raises(FileExistsError, match="conflicting files"):
+        migrate_legacy_root_rag.migrate_legacy_root_rag(
+            argparse.Namespace(
+                repo_root=str(repo),
+                legacy_dir=str(conflict.relative_to(repo)),
+                target_rag_dir="work/db/ariadne-knowledge-platform/rag",
+                keep_legacy_dir=True,
+            )
+        )
+
+    parser = migrate_legacy_root_rag.build_parser()
+    parsed = parser.parse_args(["--repo-root", str(repo), "--keep-legacy-dir"])
+    assert parsed.keep_legacy_dir is True
+    assert migrate_legacy_root_rag.main(["--repo-root", str(repo), "--legacy-dir", "missing"]) == 1
+    namespace = runpy.run_path(str(Path(migrate_legacy_root_rag.__file__)))
     assert namespace["build_parser"]
 
 

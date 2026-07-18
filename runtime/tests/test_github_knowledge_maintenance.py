@@ -1201,7 +1201,7 @@ def test_create_rag_candidate_default_and_publish_outputs(tmp_path: Path) -> Non
     assert default_result["published"] is False
     assert default_result["rag_candidate"].startswith(f"work/{work_dir.name}/process-report/github-knowledge-rag-candidate-")
     assert publish_result["published"] is True
-    assert publish_result["rag_candidate"].startswith("rag/github-knowledge/")
+    assert publish_result["rag_candidate"].startswith("work/db/ariadne-knowledge-platform/rag/github-knowledge/")
 
 
 def test_run_dispatches_commands_and_rejects_unknown(monkeypatch: pytest.MonkeyPatch) -> None:

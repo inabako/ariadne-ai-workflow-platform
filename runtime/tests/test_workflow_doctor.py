@@ -304,6 +304,89 @@ def test_duckdb_read_model_findings_accepts_missing_sources_or_existing_db(tmp_p
     assert workflow_doctor.duckdb_read_model_findings(tmp_path) == []
 
 
+def test_workspace_layout_literal_findings_reports_runtime_path_joins(tmp_path: Path) -> None:
+    bad_runtime = tmp_path / "runtime" / "workflow" / "bad_layout.py"
+    bad_runtime.parent.mkdir(parents=True)
+    bad_runtime.write_text(
+        "from pathlib import Path\n"
+        "def bad(repo_root: Path, work_dir: Path):\n"
+        "    a = repo_root / \"work\" / \"issue-1\"\n"
+        "    b = work_dir / \"context\" / \"state.json\"\n"
+        "    c = work_dir / \"source\" / \"repository\"\n"
+        "    return a, b, c\n",
+        encoding="utf-8",
+    )
+
+    findings = workflow_doctor.workspace_layout_literal_findings(tmp_path)
+
+    assert findings == [
+        "runtime/workflow/bad_layout.py:3: use runtime.constants.workspace.work_dir_for_id",
+        "runtime/workflow/bad_layout.py:4: use context_dir_for_work_dir or context_file",
+        "runtime/workflow/bad_layout.py:5: use target_repository_dir_for_work_dir",
+    ]
+
+
+def test_workspace_layout_literal_findings_ignores_constants_and_tests(tmp_path: Path) -> None:
+    constants = tmp_path / "runtime" / "constants" / "workspace.py"
+    tests = tmp_path / "runtime" / "tests" / "test_layout.py"
+    helper_runtime = tmp_path / "runtime" / "workflow" / "good_layout.py"
+    constants.parent.mkdir(parents=True)
+    tests.parent.mkdir(parents=True)
+    helper_runtime.parent.mkdir(parents=True)
+    constants.write_text("WORK_ROOT = \"work\"\n", encoding="utf-8")
+    tests.write_text("def test_path(work_dir):\n    assert work_dir / \"context\"\n", encoding="utf-8")
+    helper_runtime.write_text(
+        "from runtime.constants.workspace import context_file\n"
+        "def good(work_dir):\n"
+        "    return context_file(work_dir, \"state.json\")\n",
+        encoding="utf-8",
+    )
+
+    assert workflow_doctor.workspace_layout_literal_findings(tmp_path) == []
+
+
+def test_path_constant_literal_findings_reports_runtime_path_constants(tmp_path: Path) -> None:
+    bad_runtime = tmp_path / "runtime" / "workflow" / "bad_paths.py"
+    bad_runtime.parent.mkdir(parents=True)
+    bad_runtime.write_text(
+        "def bad():\n"
+        "    registry = \"db/registries/registry.duckdb\"\n"
+        "    duckdb = \"db/rag/ariadne-knowledge.duckdb\"\n"
+        "    source = \"work/db/ariadne-knowledge-platform\"\n"
+        "    schema = \".github/schemas/context-manifest.schema.json\"\n"
+        "    return registry, duckdb, source, schema\n",
+        encoding="utf-8",
+    )
+
+    findings = workflow_doctor.path_constant_literal_findings(tmp_path)
+
+    assert findings == [
+        "runtime/workflow/bad_paths.py:2: use runtime.constants.paths.REGISTRY_DB_PATH",
+        "runtime/workflow/bad_paths.py:3: use runtime.constants.paths.DUCKDB_DEFAULT_PATH",
+        "runtime/workflow/bad_paths.py:4: use runtime.constants.paths.KNOWLEDGE_SOURCE_REPO",
+        "runtime/workflow/bad_paths.py:5: use runtime.constants.schemas constants",
+    ]
+
+
+def test_path_constant_literal_findings_ignores_constants_and_tests(tmp_path: Path) -> None:
+    constants = tmp_path / "runtime" / "constants" / "paths.py"
+    tests = tmp_path / "runtime" / "tests" / "test_paths.py"
+    helper_runtime = tmp_path / "runtime" / "workflow" / "good_paths.py"
+    constants.parent.mkdir(parents=True)
+    tests.parent.mkdir(parents=True)
+    helper_runtime.parent.mkdir(parents=True)
+    constants.write_text('REGISTRY_DB_PATH = "db/registries/registry.duckdb"\n', encoding="utf-8")
+    tests.write_text('def test_path():\n    assert "db/rag/ariadne-knowledge.duckdb"\n', encoding="utf-8")
+    helper_runtime.write_text(
+        "from runtime.constants.paths import REGISTRY_DB_PATH\n"
+        "def good():\n"
+        "    return REGISTRY_DB_PATH.as_posix()\n",
+        encoding="utf-8",
+    )
+
+    assert workflow_doctor.path_constant_literal_findings(tmp_path) == []
+
+
 def test_workflow_doctor_fail_on_warning_turns_warning_into_fail(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: ["work/issue-1/tmp.txt"])
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
@@ -312,6 +395,8 @@ def test_workflow_doctor_fail_on_warning_turns_warning_into_fail(monkeypatch, tm
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "duckdb_read_model_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "workspace_layout_literal_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "path_constant_literal_findings", lambda repo_root: [])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=True)
 
     result = workflow_doctor.run(args)
@@ -336,13 +421,23 @@ def test_workflow_doctor_run_reports_all_warning_types(monkeypatch, tmp_path: Pa
         "duckdb_read_model_findings",
         lambda repo_root: ["missing:db/rag/ariadne-knowledge.duckdb"],
     )
+    monkeypatch.setattr(
+        workflow_doctor,
+        "workspace_layout_literal_findings",
+        lambda repo_root: ["runtime/workflow/bad_layout.py:3: use context_file"],
+    )
+    monkeypatch.setattr(
+        workflow_doctor,
+        "path_constant_literal_findings",
+        lambda repo_root: ["runtime/workflow/bad_paths.py:2: use REGISTRY_DB_PATH"],
+    )
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: ["missing: runtime/tests/test_new.py::test_new"])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=False)
 
     result = workflow_doctor.run(args)
 
     assert result["status"] == "warning"
-    assert result["warning_count"] == 7
+    assert result["warning_count"] == 9
     assert [warning["id"] for warning in result["warnings"]] == [
         "tracked-local-workspace-files",
         "missing-required-files",
@@ -350,6 +445,8 @@ def test_workflow_doctor_run_reports_all_warning_types(monkeypatch, tmp_path: Pa
         "incomplete-close-archive",
         "vscode-utf8-first",
         "rag-duckdb-read-model-missing",
+        "workspace-layout-literal",
+        "path-constant-literal",
         "pytest-ut-spec-sync",
     ]
 
@@ -362,6 +459,8 @@ def test_workflow_doctor_run_passes_without_warnings(monkeypatch, tmp_path: Path
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "duckdb_read_model_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "workspace_layout_literal_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "path_constant_literal_findings", lambda repo_root: [])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=True)
 
     result = workflow_doctor.run(args)
@@ -377,6 +476,8 @@ def test_workflow_doctor_main_prints_pass_json(monkeypatch, tmp_path: Path, caps
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "duckdb_read_model_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "workspace_layout_literal_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "path_constant_literal_findings", lambda repo_root: [])
 
     code = workflow_doctor.main(["--repo-root", str(tmp_path)])
 
@@ -393,6 +494,8 @@ def test_workflow_doctor_main_returns_one_on_fail_on_warning(monkeypatch, tmp_pa
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "duckdb_read_model_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "workspace_layout_literal_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "path_constant_literal_findings", lambda repo_root: [])
 
     code = workflow_doctor.main(["--repo-root", str(tmp_path), "--fail-on-warning"])
 
@@ -434,6 +537,8 @@ def test_workflow_doctor_ut_spec_sync_findings_and_skip(monkeypatch, tmp_path: P
     monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "duckdb_read_model_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "workspace_layout_literal_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "path_constant_literal_findings", lambda repo_root: [])
     args = argparse.Namespace(repo_root=str(tmp_path), fail_on_warning=True, skip_ut_spec_sync=True)
     assert workflow_doctor.run(args)["status"] == "pass"
 

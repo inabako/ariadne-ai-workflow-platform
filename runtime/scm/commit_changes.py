@@ -11,6 +11,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, load_env, local_timestamp, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.workspace import process_report_dir_for_work_dir, target_repository_dir_for_work_dir, work_dir_for_id  # noqa: E402
 from runtime.scm.scm_utils import current_branch, current_commit, require_success, run_git  # noqa: E402
 
 
@@ -38,8 +39,8 @@ def commit_changes(args: argparse.Namespace) -> dict[str, Any]:
         )
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     settings = load_env(repo_root)
-    work_dir = repo_root / "work" / args.work_id
-    source_dir = Path(args.source_dir).resolve() if args.source_dir else work_dir / "source" / "repository"
+    work_dir = work_dir_for_id(repo_root, args.work_id)
+    source_dir = Path(args.source_dir).resolve() if args.source_dir else target_repository_dir_for_work_dir(work_dir)
     if not source_dir.exists():
         raise FileNotFoundError(f"Source repository does not exist: {source_dir}")
 
@@ -76,7 +77,7 @@ def commit_changes(args: argparse.Namespace) -> dict[str, Any]:
         "created_at": utc_now_iso(),
         "dry_run": bool(args.dry_run),
     }
-    record_path = work_dir / "process-report" / f"commit-record-{local_timestamp()}.json"
+    record_path = process_report_dir_for_work_dir(work_dir) / f"commit-record-{local_timestamp()}.json"
     write_json(record_path, record)
     return {**record, "record_path": relative_to_repo(repo_root, record_path)}
 

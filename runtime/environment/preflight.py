@@ -15,6 +15,13 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import env_value, find_repo_root, load_env, local_timestamp, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.paths import (  # noqa: E402
+    WINDOWS_DART_EXECUTABLES,
+    WINDOWS_DEFAULT_MSYS2_ROOT,
+    WINDOWS_FLUTTER_EXECUTABLES,
+    WINDOWS_MSYS2_BASH,
+)
+from runtime.constants.workspace import process_report_dir_for_work_dir, work_dir_for_id  # noqa: E402
 
 
 GITHUB_TOKEN_KEYS = ("GITHUB_TOKEN", "GH_TOKEN", "GITHUB_API_TOKEN", "GITHUB_API_KEY")
@@ -464,7 +471,7 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
             check_id="path:msys2-bash",
             label="MSYS2 bash.exe",
             required=args.profile in {"localty-msys2", "gui-pyqt"},
-            install_hint="Install MSYS2 to C:\\msys64 or pass --msys2-root.",
+            install_hint=f"Install MSYS2 to {WINDOWS_DEFAULT_MSYS2_ROOT} or pass --msys2-root.",
         ))
 
     if args.profile in {"localty-msys2", "gui-pyqt"}:
@@ -547,7 +554,7 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
             check_id="path:msys2-bash",
             label="MSYS2 bash.exe",
             required=True,
-            install_hint="Install MSYS2 to C:\\msys64 or pass --msys2-root.",
+            install_hint=f"Install MSYS2 to {WINDOWS_DEFAULT_MSYS2_ROOT} or pass --msys2-root.",
         ))
         checks.append(msys2_package_check(bash_path, "mingw-w64-x86_64-python", required=True))
         checks.append(msys2_package_check(bash_path, "mingw-w64-x86_64-gstreamer", required=True))
@@ -611,22 +618,14 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
             required=True,
             install_hint="Install Flutter SDK and add the Flutter SDK bin directory to PATH.",
             install_command="manual install required: https://docs.flutter.dev/get-started/install",
-            fallback_paths=[
-                Path(r"C:\flutter\bin\flutter.bat"),
-                Path(r"C:\flutter\bin\flutter.cmd"),
-                Path(r"C:\flutter\bin\flutter.exe"),
-            ],
+            fallback_paths=list(WINDOWS_FLUTTER_EXECUTABLES),
         ))
         checks.append(which_check(
             "dart",
             required=False,
             install_hint="Dart is normally bundled with Flutter. Verify Flutter SDK PATH when dart is missing.",
             install_command="manual install required: https://docs.flutter.dev/get-started/install",
-            fallback_paths=[
-                Path(r"C:\flutter\bin\dart.bat"),
-                Path(r"C:\flutter\bin\dart.cmd"),
-                Path(r"C:\flutter\bin\dart.exe"),
-            ],
+            fallback_paths=list(WINDOWS_DART_EXECUTABLES),
         ))
         checks.append(which_check(
             "java",
@@ -705,7 +704,7 @@ def markdown_report(result: dict[str, Any]) -> str:
 
 
 def write_reports(repo_root: Path, work_id: str, result: dict[str, Any]) -> tuple[Path, Path]:
-    process_dir = repo_root / "work" / work_id / "process-report"
+    process_dir = process_report_dir_for_work_dir(work_dir_for_id(repo_root, work_id))
     stamp = local_timestamp()
     json_path = process_dir / f"environment-preflight-{stamp}.json"
     md_path = process_dir / f"environment-preflight-{stamp}.md"
@@ -721,7 +720,7 @@ def install_missing(checks: list[Check]) -> list[dict[str, Any]]:
         if check.ok or not check.required or not check.install_command:
             continue
         if check.kind == "msys2-package":
-            bash_path = Path(r"C:\msys64\usr\bin\bash.exe")
+            bash_path = WINDOWS_MSYS2_BASH
             env = {**os.environ, "MSYSTEM": "MINGW64", "CHERE_INVOKING": "1"}
             command_display = f"{bash_path} -lc {check.install_command!r}"
             completed = run_command([str(bash_path), "-lc", check.install_command], env=env)
@@ -774,7 +773,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--source-dir", default="")
     parser.add_argument("--protocol-dir", default="")
     parser.add_argument("--support-branch", default="develop")
-    parser.add_argument("--msys2-root", default=r"C:\msys64")
+    parser.add_argument("--msys2-root", default=str(WINDOWS_DEFAULT_MSYS2_ROOT))
     parser.add_argument("--repo-root", default="")
     parser.add_argument("--install", action="store_true")
     parser.add_argument("--gh-login-from-env", action="store_true")

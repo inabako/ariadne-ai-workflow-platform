@@ -9,6 +9,11 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.workspace import (  # noqa: E402
+    context_file,
+    target_repository_dir_for_work_dir,
+    work_dir_for_id,
+)
 from runtime.common import (  # noqa: E402
     default_github_owner,
     env_value,
@@ -84,10 +89,10 @@ def create_branch(args: argparse.Namespace) -> dict[str, Any]:
     settings = load_env(repo_root)
     default_owner = default_github_owner(settings)
     branch_prefix = args.branch_prefix or env_value(settings, "DEFAULT_FEATURE_BRANCH_PREFIX", "FEATURE_BRANCH_PREFIX") or "feature/issue"
-    work_dir = repo_root / "work" / args.work_id
-    source_dir = Path(args.source_dir).resolve() if args.source_dir else work_dir / "source" / "repository"
-    state = read_json(work_dir / "context" / "scm-state.json", default={}) or {}
-    agent_context = read_json(work_dir / "context" / "agent-context.json", default={}) or {}
+    work_dir = work_dir_for_id(repo_root, args.work_id)
+    source_dir = Path(args.source_dir).resolve() if args.source_dir else target_repository_dir_for_work_dir(work_dir)
+    state = read_json(context_file(work_dir, "scm-state.json"), default={}) or {}
+    agent_context = read_json(context_file(work_dir, "agent-context.json"), default={}) or {}
 
     branch_name = f"{branch_prefix}-{args.issue_number}"
     repository = args.repository or state.get("repository") or agent_context.get("project", {}).get("repository", "")
@@ -172,7 +177,7 @@ def create_branch(args: argparse.Namespace) -> dict[str, Any]:
             "dry_run": bool(args.dry_run),
         }
     )
-    write_json(work_dir / "context" / "scm-state.json", state)
+    write_json(context_file(work_dir, "scm-state.json"), state)
     return {
         "work_id": args.work_id,
         "source_dir": relative_to_repo(repo_root, source_dir),

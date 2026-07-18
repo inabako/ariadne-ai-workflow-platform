@@ -471,7 +471,8 @@ def test_standardize_report_names_renames_legacy_report_and_updates_references(
     tmp_path: Path,
 ) -> None:
     repo = make_repo(tmp_path)
-    report_dir = repo / "rag" / "corrective-action-report"
+    source_root = "work/db/ariadne-knowledge-platform/rag"
+    report_dir = repo / source_root / "corrective-action-report"
     report_dir.mkdir(parents=True)
     legacy = report_dir / "20260606111000_localty-system-gui.md"
     legacy.write_text(
@@ -480,16 +481,16 @@ def test_standardize_report_names_renames_legacy_report_and_updates_references(
         "repository: https://github.com/inabako/localty-system-gui.git\n"
         "---\n"
         "# 20260606111000_localty-system-gui.md\n\n"
-        "source: rag/corrective-action-report/20260606111000_localty-system-gui.md\n",
+        f"source: {source_root}/corrective-action-report/20260606111000_localty-system-gui.md\n",
         encoding="utf-8",
     )
-    index = repo / "rag" / "indexes" / "documents.jsonl"
+    index = repo / source_root / "indexes" / "documents.jsonl"
     index.parent.mkdir(parents=True)
-    index.write_text("rag/corrective-action-report/20260606111000_localty-system-gui.md\n", encoding="utf-8")
+    index.write_text(f"{source_root}/corrective-action-report/20260606111000_localty-system-gui.md\n", encoding="utf-8")
     monkeypatch.setattr(standardize_corrective_report_names, "random_token", lambda length: "ABCDE")
     args = argparse.Namespace(
         repo_root=str(repo),
-        source_dir="rag/corrective-action-report",
+        source_dir=f"{source_root}/corrective-action-report",
         replace_references=True,
         random_length=5,
     )
@@ -510,7 +511,7 @@ def test_standardize_report_names_renames_legacy_report_and_updates_references(
 
 def test_standardize_report_names_skips_already_standard_and_readme(tmp_path: Path) -> None:
     repo = make_repo(tmp_path)
-    report_dir = repo / "rag" / "corrective-action-report"
+    report_dir = repo / "work/db/ariadne-knowledge-platform/rag" / "corrective-action-report"
     report_dir.mkdir(parents=True)
     readme = report_dir / "README.md"
     standard = report_dir / "20260701000000_ABCDE_localty-system.md"
@@ -518,7 +519,7 @@ def test_standardize_report_names_skips_already_standard_and_readme(tmp_path: Pa
     standard.write_text("# already standard\n", encoding="utf-8")
     args = argparse.Namespace(
         repo_root=str(repo),
-        source_dir="rag/corrective-action-report",
+        source_dir="work/db/ariadne-knowledge-platform/rag/corrective-action-report",
         replace_references=True,
         random_length=5,
     )
@@ -611,14 +612,14 @@ def test_standardize_report_names_missing_dir_and_target_collision(
     repo = make_repo(tmp_path)
     args = argparse.Namespace(
         repo_root=str(repo),
-        source_dir="rag/corrective-action-report",
+        source_dir="work/db/ariadne-knowledge-platform/rag/corrective-action-report",
         replace_references=False,
         random_length=5,
     )
     with pytest.raises(FileNotFoundError, match="Corrective report directory not found"):
         standardize_corrective_report_names.run(args)
 
-    report_dir = repo / "rag" / "corrective-action-report"
+    report_dir = repo / "work/db/ariadne-knowledge-platform/rag" / "corrective-action-report"
     report_dir.mkdir(parents=True)
     source = report_dir / "20260707112233_legacy.md"
     source.write_text("repository: owner/repo\n", encoding="utf-8")
@@ -632,12 +633,13 @@ def test_standardize_report_names_missing_dir_and_target_collision(
 
 def test_standardize_report_names_replace_text_references_updates_supported_files(tmp_path: Path) -> None:
     repo = make_repo(tmp_path)
-    old_rel = "rag/corrective-action-report/old.md"
-    new_rel = "rag/corrective-action-report/new.md"
+    source_root = "work/db/ariadne-knowledge-platform/rag"
+    old_rel = f"{source_root}/corrective-action-report/old.md"
+    new_rel = f"{source_root}/corrective-action-report/new.md"
     files = [
-        repo / "rag" / "indexes" / "documents.jsonl",
-        repo / "rag" / "normalized" / "doc.json",
-        repo / "rag" / "corrective-action-report" / "note.md",
+        repo / source_root / "indexes" / "documents.jsonl",
+        repo / source_root / "normalized" / "doc.json",
+        repo / source_root / "corrective-action-report" / "note.md",
         repo / "README.md",
         repo / "skills" / "skill.md",
         repo / ".github" / "prompts" / "prompt.md",
@@ -653,9 +655,9 @@ def test_standardize_report_names_replace_text_references_updates_supported_file
         [
             "README.md",
             ".github/prompts/prompt.md",
-            "rag/corrective-action-report/note.md",
-            "rag/indexes/documents.jsonl",
-            "rag/normalized/doc.json",
+            f"{source_root}/corrective-action-report/note.md",
+            f"{source_root}/indexes/documents.jsonl",
+            f"{source_root}/normalized/doc.json",
             "runtime/docs/note.md",
             "skills/skill.md",
         ]
@@ -669,7 +671,7 @@ def test_standardize_report_names_main_paths(monkeypatch: pytest.MonkeyPatch, tm
     monkeypatch.setattr(
         standardize_corrective_report_names,
         "run",
-        lambda args: {"source_dir": "rag/corrective-action-report", "renamed_count": 0},
+        lambda args: {"source_dir": "work/db/ariadne-knowledge-platform/rag/corrective-action-report", "renamed_count": 0},
     )
     assert standardize_corrective_report_names.main(["--repo-root", str(tmp_path)]) == 0
     assert '"renamed_count": 0' in capsys.readouterr().out
