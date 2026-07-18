@@ -149,10 +149,10 @@ Schema:
 
 `github-sync-plan` は、analysisが `repair_mode: apply` の場合に `github-operation-gate` と `tool-selection` を必須Contextとして確認します。
 `github-sync-apply` は、`github_sync_actions` のうち `approval_status: approved` の1件だけを実行し、結果をanalysis JSONへ書き戻します。実行可能なcommandは `gh issue edit/comment`、`gh pr edit/comment`、`gh api repos/...` に限定します。
-未解決の `history_rewrite_candidates` がある場合、`github-sync-apply` は停止します。rebase候補が検出されなかった場合、または全候補が `rejected` / `no-rewrite` / `keep-with-evidence` / `verified` として解決済みの場合だけ、sync系を実施します。
-`detect-rebase-candidates` は、ローカルGit履歴から1-3 fileのcommit漏れ候補を検出し、`github-knowledge-analysis.json` の `history_rewrite_candidates` に `approval_status: pending` として記録します。
+未解決の `history_rewrite_candidates` がある場合、`github-sync-apply` は停止します。rebase候補が検出されなかった場合、または全候補が `rejected` / 明示的な `no-rewrite` / `keep-with-evidence` / `verified` として解決済みの場合だけ、sync系を実施します。
+`detect-rebase-candidates` は、ローカルGit履歴から1-3 fileのcommit漏れ候補を検出し、`github-knowledge-analysis.json` の `history_rewrite_candidates` に `approval_status: pending` として記録します。commit subjectが薄い場合は、subjectだけで判断せず、変更path、directory、extension、repository domain、近接commit、関連file setを複合的に確認します。安全な吸収先を自動特定できない場合は `no-rewrite` ではなく `manual-review-required` としてHuman Reviewへ残します。
 `rebase-plan` は、検出済み候補からHuman Review用の実行計画レポートを出力します。Git操作は実行しません。
-`rebase-apply` は、1つのHuman Check approval packageで承認されたGit CLI commandだけを非対話で実行し、local verification結果をanalysis JSONへ記録します。
+`rebase-apply` は、1つのHuman Check approval packageで承認されたGit CLI commandだけを非対話で実行し、local verification結果をanalysis JSONへ記録します。`--human-check approved` は承認済みパッケージをruntimeへ渡す実行ガードであり、追加の承認依頼ではありません。
 `rag-candidate --publish-rag` は、RAG publication前に `github-operation-gate` のHuman Check条件を確認します。
 
 ## GitHub Access Policy
@@ -183,7 +183,7 @@ Clone は、GitHub APIでは取得できない解析が必要で、人間が理�
 - Git CLI remote は、fetch、ls-remote、push、force-with-leaseで検証済みlocal graphをGitHub branchへ反映します。remote操作なので認証が必要です。
 - GitHub APIでは `git rebase`、commit graph rewrite、commit message rewriteはできません。GitHub tokenの有無とlocal rebase editorの要否は別問題です。
 - runtime自動化では `git rebase -i` のeditor hookに依存しません。非対話のGit CLI local commandで履歴を作り、local verification後にGit CLI remote commandで承認済みbranchへ反映します。
-- 承認は1つのapproval packageにまとめます。対象repository、対象branch、rewrite action、rollback plan、local verification command、exact remote update commandを同じ承認単位に含めます。
+- 承認は1つのapproval packageにまとめます。対象repository、対象branch、rewrite action、rollback plan、local verification command、exact remote update commandを同じ承認単位に含めます。承認後のlocal rewrite、verification、approved remote updateでは、人間への再承認依頼を出しません。
 
 ## Git History Policy
 
@@ -262,11 +262,11 @@ Small rebase整備の完了条件:
 - `detect-rebase-candidates` で候補が `history_rewrite_candidates` に記録されている。
 - `rebase-plan` で実行計画レポートが出力されている。
 - `rebase-plan` の凡例で、未完了扱い、rebase不要扱い、正当差分として残す扱いを確認する。
-- `repair_goal` が `absorb-into-existing-commit`、`drop-empty-or-noise-commit`、`split-into-independent-commit`、`keep-with-evidence`、`no-rewrite` のいずれか。
+- `repair_goal` が `absorb-into-existing-commit`、`drop-empty-or-noise-commit`、`split-into-independent-commit`、`keep-with-evidence`、`manual-review-required`、`no-rewrite` のいずれか。
 - `keep-with-evidence` の場合は、独立した責務と既存証跡がある。
 - approval packageに `rollback_plan`、`verification_commands`、exact remote update command が記録されている。
 - `before_after_sha_mapping` は、承認後のlocal rewrite検証でruntimeが生成して記録する。
-- `rebase-apply` は、Human Check承認済み、かつ候補が `approval_status: approved` の場合だけ非対話Git CLI commandを実行する。
+- `rebase-apply` は、1つのHuman Check approval packageが承認済みで、候補が `approval_status: approved` の場合だけ非対話Git CLI commandを実行する。`--human-check approved` はその承認済み事実をruntimeに渡す実行ガードであり、追加承認ではない。
 - 新しいIssue名やcommit messageを作って、無駄なcommitを正当化するだけでは完了にしない。
 
 Rebase候補の凡例:
@@ -275,15 +275,17 @@ Rebase候補の凡例:
 | --- | --- | --- |
 | `approval_status: pending` | 未判断 | 未完了。GitHub sync apply前に判断する |
 | `approval_status: approved` + absorb/split/drop | rebase実行対象 | rebase適用と検証まで未完了 |
+| `repair_goal: manual-review-required` | commit資材の内容確認が必要 | 未完了。Human Reviewで吸収、分割、message補修、維持、却下、no-rewriteのいずれかに変更する |
 | `repair_goal: keep-with-evidence` | 正当な独立差分として残す | `independent_responsibility` と `evidence_refs` があれば完了 |
 | `repair_goal: no-rewrite` | rebase不要 | reasonが記録されていれば完了 |
 | `approval_status: rejected` | 候補棄却 | 完了。rebaseしない |
 
 GitHub sync apply の順序:
 
-- rebase候補が0件の場合は、Human Check後に `github-sync-apply` を実行できる。
-- rebase候補がある場合は、先に `rebase-plan`、Human Check、`rebase-apply`、verificationを完了する。
+- rebase候補が0件の場合は、対象操作のHuman Check後に `github-sync-apply` を実行できる。
+- rebase候補がある場合は、先に `rebase-plan`、1つのHuman Check approval package、`rebase-apply`、verificationを完了する。
 - absorb/split/drop候補は `execution_status: verified` になるまでGitHub sync applyを止める。
+- `manual-review-required` 候補は、Human Reviewで具体的な方針に変更されるまでGitHub sync applyを止める。
 - `keep-with-evidence` / `no-rewrite` / `rejected` は、凡例の条件を満たせばGitHub sync applyを止めない。
 
 許可:

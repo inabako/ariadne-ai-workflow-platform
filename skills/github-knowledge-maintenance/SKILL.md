@@ -30,7 +30,7 @@ Keep these responsibilities separate:
 - Git CLI remote: fetch, ls-remote, push, and force-with-lease the approved local graph to the approved remote branch. Authentication is required because this changes or reads GitHub remote state.
 - GitHub API cannot perform `git rebase`, commit graph rewrite, or commit message rewrite. Do not explain local rebase/editor behavior as a GitHub token problem.
 - Runtime automation must not depend on `git rebase -i` editor hooks. Use non-interactive Git CLI local commands, such as replay/cherry-pick/commit-tree/update-ref patterns, then use Git CLI remote commands only for the approved remote reflection step.
-- One Human Check approval package is enough when it includes repository, target branch, rewrite action, rollback plan, local verification commands, and exact remote update command. Do not split the same approved rewrite into repeated approval prompts.
+- One Human Check approval package is enough when it includes repository, target branch, rewrite action, rollback plan, local verification commands, and exact remote update command. Do not split the same approved rewrite into repeated approval prompts. After the package is approved, `--human-check approved` is a runtime execution guard, not a second human prompt.
 
 ## Required Inputs
 
@@ -251,6 +251,7 @@ uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py
 ```
 
 This writes candidates to `history_rewrite_candidates` with `approval_status: pending`. Candidate records include `file_paths`, `suspect_commits`, `expected_commit`, `repair_goal`, `independent_responsibility`, `evidence_refs`, `recommended_action`, `reason`, `approval_status`, `completion_criteria`, `before_after_sha_mapping`, `rollback_plan`, `draft_commands`, and `verification_commands`.
+When commit subjects are thin, the runtime must inspect commit materials as well as the subject: changed paths, directories, extensions, repository domains, nearby commits, and related file sets. If a safe absorb target cannot be determined from that evidence, record `repair_goal: manual-review-required` and keep the candidate unresolved for Human Review. Do not use `no-rewrite` merely because automatic target detection failed.
 
 ### 6. Narrative Analysis
 
@@ -292,7 +293,7 @@ uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py
 
 This is a proposal. It does not mutate GitHub.
 
-After Human Check approval, execute only an approved candidate:
+After the single Human Check approval package is recorded, execute only an approved candidate:
 
 ```powershell
 uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rebase-apply `
@@ -301,23 +302,24 @@ uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py
   --human-check approved
 ```
 
-`rebase-apply` requires both CLI-level Human Check approval and `approval_status: approved` in `github-knowledge-analysis.json`.
+`rebase-apply` requires `approval_status: approved` in `github-knowledge-analysis.json` and the `--human-check approved` runtime guard. Do not ask the human again for the CLI guard when the approval package already covers the repository, branch, rewrite action, rollback plan, verification commands, and exact remote update command.
 
 The rebase plan includes a legend for candidate disposition:
 
 - `approval_status: pending`: incomplete, do not run GitHub sync apply yet.
 - approved absorb/split/drop repair goals: incomplete until rebase is applied and verified.
+- `manual-review-required`: unresolved until the human chooses absorb, split, drop, keep-with-evidence, no-rewrite, or rejected from commit material evidence.
 - `keep-with-evidence`: resolved only when independent responsibility and existing evidence are recorded.
-- `no-rewrite`: resolved when the reason is recorded.
+- `no-rewrite`: resolved only when the human explicitly decides that no rewrite is needed.
 - `rejected`: resolved, do not rebase.
 
 Run order:
 
-- If no rebase candidates are detected, continue to GitHub sync after Human Check.
+- If no rebase candidates are detected, continue to GitHub sync after the relevant Human Check.
 - If any rebase candidate is unresolved, do not run GitHub sync apply.
-- Resolve rebase candidates first with `rebase-plan`, Human Check, `rebase-apply`, and verification.
+- Resolve rebase candidates first with `rebase-plan`, one Human Check approval package, `rebase-apply`, and verification.
 - Approved absorb/split/drop candidates remain unresolved until `execution_status: verified`.
-- `keep-with-evidence`, `no-rewrite`, and `rejected` candidates can unblock GitHub sync when the required evidence/reason is recorded.
+- `manual-review-required` candidates remain unresolved. `keep-with-evidence`, explicit `no-rewrite`, and `rejected` candidates can unblock GitHub sync when the required evidence/reason is recorded.
 
 ### 8. Human Review Gate
 

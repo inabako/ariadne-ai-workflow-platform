@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 11 |
+| cases | 14 |
 
 ## ケース一覧
 
@@ -194,3 +194,51 @@ runtime/tests/test_coverage_audit.py::test_text_encoding_guard_reports_lossy_dam
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: lossy-marker finding が記録され、対象ファイルは書き換えられない。
+#### RT-UT-CASE-072-F
+
+- pytest node id:
+
+```text
+runtime/tests/test_coverage_audit.py::test_utf8_bom_scan_and_strip_removes_only_bom
+```
+
+- 確認内容: UTF-8 BOM scan/strip runtimeがBOM付きテキストだけを検出し、dry-runでは保持し、write指定時だけBOMを除去してbackupを作成することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_coverage_audit.py:359`
+  - fixture/arg: `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
+  - parameter: names=なし, case=なし
+  - inline input: `dry_run_args`, `write_args`
+- 期待結果: scanはBOM findingを返し、dry-runでは対象ファイルを変更せず、write実行後はBOMなしUTF-8本文とbackupが残る。
+#### RT-UT-CASE-072-G
+
+- pytest node id:
+
+```text
+runtime/tests/test_coverage_audit.py::test_utf8_bom_skips_binary_files
+```
+
+- 確認内容: UTF-8 BOM runtimeがNULを含むbinary fileをBOM除去対象にせず、binary skippedとして扱うことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_coverage_audit.py:390`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- 期待結果: scan statusはokになり、bom_filesは空、files_skipped_binaryに対象binary pathが記録される。
+#### RT-UT-CASE-072-H
+
+- pytest node id:
+
+```text
+runtime/tests/test_coverage_audit.py::test_utf8_bom_strip_can_disable_backup
+```
+
+- 確認内容: UTF-8 BOM strip runtimeでbackup suffixを空にした場合、backupを作らずにBOMだけを除去できることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_coverage_audit.py:404`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `args`
+- 期待結果: strip statusはstrippedになり、対象ファイルはBOMなし本文へ更新され、backup pathは記録されない。

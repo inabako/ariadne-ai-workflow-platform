@@ -14,8 +14,8 @@ coverage 推移と監査履歴は repository root の `Runtime pytest 分岐・C
 | --- | ---: |
 | pytest files | 39 |
 | pytest test functions | 642 |
-| pytest collected cases | 655 |
-| pytest result | `655 passed` |
+| pytest collected cases | 661 |
+| pytest result | `661 passed` |
 | statement coverage | 99.66% |
 | total coverage | 99.48% |
 
@@ -50,12 +50,12 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_common_runtime.py](cases/test_common_runtime.md) | 10 |
 | [test_context_first.py](cases/test_context_first.md) | 34 |
 | [test_corrective_action_report.py](cases/test_corrective_action_report.md) | 6 |
-| [test_coverage_audit.py](cases/test_coverage_audit.md) | 11 |
+| [test_coverage_audit.py](cases/test_coverage_audit.md) | 14 |
 | [test_ctl_help.py](cases/test_ctl_help.md) | 37 |
 | [test_dispatcher_context.py](cases/test_dispatcher_context.md) | 12 |
 | [test_docs_sync_workflow.py](cases/test_docs_sync_workflow.md) | 11 |
 | [test_flutter_multiplatform.py](cases/test_flutter_multiplatform.md) | 16 |
-| [test_github_knowledge_maintenance.py](cases/test_github_knowledge_maintenance.md) | 28 |
+| [test_github_knowledge_maintenance.py](cases/test_github_knowledge_maintenance.md) | 29 |
 | [test_github_runtime.py](cases/test_github_runtime.md) | 36 |
 | [test_iac_template.py](cases/test_iac_template.md) | 6 |
 | [test_init_corrective_action_fix.py](cases/test_init_corrective_action_fix.md) | 9 |

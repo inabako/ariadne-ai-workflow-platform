@@ -195,7 +195,7 @@
         "expected_commit": { "type": "string" },
         "repair_goal": {
           "type": "string",
-          "enum": ["absorb-into-existing-commit", "drop-empty-or-noise-commit", "split-into-independent-commit", "keep-with-evidence", "no-rewrite"]
+          "enum": ["absorb-into-existing-commit", "drop-empty-or-noise-commit", "split-into-independent-commit", "keep-with-evidence", "manual-review-required", "no-rewrite"]
         },
         "independent_responsibility": { "type": "string" },
         "evidence_refs": {
@@ -208,7 +208,10 @@
         },
         "recommended_action": {
           "type": "string",
-          "enum": ["interactive-rebase", "amend-before-push", "split-commit", "no-rewrite"]
+          "enum": ["non-interactive-git-cli-rewrite", "manual-review-required", "amend-before-push", "split-commit", "no-rewrite"]
+        },
+        "content_review_evidence": {
+          "type": "object"
         },
         "reason": { "type": "string" },
         "before_summary": { "type": "string" },

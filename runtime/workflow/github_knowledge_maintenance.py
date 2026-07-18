@@ -847,35 +847,83 @@ def commit_subject_is_weak(subject: str) -> bool:
     return False
 
 
+def normalize_git_path(path: str) -> str:
+    return path.strip().strip('"').replace("\\", "/")
+
+
+def path_domains(files: list[str]) -> set[str]:
+    domains: set[str] = set()
+    for raw_path in files:
+        path = normalize_git_path(raw_path)
+        parts = [part for part in path.split("/") if part]
+        if not parts:
+            continue
+        root = parts[0]
+        suffix = Path(path).suffix.lower()
+        domains.add(root)
+        if root in {".github", "docs", "skills", "templates", "runtime", "rag", "work"}:
+            domains.add(root)
+        if len(parts) >= 2:
+            domains.add(f"{root}/{parts[1]}")
+        if suffix in {".md", ".rst"}:
+            domains.add("docs-like")
+        if suffix in {".py", ".ps1", ".cmd", ".sh"}:
+            domains.add("runtime-code")
+        if path.endswith((".schema.json", ".jsonl")):
+            domains.add("structured-data")
+        if "test" in path.lower() or "/tests/" in path.lower():
+            domains.add("tests")
+        if "brand" in parts or "logo" in parts or suffix in {".svg", ".png", ".jpg", ".jpeg"}:
+            domains.add("brand-asset")
+        if path in {".gitignore", "pytest.ini", "pyproject.toml", "uv.lock"}:
+            domains.add("repo-config")
+        if "registries" in parts or suffix in {".duckdb", ".db"}:
+            domains.add("registry-data")
+    return domains
+
+
 def path_affinity_score(left_files: list[str], right_files: list[str]) -> int:
-    left_roots = {path.split("/", 1)[0] for path in left_files if path}
-    right_roots = {path.split("/", 1)[0] for path in right_files if path}
-    left_dirs = {str(Path(path).parent).replace("\\", "/") for path in left_files if "/" in path or "\\" in path}
-    right_dirs = {str(Path(path).parent).replace("\\", "/") for path in right_files if "/" in path or "\\" in path}
-    left_suffixes = {Path(path).suffix for path in left_files if Path(path).suffix}
-    right_suffixes = {Path(path).suffix for path in right_files if Path(path).suffix}
+    left_normalized = {normalize_git_path(path) for path in left_files if path}
+    right_normalized = {normalize_git_path(path) for path in right_files if path}
+    left_roots = {path.split("/", 1)[0] for path in left_normalized if path}
+    right_roots = {path.split("/", 1)[0] for path in right_normalized if path}
+    left_dirs = {str(Path(path).parent).replace("\\", "/") for path in left_normalized if "/" in path or "\\" in path}
+    right_dirs = {str(Path(path).parent).replace("\\", "/") for path in right_normalized if "/" in path or "\\" in path}
+    left_suffixes = {Path(path).suffix for path in left_normalized if Path(path).suffix}
+    right_suffixes = {Path(path).suffix for path in right_normalized if Path(path).suffix}
     return (
-        len(left_roots & right_roots) * 2
-        + len(left_dirs & right_dirs) * 3
+        len(left_normalized & right_normalized) * 6
+        + len(left_dirs & right_dirs) * 4
+        + len(path_domains(list(left_normalized)) & path_domains(list(right_normalized))) * 3
+        + len(left_roots & right_roots) * 2
         + len(left_suffixes & right_suffixes)
     )
 
 
-def nearest_semantic_commit(
-    commits: list[dict[str, Any]], index: int, candidate_files: list[str]
-) -> dict[str, Any] | None:
-    best: tuple[int, int, dict[str, Any]] | None = None
+def nearest_related_commit(commits: list[dict[str, Any]], index: int, candidate_files: list[str]) -> tuple[dict[str, Any], int] | None:
+    best: tuple[int, int, int, int, dict[str, Any]] | None = None
     for other_index, commit in enumerate(commits):
-        if other_index == index or commit_subject_is_weak(str(commit.get("subject", ""))):
+        if other_index == index:
             continue
         score = path_affinity_score(candidate_files, commit.get("files", []) or [])
         if score <= 0:
             continue
         distance = abs(other_index - index)
-        current = (score, -distance, commit)
+        semantic_bonus = 2 if not commit_subject_is_weak(str(commit.get("subject", ""))) else 0
+        current = (score, semantic_bonus, -distance, -other_index, commit)
         if best is None or current > best:
             best = current
-    return best[2] if best else None
+    return (best[4], best[0]) if best else None
+
+
+def nearest_semantic_commit(
+    commits: list[dict[str, Any]], index: int, candidate_files: list[str]
+) -> dict[str, Any] | None:
+    related = nearest_related_commit(commits, index, candidate_files)
+    if related is None:
+        return None
+    commit, _score = related
+    return None if commit_subject_is_weak(str(commit.get("subject", ""))) else commit
 
 
 def short_commit(commit: dict[str, Any]) -> str:
@@ -888,10 +936,24 @@ def build_detected_history_candidate(
     commit: dict[str, Any],
     expected_commit: dict[str, Any] | None,
     index: int,
+    *,
+    related_score: int = 0,
 ) -> dict[str, Any]:
     commit_hash = str(commit.get("hash", ""))
     expected = short_commit(expected_commit) if expected_commit else ""
     candidate_id = f"HISTORY-DETECT-{index + 1:03d}"
+    expected_is_weak = bool(expected_commit and commit_subject_is_weak(str(expected_commit.get("subject", ""))))
+    if expected and not expected_is_weak:
+        repair_goal = "absorb-into-existing-commit"
+        recommended_action = "non-interactive-git-cli-rewrite"
+        after_summary = f"`{expected}` へ吸収可能かHuman Reviewで確認する。"
+    else:
+        repair_goal = "manual-review-required"
+        recommended_action = "manual-review-required"
+        if expected:
+            after_summary = f"`{expected}` は資材上の関連候補だがsubjectが薄いため、吸収、分割、message補修、no-rewriteのどれにするかHuman Reviewで判断する。"
+        else:
+            after_summary = "安全な吸収先を自動特定できないため、コミット資材の内容をHuman Reviewで確認する。"
     draft_commands = [f"git branch backup/{candidate_id.lower()} HEAD"]
     if commit_hash:
         draft_commands.extend(
@@ -906,23 +968,29 @@ def build_detected_history_candidate(
         "file_paths": commit.get("files", []) or [],
         "suspect_commits": [short_commit(commit)],
         "expected_commit": expected,
-        "repair_goal": "absorb-into-existing-commit" if expected else "no-rewrite",
+        "repair_goal": repair_goal,
         "independent_responsibility": "",
         "evidence_refs": [f"git show --stat {commit_hash}"] if commit_hash else [],
+        "content_review_evidence": {
+            "related_commit_score": related_score,
+            "candidate_domains": sorted(path_domains(commit.get("files", []) or [])),
+            "related_commit_subject_is_weak": expected_is_weak,
+            "decision_basis": "path, directory, extension, domain, and nearby commit affinity; subject is not sufficient by itself",
+        },
         "completion_criteria": [
-            "対象ファイルが正しいsemantic commitへ吸収される、または候補が却下される。",
+            "対象ファイルが正しいsemantic commitへ吸収される、独立責務として維持される、message補修へ送られる、または候補が却下される。",
             "漏れコミットを正当化するためだけに新しいIssue、PR story、commit messageを後付けしない。",
             "最終的なgit logと対象ファイル履歴が承認済み計画と一致する。",
         ],
-        "recommended_action": "non-interactive-git-cli-rewrite" if expected else "no-rewrite",
+        "recommended_action": recommended_action,
         "tool_responsibility": {
             "github_api": "remote metadata/ref verification only; cannot rewrite commit graph",
             "git_cli_local": "local non-interactive commit graph rewrite and verification; authentication is not required",
             "git_cli_remote": "fetch/ls-remote/push to GitHub after local verification; authentication is required",
         },
-        "reason": "1-3ファイルの小さなコミットで、弱いsubjectまたは不自然な履歴文脈が検出された。",
+        "reason": "1-3ファイルの小さなコミットで、subjectが薄い、またはコミット資材上の関連性確認が必要な履歴文脈が検出された。",
         "before_summary": short_commit(commit),
-        "after_summary": f"`{expected}` へ吸収可能かHuman Reviewで確認する。" if expected else "安全に吸収できる対象commitは検出されていない。",
+        "after_summary": after_summary,
         "approval_status": "pending",
         "before_after_sha_mapping": [],
         "rollback_plan": f"git reset --hard {commit_hash}" if commit_hash else "",
@@ -948,10 +1016,19 @@ def detect_history_rewrite_candidates(
         files = commit.get("files", []) or []
         if not 1 <= len(files) <= max_files:
             continue
-        expected_commit = nearest_semantic_commit(commits, commit_index, files)
+        related = nearest_related_commit(commits, commit_index, files)
+        expected_commit = related[0] if related else None
+        related_score = related[1] if related else 0
         if not commit_subject_is_weak(str(commit.get("subject", ""))) and expected_commit is None:
             continue
-        candidates.append(build_detected_history_candidate(commit, expected_commit, len(candidates)))
+        candidates.append(
+            build_detected_history_candidate(
+                commit,
+                expected_commit,
+                len(candidates),
+                related_score=related_score,
+            )
+        )
     return candidates
 
 
@@ -973,6 +1050,7 @@ def validate_history_rewrite_candidates(candidates: list[dict[str, Any]]) -> lis
             "drop-empty-or-noise-commit",
             "split-into-independent-commit",
             "keep-with-evidence",
+            "manual-review-required",
             "no-rewrite",
         }:
             errors.append(f"{candidate_id}: repair_goal is not supported.")
@@ -1256,8 +1334,8 @@ def build_repair_plan(analysis: dict[str, Any]) -> str:
             "",
             "1. `detect-rebase-candidates` が1-3ファイルのcommit漏れ候補を検出し、`pending` 候補として記録する。",
             "2. `rebase-plan` が実行計画を計算し、Human Review用レポートを作成する。",
-            "3. Human Check で候補ごとに承認または却下する。",
-            "4. `rebase-apply --human-check approved` は承認済み候補だけを実行する。",
+            "3. 1つのHuman Check approval packageで対象候補、方針、rollback、verification、remote updateをまとめて承認または却下する。",
+            "4. `rebase-apply --human-check approved` は承認済みパッケージを消費するCLI実行ガードであり、追加の承認依頼ではない。",
             "",
             "## リポジトリ",
             "",
@@ -1371,8 +1449,8 @@ def build_rebase_plan(analysis: dict[str, Any]) -> str:
             "",
             "1. `detect-rebase-candidates` が1-3ファイルのcommit漏れ候補を検出し、`pending` 候補として記録する。",
             "2. `rebase-plan` が実行計画を計算し、Human Review用レポートを作成する。",
-            "3. Human Check で候補ごとに承認または却下する。",
-            "4. `rebase-apply --human-check approved` は承認済み候補だけを実行する。",
+            "3. 1つのHuman Check approval packageで対象候補、方針、rollback、verification、remote updateをまとめて承認または却下する。",
+            "4. `rebase-apply --human-check approved` は承認済みパッケージを消費するCLI実行ガードであり、追加の承認依頼ではない。",
             "",
             "この計画書は、1-3ファイルの不自然なコミット履歴やコミット漏れをrebaseで整えるためのHuman Review資料です。",
             "このworkflow helperはGit操作を実行しません。",
@@ -1385,6 +1463,7 @@ def build_rebase_plan(analysis: dict[str, Any]) -> str:
             "- GitHub APIではcommit graph rewriteやrebaseはできない。GitHub tokenの有無とlocal rebase editorの要否は別問題として扱う。",
             "- runtime自動化では `git rebase -i` のeditor hookに依存しない。非対話のGit CLI local commandで履歴を作り、local verification後にGit CLI remote commandで承認済みbranchへ反映する。",
             f"- 承認回数: {boundary['approval_model']['human_check_count']} approval package。対象repository、対象branch、rewrite action、local verification、rollback、exact remote update commandを1つの承認単位にまとめる。",
+            "- 運用ルール: approval packageが承認済みなら、後続のlocal rewrite、verification、approved remote updateで人間への再承認依頼を出さない。CLIの `--human-check approved` は承認済み事実をruntimeへ渡す実行ガードとして扱う。",
             "",
             "## リポジトリ",
             "",
@@ -1400,12 +1479,14 @@ def build_rebase_plan(analysis: dict[str, Any]) -> str:
             "| `approval_status: approved` + `repair_goal: absorb-into-existing-commit` | rebase/amendが承認済み。 | rebase適用と検証が終わるまで未完了。 |",
             "| `approval_status: approved` + `repair_goal: split-into-independent-commit` | commit分割が承認済み。 | 分割適用と検証が終わるまで未完了。 |",
             "| `approval_status: approved` + `repair_goal: drop-empty-or-noise-commit` | 空またはノイズcommitのdropが承認済み。 | drop適用と検証が終わるまで未完了。 |",
+            "| `repair_goal: manual-review-required` | subjectだけでは判断せず、commit資材の内容を見て吸収、分割、message補修、維持、却下を決める。 | 未完了。Human Reviewで具体的な方針へ変更する。 |",
             "| `repair_goal: keep-with-evidence` | 正当な独立変更として維持する。 | `independent_responsibility` と `evidence_refs` が記録された場合のみ完了。 |",
             "| `repair_goal: no-rewrite` | 履歴書き換え不要と判断する。 | 理由が記録された場合に完了。 |",
             "| `approval_status: rejected` | 候補を却下する。 | 完了。rebaseしない。 |",
             "",
             "検出された差分が正当でそのまま残すべき場合は `keep-with-evidence` を使い、`pending` のまま放置しません。",
-            "誤検出または意図的にrebase不要と判断する場合は `no-rewrite` を使います。",
+            "`manual-review-required` は、コミット資材の内容確認が必要な状態です。吸収先未検出の自動結果を `no-rewrite` として扱いません。",
+            "誤検出または意図的にrebase不要と人間が判断した場合だけ `no-rewrite` を使います。",
             "",
             "## Human Approval 記録",
             "",
@@ -1417,8 +1498,8 @@ def build_rebase_plan(analysis: dict[str, Any]) -> str:
             "## 候補別 OK / NG チェックリスト",
             "",
             "このチェックリストはHuman Review用です。候補IDを手入力せず、対象候補の `OK` または `NG` にチェックしてください。",
-            "`OK` は「この候補をrebase整備対象として次段のitem-level計画に進める」、`NG` は「rebaseしない、または候補から外す」という意味です。",
-            "`OK` にした候補は、次に repair_goal、rollback plan、local verification、exact remote update command をまとめた1つの approval package へ進めます。before/after SHA mapping は承認後のlocal rewrite検証で生成します。",
+            "`OK` / `NG` は候補の採否を1つのapproval packageに含めるためのレビュー入力であり、候補ごとに別承認を求めるものではありません。",
+            "AIは、repair_goal、rollback plan、local verification、exact remote update commandを同じapproval packageにまとめ、承認済み後は同一パッケージ内の作業で再承認を求めません。before/after SHA mapping は承認後のlocal rewrite検証で生成します。",
             "",
             rebase_review_checklist(candidates),
             "",
@@ -1465,6 +1546,7 @@ def build_rebase_plan(analysis: dict[str, Any]) -> str:
             "- before/after SHA mappingはlocal rewrite後にruntimeが生成し、人間が追跡できる成果物として残すこと。",
             "- `git log --format=\"%H %s\"` などでrewrite後のsubject表示をruntimeが確認すること。",
             "- force pushが必要な場合も、同じapproval package内で対象remote/branchとコマンドを承認すること。",
+            "- 一度承認されたapproval package内のlocal rewrite、verification、approved remote updateについて、人間への再承認依頼を出さないこと。",
             "",
             "## 停止ルール",
             "",

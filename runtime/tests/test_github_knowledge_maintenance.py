@@ -440,6 +440,41 @@ def test_detect_history_rewrite_candidates_from_commit_log(monkeypatch: pytest.M
     assert candidates[0]["expected_commit"] == "1111111 feat(runtime): add example workflow"
     assert candidates[0]["approval_status"] == "pending"
     assert candidates[0]["repair_goal"] == "absorb-into-existing-commit"
+    assert candidates[0]["recommended_action"] == "non-interactive-git-cli-rewrite"
+    assert candidates[0]["content_review_evidence"]["related_commit_score"] > 0
+
+
+def test_detect_history_rewrite_candidates_requires_manual_review_when_subjects_are_thin(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    commits = github_knowledge_maintenance.parse_commit_log(
+        "\n".join(
+            [
+                "333333333333\x1fupdate: guard follow-up",
+                "runtime/workflow/github_knowledge_maintenance.py",
+                "",
+                "222222222222\x1fupdate: guard",
+                "runtime/workflow/github_knowledge_maintenance.py",
+                "runtime/tests/test_github_knowledge_maintenance.py",
+            ]
+        )
+    )
+    monkeypatch.setattr(github_knowledge_maintenance, "collect_commit_summaries", lambda *args, **kwargs: commits)
+
+    candidates = github_knowledge_maintenance.detect_history_rewrite_candidates(
+        repo_path=tmp_path,
+        base="HEAD~2",
+        head="HEAD",
+        max_commits=20,
+        max_files=3,
+    )
+
+    assert candidates[0]["expected_commit"] == "2222222 update: guard"
+    assert candidates[0]["repair_goal"] == "manual-review-required"
+    assert candidates[0]["recommended_action"] == "manual-review-required"
+    assert candidates[0]["approval_status"] == "pending"
+    assert candidates[0]["content_review_evidence"]["related_commit_subject_is_weak"] is True
+    assert "runtime" in candidates[0]["content_review_evidence"]["candidate_domains"]
 
 
 def test_create_detect_rebase_candidates_writes_analysis(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -522,7 +557,10 @@ def test_create_rebase_plan_writes_output_and_registers_artifact(tmp_path: Path)
     assert result["candidate_count"] == 1
     assert result["rebase_plan"] == "rebase.md"
     assert result["validation_errors"] == []
-    assert "HISTORY-1" in output_path.read_text(encoding="utf-8-sig")
+    rebase_plan = output_path.read_text(encoding="utf-8-sig")
+    assert "HISTORY-1" in rebase_plan
+    assert "追加の承認依頼ではない" in rebase_plan
+    assert "再承認を求めません" in rebase_plan
     artifact_index = json.loads((work_dir / "context" / "artifact-index.json").read_text(encoding="utf-8-sig"))
     assert any(item["id"] == "GITHUB-HISTORY-REBASE-PLAN" for item in artifact_index["artifacts"])
 
