@@ -179,15 +179,15 @@ work/close/improvement/<issue-id>/
 After human approval, prepare and audit the archive:
 
 ```powershell
-python runtime/workflow/close_archive.py prepare --issue "<issue-id>"
-python runtime/workflow/close_archive.py audit --issue "<issue-id>"
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive prepare --issue "<issue-id>"
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive audit --issue "<issue-id>"
 ```
 
 Do not retain source checkouts, `.git`, `.venv`, `node_modules`, build output, or cache files in `work/close`.
 Pruning requires explicit approval:
 
 ```powershell
-python runtime/workflow/close_archive.py prune `
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive prune `
   --issue "<issue-id>" `
   --execute `
   --human-check approved

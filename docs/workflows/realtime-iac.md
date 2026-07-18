@@ -45,9 +45,9 @@ Target Branch: develop
 
 ```powershell
 aiwfctl env select docker --work-id <receipt-id>
-uv run --project runtime python runtime/workflow/context_first.py `
+uv run --project runtime python runtime/ctl.py --repo-root . context require-environment `
   --work-dir work/<receipt-id> `
-  require-environment --environment docker
+  --environment docker
 ```
 
 `environment-selection.environment` が `docker` ではない場合、IaC設計へ進まずHuman Checkへ戻します。

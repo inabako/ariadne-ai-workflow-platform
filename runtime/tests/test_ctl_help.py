@@ -319,6 +319,286 @@ def test_ctl_github_knowledge_sync_apply_dry_run_updates_analysis(tmp_path: Path
     assert updated["github_sync_actions"][0]["execution_status"] == "dry-run"
 
 
+def test_ctl_github_knowledge_rebase_package_and_apply_dry_run(tmp_path: Path) -> None:
+    root = tmp_path
+    (root / ".git").mkdir()
+    context_dir = root / "work" / "github-knowledge-repo-recent" / "context"
+    context_dir.mkdir(parents=True)
+    gate_path = context_dir / "github-operation-gate.json"
+    tool_path = context_dir / "tool-selection.json"
+    analysis_path = context_dir / "github-knowledge-analysis.json"
+    gate_path.write_text(json.dumps({"mutation_allowed": True, "human_check_required": True}), encoding="utf-8")
+    tool_path.write_text(json.dumps({"human_check_required": True}), encoding="utf-8")
+    analysis_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "workflow": "github-knowledge-maintenance",
+                "work_id": "github-knowledge-repo-recent",
+                "repository": "owner/repo",
+                "target_branch": "dev-bk",
+                "scan_mode": ["recent"],
+                "repair_mode": "apply",
+                "summary": "",
+                "guardrails": [],
+                "metadata_sources": [],
+                "knowledge_assets": [],
+                "narrative_gaps": [],
+                "repair_proposals": [],
+                "history_rewrite_candidates": [
+                    {
+                        "id": "HISTORY-1",
+                        "file_paths": ["runtime/tests/test_example.py"],
+                        "suspect_commits": ["abc1234 update: test follow-up"],
+                        "expected_commit": "def5678 feat(runtime): add example workflow",
+                        "repair_goal": "absorb-into-existing-commit",
+                        "recommended_action": "non-interactive-git-cli-rewrite",
+                        "reason": "test commit leaked from semantic runtime commit",
+                        "approval_status": "approved",
+                        "completion_criteria": ["absorb the leaked test into the runtime commit"],
+                        "rollback_plan": "git reset --hard def5678",
+                        "draft_commands": [],
+                        "verification_commands": ["git diff --quiet dev-bk..HEAD"],
+                    }
+                ],
+                "github_sync_actions": [],
+                "knowledge_db_candidates": [],
+                "rag_candidates": [],
+                "open_questions": [],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    (context_dir / "context-manifest.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "contexts": [
+                    {
+                        "type": "github-operation-gate",
+                        "path": "work/github-knowledge-repo-recent/context/github-operation-gate.json",
+                    },
+                    {"type": "tool-selection", "path": "work/github-knowledge-repo-recent/context/tool-selection.json"},
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    package_args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "github-knowledge",
+            "rebase-package",
+            "--work-id",
+            "github-knowledge-repo-recent",
+            "--candidate-id",
+            "HISTORY-1",
+            "--apply-mode",
+            "git-3way",
+            "--json",
+        ]
+    )
+    package_code, package_output = ctl.run(package_args)
+
+    assert package_code == 0
+    package_result = json.loads(package_output)
+    assert package_result["rebase_replay_package"] == "work/github-knowledge-repo-recent/context/rebase-replay-package.json"
+    package = json.loads((context_dir / "rebase-replay-package.json").read_text(encoding="utf-8"))
+    assert package["absorb"] == [{"target": "def5678", "sources": ["abc1234"]}]
+    assert package["apply_mode"] == "git-3way"
+
+    apply_args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "github-knowledge",
+            "rebase-apply",
+            "--work-id",
+            "github-knowledge-repo-recent",
+            "--human-check",
+            "approved",
+            "--dry-run",
+            "--json",
+        ]
+    )
+    apply_code, apply_output = ctl.run(apply_args)
+
+    assert apply_code == 0
+    apply_result = json.loads(apply_output)
+    assert apply_result["dry_run"] is True
+    assert apply_result["apply_mode"] == "git-3way"
+    assert apply_result["worktree_path"] == "work/github-knowledge-repo-recent/git-worktree/dev-bk"
+    updated = json.loads(analysis_path.read_text(encoding="utf-8"))
+    assert updated["history_rewrite_candidates"][0]["replay_package_ref"] == (
+        "work/github-knowledge-repo-recent/context/rebase-replay-package.json"
+    )
+
+
+def test_ctl_human_gate_check_blocks_until_approved(tmp_path: Path) -> None:
+    root = tmp_path
+    (root / ".git").mkdir()
+    registry_dir = root / "runtime" / "registries"
+    registry_dir.mkdir(parents=True)
+    (registry_dir / "human_gates.json").write_text(
+        json.dumps(
+            {
+                "registry_version": "1.0",
+                "gates": [
+                    {
+                        "id": "close-prune",
+                        "requires_human_check": True,
+                        "approved_value": "approved",
+                        "reason": "cleanup requires approval",
+                    }
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    pending_args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "human-gate",
+            "check",
+            "--gate",
+            "close-prune",
+            "--human-check",
+            "pending",
+            "--json",
+        ]
+    )
+    pending_code, pending_output = ctl.run(pending_args)
+
+    assert pending_code == 2
+    assert json.loads(pending_output)["status"] == "blocked"
+
+    approved_args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "human-gate",
+            "check",
+            "--gate",
+            "close-prune",
+            "--human-check",
+            "approved",
+            "--json",
+        ]
+    )
+    approved_code, approved_output = ctl.run(approved_args)
+
+    assert approved_code == 0
+    assert json.loads(approved_output)["status"] == "approved"
+
+
+def test_ctl_self_improvement_review_flow_uses_official_entrypoint(tmp_path: Path) -> None:
+    root = tmp_path
+    (root / ".git").mkdir()
+    feedback_path = root / "work" / "feedback" / "docs-sync-feedback.md"
+    create_args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "self-improvement",
+            "create-feedback",
+            "--target-workflow",
+            "/docs-sync",
+            "--situation",
+            "docs review",
+            "--friction",
+            "approval path unclear",
+            "--output",
+            str(feedback_path),
+            "--json",
+        ]
+    )
+    create_code, create_output = ctl.run(create_args)
+
+    assert create_code == 0
+    create_result = json.loads(create_output)
+    assert create_result["status"] == "proposed"
+    assert feedback_path.exists()
+
+    review_args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "self-improvement",
+            "review-feedback",
+            "--feedback",
+            str(feedback_path),
+            "--decision",
+            "accepted",
+            "--reviewer",
+            "Human",
+            "--reason",
+            "approved for issue conversion",
+            "--json",
+        ]
+    )
+    review_code, review_output = ctl.run(review_args)
+
+    assert review_code == 0
+    review_result = json.loads(review_output)
+    assert review_result["decision"] == "accepted"
+    assert "## Human Check" in feedback_path.read_text(encoding="utf-8-sig")
+
+
+def test_ctl_close_archive_prepare_and_prune_dry_run(tmp_path: Path) -> None:
+    root = tmp_path
+    (root / ".git").mkdir()
+    source = root / "work" / "issue-123"
+    (source / "process-report").mkdir(parents=True)
+    (source / "process-report" / "summary.md").write_text("# Summary\n\nDone.\n", encoding="utf-8")
+
+    prepare_args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "close-archive",
+            "prepare",
+            "--work-id",
+            "issue-123",
+            "--no-auto-rag",
+            "--json",
+        ]
+    )
+    prepare_code, prepare_output = ctl.run(prepare_args)
+
+    assert prepare_code == 0
+    prepare_result = json.loads(prepare_output)
+    assert prepare_result["status"] == "prepared"
+    archive_dir = root / prepare_result["archive_dir"]
+    (archive_dir / "source" / "repository").mkdir(parents=True)
+    (archive_dir / "source" / "repository" / "tmp.txt").write_text("temporary\n", encoding="utf-8")
+
+    prune_args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "close-archive",
+            "prune",
+            "--work-id",
+            "issue-123",
+            "--json",
+        ]
+    )
+    prune_code, prune_output = ctl.run(prune_args)
+
+    assert prune_code == 0
+    prune_result = json.loads(prune_output)
+    assert prune_result["status"] == "dry-run"
+    assert prune_result["target_count"] >= 1
+    assert (archive_dir / "source" / "repository" / "tmp.txt").exists()
+
+
 def test_ctl_env_select_gui_mode_returns_windows_msys2_profile() -> None:
     args = ctl.build_parser().parse_args(["--repo-root", str(repo_root()), "env", "select", "gui-mode"])
 
@@ -645,6 +925,49 @@ def test_ctl_context_init_creates_phase3_contexts(tmp_path: Path) -> None:
     assert "tool-selection" in output
     assert (tmp_path / "work" / "issue-9001" / "context" / "workflow-selection.json").exists()
     assert (tmp_path / "work" / "issue-9001" / "context" / "tool-selection.json").exists()
+
+
+def test_ctl_context_show_and_require_use_context_first_runtime(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+    work_dir = tmp_path / "work" / "issue-9002"
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "context",
+            "show",
+            "--work-dir",
+            "work/issue-9002",
+            "--json",
+        ]
+    )
+
+    code, output = ctl.run(args)
+
+    assert code == 0
+    show_result = json.loads(output)
+    assert show_result["status"] == "missing"
+    assert show_result["manifest_path"] == "work/issue-9002/context/context-manifest.json"
+
+    require_args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "context",
+            "require",
+            "--work-dir",
+            str(work_dir),
+            "--context",
+            "environment-selection",
+            "--json",
+        ]
+    )
+    require_code, require_output = ctl.run(require_args)
+
+    assert require_code == 2
+    require_result = json.loads(require_output)
+    assert require_result["status"] == "human-check-required"
+    assert require_result["missing"] == ["environment-selection"]
 
 
 def test_ctl_doctor_runs_workflow_doctor(monkeypatch, tmp_path: Path) -> None:

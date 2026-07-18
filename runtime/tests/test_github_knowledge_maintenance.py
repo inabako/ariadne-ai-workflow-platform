@@ -4,6 +4,7 @@ import argparse
 import json
 import re
 import runpy
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -160,6 +161,12 @@ def test_build_parser_parses_every_subcommand() -> None:
     assert parser.parse_args(["detect-rebase-candidates", "--work-id", "w"]).command == "detect-rebase-candidates"
     assert parser.parse_args(["rebase-plan", "--work-id", "w"]).command == "rebase-plan"
     assert parser.parse_args(["rebase-apply", "--work-id", "w", "--candidate-id", "HISTORY-1"]).command == "rebase-apply"
+    assert parser.parse_args(["rebase-replay-package", "--work-id", "w"]).command == "rebase-replay-package"
+    assert parser.parse_args(["rebase-replay-apply", "--work-id", "w"]).command == "rebase-replay-apply"
+    assert (
+        parser.parse_args(["rebase-replay-apply", "--work-id", "w", "--apply-mode", "git-3way"]).apply_mode
+        == "git-3way"
+    )
     assert parser.parse_args(["github-sync-plan", "--work-id", "w"]).command == "github-sync-plan"
     assert parser.parse_args(["github-sync-apply", "--work-id", "w", "--action-id", "SYNC-1"]).command == "github-sync-apply"
     assert parser.parse_args(["rag-candidate", "--work-id", "w", "--human-check", "approved"]).command == "rag-candidate"
@@ -376,7 +383,7 @@ def test_history_rewrite_candidate_validation_edges() -> None:
         "HISTORY-BAD: approved rebase repair requires repair_goal.",
         "HISTORY-BAD: approved rebase repair requires completion_criteria.",
         "HISTORY-BAD: approved rebase repair requires rollback_plan.",
-        "HISTORY-BAD: approved rebase repair requires draft_commands.",
+        "HISTORY-BAD: approved rebase repair requires draft_commands or replay_package_ref.",
         "HISTORY-BAD: approved rebase repair requires verification_commands.",
     ]
     assert github_knowledge_maintenance.validate_history_rewrite_candidates(
@@ -618,6 +625,283 @@ def test_create_rebase_apply_requires_human_and_candidate_approval(tmp_path: Pat
     assert updated["history_rewrite_candidates"][0]["execution_status"] == "dry-run"
 
 
+def run_git(repo: Path, args: list[str]) -> str:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=repo,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise AssertionError(result.stderr)
+    return result.stdout
+
+
+def commit_file(repo: Path, path: str, text: str, message: str) -> str:
+    target = repo / path
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(text, encoding="utf-8", newline="\n")
+    run_git(repo, ["add", path])
+    run_git(repo, ["commit", "-m", message])
+    return run_git(repo, ["rev-parse", "HEAD"]).strip()
+
+
+def test_apply_commit_patch_auto_3way_falls_back(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    calls: list[str] = []
+
+    monkeypatch.setattr(github_knowledge_maintenance, "commit_patch", lambda _repo, _commit: b"diff --git a/a b/a\n")
+
+    def fail_direct(_repo: Path, _patch: bytes) -> None:
+        calls.append("direct")
+        raise RuntimeError("direct failed")
+
+    def pass_3way(_repo: Path, _patch: bytes) -> None:
+        calls.append("git-3way")
+
+    monkeypatch.setattr(github_knowledge_maintenance, "apply_patch_direct", fail_direct)
+    monkeypatch.setattr(github_knowledge_maintenance, "apply_patch_git_3way", pass_3way)
+
+    mode = github_knowledge_maintenance.apply_commit_patch(tmp_path, "abc1234", "auto-3way")
+
+    assert mode == "git-3way"
+    assert calls == ["direct", "git-3way"]
+
+
+def test_rebase_replay_package_generates_from_approved_candidate(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path, "github-knowledge-owner-repo-recent")
+    analysis = sample_analysis()
+    analysis["target_branch"] = "dev-bk"
+    candidate = analysis["history_rewrite_candidates"][0]
+    candidate.update(
+        {
+            "id": "HISTORY-REPLAY-1",
+            "approval_status": "approved",
+            "repair_goal": "absorb-into-existing-commit",
+            "suspect_commits": ["abc1234 update: test follow-up"],
+            "expected_commit": "def5678 feat(runtime): add example workflow",
+            "rollback_plan": "git reset --hard def5678",
+            "draft_commands": [],
+            "replay_package_ref": "",
+            "verification_commands": ["git diff --quiet dev-bk..HEAD"],
+        }
+    )
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+
+    result = github_knowledge_maintenance.create_rebase_replay_package(
+        argparse.Namespace(
+            command="rebase-replay-package",
+            work_id=work_dir.name,
+            candidate_id=["HISTORY-REPLAY-1"],
+            analysis_path="",
+            output="",
+            target_branch="",
+            source_ref="",
+            remote="origin",
+            expected_remote_sha="",
+            allow_push=False,
+            apply_mode="auto-3way",
+            repo_root=str(repo_root),
+        )
+    )
+
+    package_path = work_dir / "context" / "rebase-replay-package.json"
+    package = json.loads(package_path.read_text(encoding="utf-8"))
+    assert result["rebase_replay_package"] == f"work/{work_dir.name}/context/rebase-replay-package.json"
+    assert package["target_branch"] == "dev-bk"
+    assert package["source_ref"] == "dev-bk"
+    assert package["apply_mode"] == "auto-3way"
+    assert package["candidate_ids"] == ["HISTORY-REPLAY-1"]
+    assert package["absorb"] == [{"target": "def5678", "sources": ["abc1234"]}]
+    assert package["drop"] == []
+    assert package["verification_commands"] == ["git diff --quiet dev-bk..HEAD"]
+    assert not list((work_dir / "context").glob("*rebase*.py"))
+    updated = json.loads((work_dir / "context" / "github-knowledge-analysis.json").read_text(encoding="utf-8"))
+    updated_candidate = updated["history_rewrite_candidates"][0]
+    assert updated_candidate["replay_package_ref"] == f"work/{work_dir.name}/context/rebase-replay-package.json"
+    assert updated["rebase_replay_packages"][0]["apply_mode"] == "auto-3way"
+    artifact_index = json.loads((work_dir / "context" / "artifact-index.json").read_text(encoding="utf-8"))
+    assert any(item["id"] == "GITHUB-HISTORY-REBASE-REPLAY-PACKAGE" for item in artifact_index["artifacts"])
+
+
+def test_rebase_replay_package_rejects_unapproved_candidate(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis = sample_analysis()
+    analysis["target_branch"] = "dev-bk"
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+
+    with pytest.raises(PermissionError, match="HISTORY-1 is not approved"):
+        github_knowledge_maintenance.create_rebase_replay_package(
+            argparse.Namespace(
+                command="rebase-replay-package",
+                work_id=work_dir.name,
+                candidate_id=["HISTORY-1"],
+                analysis_path="",
+                output="",
+                target_branch="",
+                source_ref="",
+                remote="origin",
+                expected_remote_sha="",
+                allow_push=False,
+                apply_mode="direct",
+                repo_root=str(repo_root),
+            )
+        )
+
+
+def test_rebase_replay_package_requires_split_message(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis = sample_analysis()
+    analysis["target_branch"] = "dev-bk"
+    candidate = analysis["history_rewrite_candidates"][0]
+    candidate.update(
+        {
+            "approval_status": "approved",
+            "repair_goal": "split-into-independent-commit",
+            "suspect_commits": ["abc1234 update: split target"],
+            "rollback_plan": "git reset --hard abc1234",
+            "draft_commands": [],
+            "replay_package_ref": "",
+            "verification_commands": ["git diff --quiet dev-bk..HEAD"],
+        }
+    )
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+
+    with pytest.raises(ValueError, match="split repair requires message_override"):
+        github_knowledge_maintenance.create_rebase_replay_package(
+            argparse.Namespace(
+                command="rebase-replay-package",
+                work_id=work_dir.name,
+                candidate_id=["HISTORY-1"],
+                analysis_path="",
+                output="",
+                target_branch="",
+                source_ref="",
+                remote="origin",
+                expected_remote_sha="",
+                allow_push=False,
+                apply_mode="direct",
+                repo_root=str(repo_root),
+            )
+        )
+
+
+def test_rebase_replay_apply_uses_worktree_and_builtin_runtime(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path, "github-knowledge-owner-repo-recent")
+    run_git(repo_root, ["init"])
+    run_git(repo_root, ["config", "user.name", "Tester"])
+    run_git(repo_root, ["config", "user.email", "tester@example.com"])
+    run_git(repo_root, ["config", "core.autocrlf", "false"])
+    run_git(repo_root, ["checkout", "-b", "dev-bk"])
+    root_commit = commit_file(repo_root, "README.md", "# repo\n", "add: initial")
+    target_commit = commit_file(repo_root, "runtime/workflow/example.py", "print('runtime')\n", "update: runtime")
+    source_commit = commit_file(repo_root, "runtime/tests/test_example.py", "def test_example():\n    assert True\n", "update: test")
+    source_tip = run_git(repo_root, ["rev-parse", "HEAD"]).strip()
+    analysis = sample_analysis()
+    analysis["target_branch"] = "dev-bk"
+    candidate = analysis["history_rewrite_candidates"][0]
+    candidate.update(
+        {
+            "id": "HISTORY-REPLAY-1",
+            "approval_status": "approved",
+            "repair_goal": "absorb-into-existing-commit",
+            "expected_commit": target_commit,
+            "rollback_plan": f"git reset --hard {source_tip}",
+            "draft_commands": [],
+            "replay_package_ref": "work/github-knowledge-owner-repo-recent/context/rebase-replay-package.json",
+            "verification_commands": ["git diff --quiet dev-bk..HEAD"],
+        }
+    )
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    write_ready_gate(repo_root, work_dir, mutation=True)
+    write_json(
+        work_dir / "context" / "rebase-replay-package.json",
+        {
+            "schema_version": "1.0",
+            "target_branch": "dev-bk",
+            "source_ref": "dev-bk",
+            "apply_mode": "git-3way",
+            "candidate_ids": ["HISTORY-REPLAY-1"],
+            "absorb": [{"target": target_commit, "sources": [source_commit]}],
+            "message_overrides": [
+                {
+                    "commit": target_commit,
+                    "message": "feat(runtime): add example workflow\n\nAbsorb the immediate test follow-up into the same semantic runtime change.",
+                }
+            ],
+            "verification_commands": ["git diff --quiet dev-bk..HEAD"],
+        },
+    )
+
+    result = github_knowledge_maintenance.create_rebase_replay_apply(
+        argparse.Namespace(
+            command="rebase-replay-apply",
+            work_id=work_dir.name,
+            package_path="",
+            analysis_path="",
+            human_check="approved",
+            remote="",
+            push=False,
+            reuse_worktree=False,
+            dry_run=False,
+            repo_root=str(repo_root),
+        )
+    )
+
+    assert result["tree_equal"] is True
+    assert result["apply_mode"] == "git-3way"
+    assert {item["mode"] for item in result["apply_results"]} == {"git-3way"}
+    assert result["before_count"] == 3
+    assert result["after_count"] == 2
+    assert result["worktree_path"] == f"work/{work_dir.name}/git-worktree/dev-bk"
+    replay_log = run_git(repo_root / result["worktree_path"], ["log", "--format=%s"])
+    assert "feat(runtime): add example workflow" in replay_log
+    assert "update: test" not in replay_log
+    assert not list((work_dir / "context").glob("*rebase*.py"))
+    updated = json.loads((work_dir / "context" / "github-knowledge-analysis.json").read_text(encoding="utf-8"))
+    updated_candidate = updated["history_rewrite_candidates"][0]
+    assert updated_candidate["execution_status"] == "verified"
+    assert updated_candidate["execution_result"]["runtime"] == "built-in-rebase-replay"
+    assert updated_candidate["execution_result"]["apply_mode"] == "git-3way"
+    assert updated_candidate["before_after_sha_mapping"][0].endswith(".tsv")
+
+
+def test_rebase_replay_apply_dry_run_does_not_create_worktree(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", sample_analysis())
+    write_ready_gate(repo_root, work_dir, mutation=True)
+    write_json(
+        work_dir / "context" / "rebase-replay-package.json",
+        {
+            "target_branch": "dev-bk",
+            "source_ref": "origin/dev-bk",
+            "drop": ["abc1234"],
+            "candidate_ids": [],
+        },
+    )
+
+    result = github_knowledge_maintenance.create_rebase_replay_apply(
+        argparse.Namespace(
+            command="rebase-replay-apply",
+            work_id=work_dir.name,
+            package_path="",
+            analysis_path="",
+            human_check="approved",
+            remote="",
+            push=False,
+            reuse_worktree=False,
+            dry_run=True,
+            repo_root=str(repo_root),
+        )
+    )
+
+    assert result["dry_run"] is True
+    assert result["worktree_path"] == f"work/{work_dir.name}/git-worktree/dev-bk"
+    assert not (work_dir / "git-worktree" / "dev-bk").exists()
+
+
 def test_rebase_apply_rejects_interactive_rebase_even_when_allowed(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="Interactive rebase is not supported"):
         github_knowledge_maintenance.run_rebase_command(
@@ -839,6 +1123,16 @@ def test_run_dispatches_commands_and_rejects_unknown(monkeypatch: pytest.MonkeyP
     )
     monkeypatch.setattr(github_knowledge_maintenance, "create_rebase_plan", lambda args: {"command": "rebase-plan"})
     monkeypatch.setattr(github_knowledge_maintenance, "create_rebase_apply", lambda args: {"command": "rebase-apply"})
+    monkeypatch.setattr(
+        github_knowledge_maintenance,
+        "create_rebase_replay_package",
+        lambda args: {"command": "rebase-replay-package"},
+    )
+    monkeypatch.setattr(
+        github_knowledge_maintenance,
+        "create_rebase_replay_apply",
+        lambda args: {"command": "rebase-replay-apply"},
+    )
     monkeypatch.setattr(github_knowledge_maintenance, "create_sync_plan", lambda args: {"command": "github-sync-plan"})
     monkeypatch.setattr(github_knowledge_maintenance, "create_sync_apply", lambda args: {"command": "github-sync-apply"})
     monkeypatch.setattr(github_knowledge_maintenance, "create_rag_candidate", lambda args: {"command": "rag-candidate"})
@@ -850,6 +1144,8 @@ def test_run_dispatches_commands_and_rejects_unknown(monkeypatch: pytest.MonkeyP
         "detect-rebase-candidates",
         "rebase-plan",
         "rebase-apply",
+        "rebase-replay-package",
+        "rebase-replay-apply",
         "github-sync-plan",
         "github-sync-apply",
         "rag-candidate",

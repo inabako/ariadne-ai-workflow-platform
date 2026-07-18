@@ -462,10 +462,10 @@ def knowledge_capture(args: argparse.Namespace) -> dict[str, Any]:
 Recommended command:
 
 ```powershell
-python runtime/workflow/close_archive.py prepare `
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive prepare `
   --issue {args.issue}
 
-python runtime/workflow/close_archive.py audit `
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive audit `
   --issue {args.issue}
 ```
 
@@ -493,8 +493,8 @@ python runtime/workflow/close_archive.py audit `
 - feature branchにdocs evidenceをcommitした後にのみ `{branch or 'feature/issue-XXX'}` をpushする。
 - 承認後、選択した候補に対してRAG buildを実行する。
 - base work folderを削除する前に、base phaseのprocess reportを `work/close/improvement/{args.issue}/links.md` と各summary reportへ要約・リンク化する。
-- 承認後、`runtime/workflow/close_archive.py prepare --issue {args.issue}` でreport-only close packageを作成する。
-- source checkout、`.git`、`.venv`、cache削除は `close_archive.py prune --execute --human-check approved` でのみ実行する。
+- 承認後、`uv run --project runtime python runtime/ctl.py --repo-root . close-archive prepare --issue {args.issue}` でreport-only close packageを作成する。
+- source checkout、`.git`、`.venv`、cache削除は `uv run --project runtime python runtime/ctl.py --repo-root . close-archive prune --issue {args.issue} --execute --human-check approved` でのみ実行する。
 """
     write_markdown(output_paths["knowledge_capture_report"], report, args.dry_run)
 
@@ -533,8 +533,8 @@ python runtime/workflow/close_archive.py audit `
             f"docs evidenceをcommitした後に {branch or 'feature/issue-XXX'} をpushする。",
             f"承認済み候補について work/{args.issue} からRAG buildを実行する。",
             "base work folderを削除する前にbase work process-reportをsummary/link化する。",
-            f"承認後、runtime/workflow/close_archive.py prepare --issue {args.issue} を実行する。",
-            f"承認後、必要なら runtime/workflow/close_archive.py prune --issue {args.issue} --execute --human-check approved を実行する。",
+            f"承認後、uv run --project runtime python runtime/ctl.py --repo-root . close-archive prepare --issue {args.issue} を実行する。",
+            f"承認後、必要なら uv run --project runtime python runtime/ctl.py --repo-root . close-archive prune --issue {args.issue} --execute --human-check approved を実行する。",
         ],
     }
     if not args.dry_run:

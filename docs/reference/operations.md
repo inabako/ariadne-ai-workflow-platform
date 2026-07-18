@@ -105,14 +105,14 @@ work/close/<category>/<archive-id>/
 改善フローの作成・監査:
 
 ```powershell
-python runtime/workflow/close_archive.py prepare --issue issue-<issue-number>
-python runtime/workflow/close_archive.py audit --issue issue-<issue-number>
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive prepare --issue issue-<issue-number>
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive audit --issue issue-<issue-number>
 ```
 
 RAG sourceを必ず反映したい場合:
 
 ```powershell
-python runtime/workflow/close_archive.py prepare `
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive prepare `
   --issue issue-<issue-number> `
   --source-rag rag/normalized/<rag-source>.md `
   --require-rag
@@ -123,7 +123,7 @@ python runtime/workflow/close_archive.py prepare `
 新システム開発フロー:
 
 ```powershell
-python runtime/workflow/close_archive.py prepare `
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive prepare `
   --issue issue-<issue-number> `
   --category new-system-dev
 ```
@@ -131,7 +131,7 @@ python runtime/workflow/close_archive.py prepare `
 GitHub knowledge maintenance:
 
 ```powershell
-python runtime/workflow/close_archive.py prepare `
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive prepare `
   --work-id github-knowledge-localty-system-robot-recent `
   --category github
 ```
@@ -139,7 +139,7 @@ python runtime/workflow/close_archive.py prepare `
 VSCode Environment:
 
 ```powershell
-python runtime/workflow/close_archive.py prepare `
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive prepare `
   --work-id vscode-environment `
   --category vscode
 ```
@@ -162,8 +162,8 @@ python runtime/workflow/close_archive.py prepare `
 削除は必ずdry-run確認後、人間承認付きで実行します。
 
 ```powershell
-python runtime/workflow/close_archive.py prune --issue issue-<issue-number>
-python runtime/workflow/close_archive.py prune `
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive prune --issue issue-<issue-number>
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive prune `
   --issue issue-<issue-number> `
   --execute `
   --human-check approved
@@ -193,8 +193,8 @@ Pull Request bodyには、変更点のMermaid式sequence diagramを含めます�
 `registry.duckdb` の `human_gates` registry payload には `$schema` と `schema_version` を置かず、registry自体の版は `registry_version` で表します。
 
 ```powershell
-python runtime/workflow/human_gate_policy.py list
-python runtime/workflow/human_gate_policy.py check --gate close-prune --human-check approved
+uv run --project runtime python runtime/ctl.py --repo-root . human-gate list
+uv run --project runtime python runtime/ctl.py --repo-root . human-gate check --gate close-prune --human-check approved
 ```
 
 詳細は [Human Gate Registry](human-gates.md) を参照します。

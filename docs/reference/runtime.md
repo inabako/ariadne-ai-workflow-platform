@@ -2,6 +2,19 @@
 
 `runtime/` は、workflow を実行・補助するための処理機能を置く場所です。
 
+## Official Runtime Entrypoint
+
+通常のworkflow実行では、`aiwfctl` / `runtime/ctl.py` を正式入口として使います。
+
+- `runtime/workflow/*.py` は内部実装moduleです。runtime開発や単体テストを除き、workflow手順・SKILL・agent promptから直接実行しません。
+- Context First は `aiwfctl context ...` で確認します。
+- Human Check registry は `aiwfctl human-gate ...` で確認します。
+- GitHub knowledge maintenance は `aiwfctl github-knowledge ...` で実行します。
+- close archive は `aiwfctl close-archive ...` で実行します。
+- self-improvement feedback は `aiwfctl self-improvement ...` で実行します。
+
+必要な操作が `aiwfctl` に存在しない場合は、先に `runtime/ctl.py` へ正式入口を追加します。workflow側に新しい `python runtime/workflow/*.py ...` の直叩き手順を増やしてはいけません。
+
 ## Runtime Areas
 
 | Directory | Purpose |

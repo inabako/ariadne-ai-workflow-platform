@@ -52,9 +52,9 @@ aiwfctl env select docker --work-id <receipt-id>
 Then verify it:
 
 ```powershell
-uv run --project runtime python runtime/workflow/context_first.py `
+uv run --project runtime python runtime/ctl.py --repo-root . context require-environment `
   --work-dir work/<receipt-id> `
-  require-environment --environment docker
+  --environment docker
 ```
 
 If the context is missing or the selected environment is not `docker`, stop before IaC design and ask the human to select the correct environment. Do not infer Docker availability from chat history, OS name, or prior runs.
@@ -343,7 +343,7 @@ Create or update a Feedback report when you observe ambiguity, repeated checks, 
 Use the existing helper when creating a new report:
 
 ```powershell
-python runtime/workflow/self_improvement.py create-feedback `
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "<slash-command>" `
   --reporter "AI workflow" `
   --situation "<what was happening>" `

@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GitHub Knowledge Rebase Replay Package",
+  "type": "object",
+  "required": ["target_branch", "source_ref"],
+  "properties": {
+    "schema_version": { "type": "string", "examples": ["1.0"] },
+    "target_branch": { "type": "string" },
+    "source_ref": { "type": "string" },
+    "remote": { "type": "string", "default": "origin" },
+    "apply_mode": {
+      "type": "string",
+      "enum": ["direct", "git-3way", "auto-3way"],
+      "default": "direct"
+    },
+    "expected_remote_sha": { "type": "string" },
+    "candidate_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "output_branch": { "type": "string" },
+    "allow_push": { "type": "boolean", "default": false },
+    "absorb": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["target", "sources"],
+        "properties": {
+          "target": { "type": "string" },
+          "sources": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "drop": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "remove_after_apply": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["commit", "paths"],
+        "properties": {
+          "commit": { "type": "string" },
+          "paths": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "message_overrides": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["commit", "message"],
+        "properties": {
+          "commit": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      }
+    },
+    "verification_commands": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}

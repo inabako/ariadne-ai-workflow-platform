@@ -64,6 +64,14 @@
       "type": "array",
       "items": { "$ref": "#/$defs/history_rewrite_candidate" }
     },
+    "rebase_replay_executions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rebase_replay_execution" }
+    },
+    "rebase_replay_packages": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rebase_replay_package" }
+    },
     "github_sync_actions": {
       "type": "array",
       "items": { "$ref": "#/$defs/github_sync_action" }
@@ -216,6 +224,9 @@
         "reason": { "type": "string" },
         "before_summary": { "type": "string" },
         "after_summary": { "type": "string" },
+        "message_override": { "type": ["string", "object"] },
+        "proposed_commit_message": { "type": "string" },
+        "proposed_message": { "type": "string" },
         "approval_status": {
           "type": "string",
           "enum": ["pending", "approved", "rejected"]
@@ -224,6 +235,7 @@
           "type": "array",
           "items": { "type": "string" }
         },
+        "replay_package_ref": { "type": "string" },
         "rollback_plan": { "type": "string" },
         "draft_commands": {
           "type": "array",
@@ -235,12 +247,56 @@
         },
         "execution_status": {
           "type": "string",
-          "enum": ["pending", "dry-run", "applied", "verified", "failed"]
+          "enum": ["pending", "dry-run", "applied", "verified", "pushed", "failed", "verification-failed"]
         },
         "executed_at": { "type": "string" },
         "execution_result": {
           "type": "object"
         }
+      }
+    },
+    "rebase_replay_package": {
+      "type": "object",
+      "properties": {
+        "generated_at": { "type": "string" },
+        "package_path": { "type": "string" },
+        "candidate_ids": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "target_branch": { "type": "string" },
+        "source_ref": { "type": "string" },
+        "apply_mode": {
+          "type": "string",
+          "enum": ["direct", "git-3way", "auto-3way"]
+        },
+        "allow_push": { "type": "boolean" }
+      }
+    },
+    "rebase_replay_execution": {
+      "type": "object",
+      "properties": {
+        "dry_run": { "type": "boolean" },
+        "source_tip": { "type": "string" },
+        "new_tip": { "type": "string" },
+        "before_count": { "type": "integer" },
+        "after_count": { "type": "integer" },
+        "tree_equal": { "type": "boolean" },
+        "pushed": { "type": "boolean" },
+        "remote_before": { "type": "string" },
+        "remote_after": { "type": "string" },
+        "worktree_path": { "type": "string" },
+        "report_path": { "type": "string" },
+        "mapping_path": { "type": "string" },
+        "apply_mode": {
+          "type": "string",
+          "enum": ["direct", "git-3way", "auto-3way"]
+        },
+        "apply_results": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "package_path": { "type": "string" }
       }
     },
     "github_sync_action": {

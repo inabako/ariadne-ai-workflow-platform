@@ -77,13 +77,13 @@ push / knowledge capture
 Feedback置き場を初期化します。
 
 ```powershell
-python runtime/workflow/self_improvement.py init-feedback
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement init-feedback
 ```
 
 Feedback reportを作成します。
 
 ```powershell
-python runtime/workflow/self_improvement.py create-feedback `
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "/docs-sync" `
   --reporter "Human" `
   --situation "docs整備中" `
@@ -95,7 +95,7 @@ python runtime/workflow/self_improvement.py create-feedback `
 Human Review結果を同じFeedback reportへ追記します。
 
 ```powershell
-python runtime/workflow/self_improvement.py review-feedback `
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement review-feedback `
   --feedback work/feedback/<feedback>.md `
   --decision accepted `
   --reviewer "Human" `
@@ -106,20 +106,20 @@ python runtime/workflow/self_improvement.py review-feedback `
 AcceptedのFeedbackからIssue bodyを生成します。
 
 ```powershell
-python runtime/workflow/self_improvement.py issue-body `
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement issue-body `
   --feedback work/feedback/<feedback>.md
 ```
 
 Issue番号から既存規約のbranch名を確認します。
 
 ```powershell
-python runtime/workflow/self_improvement.py branch-name --issue-number 42
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement branch-name --issue-number 42
 ```
 
 Evidence保存先を作成し、`artifact-index.json` に登録します。
 
 ```powershell
-python runtime/workflow/self_improvement.py evidence-scaffold --work-id issue-42
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
 ```
 
 ## GitHub / SCM連携

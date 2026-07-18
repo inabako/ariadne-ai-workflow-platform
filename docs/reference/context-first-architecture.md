@@ -214,9 +214,9 @@ Workflowは次を行いません。
 Context First の基本確認:
 
 ```powershell
-uv run --project runtime python runtime/workflow/context_first.py `
+uv run --project runtime python runtime/ctl.py --repo-root . context require `
   --work-dir work/issue-123 `
-  require --context environment-selection
+  --context environment-selection
 ```
 
 戻り値が `human-check-required` の場合、先に Environment Dispatcher を実行します。

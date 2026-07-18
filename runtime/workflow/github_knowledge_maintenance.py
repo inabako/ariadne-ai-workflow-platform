@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import re
 import secrets
 import shlex
 import shutil
 import string
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -190,6 +193,37 @@ def build_parser() -> argparse.ArgumentParser:
     rebase_apply_parser.add_argument("--human-check", choices=["pending", "approved"], default="pending")
     rebase_apply_parser.add_argument("--dry-run", action="store_true")
     rebase_apply_parser.add_argument("--repo-root", default=None)
+
+    rebase_package_parser = subparsers.add_parser(
+        "rebase-replay-package",
+        help="Generate a schema-compliant rebase replay package from approved history rewrite candidates.",
+    )
+    rebase_package_parser.add_argument("--work-id", required=True)
+    rebase_package_parser.add_argument("--candidate-id", action="append", default=[])
+    rebase_package_parser.add_argument("--analysis-path", default="")
+    rebase_package_parser.add_argument("--output", default="")
+    rebase_package_parser.add_argument("--target-branch", default="")
+    rebase_package_parser.add_argument("--source-ref", default="")
+    rebase_package_parser.add_argument("--remote", default="origin")
+    rebase_package_parser.add_argument("--expected-remote-sha", default="")
+    rebase_package_parser.add_argument("--allow-push", action="store_true")
+    rebase_package_parser.add_argument("--apply-mode", choices=["direct", "git-3way", "auto-3way"], default="direct")
+    rebase_package_parser.add_argument("--repo-root", default=None)
+
+    rebase_replay_parser = subparsers.add_parser(
+        "rebase-replay-apply",
+        help="Execute one approved small-commit rebase package with the built-in non-interactive replay runtime.",
+    )
+    rebase_replay_parser.add_argument("--work-id", required=True)
+    rebase_replay_parser.add_argument("--package-path", default="")
+    rebase_replay_parser.add_argument("--analysis-path", default="")
+    rebase_replay_parser.add_argument("--human-check", choices=["pending", "approved"], default="pending")
+    rebase_replay_parser.add_argument("--remote", default="")
+    rebase_replay_parser.add_argument("--apply-mode", choices=["direct", "git-3way", "auto-3way"], default="")
+    rebase_replay_parser.add_argument("--push", action="store_true")
+    rebase_replay_parser.add_argument("--reuse-worktree", action="store_true")
+    rebase_replay_parser.add_argument("--dry-run", action="store_true")
+    rebase_replay_parser.add_argument("--repo-root", default=None)
 
     sync_parser = subparsers.add_parser(
         "github-sync-plan", help="Create an approval-gated GitHub CLI/API sync plan from analysis JSON."
@@ -1072,8 +1106,8 @@ def validate_history_rewrite_candidates(candidates: list[dict[str, Any]]) -> lis
                 errors.append(f"{candidate_id}: verified rebase repair requires before_after_sha_mapping.")
             if not candidate.get("rollback_plan"):
                 errors.append(f"{candidate_id}: approved rebase repair requires rollback_plan.")
-            if not candidate.get("draft_commands"):
-                errors.append(f"{candidate_id}: approved rebase repair requires draft_commands.")
+            if not candidate.get("draft_commands") and not candidate.get("replay_package_ref"):
+                errors.append(f"{candidate_id}: approved rebase repair requires draft_commands or replay_package_ref.")
             for command in candidate.get("draft_commands", []) or []:
                 command_text = str(command)
                 if "<" in command_text or ">" in command_text or command_text.lstrip().startswith("#"):
@@ -1271,6 +1305,746 @@ def create_rebase_apply(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+EMPTY_GIT_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+
+
+def safe_branch_segment(value: str) -> str:
+    segment = slugify(value.replace("/", "-").replace("\\", "-"))
+    return segment or "target"
+
+
+def ensure_child_path(parent: Path, child: Path, label: str) -> Path:
+    parent_resolved = parent.resolve()
+    child_resolved = child.resolve()
+    if child_resolved != parent_resolved and parent_resolved not in child_resolved.parents:
+        raise ValueError(f"{label} must stay under {parent_resolved}: {child_resolved}")
+    return child_resolved
+
+
+def default_rebase_replay_package_path(work_dir: Path) -> Path:
+    return work_dir / "context" / "rebase-replay-package.json"
+
+
+def load_rebase_replay_package(work_dir: Path, raw_path: str) -> tuple[Path, dict[str, Any]]:
+    path = Path(raw_path).resolve() if raw_path else default_rebase_replay_package_path(work_dir)
+    if not path.exists():
+        raise FileNotFoundError(f"Rebase replay package does not exist: {path}")
+    package = read_json(path)
+    if not isinstance(package, dict):
+        raise ValueError(f"Rebase replay package must be a JSON object: {path}")
+    return path, package
+
+
+COMMIT_REF_RE = re.compile(r"^[0-9a-fA-F]{7,40}$")
+
+
+def commit_ref_from_candidate_value(value: Any, *, label: str) -> str:
+    token = str(value or "").strip().split(maxsplit=1)[0] if str(value or "").strip() else ""
+    if not COMMIT_REF_RE.fullmatch(token):
+        raise ValueError(f"{label} must start with a 7-40 character Git SHA: {value}")
+    return token
+
+
+def candidate_message_override(candidate: dict[str, Any]) -> str:
+    for key in ["message_override", "proposed_commit_message", "proposed_message"]:
+        value = candidate.get(key)
+        if isinstance(value, dict):
+            message = str(value.get("message", "")).strip()
+        else:
+            message = str(value or "").strip()
+        if message:
+            return message.rstrip() + "\n"
+    return ""
+
+
+def selected_rebase_replay_candidates(analysis: dict[str, Any], candidate_ids: list[str]) -> list[dict[str, Any]]:
+    all_candidates = history_rewrite_candidates(analysis)
+    if candidate_ids:
+        selected = [find_history_rewrite_candidate(analysis, candidate_id) for candidate_id in candidate_ids]
+    else:
+        selected = [
+            candidate
+            for candidate in all_candidates
+            if candidate.get("approval_status") == "approved"
+            and candidate.get("repair_goal")
+            in {"absorb-into-existing-commit", "drop-empty-or-noise-commit", "split-into-independent-commit"}
+            and candidate.get("execution_status") not in {"verified", "pushed"}
+        ]
+    if not selected:
+        raise ValueError("No approved executable history rewrite candidates were selected.")
+    return selected
+
+
+def build_rebase_replay_package_from_candidates(
+    analysis: dict[str, Any],
+    candidates: list[dict[str, Any]],
+    *,
+    target_branch: str,
+    source_ref: str,
+    remote: str,
+    expected_remote_sha: str,
+    allow_push: bool,
+    apply_mode: str,
+) -> dict[str, Any]:
+    target_branch = target_branch or str(analysis.get("target_branch", "")).strip()
+    if not target_branch:
+        raise ValueError("rebase-replay-package requires --target-branch or analysis.target_branch.")
+    source_ref = source_ref or target_branch
+    package: dict[str, Any] = {
+        "schema_version": "1.0",
+        "target_branch": target_branch,
+        "source_ref": source_ref,
+        "remote": remote or "origin",
+        "apply_mode": apply_mode,
+        "expected_remote_sha": expected_remote_sha,
+        "candidate_ids": [],
+        "output_branch": "",
+        "allow_push": bool(allow_push),
+        "absorb": [],
+        "drop": [],
+        "remove_after_apply": [],
+        "message_overrides": [],
+        "verification_commands": [],
+    }
+    seen_verification: set[str] = set()
+    for candidate in candidates:
+        candidate_id = str(candidate.get("id", "HISTORY-XXX"))
+        if candidate.get("approval_status") != "approved":
+            raise PermissionError(f"{candidate_id} is not approved.")
+        repair_goal = str(candidate.get("repair_goal", ""))
+        suspect_refs = [
+            commit_ref_from_candidate_value(value, label=f"{candidate_id}.suspect_commits")
+            for value in candidate.get("suspect_commits", []) or []
+        ]
+        if not suspect_refs:
+            raise ValueError(f"{candidate_id} requires suspect_commits.")
+        package["candidate_ids"].append(candidate_id)
+        if repair_goal == "absorb-into-existing-commit":
+            target = commit_ref_from_candidate_value(candidate.get("expected_commit"), label=f"{candidate_id}.expected_commit")
+            package["absorb"].append({"target": target, "sources": suspect_refs})
+            message = candidate_message_override(candidate)
+            if message:
+                package["message_overrides"].append({"commit": target, "message": message})
+        elif repair_goal == "drop-empty-or-noise-commit":
+            package["drop"].extend(suspect_refs)
+        elif repair_goal == "split-into-independent-commit":
+            message = candidate_message_override(candidate)
+            if not message:
+                raise ValueError(f"{candidate_id} split repair requires message_override or proposed_commit_message.")
+            for commit in suspect_refs:
+                package["message_overrides"].append({"commit": commit, "message": message})
+        else:
+            raise ValueError(f"{candidate_id} is not an executable replay repair goal.")
+        for command in candidate.get("verification_commands", []) or []:
+            command_text = str(command).strip()
+            if command_text and command_text not in seen_verification:
+                package["verification_commands"].append(command_text)
+                seen_verification.add(command_text)
+    if not package["verification_commands"]:
+        package["verification_commands"].append(f"git diff --quiet {source_ref}..HEAD")
+    validate_rebase_replay_package(normalize_rebase_replay_package(package), analysis, push=bool(allow_push))
+    return package
+
+
+def create_rebase_replay_package(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    work_dir, analysis_path, analysis = load_analysis(repo_root, args.work_id, args.analysis_path)
+    candidates = selected_rebase_replay_candidates(analysis, [str(item) for item in args.candidate_id or []])
+    output_path = Path(args.output).resolve() if args.output else default_rebase_replay_package_path(work_dir)
+    ensure_child_path(work_dir / "context", output_path, "rebase replay package")
+    package = build_rebase_replay_package_from_candidates(
+        analysis,
+        candidates,
+        target_branch=str(args.target_branch or "").strip(),
+        source_ref=str(args.source_ref or "").strip(),
+        remote=str(args.remote or "origin").strip() or "origin",
+        expected_remote_sha=str(args.expected_remote_sha or "").strip(),
+        allow_push=bool(args.allow_push),
+        apply_mode=str(args.apply_mode or "direct").strip() or "direct",
+    )
+    write_json(output_path, package)
+    package_ref = relative_to_repo(repo_root, output_path)
+    for candidate in candidates:
+        candidate["replay_package_ref"] = package_ref
+    analysis.setdefault("rebase_replay_packages", []).append(
+        {
+            "generated_at": utc_now_iso(),
+            "package_path": package_ref,
+            "candidate_ids": package["candidate_ids"],
+            "target_branch": package["target_branch"],
+            "source_ref": package["source_ref"],
+            "apply_mode": package["apply_mode"],
+            "allow_push": package["allow_push"],
+        }
+    )
+    write_json(analysis_path, analysis)
+    register_artifact(
+        repo_root,
+        work_dir,
+        "GITHUB-HISTORY-REBASE-REPLAY-PACKAGE",
+        "GitHub History Rebase Replay Package",
+        output_path,
+        "other",
+    )
+    return {
+        "rebase_replay_package": package_ref,
+        "analysis_path": relative_to_repo(repo_root, analysis_path),
+        "candidate_count": len(package["candidate_ids"]),
+        "candidate_ids": package["candidate_ids"],
+        "target_branch": package["target_branch"],
+        "source_ref": package["source_ref"],
+        "apply_mode": package["apply_mode"],
+        "allow_push": package["allow_push"],
+    }
+
+
+def package_list(value: Any) -> list[Any]:
+    return value if isinstance(value, list) else []
+
+
+def package_commit_map(value: Any, *, key_name: str = "commit") -> dict[str, list[str]]:
+    if isinstance(value, dict):
+        return {str(key): [str(item) for item in package_list(items)] for key, items in value.items()}
+    result: dict[str, list[str]] = {}
+    for item in package_list(value):
+        if not isinstance(item, dict):
+            continue
+        key = str(item.get(key_name, item.get("target", ""))).strip()
+        if not key:
+            continue
+        raw_values = item.get("sources", item.get("paths", []))
+        result[key] = [str(raw) for raw in package_list(raw_values)]
+    return result
+
+
+def package_message_overrides(value: Any) -> dict[str, str]:
+    if isinstance(value, dict):
+        return {str(key): str(message) for key, message in value.items()}
+    result: dict[str, str] = {}
+    for item in package_list(value):
+        if not isinstance(item, dict):
+            continue
+        commit = str(item.get("commit", "")).strip()
+        message = str(item.get("message", "")).rstrip()
+        if commit and message:
+            result[commit] = message + "\n"
+    return result
+
+
+def normalize_rebase_replay_package(package: dict[str, Any]) -> dict[str, Any]:
+    target_branch = str(package.get("target_branch", "")).strip()
+    source_ref = str(package.get("source_ref", "")).strip() or f"origin/{target_branch}"
+    apply_mode = str(package.get("apply_mode", "direct")).strip() or "direct"
+    if not target_branch:
+        raise ValueError("Rebase replay package requires target_branch.")
+    if not source_ref:
+        raise ValueError("Rebase replay package requires source_ref.")
+    candidate_ids = [str(item) for item in package_list(package.get("candidate_ids")) if str(item).strip()]
+    return {
+        "target_branch": target_branch,
+        "source_ref": source_ref,
+        "remote": str(package.get("remote", "origin")).strip() or "origin",
+        "apply_mode": apply_mode,
+        "expected_remote_sha": str(package.get("expected_remote_sha", "")).strip(),
+        "candidate_ids": candidate_ids,
+        "output_branch": str(package.get("output_branch", "")).strip(),
+        "absorb": package_commit_map(package.get("absorb")),
+        "drop": {str(item) for item in package_list(package.get("drop"))},
+        "remove_after_apply": package_commit_map(package.get("remove_after_apply")),
+        "message_overrides": package_message_overrides(package.get("message_overrides")),
+        "verification_commands": [str(item) for item in package_list(package.get("verification_commands"))],
+        "allow_push": bool(package.get("allow_push", False)),
+    }
+
+
+def validate_rebase_replay_package(package: dict[str, Any], analysis: dict[str, Any], *, push: bool) -> None:
+    if package["apply_mode"] not in {"direct", "git-3way", "auto-3way"}:
+        raise ValueError("Rebase replay package apply_mode must be direct, git-3way, or auto-3way.")
+    if package["candidate_ids"]:
+        for candidate_id in package["candidate_ids"]:
+            candidate = find_history_rewrite_candidate(analysis, candidate_id)
+            if candidate.get("approval_status") != "approved":
+                raise PermissionError(f"{candidate_id} is not approved.")
+            if candidate.get("repair_goal") not in {
+                "absorb-into-existing-commit",
+                "drop-empty-or-noise-commit",
+                "split-into-independent-commit",
+            }:
+                raise ValueError(f"{candidate_id} is not an executable replay repair goal.")
+    if push:
+        if not package["allow_push"]:
+            raise PermissionError("Rebase replay package does not allow push.")
+        if not package["expected_remote_sha"]:
+            raise ValueError("Push requires expected_remote_sha for force-with-lease.")
+    replay_inputs = set(package["absorb"].keys()) | package["drop"] | set(package["remove_after_apply"].keys())
+    for sources in package["absorb"].values():
+        replay_inputs.update(sources)
+    if not replay_inputs and not package["message_overrides"]:
+        raise ValueError("Rebase replay package has no replay actions.")
+
+
+def git_text(repo_path: Path, args: list[str], *, input_text: str | None = None, env: dict[str, str] | None = None) -> str:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=repo_path,
+        input=input_text,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        env=env,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"git {' '.join(args)} failed: {result.stderr}")
+    return result.stdout
+
+
+def git_bytes(repo_path: Path, args: list[str], *, input_bytes: bytes | None = None) -> bytes:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=repo_path,
+        input=input_bytes,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if result.returncode != 0:
+        stderr = result.stderr.decode("utf-8", errors="replace")
+        raise RuntimeError(f"git {' '.join(args)} failed: {stderr}")
+    return result.stdout
+
+
+def commit_sequence(repo_path: Path, source_ref: str) -> list[str]:
+    output = git_text(repo_path, ["rev-list", "--reverse", source_ref])
+    return [line.strip() for line in output.splitlines() if line.strip()]
+
+
+def commit_parent(repo_path: Path, commit: str) -> str:
+    parts = git_text(repo_path, ["rev-list", "--parents", "-n", "1", commit]).strip().split()
+    return parts[1] if len(parts) > 1 else EMPTY_GIT_TREE
+
+
+def commit_patch(repo_path: Path, commit: str) -> bytes:
+    parent = commit_parent(repo_path, commit)
+    if parent == EMPTY_GIT_TREE:
+        return git_bytes(repo_path, ["diff-tree", "--root", "--binary", "--full-index", "-p", commit])
+    return git_bytes(repo_path, ["diff-tree", "--binary", "--full-index", "-p", parent, commit])
+
+
+def apply_patch_direct(repo_path: Path, patch: bytes) -> None:
+    args = ["apply", "--index", "--binary", "--whitespace=nowarn"]
+    git_bytes(repo_path, [args[0], "--check", *args[1:]], input_bytes=patch)
+    git_bytes(repo_path, args, input_bytes=patch)
+
+
+def apply_patch_git_3way(repo_path: Path, patch: bytes) -> None:
+    git_bytes(repo_path, ["apply", "--3way", "--index", "--binary", "--whitespace=nowarn"], input_bytes=patch)
+
+
+def apply_commit_patch(repo_path: Path, commit: str, apply_mode: str) -> str:
+    patch = commit_patch(repo_path, commit)
+    if not patch.strip():
+        return "empty"
+    if apply_mode == "direct":
+        apply_patch_direct(repo_path, patch)
+        return "direct"
+    if apply_mode == "git-3way":
+        apply_patch_git_3way(repo_path, patch)
+        return "git-3way"
+    if apply_mode == "auto-3way":
+        try:
+            apply_patch_direct(repo_path, patch)
+            return "direct"
+        except RuntimeError as direct_error:
+            try:
+                apply_patch_git_3way(repo_path, patch)
+            except RuntimeError as three_way_error:
+                raise RuntimeError(
+                    "git apply auto-3way failed. "
+                    f"direct apply error: {direct_error}; git 3-way apply error: {three_way_error}"
+                ) from three_way_error
+            return "git-3way"
+    raise ValueError("apply_mode must be direct, git-3way, or auto-3way.")
+
+
+def remove_replay_paths(repo_path: Path, paths: list[str]) -> None:
+    for path in paths:
+        git_text(repo_path, ["rm", "-f", "--ignore-unmatch", "--", path])
+
+
+def staged_changes_exist(repo_path: Path) -> bool:
+    result = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=repo_path, check=False)
+    return result.returncode != 0
+
+
+def replay_commit_metadata(repo_path: Path, commit: str) -> dict[str, str]:
+    raw = git_text(repo_path, ["show", "-s", "--format=%an%x00%ae%x00%aI%x00%cn%x00%ce%x00%cI%x00%B", commit])
+    parts = raw.split("\x00", 6)
+    return {
+        "author_name": parts[0],
+        "author_email": parts[1],
+        "author_date": parts[2],
+        "committer_name": parts[3],
+        "committer_email": parts[4],
+        "committer_date": parts[5],
+        "message": parts[6].rstrip() + "\n",
+    }
+
+
+def write_replayed_commit(
+    repo_path: Path,
+    commit: str,
+    message_overrides: dict[str, str],
+    *,
+    allow_empty: bool = False,
+) -> str | None:
+    if not staged_changes_exist(repo_path) and not allow_empty:
+        return None
+    metadata = replay_commit_metadata(repo_path, commit)
+    message = message_overrides.get(commit, metadata["message"]).rstrip() + "\n"
+    env = os.environ.copy()
+    env.update(
+        {
+            "GIT_AUTHOR_NAME": metadata["author_name"],
+            "GIT_AUTHOR_EMAIL": metadata["author_email"],
+            "GIT_AUTHOR_DATE": metadata["author_date"],
+            "GIT_COMMITTER_NAME": metadata["committer_name"],
+            "GIT_COMMITTER_EMAIL": metadata["committer_email"],
+            "GIT_COMMITTER_DATE": metadata["committer_date"],
+        }
+    )
+    with tempfile.NamedTemporaryFile("w", encoding="utf-8", newline="\n", dir=repo_path, delete=False) as handle:
+        handle.write(message)
+        message_path = Path(handle.name)
+    try:
+        command = ["commit", "-F", str(message_path)]
+        if allow_empty:
+            command.append("--allow-empty")
+        git_text(repo_path, command, env=env)
+    finally:
+        message_path.unlink(missing_ok=True)
+    return git_text(repo_path, ["rev-parse", "HEAD"]).strip()
+
+
+def run_approved_verification_command(repo_path: Path, command: str) -> dict[str, Any]:
+    stripped = command.strip()
+    if not stripped:
+        raise ValueError("Verification command must not be empty.")
+    if any(token in stripped for token in ["\n", "\r", "&&", "||", "|", ";"]):
+        raise ValueError("Verification command must be a single command without shell chaining.")
+    parts = shlex.split(stripped, posix=os.name != "nt")
+    result = subprocess.run(
+        parts,
+        cwd=repo_path,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        capture_output=True,
+        check=False,
+    )
+    return {
+        "command": stripped,
+        "returncode": result.returncode,
+        "stdout": result.stdout[:4000],
+        "stderr": result.stderr[:4000],
+    }
+
+
+def replay_worktree_path(work_dir: Path, target_branch: str) -> Path:
+    return work_dir / "git-worktree" / safe_branch_segment(target_branch)
+
+
+def prepare_replay_worktree(
+    repo_root: Path,
+    work_dir: Path,
+    package: dict[str, Any],
+    *,
+    reuse_worktree: bool,
+) -> Path:
+    worktree_root = work_dir / "git-worktree"
+    worktree_path = ensure_child_path(worktree_root, replay_worktree_path(work_dir, package["target_branch"]), "replay worktree")
+    if worktree_path.exists() and not reuse_worktree:
+        raise FileExistsError(f"Replay worktree already exists: {worktree_path}")
+    if worktree_path.exists():
+        git_text(repo_root, ["worktree", "remove", "--force", str(worktree_path)])
+    worktree_path.parent.mkdir(parents=True, exist_ok=True)
+    git_text(repo_root, ["worktree", "add", "--detach", str(worktree_path), package["source_ref"]])
+    git_text(worktree_path, ["config", "core.autocrlf", "false"])
+    return worktree_path
+
+
+def build_rebase_replay_report(
+    *,
+    package: dict[str, Any],
+    package_path: Path,
+    worktree_path: Path,
+    mapping_path: Path,
+    remote_before: str,
+    remote_after: str,
+    before_count: int,
+    after_count: int,
+    tree_equal: bool,
+    pushed: bool,
+    apply_results: list[dict[str, str]],
+    verification_results: list[dict[str, Any]],
+) -> str:
+    apply_lines = [
+        f"- `{item['commit']}` `{item['role']}` -> `{item['mode']}`" for item in apply_results
+    ] or ["- none"]
+    verification_lines = [
+        f"- `{item['command']}` -> `{item['returncode']}`" for item in verification_results
+    ] or ["- none"]
+    return "\n".join(
+        [
+            "# Git history rebase replay execution",
+            "",
+            "## Target",
+            "",
+            f"- Branch: `{package['target_branch']}`",
+            f"- Source ref: `{package['source_ref']}`",
+            f"- Apply mode: `{package['apply_mode']}`",
+            f"- Package: `{package_path}`",
+            f"- Worktree: `{worktree_path}`",
+            f"- SHA map: `{mapping_path}`",
+            f"- Remote before: `{remote_before}`",
+            f"- Remote after: `{remote_after}`",
+            f"- Pushed: `{str(pushed).lower()}`",
+            "",
+            "## Result",
+            "",
+            f"- Before commit count: `{before_count}`",
+            f"- After commit count: `{after_count}`",
+            f"- Final tree equals source ref: `{str(tree_equal).lower()}`",
+            "",
+            "## Patch apply",
+            "",
+            *apply_lines,
+            "",
+            "## Verification",
+            "",
+            *verification_lines,
+            "",
+            "## Runtime rule",
+            "",
+            "The rewrite was executed by the built-in non-interactive replay runtime. No generated Python helper script under `work/<work-id>/context/` is required.",
+        ]
+    )
+
+
+def execute_rebase_replay_package(
+    repo_root: Path,
+    work_dir: Path,
+    package: dict[str, Any],
+    package_path: Path,
+    *,
+    push: bool,
+    remote_override: str,
+    reuse_worktree: bool,
+    dry_run: bool,
+) -> dict[str, Any]:
+    if dry_run:
+        worktree_path = replay_worktree_path(work_dir, package["target_branch"])
+        return {
+            "dry_run": True,
+            "worktree_path": relative_to_repo(repo_root, worktree_path),
+            "package_path": relative_to_repo(repo_root, package_path),
+            "apply_mode": package["apply_mode"],
+            "push_planned": bool(push),
+        }
+
+    remote = remote_override or package["remote"]
+    remote_before = ""
+    if push:
+        output = git_text(repo_root, ["ls-remote", "--heads", remote, package["target_branch"]])
+        remote_before = output.split()[0] if output.strip() else ""
+        if remote_before != package["expected_remote_sha"]:
+            raise RuntimeError(
+                f"Remote {package['target_branch']} moved: expected {package['expected_remote_sha']}, got {remote_before}"
+            )
+
+    worktree_path = prepare_replay_worktree(repo_root, work_dir, package, reuse_worktree=reuse_worktree)
+    original_commits = commit_sequence(worktree_path, package["source_ref"])
+    source_tip = git_text(worktree_path, ["rev-parse", package["source_ref"]]).strip()
+    build_branch = f"github-knowledge-replay/{safe_branch_segment(work_dir.name)}/{safe_branch_segment(package['target_branch'])}"
+    subprocess.run(["git", "branch", "-D", build_branch], cwd=worktree_path, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    git_text(worktree_path, ["switch", "--force", "--detach", package["source_ref"]])
+    git_text(worktree_path, ["switch", "--orphan", build_branch])
+    git_text(worktree_path, ["rm", "-rf", "--ignore-unmatch", "."])
+
+    absorbed_sources = {source for sources in package["absorb"].values() for source in sources}
+    skipped_commits = absorbed_sources | package["drop"]
+    mapping: list[tuple[str, str]] = []
+    apply_results: list[dict[str, str]] = []
+    for index, commit in enumerate(original_commits):
+        if commit in skipped_commits:
+            mapping.append((commit, "DROPPED"))
+            continue
+        apply_results.append(
+            {
+                "commit": commit,
+                "role": "base",
+                "mode": apply_commit_patch(worktree_path, commit, package["apply_mode"]),
+            }
+        )
+        for source in package["absorb"].get(commit, []):
+            apply_results.append(
+                {
+                    "commit": source,
+                    "role": f"absorb-into:{commit}",
+                    "mode": apply_commit_patch(worktree_path, source, package["apply_mode"]),
+                }
+            )
+        remove_replay_paths(worktree_path, package["remove_after_apply"].get(commit, []))
+        allow_empty = index == 0 or commit in package["message_overrides"]
+        new_commit = write_replayed_commit(
+            worktree_path,
+            commit,
+            package["message_overrides"],
+            allow_empty=allow_empty,
+        )
+        mapping.append((commit, new_commit or "DROPPED_EMPTY"))
+
+    new_tip = git_text(worktree_path, ["rev-parse", "HEAD"]).strip()
+    before_count = len(original_commits)
+    after_count = int(git_text(worktree_path, ["rev-list", "--count", "HEAD"]).strip())
+    tree_equal = subprocess.run(["git", "diff", "--quiet", f"{package['source_ref']}..HEAD"], cwd=worktree_path).returncode == 0
+    if not tree_equal:
+        raise RuntimeError("Replay result tree does not match source ref.")
+
+    output_branch = package["output_branch"] or build_branch
+    if output_branch != build_branch:
+        subprocess.run(["git", "branch", "-D", output_branch], cwd=worktree_path, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        git_text(worktree_path, ["branch", "-m", output_branch])
+
+    timestamp = local_timestamp()
+    mapping_path = work_dir / "context" / f"github-history-rebase-replay-sha-map-{timestamp}.tsv"
+    mapping_path.write_text(
+        "before\tafter\n" + "\n".join(f"{before}\t{after}" for before, after in mapping) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    verification_results = [
+        run_approved_verification_command(worktree_path, command)
+        for command in package["verification_commands"]
+    ]
+    failed_verification = [item for item in verification_results if item["returncode"] != 0]
+    if failed_verification:
+        raise RuntimeError("Replay verification failed: " + failed_verification[0]["command"])
+
+    pushed = False
+    remote_after = remote_before
+    push_result: dict[str, Any] | None = None
+    if push:
+        push_command = [
+            "push",
+            f"--force-with-lease={package['target_branch']}:{package['expected_remote_sha']}",
+            remote,
+            f"{new_tip}:refs/heads/{package['target_branch']}",
+        ]
+        push_output = git_text(worktree_path, push_command)
+        pushed = True
+        remote_after = git_text(repo_root, ["ls-remote", "--heads", remote, package["target_branch"]]).split()[0]
+        push_result = {"command": "git " + " ".join(push_command), "stdout": push_output, "remote_after": remote_after}
+
+    report_path = work_dir / "process-report" / f"github-history-rebase-replay-execution-{timestamp}.md"
+    write_markdown(
+        report_path,
+        build_rebase_replay_report(
+            package=package,
+            package_path=package_path,
+            worktree_path=worktree_path,
+            mapping_path=mapping_path,
+            remote_before=remote_before,
+            remote_after=remote_after,
+            before_count=before_count,
+            after_count=after_count,
+            tree_equal=tree_equal,
+            pushed=pushed,
+            apply_results=apply_results,
+            verification_results=verification_results,
+        ),
+    )
+    register_artifact(
+        repo_root,
+        work_dir,
+        "GITHUB-HISTORY-REBASE-REPLAY-EXECUTION",
+        "GitHub History Rebase Replay Execution",
+        report_path,
+        "report",
+    )
+    register_artifact(
+        repo_root,
+        work_dir,
+        "GITHUB-HISTORY-REBASE-REPLAY-SHA-MAP",
+        "GitHub History Rebase Replay SHA Map",
+        mapping_path,
+        "other",
+    )
+    return {
+        "dry_run": False,
+        "source_tip": source_tip,
+        "new_tip": new_tip,
+        "before_count": before_count,
+        "after_count": after_count,
+        "tree_equal": tree_equal,
+        "pushed": pushed,
+        "remote_before": remote_before,
+        "remote_after": remote_after,
+        "worktree_path": relative_to_repo(repo_root, worktree_path),
+        "report_path": relative_to_repo(repo_root, report_path),
+        "mapping_path": relative_to_repo(repo_root, mapping_path),
+        "apply_mode": package["apply_mode"],
+        "apply_results": apply_results,
+        "verification_results": verification_results,
+        "push_result": push_result,
+    }
+
+
+def create_rebase_replay_apply(args: argparse.Namespace) -> dict[str, Any]:
+    if args.human_check != "approved":
+        raise PermissionError("rebase-replay-apply requires --human-check approved.")
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    work_dir, analysis_path, analysis = load_analysis(repo_root, args.work_id, args.analysis_path)
+    require_github_operation_gate(repo_root, work_dir, require_mutation_gate=True)
+    package_path, raw_package = load_rebase_replay_package(work_dir, args.package_path)
+    package = normalize_rebase_replay_package(raw_package)
+    if getattr(args, "apply_mode", ""):
+        package["apply_mode"] = args.apply_mode
+    validate_rebase_replay_package(package, analysis, push=bool(args.push))
+    result = execute_rebase_replay_package(
+        repo_root,
+        work_dir,
+        package,
+        package_path,
+        push=bool(args.push),
+        remote_override=str(args.remote or ""),
+        reuse_worktree=bool(args.reuse_worktree),
+        dry_run=bool(args.dry_run),
+    )
+    if not args.dry_run:
+        for candidate_id in package["candidate_ids"]:
+            candidate = find_history_rewrite_candidate(analysis, candidate_id)
+            candidate["execution_status"] = "pushed" if result["pushed"] else "verified"
+            candidate["executed_at"] = utc_now_iso()
+            candidate["replay_package_ref"] = relative_to_repo(repo_root, package_path)
+            candidate["before_after_sha_mapping"] = [result["mapping_path"]]
+            candidate["execution_result"] = {
+                "runtime": "built-in-rebase-replay",
+                "report_path": result["report_path"],
+                "mapping_path": result["mapping_path"],
+                "worktree_path": result["worktree_path"],
+                "apply_mode": result["apply_mode"],
+                "new_tip": result["new_tip"],
+                "pushed": result["pushed"],
+            }
+        analysis.setdefault("rebase_replay_executions", []).append(result)
+        write_json(analysis_path, analysis)
+    result["analysis_path"] = relative_to_repo(repo_root, analysis_path)
+    result["package_path"] = relative_to_repo(repo_root, package_path)
+    return result
+
+
 def require_github_operation_gate(
     repo_root: Path,
     work_dir: Path,
@@ -1462,6 +2236,8 @@ def build_rebase_plan(analysis: dict[str, Any]) -> str:
             "- Git CLI remote: fetch、ls-remote、push、force-with-leaseで検証済みlocal graphをGitHub branchへ反映する。remote操作なので認証が必要。",
             "- GitHub APIではcommit graph rewriteやrebaseはできない。GitHub tokenの有無とlocal rebase editorの要否は別問題として扱う。",
             "- runtime自動化では `git rebase -i` のeditor hookに依存しない。非対話のGit CLI local commandで履歴を作り、local verification後にGit CLI remote commandで承認済みbranchへ反映する。",
+            "- Approved small-commit packages should be generated with `aiwfctl github-knowledge rebase-package` and executed with `aiwfctl github-knowledge rebase-apply`; use JSON data under `work/<work-id>/context/`, not generated Python helper scripts.",
+            "- Replay verification worktrees must live under `work/<work-id>/git-worktree/<target-branch>/`; the main checkout is only for reports and context artifacts.",
             f"- 承認回数: {boundary['approval_model']['human_check_count']} approval package。対象repository、対象branch、rewrite action、local verification、rollback、exact remote update commandを1つの承認単位にまとめる。",
             "- 運用ルール: approval packageが承認済みなら、後続のlocal rewrite、verification、approved remote updateで人間への再承認依頼を出さない。CLIの `--human-check approved` は承認済み事実をruntimeへ渡す実行ガードとして扱う。",
             "",
@@ -1899,6 +2675,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         return create_rebase_plan(args)
     if args.command == "rebase-apply":
         return create_rebase_apply(args)
+    if args.command == "rebase-replay-package":
+        return create_rebase_replay_package(args)
+    if args.command == "rebase-replay-apply":
+        return create_rebase_replay_apply(args)
     if args.command == "github-sync-plan":
         return create_sync_plan(args)
     if args.command == "github-sync-apply":

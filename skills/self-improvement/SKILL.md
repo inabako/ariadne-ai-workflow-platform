@@ -44,13 +44,13 @@ work/<work-id>/test-evidence/self-improvement/
 Feedback置き場を初期化します。
 
 ```powershell
-python runtime/workflow/self_improvement.py init-feedback
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement init-feedback
 ```
 
 Feedback reportを作成します。
 
 ```powershell
-python runtime/workflow/self_improvement.py create-feedback `
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "/docs-sync" `
   --reporter "Human" `
   --situation "docs整備中" `
@@ -61,7 +61,7 @@ python runtime/workflow/self_improvement.py create-feedback `
 Human Review結果を追記します。
 
 ```powershell
-python runtime/workflow/self_improvement.py review-feedback `
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement review-feedback `
   --feedback work/feedback/<feedback>.md `
   --decision accepted `
   --reviewer "Human" `
@@ -72,20 +72,20 @@ python runtime/workflow/self_improvement.py review-feedback `
 Issue bodyを生成します。
 
 ```powershell
-python runtime/workflow/self_improvement.py issue-body `
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement issue-body `
   --feedback work/feedback/<feedback>.md
 ```
 
 evidence scaffoldを作成します。
 
 ```powershell
-python runtime/workflow/self_improvement.py evidence-scaffold --work-id issue-42
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
 ```
 
 branch名を確認します。
 
 ```powershell
-python runtime/workflow/self_improvement.py branch-name --issue-number 42
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement branch-name --issue-number 42
 ```
 
 ## Human Check

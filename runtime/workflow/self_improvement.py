@@ -112,7 +112,7 @@ def feedback_readme() -> str:
 標準作成:
 
 ```powershell
-python runtime/workflow/self_improvement.py create-feedback `
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "/docs-sync" `
   --reporter "Human" `
   --situation "docs整備中" `

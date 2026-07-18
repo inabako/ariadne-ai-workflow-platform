@@ -103,8 +103,8 @@ def create_handoff(
         "required_environment": "docker",
         "recommended_next_commands": [
             f"aiwfctl env select docker --work-id {work_id}",
-            "uv run --project runtime python runtime/workflow/context_first.py "
-            f"--work-dir work/{work_id} require-environment --environment docker",
+            "uv run --project runtime python runtime/ctl.py --repo-root . context require-environment "
+            f"--work-dir work/{work_id} --environment docker",
             "/realtime-iac",
         ],
         "boilerplate_template_expectation": "Check templates/boilerplates/infrastructure/microservice-infra-template/ when realtime gateway infrastructure is in scope.",
@@ -142,8 +142,8 @@ def create_execution_plan(
         ],
         "next_commands": [
             f"aiwfctl env select docker --work-id {work_id}",
-            "uv run --project runtime python runtime/workflow/context_first.py "
-            f"--work-dir work/{work_id} require-environment --environment docker",
+            "uv run --project runtime python runtime/ctl.py --repo-root . context require-environment "
+            f"--work-dir work/{work_id} --environment docker",
             "/realtime-iac",
         ],
     }

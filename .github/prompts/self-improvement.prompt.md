@@ -27,12 +27,12 @@ Ariadne AI Workflow Platform のworkflow実行中に発生した摩擦、ノイ�
 ## Runtime Helpers
 
 ```powershell
-python runtime/workflow/self_improvement.py init-feedback
-python runtime/workflow/self_improvement.py create-feedback --target-workflow "/docs-sync" --situation "<situation>" --friction "<friction>"
-python runtime/workflow/self_improvement.py review-feedback --feedback work/feedback/<feedback>.md --decision accepted --reviewer "Human" --reason "<reason>"
-python runtime/workflow/self_improvement.py issue-body --feedback work/feedback/<feedback>.md
-python runtime/workflow/self_improvement.py branch-name --issue-number 42
-python runtime/workflow/self_improvement.py evidence-scaffold --work-id issue-42
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement init-feedback
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement create-feedback --target-workflow "/docs-sync" --situation "<situation>" --friction "<friction>"
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement review-feedback --feedback work/feedback/<feedback>.md --decision accepted --reviewer "Human" --reason "<reason>"
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement issue-body --feedback work/feedback/<feedback>.md
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement branch-name --issue-number 42
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
 ```
 
 ## Guardrails

@@ -19,7 +19,7 @@ It treats Git history as historical evidence and improves Issue, Pull Request, m
 
 Existing commit message/body rewrite is part of the workflow, but it is a high-risk repair path. It requires explicit item-level human approval, before/after SHA mapping, rollback plan, and reviewed force-push command when needed.
 
-Small rebase maintenance for 1-3 file commit leakage is also a high-risk repair path. Run it as four separate stages: detect commit leakage, calculate the rebase execution plan, output the plan report, and execute rebase only after Human Check approval.
+Small rebase maintenance for 1-3 file commit leakage is also a high-risk repair path. Run it as explicit stages: detect commit leakage, calculate the rebase execution plan, output the plan report, generate a schema-compliant replay package from approved candidates, and execute rebase only after Human Check approval.
 
 Do not complete a useless or accidental commit by inventing a strange Issue reference, PR story, or commit message after the fact. The rebase repair must either absorb the files into the proper semantic commit, split them into a real independent responsibility, drop an empty/noise commit, or explicitly keep it with existing evidence.
 
@@ -49,7 +49,7 @@ Use the agents in this order:
 Initialize:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py init `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge init `
   --repository "<target-repository>" `
   --scan-mode recent `
   --repair-mode proposal `
@@ -59,21 +59,21 @@ uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py
 Create analysis scaffold:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py analysis-template `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge analysis-template `
   --work-id "<work-id>"
 ```
 
 Create repair plan:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py repair-plan `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge repair-plan `
   --work-id "<work-id>"
 ```
 
 Detect small rebase candidates:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py detect-rebase-candidates `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge detect-rebase `
   --work-id "<work-id>" `
   --base "HEAD~30" `
   --head "HEAD"
@@ -82,7 +82,7 @@ uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py
 Create GitHub sync plan:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py github-sync-plan `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge sync-plan `
   --work-id "<work-id>"
 ```
 
@@ -98,30 +98,37 @@ aiwfctl github-knowledge sync-apply `
 Create high-risk rebase review plan:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rebase-plan `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rebase-plan `
   --work-id "<work-id>"
 ```
 
 Execute approved rebase candidate:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rebase-apply `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rebase-package `
   --work-id "<work-id>" `
-  --candidate-id "<candidate-id>" `
+  --target-branch "<branch>" `
+  --apply-mode direct
+```
+
+```powershell
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rebase-apply `
+  --work-id "<work-id>" `
+  --package-path "work/<work-id>/context/rebase-replay-package.json" `
   --human-check approved
 ```
 
 Create RAG candidate:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rag-candidate `
   --work-id "<work-id>"
 ```
 
 Publish RAG candidate only after approval:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rag-candidate `
   --work-id "<work-id>" `
   --publish-rag `
   --human-check approved
@@ -150,12 +157,13 @@ Schema:
 5. Create repair proposals, including semantic subject and commit body supplement proposals when source changes are not sufficiently explained.
 6. Detect 1-3 file commit leakage with `detect-rebase-candidates` and record candidates in `history_rewrite_candidates`.
 7. Stop for human review.
-8. Generate an approval-gated GitHub documentation sync plan.
-9. Generate a `rebase-plan` execution report for any high-risk small rebase candidate.
-10. Execute only approved GitHub CLI/API updates through `github-sync-apply` / `aiwfctl github-knowledge sync-apply`.
-11. Execute existing commit message/body rewrite or small rebase only when the high-risk Git rewrite review plan is explicitly approved and the target candidate has `approval_status: approved`.
-12. Generate Knowledge DB and RAG candidates.
-13. Publish RAG candidates only after human approval.
+8. Generate a `rebase-plan` execution report for any high-risk small rebase candidate.
+9. Generate `rebase-replay-package.json` only with `aiwfctl github-knowledge rebase-package` from candidates whose `approval_status: approved`; do not hand-write replay JSON or generate ad hoc Python helpers under `work/<work-id>/context/`.
+10. Execute existing commit message/body rewrite or small rebase only when the high-risk Git rewrite review plan is explicitly approved and the target candidate has `approval_status: approved`.
+11. Generate an approval-gated GitHub documentation sync plan only after rebase candidates are resolved.
+12. Execute only approved GitHub CLI/API updates through `github-sync-apply` / `aiwfctl github-knowledge sync-apply`.
+13. Generate Knowledge DB and RAG candidates.
+14. Publish RAG candidates only after human approval.
 
 ## Guardrails
 
@@ -163,6 +171,7 @@ Schema:
 - Do not change commit source, source code, README content, or configuration content in the target repository.
 - Existing commit message/body rewrite requires explicit item-level human approval, before/after SHA mapping, rollback plan, and reviewed force-push command when needed.
 - 1-3 file commit leakage rebase requires detection, `rebase-plan`, item-level human approval, before/after SHA mapping, rollback plan, and verification commands.
+- Approved small rebase packages must be generated by `aiwfctl github-knowledge rebase-package`; do not hand-write replay JSON or create temporary `*.py` helpers in `work/<work-id>/context/`.
 - Use the `rebase-plan` legend to resolve legitimate detected diffs as `keep-with-evidence` or false positives as `no-rewrite`; do not leave them pending.
 - Run rebase maintenance before GitHub sync when candidates exist. If no rebase candidates are detected, GitHub sync may proceed after Human Check.
 - Do not run `github-sync-apply` while unresolved `history_rewrite_candidates` remain.

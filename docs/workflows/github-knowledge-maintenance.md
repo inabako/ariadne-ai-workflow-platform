@@ -46,7 +46,7 @@ Repository URL
 Initialize:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py init `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge init `
   --repository "<target-repository>" `
   --scan-mode recent `
   --repair-mode proposal `
@@ -56,21 +56,21 @@ uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py
 Create the analysis scaffold:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py analysis-template `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge analysis-template `
   --work-id "<work-id>"
 ```
 
 Create a human review repair plan:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py repair-plan `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge repair-plan `
   --work-id "<work-id>"
 ```
 
 Detect 1-3 file commit leakage candidates from local Git history:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py detect-rebase-candidates `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge detect-rebase `
   --work-id "<work-id>" `
   --base "HEAD~30" `
   --head "HEAD"
@@ -79,14 +79,14 @@ uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py
 Create the GitHub sync plan:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py github-sync-plan `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge sync-plan `
   --work-id "<work-id>"
 ```
 
 Execute one approved GitHub sync action:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py github-sync-apply `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge sync-apply `
   --work-id "<work-id>" `
   --action-id "<action-id>" `
   --human-check approved
@@ -104,23 +104,36 @@ aiwfctl github-knowledge sync-apply `
 Create a high-risk rebase review plan for 1-3 file commit leakage:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rebase-plan `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rebase-plan `
   --work-id "<work-id>"
 ```
 
-Execute an approved rebase candidate after Human Check:
+Approved small-commit rebase packages should use the built-in replay runtime:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rebase-apply `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rebase-package `
   --work-id "<work-id>" `
-  --candidate-id "<candidate-id>" `
+  --target-branch "<branch>" `
+  --apply-mode direct
+```
+
+`rebase-replay-package` は、`approval_status: approved` の実行可能candidateだけから `work/<work-id>/context/rebase-replay-package.json` を生成します。AIはこのJSONを手書きしません。`--candidate-id` を指定した場合は、その承認済みcandidateだけをpackage化します。
+
+```powershell
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rebase-apply `
+  --work-id "<work-id>" `
+  --package-path "work/<work-id>/context/rebase-replay-package.json" `
   --human-check approved
 ```
+
+The replay runtime checks out the target branch under `work/<work-id>/git-worktree/<branch>/`, executes data-only actions from the JSON package, writes the SHA map and execution report, and optionally pushes with `--push` when the approved package includes the exact force-with-lease boundary. Do not generate ad hoc Python rebase scripts under `work/<work-id>/context/`.
+
+Use `apply_mode: direct` by default. If direct patch replay cannot match context, use an approved `apply_mode: git-3way` package or pass `--apply-mode git-3way` so the runtime uses `git apply --3way --index`. Use `apply_mode: auto-3way` only when the approval package explicitly permits fallback from direct apply to Git 3-way apply.
 
 Create a RAG candidate:
 
 ```powershell
-uv run --project runtime python runtime/workflow/github_knowledge_maintenance.py rag-candidate `
+uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rag-candidate `
   --work-id "<work-id>"
 ```
 
@@ -153,6 +166,9 @@ Schema:
 `detect-rebase-candidates` は、ローカルGit履歴から1-3 fileのcommit漏れ候補を検出し、`github-knowledge-analysis.json` の `history_rewrite_candidates` に `approval_status: pending` として記録します。commit subjectが薄い場合は、subjectだけで判断せず、変更path、directory、extension、repository domain、近接commit、関連file setを複合的に確認します。安全な吸収先を自動特定できない場合は `no-rewrite` ではなく `manual-review-required` としてHuman Reviewへ残します。
 `rebase-plan` は、検出済み候補からHuman Review用の実行計画レポートを出力します。Git操作は実行しません。
 `rebase-apply` は、1つのHuman Check approval packageで承認されたGit CLI commandだけを非対話で実行し、local verification結果をanalysis JSONへ記録します。`--human-check approved` は承認済みパッケージをruntimeへ渡す実行ガードであり、追加の承認依頼ではありません。
+`aiwfctl github-knowledge rebase-package` は、承認済みcandidateからschema準拠の `rebase-replay-package.json` を生成します。AIは `work/<work-id>/context/` にrebase用の一時 `*.py` や手書きJSONを作りません。
+`aiwfctl github-knowledge rebase-apply` は、承認済みsmall-commit rebase packageをJSON dataとして読み込み、runtime内蔵の非対話replay engineで実行します。検証用checkoutは `work/<work-id>/git-worktree/<branch>/` に限定し、本体checkoutや `main` tree をrewrite検証場所として使いません。
+`apply_mode` は `direct` / `git-3way` / `auto-3way` から選びます。通常は `direct` を使い、どうしてもpatch contextが合わない承認済みpackageだけ `git-3way` または明示許可された `auto-3way` を使います。
 `rag-candidate --publish-rag` は、RAG publication前に `github-operation-gate` のHuman Check条件を確認します。
 
 ## GitHub Access Policy

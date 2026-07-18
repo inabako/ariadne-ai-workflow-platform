@@ -14,13 +14,17 @@ if __package__ in {None, ""}:
 from runtime import registry_store  # noqa: E402
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
+from runtime.workflow import close_archive  # noqa: E402
 from runtime.workflow import flutter_multiplatform  # noqa: E402
 from runtime.workflow import github_knowledge_maintenance  # noqa: E402
+from runtime.workflow import human_gate_policy  # noqa: E402
 from runtime.workflow import iac_template  # noqa: E402
 from runtime.workflow import mcp_server_group  # noqa: E402
 from runtime.workflow import sdk_analysis  # noqa: E402
+from runtime.workflow import self_improvement  # noqa: E402
 from runtime.workflow import system_integration  # noqa: E402
 from runtime.workflow import workflow_doctor  # noqa: E402
+from runtime.workflow import context_first  # noqa: E402
 from runtime.workflow import dispatcher_context  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
@@ -1023,6 +1027,26 @@ def build_parser() -> argparse.ArgumentParser:
     context_init = context_sub.add_parser("init", help="Create workflow/tool/runtime/execution-plan context.")
     dispatcher_context.add_init_arguments(context_init)
     context_init.add_argument("--json", action="store_true", help="Print result as JSON.")
+    context_show = context_sub.add_parser("show", help="Show Context First manifest.")
+    context_show.add_argument("--work-dir", required=True)
+    context_show.add_argument("--json", action="store_true", help="Print result as JSON.")
+    context_require = context_sub.add_parser("require", help="Require dispatcher context entries.")
+    context_require.add_argument("--work-dir", required=True)
+    context_require.add_argument("--context", action="append", required=True, choices=sorted(context_first.DISPATCHER_CONTEXT_TYPES))
+    context_require.add_argument("--json", action="store_true", help="Print result as JSON.")
+    context_require_env = context_sub.add_parser("require-environment", help="Require a selected execution environment.")
+    context_require_env.add_argument("--work-dir", required=True)
+    context_require_env.add_argument("--environment", required=True)
+    context_require_env.add_argument("--json", action="store_true", help="Print result as JSON.")
+
+    human_gate_cmd = sub.add_parser("human-gate", help="Inspect and enforce Human Gate Registry.")
+    human_gate_sub = human_gate_cmd.add_subparsers(dest="human_gate_command")
+    human_gate_list = human_gate_sub.add_parser("list", help="List registered human gates.")
+    human_gate_list.add_argument("--json", action="store_true")
+    human_gate_check = human_gate_sub.add_parser("check", help="Check one human gate approval value.")
+    human_gate_check.add_argument("--gate", required=True)
+    human_gate_check.add_argument("--human-check", default="pending")
+    human_gate_check.add_argument("--json", action="store_true")
 
     knowledge_cmd = sub.add_parser("knowledge", help="Manage generated DuckDB RAG read model.")
     knowledge_cmd.add_argument("--db", default=str(duckdb_store.DEFAULT_DB_PATH), help="Generated DuckDB file path.")
@@ -1143,6 +1167,43 @@ def build_parser() -> argparse.ArgumentParser:
 
     github_knowledge_cmd = sub.add_parser("github-knowledge", help="Plan and apply approved GitHub knowledge sync actions.")
     github_knowledge_sub = github_knowledge_cmd.add_subparsers(dest="github_knowledge_command")
+    github_init = github_knowledge_sub.add_parser("init", help="Initialize GitHub knowledge maintenance context.")
+    github_init.add_argument("--repository", required=True)
+    github_init.add_argument("--target-branch", default="")
+    github_init.add_argument("--scan-mode", nargs="+", choices=github_knowledge_maintenance.SCAN_MODES, default=["recent"])
+    github_init.add_argument("--repair-mode", choices=github_knowledge_maintenance.REPAIR_MODES, default="proposal")
+    github_init.add_argument("--rag-output", action="store_true")
+    github_init.add_argument("--work-id", default=None)
+    github_init.add_argument("--reuse-existing", action="store_true")
+    github_init.add_argument("--intent-summary", default="")
+    github_init.add_argument("--json", action="store_true")
+    github_analysis = github_knowledge_sub.add_parser("analysis-template", help="Create analysis JSON scaffold.")
+    github_analysis.add_argument("--work-id", required=True)
+    github_analysis.add_argument("--analysis-path", default="")
+    github_analysis.add_argument("--json", action="store_true")
+    github_repair_plan = github_knowledge_sub.add_parser("repair-plan", help="Create a human review repair plan.")
+    github_repair_plan.add_argument("--work-id", required=True)
+    github_repair_plan.add_argument("--analysis-path", default="")
+    github_repair_plan.add_argument("--output", default="")
+    github_repair_plan.add_argument("--json", action="store_true")
+    github_detect_rebase = github_knowledge_sub.add_parser(
+        "detect-rebase",
+        help="Detect small commit-history leakage candidates.",
+    )
+    github_detect_rebase.add_argument("--work-id", required=True)
+    github_detect_rebase.add_argument("--analysis-path", default="")
+    github_detect_rebase.add_argument("--git-repo", default="")
+    github_detect_rebase.add_argument("--base", default="HEAD~30")
+    github_detect_rebase.add_argument("--head", default="HEAD")
+    github_detect_rebase.add_argument("--max-commits", type=int, default=80)
+    github_detect_rebase.add_argument("--max-files", type=int, default=3)
+    github_detect_rebase.add_argument("--append", action="store_true")
+    github_detect_rebase.add_argument("--json", action="store_true")
+    github_rebase_plan = github_knowledge_sub.add_parser("rebase-plan", help="Create a high-risk rebase review plan.")
+    github_rebase_plan.add_argument("--work-id", required=True)
+    github_rebase_plan.add_argument("--analysis-path", default="")
+    github_rebase_plan.add_argument("--output", default="")
+    github_rebase_plan.add_argument("--json", action="store_true")
     github_sync_plan = github_knowledge_sub.add_parser("sync-plan", help="Create an approval-gated GitHub sync plan.")
     github_sync_plan.add_argument("--work-id", required=True)
     github_sync_plan.add_argument("--analysis-path", default="")
@@ -1155,6 +1216,97 @@ def build_parser() -> argparse.ArgumentParser:
     github_sync_apply.add_argument("--human-check", choices=["pending", "approved"], default="pending")
     github_sync_apply.add_argument("--dry-run", action="store_true")
     github_sync_apply.add_argument("--json", action="store_true")
+    github_rebase_package = github_knowledge_sub.add_parser(
+        "rebase-package",
+        help="Generate an approved small-commit rebase replay package.",
+    )
+    github_rebase_package.add_argument("--work-id", required=True)
+    github_rebase_package.add_argument("--candidate-id", action="append", default=[])
+    github_rebase_package.add_argument("--analysis-path", default="")
+    github_rebase_package.add_argument("--output", default="")
+    github_rebase_package.add_argument("--target-branch", default="")
+    github_rebase_package.add_argument("--source-ref", default="")
+    github_rebase_package.add_argument("--remote", default="origin")
+    github_rebase_package.add_argument("--expected-remote-sha", default="")
+    github_rebase_package.add_argument("--allow-push", action="store_true")
+    github_rebase_package.add_argument("--apply-mode", choices=["direct", "git-3way", "auto-3way"], default="direct")
+    github_rebase_package.add_argument("--json", action="store_true")
+    github_rebase_apply = github_knowledge_sub.add_parser(
+        "rebase-apply",
+        help="Execute an approved generated rebase replay package.",
+    )
+    github_rebase_apply.add_argument("--work-id", required=True)
+    github_rebase_apply.add_argument("--package-path", default="")
+    github_rebase_apply.add_argument("--analysis-path", default="")
+    github_rebase_apply.add_argument("--human-check", choices=["pending", "approved"], default="pending")
+    github_rebase_apply.add_argument("--remote", default="")
+    github_rebase_apply.add_argument("--apply-mode", choices=["direct", "git-3way", "auto-3way"], default="")
+    github_rebase_apply.add_argument("--push", action="store_true")
+    github_rebase_apply.add_argument("--reuse-worktree", action="store_true")
+    github_rebase_apply.add_argument("--dry-run", action="store_true")
+    github_rebase_apply.add_argument("--json", action="store_true")
+    github_rag_candidate = github_knowledge_sub.add_parser("rag-candidate", help="Create or publish a RAG candidate note.")
+    github_rag_candidate.add_argument("--work-id", required=True)
+    github_rag_candidate.add_argument("--analysis-path", default="")
+    github_rag_candidate.add_argument("--output", default="")
+    github_rag_candidate.add_argument("--topic", default="")
+    github_rag_candidate.add_argument("--publish-rag", action="store_true")
+    github_rag_candidate.add_argument("--human-check", choices=["pending", "approved"], default="pending")
+    github_rag_candidate.add_argument("--json", action="store_true")
+
+    self_improvement_cmd = sub.add_parser("self-improvement", help="Manage Ariadne workflow feedback and Human Check review artifacts.")
+    self_improvement_sub = self_improvement_cmd.add_subparsers(dest="self_improvement_command")
+    self_improvement_init = self_improvement_sub.add_parser("init-feedback", help="Create work/feedback README.")
+    self_improvement_init.add_argument("--json", action="store_true")
+    self_improvement_create = self_improvement_sub.add_parser("create-feedback", help="Create a workflow feedback report.")
+    self_improvement_create.add_argument("--target-workflow", required=True)
+    self_improvement_create.add_argument("--reporter", default="Human")
+    self_improvement_create.add_argument("--situation", required=True)
+    self_improvement_create.add_argument("--friction", required=True)
+    self_improvement_create.add_argument("--impact", default="")
+    self_improvement_create.add_argument("--proposed-improvement", default="")
+    self_improvement_create.add_argument("--evidence", action="append", default=[])
+    self_improvement_create.add_argument("--priority", default="Medium", choices=["Low", "Medium", "High"])
+    self_improvement_create.add_argument("--category", default="Workflow")
+    self_improvement_create.add_argument("--output", default="")
+    self_improvement_create.add_argument("--json", action="store_true")
+    self_improvement_review = self_improvement_sub.add_parser("review-feedback", help="Append human review result.")
+    self_improvement_review.add_argument("--feedback", required=True)
+    self_improvement_review.add_argument("--decision", required=True, choices=sorted(self_improvement.VALID_DECISIONS))
+    self_improvement_review.add_argument("--reviewer", required=True)
+    self_improvement_review.add_argument("--reason", required=True)
+    self_improvement_review.add_argument("--next-action", default="")
+    self_improvement_review.add_argument("--json", action="store_true")
+    self_improvement_issue = self_improvement_sub.add_parser("issue-body", help="Create an Issue body from accepted feedback.")
+    self_improvement_issue.add_argument("--feedback", required=True)
+    self_improvement_issue.add_argument("--output", default="")
+    self_improvement_issue.add_argument("--allow-unaccepted", action="store_true")
+    self_improvement_issue.add_argument("--json", action="store_true")
+    self_improvement_branch = self_improvement_sub.add_parser("branch-name", help="Generate a standard issue branch name.")
+    self_improvement_branch.add_argument("--issue-number", required=True)
+    self_improvement_branch.add_argument("--json", action="store_true")
+    self_improvement_evidence = self_improvement_sub.add_parser("evidence-scaffold", help="Create self-improvement evidence directories.")
+    self_improvement_evidence.add_argument("--work-id", required=True)
+    self_improvement_evidence.add_argument("--json", action="store_true")
+
+    close_archive_cmd = sub.add_parser("close-archive", help="Prepare, audit, and prune report-only close archives.")
+    close_archive_sub = close_archive_cmd.add_subparsers(dest="close_archive_command")
+    for close_command in ("audit", "prepare", "prune"):
+        close_item = close_archive_sub.add_parser(close_command)
+        close_item.add_argument("--issue", default="")
+        close_item.add_argument("--work-id", default="")
+        close_item.add_argument("--category", choices=close_archive.CATEGORY_CHOICES, default="auto")
+        close_item.add_argument("--archive-id", default="")
+        close_item.add_argument("--source-work-dir", default="")
+        close_item.add_argument("--archive-dir", default="")
+        if close_command == "prepare":
+            close_item.add_argument("--source-rag", action="append", default=[])
+            close_item.add_argument("--no-auto-rag", action="store_true")
+            close_item.add_argument("--require-rag", action="store_true")
+        if close_command == "prune":
+            close_item.add_argument("--execute", action="store_true")
+            close_item.add_argument("--human-check", choices=["approved", "pending"], default="pending")
+        close_item.add_argument("--json", action="store_true")
 
     iac_cmd = sub.add_parser("iac", help="Prepare and inspect infrastructure boilerplate templates.")
     iac_sub = iac_cmd.add_subparsers(dest="iac_command")
@@ -1475,7 +1627,10 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
             return 1, (
                 "Context Management\n\n"
                 "Usage:\n"
-                "  aiwfctl context init --work-id <work-id> --workflow <workflow>\n\n"
+                "  aiwfctl context init --work-id <work-id> --workflow <workflow>\n"
+                "  aiwfctl context show --work-dir work/<work-id>\n"
+                "  aiwfctl context require --work-dir work/<work-id> --context environment-selection\n"
+                "  aiwfctl context require-environment --work-dir work/<work-id> --environment docker\n\n"
                 "Example:\n"
                 "  aiwfctl context init --work-id issue-123 --workflow /docs-sync --tool gh:read-only:GitHub metadata collection\n"
             )
@@ -1499,7 +1654,73 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 lines.extend(["", "Written Artifacts"])
                 lines.extend(f"  - {item}" for item in written)
             return (0 if result.get("status") != "human-check-required" else 2), "\n".join(lines).rstrip() + "\n"
+        try:
+            context_args = argparse.Namespace(**vars(args))
+            context_args.command = context_command
+            context_args.repo_root = str(repo_root)
+            handler_map = {
+                "show": context_first.run_show,
+                "require": context_first.run_require,
+                "require-environment": context_first.run_require_environment,
+            }
+            if context_command not in handler_map:
+                return 1, f"Unknown context command: {context_command}\n"
+            result = handler_map[context_command](context_args)
+        except Exception as exc:
+            return 1, f"Context First failed: {exc}\n"
+        code = 0 if result.get("status") not in {"human-check-required", "failed"} else 2
+        if getattr(args, "json", False):
+            return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        lines = [
+            "Context First",
+            "",
+            f"Command : {context_command}",
+            f"Status  : {result.get('status', '')}",
+            f"Manifest: {result.get('manifest_path', '')}",
+        ]
+        missing = result.get("missing", [])
+        if missing:
+            lines.extend(["", "Missing"])
+            lines.extend(f"  - {item}" for item in missing)
+        if "environment" in result:
+            lines.append(f"Environment: {result.get('environment', '')}")
+        if "context_path" in result:
+            lines.append(f"Context    : {result.get('context_path', '')}")
+        return code, "\n".join(lines).rstrip() + "\n"
         return 1, f"Unknown context command: {context_command}\n"
+
+    if command == "human-gate":
+        human_gate_command = getattr(args, "human_gate_command", None)
+        if human_gate_command is None:
+            return 1, (
+                "Human Gate Registry\n\n"
+                "Usage:\n"
+                "  aiwfctl human-gate list\n"
+                "  aiwfctl human-gate check --gate <gate-id> --human-check approved\n"
+            )
+        try:
+            gate_args = argparse.Namespace(**vars(args))
+            gate_args.command = human_gate_command
+            gate_args.repo_root = str(repo_root)
+            if human_gate_command == "list":
+                result = human_gate_policy.run_list(gate_args)
+            elif human_gate_command == "check":
+                result = human_gate_policy.run_check(gate_args)
+            else:
+                return 1, f"Unknown human-gate command: {human_gate_command}\n"
+        except Exception as exc:
+            return 1, f"Human gate failed: {exc}\n"
+        code = 0 if result.get("status") != "blocked" else 2
+        if getattr(args, "json", False):
+            return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        lines = ["Human Gate Registry", "", f"Command : {human_gate_command}", f"Status  : {result.get('status', '')}"]
+        if "gate" in result:
+            lines.append(f"Gate    : {result.get('gate', '')}")
+        if "registry" in result:
+            lines.append(f"Registry: {result.get('registry', '')}")
+        if "reason" in result:
+            lines.append(f"Reason  : {result.get('reason', '')}")
+        return code, "\n".join(lines).rstrip() + "\n"
 
     if command == "knowledge":
         knowledge_command = getattr(args, "knowledge_command", None)
@@ -1602,15 +1823,41 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
             return 1, (
                 "GitHub Knowledge Maintenance\n\n"
                 "Usage:\n"
+                "  aiwfctl github-knowledge init --repository <owner/repo>\n"
+                "  aiwfctl github-knowledge analysis-template --work-id <work-id>\n"
+                "  aiwfctl github-knowledge detect-rebase --work-id <work-id>\n"
+                "  aiwfctl github-knowledge repair-plan --work-id <work-id>\n"
+                "  aiwfctl github-knowledge rebase-plan --work-id <work-id>\n"
                 "  aiwfctl github-knowledge sync-plan --work-id <work-id>\n"
                 "  aiwfctl github-knowledge sync-apply --work-id <work-id> --action-id <action-id> --human-check approved\n\n"
+                "  aiwfctl github-knowledge rebase-package --work-id <work-id> --target-branch <branch>\n"
+                "  aiwfctl github-knowledge rebase-apply --work-id <work-id> --human-check approved\n\n"
+                "  aiwfctl github-knowledge rag-candidate --work-id <work-id>\n\n"
                 "Outputs:\n"
-                "  work/<work-id>/process-report/github-documentation-sync-plan-*.md\n"
                 "  work/<work-id>/context/github-knowledge-analysis.json\n"
+                "  work/<work-id>/process-report/github-knowledge-repair-plan-*.md\n"
+                "  work/<work-id>/process-report/github-documentation-sync-plan-*.md\n"
+                "  work/<work-id>/context/rebase-replay-package.json\n"
+                "  work/<work-id>/process-report/github-history-rebase-replay-execution-*.md\n"
+                "  work/<work-id>/process-report/github-knowledge-rag-candidate-*.md\n"
             )
         try:
             github_args = argparse.Namespace(**vars(args))
-            github_args.command = "github-sync-plan" if github_knowledge_command == "sync-plan" else "github-sync-apply"
+            command_map = {
+                "init": "init",
+                "analysis-template": "analysis-template",
+                "repair-plan": "repair-plan",
+                "detect-rebase": "detect-rebase-candidates",
+                "rebase-plan": "rebase-plan",
+                "sync-plan": "github-sync-plan",
+                "sync-apply": "github-sync-apply",
+                "rebase-package": "rebase-replay-package",
+                "rebase-apply": "rebase-replay-apply",
+                "rag-candidate": "rag-candidate",
+            }
+            if github_knowledge_command not in command_map:
+                return 1, f"Unknown GitHub knowledge command: {github_knowledge_command}\n"
+            github_args.command = command_map[github_knowledge_command]
             github_args.repo_root = str(repo_root)
             result = github_knowledge_maintenance.run(github_args)
         except Exception as exc:
@@ -1625,10 +1872,117 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
         ]
         if "sync_plan" in result:
             lines.append(f"Plan    : {result.get('sync_plan', '')}")
+        if "repair_plan" in result:
+            lines.append(f"Plan    : {result.get('repair_plan', '')}")
+        if "rebase_plan" in result:
+            lines.append(f"Plan    : {result.get('rebase_plan', '')}")
+        if "rag_candidate" in result:
+            lines.append(f"RAG     : {result.get('rag_candidate', '')}")
+        if "analysis_path" in result:
+            lines.append(f"Analysis: {result.get('analysis_path', '')}")
+        if "rebase_replay_package" in result:
+            lines.append(f"Package : {result.get('rebase_replay_package', '')}")
+            lines.append(f"Targets : {result.get('candidate_count', 0)} candidate(s)")
+        if "report_path" in result:
+            lines.append(f"Report  : {result.get('report_path', '')}")
+        if "mapping_path" in result:
+            lines.append(f"SHA Map : {result.get('mapping_path', '')}")
         if "action_id" in result:
             lines.append(f"Action  : {result.get('action_id', '')}")
+        if "apply_mode" in result:
+            lines.append(f"Apply   : {result.get('apply_mode', '')}")
+        if "pushed" in result:
+            lines.append(f"Pushed  : {str(result.get('pushed', False)).lower()}")
+        if "dry_run" in result:
             lines.append(f"Dry Run : {str(result.get('dry_run', False)).lower()}")
+        if "executed" in result:
             lines.append(f"Executed: {str(result.get('executed', False)).lower()}")
+        return 0, "\n".join(lines).rstrip() + "\n"
+
+    if command == "self-improvement":
+        self_command = getattr(args, "self_improvement_command", None)
+        if self_command is None:
+            return 1, (
+                "Self Improvement\n\n"
+                "Usage:\n"
+                "  aiwfctl self-improvement create-feedback --target-workflow <workflow> --situation <text> --friction <text>\n"
+                "  aiwfctl self-improvement review-feedback --feedback <path> --decision accepted --reviewer Human --reason <text>\n"
+                "  aiwfctl self-improvement issue-body --feedback <path>\n"
+                "  aiwfctl self-improvement evidence-scaffold --work-id issue-<number>\n"
+            )
+        try:
+            self_args = argparse.Namespace(**vars(args))
+            self_args.command = self_command
+            self_args.repo_root = str(repo_root)
+            handler_map = {
+                "init-feedback": self_improvement.run_init_feedback,
+                "create-feedback": self_improvement.run_create_feedback,
+                "review-feedback": self_improvement.run_review_feedback,
+                "issue-body": self_improvement.run_issue_body,
+                "branch-name": self_improvement.run_branch_name,
+                "evidence-scaffold": self_improvement.run_evidence_scaffold,
+            }
+            if self_command not in handler_map:
+                return 1, f"Unknown self-improvement command: {self_command}\n"
+            result = handler_map[self_command](self_args)
+        except Exception as exc:
+            return 1, f"Self improvement failed: {exc}\n"
+        if getattr(args, "json", False):
+            return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        lines = ["Self Improvement", "", f"Command : {self_command}"]
+        for key, label in [
+            ("feedback_readme", "README  "),
+            ("feedback", "Feedback"),
+            ("issue_body", "Issue   "),
+            ("branch", "Branch  "),
+            ("work_id", "Work ID "),
+            ("process_report", "Process "),
+            ("test_evidence", "Evidence"),
+            ("artifact_index", "Artifacts"),
+            ("decision", "Decision"),
+            ("status", "Status  "),
+        ]:
+            if key in result:
+                lines.append(f"{label}: {result.get(key, '')}")
+        return 0, "\n".join(lines).rstrip() + "\n"
+
+    if command == "close-archive":
+        close_command = getattr(args, "close_archive_command", None)
+        if close_command is None:
+            return 1, (
+                "Close Archive\n\n"
+                "Usage:\n"
+                "  aiwfctl close-archive prepare --work-id <work-id>\n"
+                "  aiwfctl close-archive audit --work-id <work-id> --archive-id <archive-id>\n"
+                "  aiwfctl close-archive prune --work-id <work-id> --execute --human-check approved\n"
+            )
+        try:
+            close_args = argparse.Namespace(**vars(args))
+            close_args.command = close_command
+            close_args.repo_root = str(repo_root)
+            handler_map = {
+                "audit": close_archive.run_audit,
+                "prepare": close_archive.run_prepare,
+                "prune": close_archive.run_prune,
+            }
+            if close_command not in handler_map:
+                return 1, f"Unknown close-archive command: {close_command}\n"
+            result = handler_map[close_command](close_args)
+        except Exception as exc:
+            return 1, f"Close archive failed: {exc}\n"
+        if getattr(args, "json", False):
+            return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        lines = [
+            "Close Archive",
+            "",
+            f"Command : {close_command}",
+            f"Status  : {result.get('status', '')}",
+            f"Archive : {result.get('archive_dir', result.get('archive', ''))}",
+        ]
+        if "prune_target_count" in result:
+            lines.append(f"Prune   : {result.get('prune_target_count', 0)} target(s)")
+        if "removed_count" in result:
+            lines.append(f"Removed : {result.get('removed_count', 0)}")
         return 0, "\n".join(lines).rstrip() + "\n"
 
     if command == "iac":

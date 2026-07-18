@@ -154,9 +154,9 @@ Before actually starting `/realtime-iac`, verify the Docker environment context:
 
 ```powershell
 aiwfctl env select docker --work-id <receipt-id>
-uv run --project runtime python runtime/workflow/context_first.py `
+uv run --project runtime python runtime/ctl.py --repo-root . context require-environment `
   --work-dir work/<receipt-id> `
-  require-environment --environment docker
+  --environment docker
 ```
 
 ## Stop Rules
@@ -210,7 +210,7 @@ Create or update a Feedback report when you observe ambiguity, repeated checks, 
 Use the existing helper when creating a new report:
 
 ```powershell
-python runtime/workflow/self_improvement.py create-feedback `
+uv run --project runtime python runtime/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "<slash-command>" `
   --reporter "AI workflow" `
   --situation "<what was happening>" `

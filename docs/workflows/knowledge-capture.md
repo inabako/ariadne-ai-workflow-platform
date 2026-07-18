@@ -97,14 +97,14 @@ python runtime/github/pull_request_manager.py `
 承認後、次を実行します。
 
 ```powershell
-python runtime/workflow/close_archive.py prepare --issue "<issue-id>" --require-rag
-python runtime/workflow/close_archive.py audit --issue "<issue-id>"
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive prepare --issue "<issue-id>" --require-rag
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive audit --issue "<issue-id>"
 ```
 
 `prepare` はRAG sourceを自動検出し、吸収済みの具体内容をclose reportへ反映します。RAG sourceが自動検出できない、または重要なRAG sourceを必ず含めたい場合は、次のように明示します。
 
 ```powershell
-python runtime/workflow/close_archive.py prepare `
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive prepare `
   --issue "<issue-id>" `
   --source-rag "rag/normalized/<rag-source>.md" `
   --require-rag
@@ -113,8 +113,8 @@ python runtime/workflow/close_archive.py prepare `
 不要なsource checkoutやcacheを削除する場合は、dry-runを確認してから承認付きで実行します。
 
 ```powershell
-python runtime/workflow/close_archive.py prune --issue "<issue-id>"
-python runtime/workflow/close_archive.py prune `
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive prune --issue "<issue-id>"
+uv run --project runtime python runtime/ctl.py --repo-root . close-archive prune `
   --issue "<issue-id>" `
   --execute `
   --human-check approved
