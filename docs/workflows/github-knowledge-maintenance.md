@@ -46,7 +46,7 @@ Repository URL
 Initialize:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge init `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge init `
   --repository "<target-repository>" `
   --scan-mode recent `
   --repair-mode proposal `
@@ -56,21 +56,21 @@ uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge in
 Create the analysis scaffold:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge analysis-template `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge analysis-template `
   --work-id "<work-id>"
 ```
 
 Create a human review repair plan:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge repair-plan `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge repair-plan `
   --work-id "<work-id>"
 ```
 
 Detect 1-3 file commit leakage candidates from local Git history:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge detect-rebase `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge detect-rebase `
   --work-id "<work-id>" `
   --base "HEAD~30" `
   --head "HEAD"
@@ -79,14 +79,14 @@ uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge de
 Create the GitHub sync plan:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge sync-plan `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge sync-plan `
   --work-id "<work-id>"
 ```
 
 Execute one approved GitHub sync action:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge sync-apply `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge sync-apply `
   --work-id "<work-id>" `
   --action-id "<action-id>" `
   --human-check approved
@@ -104,14 +104,24 @@ aiwfctl github-knowledge sync-apply `
 Create a high-risk rebase review plan for 1-3 file commit leakage:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rebase-plan `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-plan `
   --work-id "<work-id>"
 ```
+
+Ingest the Human Review OK / NG checklist through ctl before package generation:
+
+```powershell
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-review-intake `
+  --work-id "<work-id>" `
+  --human-check approved
+```
+
+`rebase-review-intake` reads the latest `github-history-rebase-plan-*.md` unless `--plan-path` is provided. It validates one checked value per candidate, records OK as `approval_status: approved` with a concrete `repair_goal`, and records NG as `approval_status: rejected`. The command updates `github-knowledge-analysis.json`; AI must not hand-edit that approval state.
 
 Approved small-commit rebase packages should use the built-in replay runtime:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rebase-package `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-package `
   --work-id "<work-id>" `
   --target-branch "<branch>" `
   --apply-mode direct
@@ -120,7 +130,7 @@ uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge re
 `rebase-replay-package` は、`approval_status: approved` の実行可能candidateだけから `work/<work-id>/context/rebase-replay-package.json` を生成します。AIはこのJSONを手書きしません。`--candidate-id` を指定した場合は、その承認済みcandidateだけをpackage化します。
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rebase-apply `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-apply `
   --work-id "<work-id>" `
   --package-path "work/<work-id>/context/rebase-replay-package.json" `
   --human-check approved
@@ -133,7 +143,7 @@ Use `apply_mode: direct` by default. If direct patch replay cannot match context
 Create a RAG candidate:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rag-candidate `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rag-candidate `
   --work-id "<work-id>"
 ```
 

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from runtime import registry_store
+from runtime.common import registry_store
 from runtime.workflow import self_improvement
 
 

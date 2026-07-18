@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 
-from runtime import ctl
+from runtime.common import ctl
 from runtime.rag import duckdb_store
 
 
@@ -18,8 +18,45 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     parser = ctl.build_parser()
 
     assert parser.prog == "aiwfctl"
+    args = parser.parse_args(["github-knowledge", "rebase-review-intake", "--work-id", "w", "--human-check", "approved"])
+    assert args.github_knowledge_command == "rebase-review-intake"
+    assert args.human_check == "approved"
     namespace = runpy.run_path(str(Path(ctl.__file__)))
     assert namespace["build_parser"]
+
+
+def test_windows_ps1_runtime_contract() -> None:
+    script = repo_root() / "runtime" / "windows-ps1" / "aiwf.ps1"
+    raw = script.read_bytes()
+    text = raw.decode("utf-8")
+    bash_script = repo_root() / "runtime" / "posix-bash" / "aiwf.sh"
+    bash_raw = bash_script.read_bytes()
+    bash_text = bash_raw.decode("utf-8")
+
+    assert not raw.startswith(b"\xef\xbb\xbf")
+    assert "Set-StrictMode -Version Latest" in text
+    assert "[System.Text.UTF8Encoding]::new($false)" in text
+    assert "$OutputEncoding = $Utf8NoBom" in text
+    assert "[Parameter(ValueFromRemainingArguments = $true)]" in text
+    assert "Invoke-AiwfNative" in text
+    assert '"common/ctl.py"' in text
+    assert '"--project", $RuntimeRoot, "python", $CtlPath, "--repo-root", $RepoRoot' in text
+    assert '"run", "pytest"' in text
+    assert "pytest_ut_spec_sync.py" in text
+    assert "utf8_bom.py" in text
+    assert "runtime/workflow" not in text
+    assert not bash_raw.startswith(b"\xef\xbb\xbf")
+    assert bash_text.startswith("#!/usr/bin/env bash")
+    assert "set -Eeuo pipefail" in bash_text
+    assert "Ariadne POSIX bash runtime" in bash_text
+    assert "PYTHONUTF8=1" in bash_text
+    assert "PYTHONIOENCODING=utf-8" in bash_text
+    assert 'ctl_path="$runtime_root/common/ctl.py"' in bash_text
+    assert 'run --project "$runtime_root" python "$ctl_path" --repo-root "$repo_root"' in bash_text
+    assert 'run pytest "$@"' in bash_text
+    assert "pytest_ut_spec_sync.py" in bash_text
+    assert "utf8_bom.py" in bash_text
+    assert "runtime/workflow" not in bash_text
 
 
 def test_ctl_without_modifier_warns_and_does_not_show_list() -> None:

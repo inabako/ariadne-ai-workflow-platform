@@ -9,9 +9,9 @@ from pathlib import Path
 from typing import Any, Sequence
 
 if __package__ in {None, ""}:
-    sys.path.append(str(Path(__file__).resolve().parents[1]))
+    sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime import registry_store  # noqa: E402
+from runtime.common import registry_store  # noqa: E402
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
 from runtime.workflow import close_archive  # noqa: E402
@@ -1204,6 +1204,28 @@ def build_parser() -> argparse.ArgumentParser:
     github_rebase_plan.add_argument("--analysis-path", default="")
     github_rebase_plan.add_argument("--output", default="")
     github_rebase_plan.add_argument("--json", action="store_true")
+    github_rebase_review = github_knowledge_sub.add_parser(
+        "rebase-review-intake",
+        help="Ingest a Human Review OK/NG checklist into analysis JSON.",
+    )
+    github_rebase_review.add_argument("--work-id", required=True)
+    github_rebase_review.add_argument("--analysis-path", default="")
+    github_rebase_review.add_argument("--plan-path", default="")
+    github_rebase_review.add_argument("--human-check", choices=["pending", "approved"], default="pending")
+    github_rebase_review.add_argument(
+        "--ok-repair-goal",
+        choices=[
+            "auto",
+            "absorb-into-existing-commit",
+            "drop-empty-or-noise-commit",
+            "split-into-independent-commit",
+            "keep-with-evidence",
+            "no-rewrite",
+        ],
+        default="auto",
+    )
+    github_rebase_review.add_argument("--allow-partial", action="store_true")
+    github_rebase_review.add_argument("--json", action="store_true")
     github_sync_plan = github_knowledge_sub.add_parser("sync-plan", help="Create an approval-gated GitHub sync plan.")
     github_sync_plan.add_argument("--work-id", required=True)
     github_sync_plan.add_argument("--analysis-path", default="")
@@ -1828,6 +1850,7 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 "  aiwfctl github-knowledge detect-rebase --work-id <work-id>\n"
                 "  aiwfctl github-knowledge repair-plan --work-id <work-id>\n"
                 "  aiwfctl github-knowledge rebase-plan --work-id <work-id>\n"
+                "  aiwfctl github-knowledge rebase-review-intake --work-id <work-id> --human-check approved\n"
                 "  aiwfctl github-knowledge sync-plan --work-id <work-id>\n"
                 "  aiwfctl github-knowledge sync-apply --work-id <work-id> --action-id <action-id> --human-check approved\n\n"
                 "  aiwfctl github-knowledge rebase-package --work-id <work-id> --target-branch <branch>\n"
@@ -1849,6 +1872,7 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 "repair-plan": "repair-plan",
                 "detect-rebase": "detect-rebase-candidates",
                 "rebase-plan": "rebase-plan",
+                "rebase-review-intake": "rebase-review-intake",
                 "sync-plan": "github-sync-plan",
                 "sync-apply": "github-sync-apply",
                 "rebase-package": "rebase-replay-package",
@@ -1876,6 +1900,8 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
             lines.append(f"Plan    : {result.get('repair_plan', '')}")
         if "rebase_plan" in result:
             lines.append(f"Plan    : {result.get('rebase_plan', '')}")
+        if "plan_path" in result:
+            lines.append(f"Review  : {result.get('plan_path', '')}")
         if "rag_candidate" in result:
             lines.append(f"RAG     : {result.get('rag_candidate', '')}")
         if "analysis_path" in result:
@@ -1889,6 +1915,10 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
             lines.append(f"SHA Map : {result.get('mapping_path', '')}")
         if "action_id" in result:
             lines.append(f"Action  : {result.get('action_id', '')}")
+        if "approved_count" in result:
+            lines.append(f"Approved: {result.get('approved_count', 0)}")
+        if "rejected_count" in result:
+            lines.append(f"Rejected: {result.get('rejected_count', 0)}")
         if "apply_mode" in result:
             lines.append(f"Apply   : {result.get('apply_mode', '')}")
         if "pushed" in result:

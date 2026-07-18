@@ -323,7 +323,7 @@ def test_workflow_doctor_fail_on_warning_turns_warning_into_fail(monkeypatch, tm
 
 def test_workflow_doctor_run_reports_all_warning_types(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: ["work/issue-1/tmp.txt"])
-    monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: ["runtime/ctl.py"])
+    monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: ["runtime/common/ctl.py"])
     monkeypatch.setattr(
         workflow_doctor,
         "human_gate_registry_findings",

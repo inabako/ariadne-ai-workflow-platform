@@ -97,7 +97,7 @@ Realtime IaC開始前には Docker environment gate を確認します。
 
 ```powershell
 aiwfctl env select docker --work-id <receipt-id>
-uv run --project runtime python runtime/ctl.py --repo-root . context require-environment `
+uv run --project runtime python runtime/common/ctl.py --repo-root . context require-environment `
   --work-dir work/<receipt-id> `
   --environment docker
 ```

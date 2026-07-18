@@ -9,7 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime import registry_store  # noqa: E402
+from runtime.common import registry_store  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
 
 

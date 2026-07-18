@@ -68,15 +68,15 @@ docs同期は改善扱いとして、Issue titleに次のprefixを付けます�
 完了後は `work/close/improvement/issue-<issue-number>` をreport-only archiveとして準備します。source checkout、`.git`、`.venv`、cache、build outputは保持しません。
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . close-archive prepare --issue issue-<issue-number>
-uv run --project runtime python runtime/ctl.py --repo-root . close-archive audit --issue issue-<issue-number>
+uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare --issue issue-<issue-number>
+uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive audit --issue issue-<issue-number>
 ```
 
 削除が必要な場合は、dry-run確認後に承認付きで実行します。
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . close-archive prune --issue issue-<issue-number>
-uv run --project runtime python runtime/ctl.py --repo-root . close-archive prune `
+uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prune --issue issue-<issue-number>
+uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prune `
   --issue issue-<issue-number> `
   --execute `
   --human-check approved

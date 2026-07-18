@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from runtime import ctl
+from runtime.common import ctl
 from runtime.workflow import mcp_server_group
 
 

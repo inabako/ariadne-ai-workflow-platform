@@ -13,7 +13,9 @@ agent: agent
 
 ## Runtime Entrypoint
 
-Follow `.github/shared/runtime-entrypoint-policy.md`. Use `aiwfctl` / `runtime/ctl.py` as the official entrypoint for Context First, Human Check, GitHub knowledge maintenance, close archive, and self-improvement operations.
+Follow `.github/shared/runtime-entrypoint-policy.md`. Use `aiwfctl` / `runtime/common/ctl.py` as the official entrypoint for Context First, Human Check, GitHub knowledge maintenance, close archive, and self-improvement operations.
+
+On Windows 11, start from `.\runtime\windows-ps1\aiwf.ps1 ctl ...`; the PS1 runtime handles PowerShell/UTF-8/path normalization and then delegates to `aiwfctl`.
 
 ## Purpose
 
@@ -53,7 +55,7 @@ Use the agents in this order:
 Initialize:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge init `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge init `
   --repository "<target-repository>" `
   --scan-mode recent `
   --repair-mode proposal `
@@ -63,21 +65,21 @@ uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge in
 Create analysis scaffold:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge analysis-template `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge analysis-template `
   --work-id "<work-id>"
 ```
 
 Create repair plan:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge repair-plan `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge repair-plan `
   --work-id "<work-id>"
 ```
 
 Detect small rebase candidates:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge detect-rebase `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge detect-rebase `
   --work-id "<work-id>" `
   --base "HEAD~30" `
   --head "HEAD"
@@ -86,7 +88,7 @@ uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge de
 Create GitHub sync plan:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge sync-plan `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge sync-plan `
   --work-id "<work-id>"
 ```
 
@@ -102,21 +104,27 @@ aiwfctl github-knowledge sync-apply `
 Create high-risk rebase review plan:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rebase-plan `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-plan `
   --work-id "<work-id>"
 ```
 
 Execute approved rebase candidate:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rebase-package `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-review-intake `
+  --work-id "<work-id>" `
+  --human-check approved
+```
+
+```powershell
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-package `
   --work-id "<work-id>" `
   --target-branch "<branch>" `
   --apply-mode direct
 ```
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rebase-apply `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-apply `
   --work-id "<work-id>" `
   --package-path "work/<work-id>/context/rebase-replay-package.json" `
   --human-check approved
@@ -125,14 +133,14 @@ uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge re
 Create RAG candidate:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rag-candidate `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rag-candidate `
   --work-id "<work-id>"
 ```
 
 Publish RAG candidate only after approval:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rag-candidate `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rag-candidate `
   --work-id "<work-id>" `
   --publish-rag `
   --human-check approved
@@ -162,12 +170,13 @@ Schema:
 6. Detect 1-3 file commit leakage with `detect-rebase-candidates` and record candidates in `history_rewrite_candidates`.
 7. Stop for human review.
 8. Generate a `rebase-plan` execution report for any high-risk small rebase candidate.
-9. Generate `rebase-replay-package.json` only with `aiwfctl github-knowledge rebase-package` from candidates whose `approval_status: approved`; do not hand-write replay JSON or generate ad hoc Python helpers under `work/<work-id>/context/`.
-10. Execute existing commit message/body rewrite or small rebase only when the high-risk Git rewrite review plan is explicitly approved and the target candidate has `approval_status: approved`.
-11. Generate an approval-gated GitHub documentation sync plan only after rebase candidates are resolved.
-12. Execute only approved GitHub CLI/API updates through `github-sync-apply` / `aiwfctl github-knowledge sync-apply`.
-13. Generate Knowledge DB and RAG candidates.
-14. Publish RAG candidates only after human approval.
+9. Ingest the reviewed OK / NG checklist with `aiwfctl github-knowledge rebase-review-intake --human-check approved`; do not hand-edit `approval_status` or `repair_goal`.
+10. Generate `rebase-replay-package.json` only with `aiwfctl github-knowledge rebase-package` from candidates whose `approval_status: approved`; do not hand-write replay JSON or generate ad hoc Python helpers under `work/<work-id>/context/`.
+11. Execute existing commit message/body rewrite or small rebase only when the high-risk Git rewrite review plan is explicitly approved and the target candidate has `approval_status: approved`.
+12. Generate an approval-gated GitHub documentation sync plan only after rebase candidates are resolved.
+13. Execute only approved GitHub CLI/API updates through `github-sync-apply` / `aiwfctl github-knowledge sync-apply`.
+14. Generate Knowledge DB and RAG candidates.
+15. Publish RAG candidates only after human approval.
 
 ## Guardrails
 

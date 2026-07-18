@@ -10,7 +10,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime import registry_store  # noqa: E402
+from runtime.common import registry_store  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
 from runtime.tools import pytest_ut_spec_sync  # noqa: E402
@@ -43,7 +43,8 @@ def missing_required_files(repo_root: Path) -> list[str]:
         "runtime/pytest.ini",
         "runtime/tools/aiwfctl.cmd",
         "runtime/tools/register-aiwfctl-path.cmd",
-        "runtime/ctl.py",
+        "runtime/common/ctl.py",
+        "runtime/common/registry_store.py",
         "runtime/workflow/close_archive.py",
         "runtime/workflow/noise_reduction.py",
         "runtime/workflow/workflow_state.py",

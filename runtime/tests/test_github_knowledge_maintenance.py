@@ -160,6 +160,7 @@ def test_build_parser_parses_every_subcommand() -> None:
     assert parser.parse_args(["repair-plan", "--work-id", "w"]).command == "repair-plan"
     assert parser.parse_args(["detect-rebase-candidates", "--work-id", "w"]).command == "detect-rebase-candidates"
     assert parser.parse_args(["rebase-plan", "--work-id", "w"]).command == "rebase-plan"
+    assert parser.parse_args(["rebase-review-intake", "--work-id", "w"]).command == "rebase-review-intake"
     assert parser.parse_args(["rebase-apply", "--work-id", "w", "--candidate-id", "HISTORY-1"]).command == "rebase-apply"
     assert parser.parse_args(["rebase-replay-package", "--work-id", "w"]).command == "rebase-replay-package"
     assert parser.parse_args(["rebase-replay-apply", "--work-id", "w"]).command == "rebase-replay-apply"
@@ -570,6 +571,83 @@ def test_create_rebase_plan_writes_output_and_registers_artifact(tmp_path: Path)
     assert "再承認を求めません" in rebase_plan
     artifact_index = json.loads((work_dir / "context" / "artifact-index.json").read_text(encoding="utf-8-sig"))
     assert any(item["id"] == "GITHUB-HISTORY-REBASE-PLAN" for item in artifact_index["artifacts"])
+
+
+def test_create_rebase_review_intake_reads_ok_ng_checklist(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    process_dir = work_dir / "process-report"
+    process_dir.mkdir()
+    analysis = sample_analysis()
+    first = analysis["history_rewrite_candidates"][0]
+    first.update(
+        {
+            "id": "HISTORY-DETECT-001",
+            "repair_goal": "manual-review-required",
+            "recommended_action": "manual-review-required",
+            "rollback_plan": "git reset --hard def5678",
+            "draft_commands": ["# replay approved commits", "git diff --quiet <old-head>..<new-head>"],
+        }
+    )
+    analysis["history_rewrite_candidates"].append(
+        {
+            "id": "HISTORY-DETECT-002",
+            "file_paths": ["docs/example.md"],
+            "suspect_commits": ["1111111 update: docs"],
+            "expected_commit": "2222222 docs(workflow): add example",
+            "repair_goal": "manual-review-required",
+            "recommended_action": "manual-review-required",
+            "reason": "thin subject",
+            "approval_status": "pending",
+            "completion_criteria": ["The candidate is resolved by human review."],
+            "rollback_plan": "git reset --hard 2222222",
+            "draft_commands": [],
+            "verification_commands": ["git log --format=\"%H %s\" -5"],
+        }
+    )
+    analysis_path = work_dir / "context" / "github-knowledge-analysis.json"
+    write_json(analysis_path, analysis)
+    plan_path = process_dir / "github-history-rebase-plan-20260718_000000.md"
+    plan_path.write_text(
+        "\n".join(
+            [
+                "| 候補ID | OK欄 | NG欄 | 疑わしいコミット | 対象ファイル | 現在の推奨 | メモ |",
+                "| --- | --- | --- | --- | --- | --- | --- |",
+                "| HISTORY-DETECT-001 | [x] OK | [ ] NG | abc1234 docs-only subject | runtime/workflow/example.py | `manual-review-required` |  |",
+                "| HISTORY-DETECT-002 | [ ] OK | [x] NG | 1111111 update: docs | docs/example.md | `manual-review-required` |  |",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = github_knowledge_maintenance.create_rebase_review_intake(
+        argparse.Namespace(
+            command="rebase-review-intake",
+            work_id=work_dir.name,
+            analysis_path="",
+            plan_path=str(plan_path),
+            human_check="approved",
+            ok_repair_goal="auto",
+            allow_partial=False,
+            repo_root=str(repo_root),
+        )
+    )
+
+    assert result["candidate_count"] == 2
+    assert result["approved_count"] == 1
+    assert result["rejected_count"] == 1
+    updated = json.loads(analysis_path.read_text(encoding="utf-8"))
+    approved = updated["history_rewrite_candidates"][0]
+    rejected = updated["history_rewrite_candidates"][1]
+    assert approved["approval_status"] == "approved"
+    assert approved["repair_goal"] == "absorb-into-existing-commit"
+    assert approved["recommended_action"] == "non-interactive-git-cli-rewrite"
+    assert approved["draft_commands"] == []
+    assert approved["replay_package_ref"] == f"work/{work_dir.name}/context/rebase-replay-package.json"
+    assert approved["human_review_decision"] == "OK"
+    assert rejected["approval_status"] == "rejected"
+    assert rejected["repair_goal"] == "no-rewrite"
+    assert rejected["human_review_decision"] == "NG"
+    assert updated["rebase_review_intakes"][0]["approved_count"] == 1
 
 
 def test_create_rebase_apply_requires_human_and_candidate_approval(tmp_path: Path) -> None:

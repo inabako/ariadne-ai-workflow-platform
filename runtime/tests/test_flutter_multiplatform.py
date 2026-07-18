@@ -4,7 +4,7 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from runtime import ctl
+from runtime.common import ctl
 from runtime.workflow import flutter_multiplatform
 
 

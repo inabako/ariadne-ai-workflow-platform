@@ -33,7 +33,7 @@ AIワークフローは増え続けます。
 ```text
 db/registries/registry.duckdb
 .github/schemas/workflow-help.schema.json
-runtime/ctl.py
+runtime/common/ctl.py
 runtime/tests/test_ctl_help.py
 docs/reference/workflow-help.md
 .github/prompts/*.prompt.md

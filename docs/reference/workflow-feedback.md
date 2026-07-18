@@ -20,7 +20,7 @@ Workflow Feedback は、各AI workflow実行中に見つかった摩擦、迷い
 新しいFeedback reportを作る場合は、既存helperを使います。
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "/docs-sync" `
   --reporter "AI workflow" `
   --situation "docs整備中" `

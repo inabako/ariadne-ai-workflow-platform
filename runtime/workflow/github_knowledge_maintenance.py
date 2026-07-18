@@ -182,6 +182,29 @@ def build_parser() -> argparse.ArgumentParser:
     rebase_parser.add_argument("--output", default="")
     rebase_parser.add_argument("--repo-root", default=None)
 
+    rebase_review_parser = subparsers.add_parser(
+        "rebase-review-intake",
+        help="Ingest a Human Review OK/NG checklist and record approved history rewrite candidates.",
+    )
+    rebase_review_parser.add_argument("--work-id", required=True)
+    rebase_review_parser.add_argument("--analysis-path", default="")
+    rebase_review_parser.add_argument("--plan-path", default="")
+    rebase_review_parser.add_argument("--human-check", choices=["pending", "approved"], default="pending")
+    rebase_review_parser.add_argument(
+        "--ok-repair-goal",
+        choices=[
+            "auto",
+            "absorb-into-existing-commit",
+            "drop-empty-or-noise-commit",
+            "split-into-independent-commit",
+            "keep-with-evidence",
+            "no-rewrite",
+        ],
+        default="auto",
+    )
+    rebase_review_parser.add_argument("--allow-partial", action="store_true")
+    rebase_review_parser.add_argument("--repo-root", default=None)
+
     rebase_apply_parser = subparsers.add_parser(
         "rebase-apply",
         help="Execute approved small commit-history rebase commands after human approval.",
@@ -1071,6 +1094,20 @@ def history_rewrite_candidates(analysis: dict[str, Any]) -> list[dict[str, Any]]
     return [candidate for candidate in candidates if isinstance(candidate, dict)]
 
 
+EXECUTABLE_REBASE_REPAIR_GOALS = {
+    "absorb-into-existing-commit",
+    "drop-empty-or-noise-commit",
+    "split-into-independent-commit",
+}
+
+REBASE_REPAIR_GOALS = {
+    *EXECUTABLE_REBASE_REPAIR_GOALS,
+    "keep-with-evidence",
+    "manual-review-required",
+    "no-rewrite",
+}
+
+
 def validate_history_rewrite_candidates(candidates: list[dict[str, Any]]) -> list[str]:
     errors: list[str] = []
     for candidate in candidates:
@@ -1079,14 +1116,7 @@ def validate_history_rewrite_candidates(candidates: list[dict[str, Any]]) -> lis
         if not isinstance(file_paths, list) or not 1 <= len(file_paths) <= 3:
             errors.append(f"{candidate_id}: file_paths must contain 1 to 3 files.")
         repair_goal = str(candidate.get("repair_goal", ""))
-        if repair_goal and repair_goal not in {
-            "absorb-into-existing-commit",
-            "drop-empty-or-noise-commit",
-            "split-into-independent-commit",
-            "keep-with-evidence",
-            "manual-review-required",
-            "no-rewrite",
-        }:
+        if repair_goal and repair_goal not in REBASE_REPAIR_GOALS:
             errors.append(f"{candidate_id}: repair_goal is not supported.")
         approval_status = str(candidate.get("approval_status", "pending"))
         if approval_status not in {"pending", "approved", "rejected"}:
@@ -1153,6 +1183,192 @@ def load_analysis(repo_root: Path, work_id: str, raw_path: str) -> tuple[Path, P
     if not isinstance(analysis, dict):
         raise ValueError(f"GitHub knowledge analysis must be a JSON object: {path}")
     return work_dir, path, analysis
+
+
+def latest_rebase_review_plan(work_dir: Path) -> Path:
+    report_dir = work_dir / "process-report"
+    paths = list(report_dir.glob("github-history-rebase-plan-*.md"))
+    if not paths:
+        raise FileNotFoundError(f"Rebase plan report does not exist under: {report_dir}")
+    return max(paths, key=lambda path: (path.stat().st_mtime, path.name))
+
+
+def markdown_checkbox_is_checked(value: str) -> bool:
+    return bool(re.search(r"\[\s*[xX]\s*\]", value))
+
+
+def parse_rebase_review_checklist(plan_path: Path) -> dict[str, str]:
+    decisions: dict[str, str] = {}
+    errors: list[str] = []
+    for line in plan_path.read_text(encoding="utf-8-sig").splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("| HISTORY-"):
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        if len(cells) < 3:
+            continue
+        candidate_id = cells[0]
+        if candidate_id in decisions:
+            errors.append(f"{candidate_id}: duplicate checklist row.")
+            continue
+        ok_checked = markdown_checkbox_is_checked(cells[1])
+        ng_checked = markdown_checkbox_is_checked(cells[2])
+        if ok_checked == ng_checked:
+            errors.append(f"{candidate_id}: exactly one of OK or NG must be checked.")
+            continue
+        decisions[candidate_id] = "OK" if ok_checked else "NG"
+    if not decisions and not errors:
+        raise ValueError(f"No HISTORY-* OK/NG checklist rows were found in: {plan_path}")
+    if errors:
+        raise ValueError("Invalid rebase review checklist: " + " ".join(errors))
+    return decisions
+
+
+def approved_repair_goal_for_candidate(candidate: dict[str, Any], ok_repair_goal: str) -> str:
+    if ok_repair_goal != "auto":
+        return ok_repair_goal
+    current_goal = str(candidate.get("repair_goal", "")).strip()
+    if current_goal in EXECUTABLE_REBASE_REPAIR_GOALS:
+        return current_goal
+    if candidate.get("expected_commit"):
+        return "absorb-into-existing-commit"
+    raise ValueError(
+        f"{candidate.get('id', 'HISTORY-XXX')}: OK review requires --ok-repair-goal "
+        "because auto cannot derive a concrete executable repair_goal."
+    )
+
+
+def recommended_action_for_repair_goal(repair_goal: str) -> str:
+    if repair_goal == "split-into-independent-commit":
+        return "split-commit"
+    if repair_goal == "no-rewrite":
+        return "no-rewrite"
+    if repair_goal in EXECUTABLE_REBASE_REPAIR_GOALS:
+        return "non-interactive-git-cli-rewrite"
+    return "manual-review-required"
+
+
+def apply_rebase_review_decision(
+    *,
+    repo_root: Path,
+    work_dir: Path,
+    candidate: dict[str, Any],
+    decision: str,
+    ok_repair_goal: str,
+    reviewed_at: str,
+    plan_ref: str,
+) -> dict[str, Any]:
+    candidate_id = str(candidate.get("id", "HISTORY-XXX"))
+    if decision == "NG":
+        candidate["approval_status"] = "rejected"
+        candidate["repair_goal"] = "no-rewrite"
+        candidate["recommended_action"] = "no-rewrite"
+        candidate["human_review_decision"] = "NG"
+        candidate["human_reviewed_at"] = reviewed_at
+        candidate["human_review_source"] = plan_ref
+        candidate.setdefault("rejection_reason", "Human Review checklist marked NG.")
+        return {
+            "candidate_id": candidate_id,
+            "decision": decision,
+            "approval_status": "rejected",
+            "repair_goal": "no-rewrite",
+        }
+
+    repair_goal = approved_repair_goal_for_candidate(candidate, ok_repair_goal)
+    candidate["approval_status"] = "approved"
+    candidate["repair_goal"] = repair_goal
+    candidate["recommended_action"] = recommended_action_for_repair_goal(repair_goal)
+    candidate["human_review_decision"] = "OK"
+    candidate["human_reviewed_at"] = reviewed_at
+    candidate["human_review_source"] = plan_ref
+    if repair_goal in EXECUTABLE_REBASE_REPAIR_GOALS:
+        candidate["draft_commands"] = []
+        candidate["replay_package_ref"] = relative_to_repo(repo_root, default_rebase_replay_package_path(work_dir))
+    return {
+        "candidate_id": candidate_id,
+        "decision": decision,
+        "approval_status": "approved",
+        "repair_goal": repair_goal,
+    }
+
+
+def create_rebase_review_intake(args: argparse.Namespace) -> dict[str, Any]:
+    if args.human_check != "approved":
+        raise PermissionError("rebase-review-intake requires --human-check approved.")
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    work_dir, analysis_path, analysis = load_analysis(repo_root, args.work_id, args.analysis_path)
+    if args.plan_path:
+        plan_path = Path(args.plan_path).resolve()
+        ensure_child_path(work_dir / "process-report", plan_path, "rebase review plan")
+    else:
+        plan_path = latest_rebase_review_plan(work_dir)
+    decisions = parse_rebase_review_checklist(plan_path)
+    all_candidates = history_rewrite_candidates(analysis)
+    candidate_ids = {str(candidate.get("id", "")) for candidate in all_candidates}
+    missing = sorted(candidate_id for candidate_id in candidate_ids if candidate_id and candidate_id not in decisions)
+    unknown = sorted(candidate_id for candidate_id in decisions if candidate_id not in candidate_ids)
+    if unknown:
+        raise ValueError("Checklist contains unknown history rewrite candidates: " + ", ".join(unknown))
+    if missing and not args.allow_partial:
+        raise ValueError(
+            "Checklist is incomplete. Missing decisions for: "
+            + ", ".join(missing)
+            + ". Use --allow-partial to intake only checked rows."
+        )
+
+    reviewed_at = utc_now_iso()
+    plan_ref = relative_to_repo(repo_root, plan_path)
+    updates = [
+        apply_rebase_review_decision(
+            repo_root=repo_root,
+            work_dir=work_dir,
+            candidate=candidate,
+            decision=decisions[str(candidate.get("id"))],
+            ok_repair_goal=str(args.ok_repair_goal or "auto"),
+            reviewed_at=reviewed_at,
+            plan_ref=plan_ref,
+        )
+        for candidate in all_candidates
+        if str(candidate.get("id")) in decisions
+    ]
+    errors = validate_history_rewrite_candidates(
+        [
+            candidate
+            for candidate in all_candidates
+            if str(candidate.get("id")) in decisions and candidate.get("approval_status") == "approved"
+        ]
+    )
+    if errors:
+        raise ValueError("Rebase review intake produced invalid approved candidates: " + " ".join(errors))
+
+    analysis.setdefault("rebase_review_intakes", []).append(
+        {
+            "reviewed_at": reviewed_at,
+            "plan_path": plan_ref,
+            "ok_repair_goal": str(args.ok_repair_goal or "auto"),
+            "allow_partial": bool(args.allow_partial),
+            "candidate_ids": [update["candidate_id"] for update in updates],
+            "approved_count": sum(1 for update in updates if update["approval_status"] == "approved"),
+            "rejected_count": sum(1 for update in updates if update["approval_status"] == "rejected"),
+        }
+    )
+    write_json(analysis_path, analysis)
+    register_artifact(
+        repo_root,
+        work_dir,
+        "GITHUB-KNOWLEDGE-ANALYSIS",
+        "GitHub Knowledge Analysis",
+        analysis_path,
+        "report",
+    )
+    return {
+        "analysis_path": relative_to_repo(repo_root, analysis_path),
+        "plan_path": plan_ref,
+        "candidate_count": len(updates),
+        "approved_count": sum(1 for update in updates if update["approval_status"] == "approved"),
+        "rejected_count": sum(1 for update in updates if update["approval_status"] == "rejected"),
+        "decisions": updates,
+    }
 
 
 def create_detect_rebase_candidates(args: argparse.Namespace) -> dict[str, Any]:
@@ -2673,6 +2889,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         return create_detect_rebase_candidates(args)
     if args.command == "rebase-plan":
         return create_rebase_plan(args)
+    if args.command == "rebase-review-intake":
+        return create_rebase_review_intake(args)
     if args.command == "rebase-apply":
         return create_rebase_apply(args)
     if args.command == "rebase-replay-package":

@@ -125,7 +125,7 @@ Create or update a Feedback report when you observe ambiguity, repeated checks, 
 Use the existing helper when creating a new report:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "<slash-command>" `
   --reporter "AI workflow" `
   --situation "<what was happening>" `

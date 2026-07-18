@@ -11,7 +11,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from runtime import registry_store  # noqa: E402
+from runtime.common import registry_store  # noqa: E402
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
@@ -624,7 +624,7 @@ def runtime_context(
             "runtime/tools",
         ],
         "verification_commands": [
-            "uv run --project runtime python runtime/ctl.py --repo-root . context show --work-dir work/<work-id>",
+            "uv run --project runtime python runtime/common/ctl.py --repo-root . context show --work-dir work/<work-id>",
             "uv run --project runtime python runtime/workflow/workflow_doctor.py --fail-on-warning",
         ],
         "human_check_required_when": [

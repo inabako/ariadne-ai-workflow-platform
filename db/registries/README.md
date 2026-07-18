@@ -26,13 +26,13 @@ work/db/ariadne-knowledge-platform/registries/
 Build or refresh the DuckDB registry from the backup JSON source:
 
 ```powershell
-uv run --project runtime python runtime/registry_store.py --repo-root . build
+uv run --project runtime python runtime/common/registry_store.py --repo-root . build
 ```
 
 Inspect row counts:
 
 ```powershell
-uv run --project runtime python runtime/registry_store.py --repo-root . summary
+uv run --project runtime python runtime/common/registry_store.py --repo-root . summary
 ```
 
 Schema definitions remain under `.github/schemas/`; generated work artifacts remain under `work/`.

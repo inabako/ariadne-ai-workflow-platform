@@ -1359,7 +1359,7 @@ def test_commit_changes_dry_run_records_status_without_commit(monkeypatch: pytes
 
     def fake_run_git(args, cwd):
         if args == ["status", "--short"]:
-            return subprocess.CompletedProcess(["git", *args], 0, stdout=" M runtime/ctl.py\n", stderr="")
+            return subprocess.CompletedProcess(["git", *args], 0, stdout=" M runtime/common/ctl.py\n", stderr="")
         raise AssertionError(args)
 
     monkeypatch.setattr(commit_changes, "run_git", fake_run_git)
@@ -1378,7 +1378,7 @@ def test_commit_changes_dry_run_records_status_without_commit(monkeypatch: pytes
 
     assert result["commit"] == "dry-run"
     assert result["branch"] == "feature/issue-1"
-    assert result["status_before"] == "M runtime/ctl.py"
+    assert result["status_before"] == "M runtime/common/ctl.py"
 
 
 def test_commit_changes_missing_source_dir_is_reported(tmp_path: Path) -> None:

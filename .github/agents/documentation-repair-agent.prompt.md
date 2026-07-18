@@ -67,14 +67,14 @@ work/<work-id>/context/github-knowledge-analysis.json
 Then generate:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge repair-plan `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge repair-plan `
   --work-id "<work-id>"
 ```
 
 For small rebase candidates, also generate:
 
 ```powershell
-uv run --project runtime python runtime/ctl.py --repo-root . github-knowledge rebase-plan `
+uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-plan `
   --work-id "<work-id>"
 ```
 
