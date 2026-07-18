@@ -356,7 +356,7 @@ Update the target workspace README or setup docs with setup steps, recommended e
 When the VSCode environment pattern is reusable for Localty or another target workspace, save a Markdown source note under:
 
 ```text
-rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
+work/db/ariadne-knowledge-platform/rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 ```
 
 Use the runtime helper to create a correctly named draft:
@@ -370,22 +370,22 @@ uv run --project runtime python runtime/workflow/vscode_environment.py rag-templ
 
 The Markdown file is the human-reviewable source note. It is not the final machine-readable knowledge artifact.
 
-After human approval, normalize the approved source through the file-based RAG pipeline with `--source-dir rag/workspace-environment` and `--document-type workspace-environment-pattern`.
+After human approval, normalize the approved source through the file-based RAG pipeline with `--source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment` and `--document-type workspace-environment-pattern`.
 
 ```powershell
 uv run --project runtime python runtime/rag/normalize_documents.py `
-  --source-dir rag/workspace-environment `
-  --output-dir rag/normalized `
+  --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment `
+  --output-dir db/rag/normalized `
   --document-type workspace-environment-pattern
 ```
 
 The final durable knowledge record is the generated UUID-named JSON document:
 
 ```text
-rag/normalized/<uuid>.json
+db/rag/normalized/<uuid>.json
 ```
 
-Chunk JSON, indexes, embeddings, and retrieval context packs are derived artifacts from that UUID-named normalized JSON. Use `rag/jsonized/<uuid>.json` only as a wrapper for existing non-UUID artifacts; it does not replace the normalized RAG document.
+Chunk JSON, indexes, embeddings, and retrieval context packs are derived artifacts from that UUID-named normalized JSON. Use `db/rag/jsonized/<uuid>.json` only as a wrapper for existing non-UUID artifacts; it does not replace the normalized RAG document.
 
 ## Human Gates
 
@@ -441,5 +441,5 @@ The workflow is complete when:
 - required task and launch entries are testable or have recorded human-check evidence
 - Docker / Git / runtime checks are recorded
 - setup and troubleshooting docs are updated
-- reusable VSCode environment knowledge is captured under `rag/workspace-environment/` when it should feed future RAG
-- approved reusable knowledge is normalized into UUID-named JSON under `rag/normalized/` as the final RAG knowledge artifact
+- reusable VSCode environment knowledge is captured under `work/db/ariadne-knowledge-platform/rag/workspace-environment/` when it should feed future RAG
+- approved reusable knowledge is normalized into UUID-named JSON under `db/rag/normalized/` as the final RAG knowledge artifact

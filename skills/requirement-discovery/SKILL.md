@@ -84,7 +84,7 @@ For Stripe SDKs, the analysis records payment vendor, SDK language, package mana
 5. If a `work/requirements/sdk/` input exists, run SDK Pre-Analysis and SDK External Discovery, then register `sdk-analysis` and `sdk-external-discovery` into the Context First manifest.
 6. Identify knowledge gaps where the team lacks enough technical context to ask good requirement questions.
 7. If prior internal RAG is relevant, run `/rag-load` for prior findings, risks, or test gaps.
-8. If external technical knowledge is needed, use `rag/external-web/knowledge-sources.md` as the source index.
+8. If external technical knowledge is needed, use `work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md` as the source index.
 9. If specialist knowledge is needed to ask good questions or frame constraints, run the relevant Specialist Agent as QA support.
 10. Ask the human focused questions when clarification is required.
 11. Review the human answers together with the original draft, Noise Reduction outputs, SDK analysis context, and any cited RAG context.
@@ -156,9 +156,9 @@ Flow:
 ```text
 要件を聞く
   -> 知見不足の領域を特定する
-  -> rag/external-web/knowledge-sources.md から関連sourceを選ぶ
+  -> work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md から関連sourceを選ぶ
   -> external-web-source-reviewer-agent で外部Webを精査する
-  -> rag/external-web/<category>/ に compact claim / metadata を保存する
+  -> work/db/ariadne-knowledge-platform/rag/external-web/<category>/ に compact claim / metadata を保存する
   -> external-web-rag-dispatcher-agent で必要な外部Web RAGを集約する
   -> 要件定義review draftへ、根拠pathと未確認事項を反映する
 ```
@@ -184,16 +184,16 @@ The output must record trusted external-web RAG, rejected or limited claims, unr
 Source index:
 
 ```text
-rag/external-web/knowledge-sources.md
+work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md
 ```
 
 Category output examples:
 
 ```text
-rag/external-web/network/
-rag/external-web/system-design/
-rag/external-web/ai-workflow/
-rag/external-web/architecture/
+work/db/ariadne-knowledge-platform/rag/external-web/network/
+work/db/ariadne-knowledge-platform/rag/external-web/system-design/
+work/db/ariadne-knowledge-platform/rag/external-web/ai-workflow/
+work/db/ariadne-knowledge-platform/rag/external-web/architecture/
 ```
 
 ## Critical Gate
@@ -248,8 +248,8 @@ work/requirements/draft/<draft-stem>-specialist-review-<domain>.md
 External-web RAG artifacts, when used:
 
 ```text
-rag/external-web/<category>/*.md
-rag/external-web/retrieval/*-aggregate.md
+work/db/ariadne-knowledge-platform/rag/external-web/<category>/*.md
+work/db/ariadne-knowledge-platform/rag/external-web/retrieval/*-aggregate.md
 ```
 
 Final artifact after human OK:

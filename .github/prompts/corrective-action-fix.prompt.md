@@ -42,7 +42,7 @@ skills/corrective-action-fix/SKILL.md
 `/corrective-action-report` で作成済みのレポートを使う場合:
 
 ```text
-/corrective-action-fix localty-system-gui develop rag/corrective-action-report/260704120000_ABC12345_localty-system-gui.md
+/corrective-action-fix localty-system-gui develop work/db/ariadne-knowledge-platform/rag/corrective-action-report/260704120000_ABC12345_localty-system-gui.md
 ```
 
 Flow:

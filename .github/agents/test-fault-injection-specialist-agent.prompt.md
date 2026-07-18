@@ -24,8 +24,8 @@ You review whether test specifications and evidence plans prove behavior under f
 ## Inputs
 
 - test specification, implementation plan, corrective action report, or review findings
-- internal RAG context from `rag/retrieval/`
-- external-web RAG from `rag/external-web/testing/`
+- internal RAG context from `db/rag/retrieval/`
+- external-web RAG from `work/db/ariadne-knowledge-platform/rag/external-web/testing/`
 - current repository evidence when available
 - available tools and platform constraints
 

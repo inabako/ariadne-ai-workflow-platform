@@ -16,6 +16,7 @@ if __package__ in {None, ""}:
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso  # noqa: E402
 from runtime.rag import ingestion_optimizer  # noqa: E402
+from runtime.rag.paths import LOCAL_GENERATED_STANDARD_DIRS, SOURCE_REPO_STANDARD_DIRS  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
@@ -27,12 +28,8 @@ DEFAULT_REFERENCE_CHECK_WORK_ID = "duckdb-reference-check"
 DEFAULT_SOURCE_REPO_URL = "https://github.com/inabako/ariadne-knowledge-platform.git"
 DEFAULT_SOURCE_REPO_PATH = Path("work/db/ariadne-knowledge-platform")
 SCHEMA_VERSION = "1.1"
-STANDARD_SOURCE_DIRS = [
-    Path("rag/optimized-chunks"),
-    Path("rag/chunks"),
-    Path("rag/jsonized"),
-    Path("rag/normalized"),
-]
+STANDARD_SOURCE_DIRS = SOURCE_REPO_STANDARD_DIRS
+LOCAL_STANDARD_SOURCE_DIRS = LOCAL_GENERATED_STANDARD_DIRS
 DEFAULT_REFERENCE_QUERIES = ["workflow", "runtime", "RAG"]
 
 
@@ -288,11 +285,11 @@ def import_local_rag_sources(
         raise RuntimeError(f"Knowledge source repository is not cloned: {target_root}")
     imports: list[dict[str, Any]] = []
     total_files = 0
-    for relative_source in STANDARD_SOURCE_DIRS:
+    for relative_source, target_relative in zip(LOCAL_STANDARD_SOURCE_DIRS, STANDARD_SOURCE_DIRS, strict=True):
         source = repo_root / relative_source
         if not source.exists():
             continue
-        target = target_root / relative_source
+        target = target_root / target_relative
         result = copy_tree_contents(source, target, clean=clean)
         total_files += result["copied_files"]
         imports.append(
@@ -691,7 +688,7 @@ def discover_json_files(source: Path) -> list[Path]:
 
 
 def existing_standard_sources(repo_root: Path) -> list[Path]:
-    return [repo_root / source for source in STANDARD_SOURCE_DIRS if (repo_root / source).exists()]
+    return [repo_root / source for source in LOCAL_STANDARD_SOURCE_DIRS if (repo_root / source).exists()]
 
 
 def remove_generated_db(db_path: Path) -> bool:

@@ -51,7 +51,7 @@ uv run --project runtime python runtime/rag/duckdb_store.py init
 ### ingest
 
 ```powershell
-uv run --project runtime python runtime/rag/duckdb_store.py ingest --file rag/optimized-chunks/<id>.json
+uv run --project runtime python runtime/rag/duckdb_store.py ingest --file db/rag/optimized-chunks/<id>.json
 ```
 
 1つのJSON recordをDuckDBへ登録します。
@@ -63,7 +63,7 @@ uv run --project runtime python runtime/rag/duckdb_store.py ingest --file rag/op
 ### migrate
 
 ```powershell
-uv run --project runtime python runtime/rag/duckdb_store.py migrate --source rag/optimized-chunks
+uv run --project runtime python runtime/rag/duckdb_store.py migrate --source db/rag/optimized-chunks
 ```
 
 指定ディレクトリ配下のJSONを再帰的に登録します。
@@ -111,8 +111,8 @@ Phase 2では、`aiwfctl knowledge` からも呼び出せます。
 
 ```powershell
 aiwfctl knowledge init
-aiwfctl knowledge migrate --source rag/optimized-chunks
-aiwfctl knowledge ingest --file rag/optimized-chunks/<id>.json
+aiwfctl knowledge migrate --source db/rag/optimized-chunks
+aiwfctl knowledge ingest --file db/rag/optimized-chunks/<id>.json
 aiwfctl knowledge search --query "PyQt GUI smoke test" --limit 10
 aiwfctl knowledge export-context --query "PyQt GUI smoke test" --output work/issue-123/context/knowledge.json
 ```
@@ -121,7 +121,7 @@ aiwfctl knowledge export-context --query "PyQt GUI smoke test" --output work/iss
 
 DuckDBファイル、migration error log、RAG蓄積物は生成物です。
 
-Gitへ上げるのはworkflow本体、runtime、docs、schema、prompt、testなどの再現手順です。Ariadne本体側の `rag/**` はREADMEも含めて追跡しません。
+Gitへ上げるのはworkflow本体、runtime、docs、schema、prompt、testなどの再現手順です。Ariadne本体側の root `rag/**` は使用せず、生成物は `db/rag/**`、知識sourceは `work/db/ariadne-knowledge-platform/rag/**` に分離します。
 
 RAG source of truthは、標準では `work/db/ariadne-knowledge-platform` にcloneした `ariadne-knowledge-platform` repository側へ置きます。
 
@@ -285,7 +285,7 @@ uv run --project runtime python runtime/rag/rag_dispatcher.py `
   --tag gui
 ```
 
-`--retrieval-backend duckdb` を指定した場合、dispatcherはfile-based `rag/indexes/*.jsonl` の存在確認を要求しません。DuckDB read modelが存在しない場合は、先に `aiwfctl knowledge migrate --source rag/optimized-chunks` で再生成します。
+`--retrieval-backend duckdb` を指定した場合、dispatcherはfile-based `db/rag/indexes/*.jsonl` の存在確認を要求しません。DuckDB read modelが存在しない場合は、先に `aiwfctl knowledge migrate --source db/rag/optimized-chunks` で再生成します。
 
 Phase 4では、`rag-build` の成果物としてDuckDB migration evidenceを残せるようにしました。
 
@@ -325,7 +325,7 @@ aiwfctl knowledge source status
 work/db/ariadne-knowledge-platform
 ```
 
-既存のローカル `rag/` 材料をknowledge repo cloneへ取り込む場合は、次を実行します。
+既存のローカル `db/rag/` 生成材料をknowledge repo cloneへ取り込む場合は、次を実行します。
 
 ```powershell
 aiwfctl knowledge source import-local --clean
@@ -343,10 +343,10 @@ aiwfctl knowledge rebuild `
 
 source repo内では、次の標準RAG JSONソースを探索します。
 
-- `rag/optimized-chunks`
-- `rag/chunks`
-- `rag/jsonized`
-- `rag/normalized`
+- `db/rag/optimized-chunks`
+- `db/rag/chunks`
+- `db/rag/jsonized`
+- `db/rag/normalized`
 
 `--reset` を指定した場合、既存の生成DuckDBファイルを削除してから再投入します。DuckDBファイルは生成物なので、Git管理対象にはしません。
 

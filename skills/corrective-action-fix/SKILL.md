@@ -33,7 +33,7 @@ If `.env` has `GITHUB_OWNER=inabako`, this shorter form is also valid:
 Use an existing `/corrective-action-report` output:
 
 ```text
-/corrective-action-fix localty-system-gui develop rag/corrective-action-report/260704120000_ABC12345_localty-system-gui.md
+/corrective-action-fix localty-system-gui develop work/db/ariadne-knowledge-platform/rag/corrective-action-report/260704120000_ABC12345_localty-system-gui.md
 ```
 
 ## Directory Model
@@ -96,7 +96,7 @@ If no report path was supplied, create a new Corrective Action Report by running
 Write the report to:
 
 ```text
-rag/corrective-action-report/YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md
+work/db/ariadne-knowledge-platform/rag/corrective-action-report/YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md
 ```
 
 The report must include:
@@ -147,28 +147,28 @@ Run `/rag-build` or the equivalent pipeline:
 
 ```powershell
 python runtime/rag/standardize_corrective_report_names.py `
-  --source-dir rag/corrective-action-report `
+  --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
   --replace-references
 
 python runtime/rag/normalize_documents.py `
-  --source-dir rag/corrective-action-report `
-  --output-dir rag/normalized `
+  --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
+  --output-dir db/rag/normalized `
   --document-type corrective-action-report `
   --clean-output
 
 python runtime/rag/chunk_documents.py `
-  --input-dir rag/normalized `
-  --output-dir rag/chunks `
+  --input-dir db/rag/normalized `
+  --output-dir db/rag/chunks `
   --clean-output
 
 python runtime/rag/build_index.py `
-  --normalized-dir rag/normalized `
-  --chunks-dir rag/chunks `
-  --output-dir rag/indexes
+  --normalized-dir db/rag/normalized `
+  --chunks-dir db/rag/chunks `
+  --output-dir db/rag/indexes
 
 python runtime/rag/embed_chunks.py `
-  --chunks-index rag/indexes/chunks.jsonl `
-  --output rag/embeddings/chunks-embeddings.jsonl
+  --chunks-index db/rag/indexes/chunks.jsonl `
+  --output db/rag/embeddings/chunks-embeddings.jsonl
 ```
 
 ### 5. Load RAG Before Implementation
@@ -217,7 +217,7 @@ python runtime/rag/rag_dispatcher.py `
 If there is no suitable saved external-web RAG, use the external-web source reviewer flow:
 
 ```text
-rag/external-web/knowledge-sources.md
+work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md
 .github/agents/external-web-source-reviewer-agent.prompt.md
 .github/agents/external-web-rag-dispatcher-agent.prompt.md
 ```
@@ -734,7 +734,7 @@ RAG source candidates:
 work/issue-<issue-number>/process-report
 work/issue-<issue-number>/test-specifications
 work/issue-<issue-number>/test-evidence
-rag/specialist-review/<domain>
+work/db/ariadne-knowledge-platform/rag/specialist-review/<domain>
 ```
 
 RAG registration requires explicit human approval. After approval, run `/rag-build` or the equivalent runtime RAG pipeline.

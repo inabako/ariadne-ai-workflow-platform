@@ -88,7 +88,7 @@ docs/reference/semantic-commit-message-guideline.md
 Approved RAG publication target:
 
 ```text
-rag/github-knowledge/
+work/db/ariadne-knowledge-platform/rag/github-knowledge/
 ```
 
 This target stores approved source Markdown reports named:
@@ -108,8 +108,8 @@ Normalize:
 
 ```powershell
 uv run --project runtime python runtime/rag/normalize_documents.py `
-  --source-dir rag/github-knowledge `
-  --output-dir rag/normalized `
+  --source-dir work/db/ariadne-knowledge-platform/rag/github-knowledge `
+  --output-dir db/rag/normalized `
   --document-type github-repository-knowledge
 ```
 
@@ -117,31 +117,31 @@ Chunk:
 
 ```powershell
 uv run --project runtime python runtime/rag/chunk_documents.py `
-  --input-dir rag/normalized `
-  --output-dir rag/chunks
+  --input-dir db/rag/normalized `
+  --output-dir db/rag/chunks
 ```
 
 Index:
 
 ```powershell
 uv run --project runtime python runtime/rag/build_index.py `
-  --normalized-dir rag/normalized `
-  --chunks-dir rag/chunks `
-  --output-dir rag/indexes
+  --normalized-dir db/rag/normalized `
+  --chunks-dir db/rag/chunks `
+  --output-dir db/rag/indexes
 ```
 
 Embedding:
 
 ```powershell
 uv run --project runtime python runtime/rag/embed_chunks.py `
-  --chunks-index rag/indexes/chunks.jsonl `
-  --output rag/embeddings/chunks-embeddings.jsonl
+  --chunks-index db/rag/indexes/chunks.jsonl `
+  --output db/rag/embeddings/chunks-embeddings.jsonl
 ```
 
 Final durable landing:
 
 ```text
-rag/normalized/<uuid>.json
+db/rag/normalized/<uuid>.json
 ```
 
 ## Workflow
@@ -473,7 +473,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
   --work-id "<work-id>"
 ```
 
-Publish to `rag/github-knowledge/` only after explicit approval:
+Publish to `work/db/ariadne-knowledge-platform/rag/github-knowledge/` only after explicit approval:
 
 ```powershell
 uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rag-candidate `

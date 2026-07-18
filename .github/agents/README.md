@@ -16,8 +16,8 @@
 | Agent | 主な役割 | 代表的な出力 |
 | --- | --- | --- |
 | `requirement-discovery-agent.prompt.md` | 箇条書き草案の精査、Noise Reduction、深掘り質問、要件定義書レビュー草案 | `work/requirements/draft/*-noise-reduction/`, `*-questions.md`, `*-requirements-review.md` |
-| `external-web-source-reviewer-agent.prompt.md` | 不足知識に対して外部Web一次情報を精査し、外部Web RAG候補へ要約する | `rag/external-web/<category>/*.md` |
-| `external-web-rag-dispatcher-agent.prompt.md` | 蓄積済み外部Web RAGをカテゴリ別に検索・集約し、要件定義/設計/改善flowへ渡す | `rag/external-web/retrieval/*-aggregate.md` |
+| `external-web-source-reviewer-agent.prompt.md` | 不足知識に対して外部Web一次情報を精査し、外部Web RAG候補へ要約する | `work/db/ariadne-knowledge-platform/rag/external-web/<category>/*.md` |
+| `external-web-rag-dispatcher-agent.prompt.md` | 蓄積済み外部Web RAGをカテゴリ別に検索・集約し、要件定義/設計/改善flowへ渡す | `work/db/ariadne-knowledge-platform/rag/external-web/retrieval/*-aggregate.md` |
 | `docs-drift-analyzer-agent.prompt.md` | 実装とdocsの差分検出、JSON化、Issue材料作成 | `work/<branch>/context/docs-drift-analysis.json` |
 | `repository-discovery-agent.prompt.md` | GitHub repository識別、scan scope、collection plan作成 | `work/<work-id>/context/github-knowledge-analysis.json` |
 | `github-metadata-collector-agent.prompt.md` | GitHub CLI/APIによるIssue、PR、comment、label、release収集 | `metadata_sources` |
@@ -160,7 +160,7 @@ work/<id>/process-report/specialist-review-<domain>.md
 RAG登録承認後、必要に応じて次へ吸収します。
 
 ```text
-rag/specialist-review/<domain>/
+work/db/ariadne-knowledge-platform/rag/specialist-review/<domain>/
 ```
 
 ```yaml

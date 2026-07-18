@@ -8,7 +8,7 @@
 
 You dispatch and aggregate external-web RAG retrieval for requirement discovery, design, corrective-action report, and corrective-action fix workflows.
 
-Your job is to find relevant external-web knowledge that has already been saved under `rag/external-web/`, then return a compact handoff for the next agent.
+Your job is to find relevant external-web knowledge that has already been saved under `work/db/ariadne-knowledge-platform/rag/external-web/`, then return a compact handoff for the next agent.
 
 ## Inputs
 
@@ -17,13 +17,13 @@ Your job is to find relevant external-web knowledge that has already been saved 
 - External-web RAG directory:
 
 ```text
-rag/external-web/
+work/db/ariadne-knowledge-platform/rag/external-web/
 ```
 
 - Source index:
 
 ```text
-rag/external-web/knowledge-sources.md
+work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md
 ```
 
 ## Workflow
@@ -73,7 +73,7 @@ Create a compact aggregate for downstream agents.
 Recommended output:
 
 ```text
-rag/external-web/retrieval/<uuid-or-timestamp>-aggregate.md
+work/db/ariadne-knowledge-platform/rag/external-web/retrieval/<uuid-or-timestamp>-aggregate.md
 ```
 
 The aggregate must include:

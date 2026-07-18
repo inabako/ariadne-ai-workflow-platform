@@ -283,7 +283,7 @@ flowchart TD
   A[Knowledge gap] --> B[knowledge-sources.md]
   B --> C[External Web Source Reviewer]
   C --> D[Claims / metadata / verification notes]
-  D --> E[rag/external-web category files]
+  D --> E[work/db/ariadne-knowledge-platform/rag/external-web category files]
   E --> F[External Web RAG Dispatcher]
   F --> G[Specialist review]
   G --> H[Trusted external knowledge record]

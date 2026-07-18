@@ -94,7 +94,7 @@ Use:
 6. If SDK input exists, AI runs `aiwfctl sdk analyze --work-id <work-id>` and `aiwfctl sdk discover --work-id <work-id>`, then registers `sdk-analysis` and `sdk-external-discovery` contexts. If not, AI skips without blocking.
 7. AI identifies both clarification gaps and technical knowledge gaps.
 8. If saved internal RAG is relevant, AI reads prior findings through `/rag-load`.
-9. If external knowledge is needed, AI uses `rag/external-web/knowledge-sources.md` and the external-web agents to create or dispatch external-web RAG.
+9. If external knowledge is needed, AI uses `work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md` and the external-web agents to create or dispatch external-web RAG.
 10. If specialist knowledge is needed to ask good questions or frame constraints, AI uses Specialist Agent QA support.
 11. If the draft is unclear, AI sends questions back to the human.
 12. Human answers.
@@ -194,7 +194,7 @@ When the requirement draft contains a domain that is not understood well enough 
 Source index:
 
 ```text
-rag/external-web/knowledge-sources.md
+work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md
 ```
 
 Agents:
@@ -211,7 +211,7 @@ Flow:
   -> 知らない領域が出る
   -> knowledge-sources.md からsource候補を選ぶ
   -> 外部Webを精査し、claims / metadata / verification notesだけを保存する
-  -> rag/external-web/<category>/ に蓄積する
+  -> work/db/ariadne-knowledge-platform/rag/external-web/<category>/ に蓄積する
   -> 必要な外部Web RAGをdispatch / aggregateする
   -> requirement review draftに、根拠pathと未確認事項を反映する
 ```

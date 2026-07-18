@@ -109,8 +109,8 @@ def test_ctl_knowledge_usage_and_search_export_context(tmp_path: Path) -> None:
         '{"commands": [], "extensions": []}',
         encoding="utf-8",
     )
-    db = root / "rag" / "duckdb" / "knowledge.duckdb"
-    source = root / "rag" / "optimized-chunks" / "knowledge.json"
+    db = root / "db" / "rag" / "knowledge.duckdb"
+    source = root / "db" / "rag" / "optimized-chunks" / "knowledge.json"
     source.parent.mkdir(parents=True)
     source.write_text(
         json.dumps(

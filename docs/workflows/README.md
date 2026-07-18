@@ -11,7 +11,7 @@
 | `/ariadne-new-system-iac` | 新しい対象システムを設計し、Shared Artifactsを検証してからrealtime IaCへ渡す | 完成版要件定義書 | `work/<receipt-id>/`, validated Shared Artifacts, IaC artifacts |
 | `/ariadne-feature-maintenance` | 既存対象システムの新機能追加、bug fix、保守開発を行う | 完成版要件定義書 | `work/<receipt-id>/` |
 | `/realtime-iac` | リアルタイムシステム向けIaC、開発・CI/CD・監視platform基盤、DB基盤、Redis middleware基盤、OpenLDAP identity基盤、OpenTelemetry Collector基盤を設計、生成、レビュー、検証、文書化する | 完成版要件定義書、共有通信/port/network成果物、platform / database / middleware / identity / collector component inventory | `work/<receipt-id>/`, IaC artifacts |
-| `/corrective-action-report` | repository / branchをread-onlyで調査し、改善reportだけ作る | target repository, target branch | `rag/corrective-action-report/*.md` |
+| `/corrective-action-report` | repository / branchをread-onlyで調査し、改善reportだけ作る | target repository, target branch | `work/db/ariadne-knowledge-platform/rag/corrective-action-report/*.md` |
 | `/corrective-action-fix` | 改善reportからIssue、branch、修正、test、pushまで進める | target repository, target branch | `work/<branch>/`, `work/issue-<number>/` |
 | `/docs-sync` | 実装とdocsのズレを検出し、docsだけ修正する | target repository, target branch | `docs-drift-analysis.json`, issue branch |
 | `/self-improvement` | workflow実行中の摩擦を採用判断し、改善Issueへつなぐ | workflow feedback | `work/feedback/*.md`, issue body, evidence scaffold |
@@ -19,10 +19,10 @@
 | `/vscode-environment` | VSCode workspace as code、task、terminal、AI workflow、evidenceを整備する | なし、target workspace path、またはcustom-design draft | `.vscode/*`, `workspace-test.md` |
 | `/flutter-multiplatform` | Flutterアプリの対象platform、環境、boilerplate、test、build計画、evidenceを整理する | `work/<work-id>/requirements/flutter-targets.yaml` または `--targets` | `flutter-development-context.json`, `flutter-multiplatform-report.md` |
 | `/knowledge-capture` | 完了IssueのPR材料、RAG候補、docs候補、archive準備を作る | `work/issue-<number>` | `knowledge-capture-report.md` |
-| `/rag-build` | Markdown reportをRAG artifactへ変換する | `rag/corrective-action-report/*.md` | `rag/normalized/`, `rag/chunks/`, `rag/indexes/`, `rag/embeddings/` |
-| `/rag-load` | 開発前に過去知識を検索し、圧縮contextを読む | task, repository, branch | `rag/retrieval/*.json` |
+| `/rag-build` | Markdown reportをRAG artifactへ変換する | `work/db/ariadne-knowledge-platform/rag/corrective-action-report/*.md` | `db/rag/normalized/`, `db/rag/chunks/`, `db/rag/indexes/`, `db/rag/embeddings/` |
+| `/rag-load` | 開発前に過去知識を検索し、圧縮contextを読む | task, repository, branch | `db/rag/retrieval/*.json` |
 | `/runtime-health-check` | Ariadne自身のruntime、pytest、UT仕様書、Context First、docs品質を自己診断する | なし | `runtime/.pytest_cache/pytest-ut-spec-sync-report.*`, `context-manifest.json` |
-| External Web RAG | 要件定義、設計、改善flowで知見不足の領域を外部Web一次情報で補う | `rag/external-web/knowledge-sources.md` | `rag/external-web/<category>/*.md` |
+| External Web RAG | 要件定義、設計、改善flowで知見不足の領域を外部Web一次情報で補う | `work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md` | `work/db/ariadne-knowledge-platform/rag/external-web/<category>/*.md` |
 | Specialist Review | 内部/外部RAGを読んだ後、成果物を専門Agentがreviewする | draft artifact, RAG context | `work/<id>/process-report/specialist-review-<domain>.md` |
 | Noise Reduction Phase | 要件定義前に未知用語、用語衝突、表記揺れ、資料矛盾、曖昧表現を除去する | requirement draft, related docs, RAG, glossary | `work/requirements/draft/<draft-stem>-noise-reduction/` |
 | GaC / UaC GUI Mode | 親workflow内でSVGをGUI設計・PyQt6・QTest候補へ変換する | `work/requirements/svg-input/<PREFIX>_*.svg` | `work/<issue-id>/gac-uac/` |

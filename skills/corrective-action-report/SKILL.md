@@ -35,7 +35,7 @@ If the user explicitly requests another language, use the requested language.
 Write the report to:
 
 ```text
-C:\github\ariadne-ai-workflow-platform\rag\corrective-action-report
+C:\github\ariadne-ai-workflow-platform\work\db\ariadne-knowledge-platform\rag\corrective-action-report
 ```
 
 Recommended filename:
@@ -83,7 +83,7 @@ Context registration example:
 python runtime/workflow/corrective_action_report.py register `
   --repository "<target repository>" `
   --target-branch "<target branch>" `
-  --report-path "rag/corrective-action-report/<report>.md"
+  --report-path "work/db/ariadne-knowledge-platform/rag/corrective-action-report/<report>.md"
 ```
 
 ## External Web RAG Support
@@ -101,7 +101,7 @@ Good uses:
 Required source index:
 
 ```text
-rag/external-web/knowledge-sources.md
+work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md
 ```
 
 Helpful retrieval example:

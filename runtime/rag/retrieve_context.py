@@ -16,6 +16,7 @@ if __package__ in {None, ""}:
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
+from runtime.rag.paths import CHUNKS_INDEX, EMBEDDINGS_INDEX, GENERATED_RETRIEVAL  # noqa: E402
 
 
 WORD_RE = re.compile(r"[A-Za-z0-9_.:-]+|[\u3040-\u30ff\u3400-\u9fff]+")
@@ -27,9 +28,9 @@ def build_parser() -> argparse.ArgumentParser:
         description="Retrieve file-based RAG chunks and create a compressed context pack."
     )
     parser.add_argument("query", help="Search query used to retrieve RAG chunks.")
-    parser.add_argument("--chunks-index", default="rag/indexes/chunks.jsonl")
-    parser.add_argument("--embeddings-index", default="rag/embeddings/chunks-embeddings.jsonl")
-    parser.add_argument("--output-dir", default="rag/retrieval")
+    parser.add_argument("--chunks-index", default=str(CHUNKS_INDEX))
+    parser.add_argument("--embeddings-index", default=str(EMBEDDINGS_INDEX))
+    parser.add_argument("--output-dir", default=str(GENERATED_RETRIEVAL))
     parser.add_argument("--top-k", type=int, default=8)
     parser.add_argument("--max-chars", type=int, default=6000)
     parser.add_argument("--search-mode", default="hybrid", choices=["keyword", "semantic", "hybrid"])

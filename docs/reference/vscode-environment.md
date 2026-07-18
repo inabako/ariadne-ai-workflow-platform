@@ -206,22 +206,22 @@ command resultとhuman-check notesは `workspace-test.md` に記録します。
 再利用可能なVSCode environment knowledgeは、まずhuman-review可能なMarkdownへ保存します。
 
 ```text
-rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
+work/db/ariadne-knowledge-platform/rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 ```
 
 Human approval後、最終的なUUID名RAG knowledge JSONへnormalizeします。
 
 ```powershell
 uv run --project runtime python runtime/rag/normalize_documents.py `
-  --source-dir rag/workspace-environment `
-  --output-dir rag/normalized `
+  --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment `
+  --output-dir db/rag/normalized `
   --document-type workspace-environment-pattern
 ```
 
 最終着地:
 
 ```text
-rag/normalized/<uuid>.json
+db/rag/normalized/<uuid>.json
 ```
 
 Chunk JSON、indexes、embeddings、retrieval packsは派生artifactです。

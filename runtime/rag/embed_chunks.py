@@ -14,6 +14,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
+from runtime.rag.paths import CHUNKS_INDEX, EMBEDDINGS_INDEX  # noqa: E402
 
 
 WORD_RE = re.compile(r"[A-Za-z0-9_.:-]+|[\u3040-\u30ff\u3400-\u9fff]+")
@@ -23,8 +24,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Create local deterministic sparse embeddings for RAG chunks."
     )
-    parser.add_argument("--chunks-index", default="rag/indexes/chunks.jsonl")
-    parser.add_argument("--output", default="rag/embeddings/chunks-embeddings.jsonl")
+    parser.add_argument("--chunks-index", default=str(CHUNKS_INDEX))
+    parser.add_argument("--output", default=str(EMBEDDINGS_INDEX))
     parser.add_argument("--dimensions", type=int, default=768)
     parser.add_argument("--repo-root", default=None)
     return parser

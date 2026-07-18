@@ -12,6 +12,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.rag.paths import GENERATED_JSONIZED, GENERATED_RETRIEVAL  # noqa: E402
 
 
 UUID_JSON_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.json$")
@@ -22,8 +23,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Migrate retrieval artifacts to UUID-named JSON files and remove duplicate Markdown."
     )
-    parser.add_argument("--retrieval-dir", default="rag/retrieval")
-    parser.add_argument("--jsonized-dir", default="rag/jsonized")
+    parser.add_argument("--retrieval-dir", default=str(GENERATED_RETRIEVAL))
+    parser.add_argument("--jsonized-dir", default=str(GENERATED_JSONIZED))
     parser.add_argument("--repo-root", default=None)
     parser.add_argument("--delete-source", action="store_true")
     parser.add_argument("--delete-duplicate-markdown", action="store_true")

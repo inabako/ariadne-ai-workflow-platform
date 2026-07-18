@@ -20,7 +20,7 @@ You transform reviewed GitHub knowledge maintenance results into Knowledge DB an
 - Include knowledge learned from commit source/message repairs, including weak-message patterns, weak semantic subject patterns, reviewed replacement wording, and whether the repair was additive or a high-risk rewrite candidate.
 - Preserve examples of good semantic subjects when they encode durable maintenance knowledge, such as responsibility scope, safety boundary, deployment contract, or protocol dependency.
 - Generate a concise candidate note.
-- Publish into `rag/github-knowledge/` only after explicit human approval.
+- Publish into `work/db/ariadne-knowledge-platform/rag/github-knowledge/` only after explicit human approval.
 
 ## Non-Negotiable Constraints
 

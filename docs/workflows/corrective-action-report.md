@@ -17,7 +17,7 @@
 ## Output
 
 ```text
-rag/corrective-action-report/YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md
+work/db/ariadne-knowledge-platform/rag/corrective-action-report/YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md
 ```
 
 ## Context First
@@ -28,7 +28,7 @@ report作成後は、成果物をContext Firstへ登録します。
 python runtime/workflow/corrective_action_report.py register `
   --repository "<target-repository>" `
   --target-branch "<target-branch>" `
-  --report-path "rag/corrective-action-report/<report>.md"
+  --report-path "work/db/ariadne-knowledge-platform/rag/corrective-action-report/<report>.md"
 ```
 
 生成されるContext:

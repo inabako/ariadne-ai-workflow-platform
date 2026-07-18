@@ -34,29 +34,29 @@ C:\github\ariadne-ai-workflow-platform
 Default source reports:
 
 ```text
-rag/corrective-action-report
+work/db/ariadne-knowledge-platform/rag/corrective-action-report
 ```
 
 External Web RAG source examples:
 
 ```text
-rag/external-web/network
-rag/external-web/go-runtime
-rag/external-web/architecture
+work/db/ariadne-knowledge-platform/rag/external-web/network
+work/db/ariadne-knowledge-platform/rag/external-web/go-runtime
+work/db/ariadne-knowledge-platform/rag/external-web/architecture
 ```
 
 ## Parameters
 
-- `source-dir`: default `rag/corrective-action-report`
+- `source-dir`: default `work/db/ariadne-knowledge-platform/rag/corrective-action-report`
 - `document-type`: default `corrective-action-report`
-- `normalized-dir`: default `rag/normalized`
-- `chunks-dir`: default `rag/chunks`
-- `optimized-chunks-dir`: default `rag/optimized-chunks`
-- `indexes-dir`: default `rag/indexes`
-- `ingestion-evidence-dir`: default `rag/evidence/ingestion`
+- `normalized-dir`: default `db/rag/normalized`
+- `chunks-dir`: default `db/rag/chunks`
+- `optimized-chunks-dir`: default `db/rag/optimized-chunks`
+- `indexes-dir`: default `db/rag/indexes`
+- `ingestion-evidence-dir`: default `db/rag/evidence/ingestion`
 - `ingestion-policy`: default `runtime/rag/policies/knowledge-ingestion-policy.json`
-- `embeddings-output`: default `rag/embeddings/chunks-embeddings.jsonl`
-- `jsonized-dir`: default `rag/jsonized`
+- `embeddings-output`: default `db/rag/embeddings/chunks-embeddings.jsonl`
+- `jsonized-dir`: default `db/rag/jsonized`
 
 If unspecified, use all defaults.
 
@@ -78,7 +78,7 @@ cd C:\github\ariadne-ai-workflow-platform
 
 ```powershell
 python runtime/rag/standardize_corrective_report_names.py `
-  --source-dir rag/corrective-action-report `
+  --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
   --replace-references
 ```
 
@@ -92,8 +92,8 @@ YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md
 
 ```powershell
 python runtime/rag/normalize_documents.py `
-  --source-dir rag/corrective-action-report `
-  --output-dir rag/normalized `
+  --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
+  --output-dir db/rag/normalized `
   --document-type corrective-action-report `
   --clean-output
 ```
@@ -102,8 +102,8 @@ For external-web RAG, normalize category Markdown into the same JSON document fo
 
 ```powershell
 python runtime/rag/normalize_documents.py `
-  --source-dir rag/external-web/network `
-  --output-dir rag/normalized `
+  --source-dir work/db/ariadne-knowledge-platform/rag/external-web/network `
+  --output-dir db/rag/normalized `
   --document-type external-web-knowledge
 ```
 
@@ -123,8 +123,8 @@ The normalizer preserves external-web front matter such as:
 
 ```powershell
 python runtime/rag/chunk_documents.py `
-  --input-dir rag/normalized `
-  --output-dir rag/chunks `
+  --input-dir db/rag/normalized `
+  --output-dir db/rag/chunks `
   --clean-output
 ```
 
@@ -132,9 +132,9 @@ python runtime/rag/chunk_documents.py `
 
 ```powershell
 python runtime/rag/ingestion_optimizer.py `
-  --chunks-dir rag/chunks `
-  --output-dir rag/optimized-chunks `
-  --evidence-dir rag/evidence/ingestion `
+  --chunks-dir db/rag/chunks `
+  --output-dir db/rag/optimized-chunks `
+  --evidence-dir db/rag/evidence/ingestion `
   --clean-output
 ```
 
@@ -145,27 +145,27 @@ It writes `ACCEPT / REWRITE / HUMAN_CHECK / REJECT` evidence and only `ACCEPT` c
 
 ```powershell
 python runtime/rag/build_index.py `
-  --normalized-dir rag/normalized `
-  --chunks-dir rag/optimized-chunks `
-  --output-dir rag/indexes
+  --normalized-dir db/rag/normalized `
+  --chunks-dir db/rag/optimized-chunks `
+  --output-dir db/rag/indexes
 ```
 
 ### 5. Build Local Embeddings
 
 ```powershell
 python runtime/rag/embed_chunks.py `
-  --chunks-index rag/indexes/chunks.jsonl `
-  --output rag/embeddings/chunks-embeddings.jsonl
+  --chunks-index db/rag/indexes/chunks.jsonl `
+  --output db/rag/embeddings/chunks-embeddings.jsonl
 ```
 
 ### Optional: JSONize Existing RAG Markdown Files
 
-Use this when existing non-UUID JSON, JSONL, Markdown, or text files under `rag/` should be mirrored as UUID-named JSON wrapper artifacts.
+Use this when existing non-UUID JSON, JSONL, Markdown, or text files under `work/db/ariadne-knowledge-platform/rag/` should be mirrored as UUID-named JSON wrapper artifacts.
 
 ```powershell
 python runtime/rag/jsonize_rag_tree.py `
-  --rag-dir rag `
-  --output-dir rag/jsonized `
+  --rag-dir work/db/ariadne-knowledge-platform/rag `
+  --output-dir db/rag/jsonized `
   --clean-output
 ```
 
@@ -176,21 +176,21 @@ Do not pass `--delete-source` unless the user explicitly requests removing origi
 Expected outputs:
 
 ```text
-rag/normalized/*.json
-rag/chunks/*.json
-rag/optimized-chunks/*.json
-rag/evidence/ingestion/source-manifest.json
-rag/evidence/ingestion/chunk-candidates.jsonl
-rag/evidence/ingestion/optimization-evaluations.jsonl
-rag/evidence/ingestion/accepted-chunks.jsonl
-rag/evidence/ingestion/rewritten-chunks.jsonl
-rag/evidence/ingestion/human-check-required.jsonl
-rag/evidence/ingestion/rejected-chunks.jsonl
-rag/evidence/ingestion/ingestion-summary.json
-rag/indexes/documents.jsonl
-rag/indexes/chunks.jsonl
-rag/embeddings/chunks-embeddings.jsonl
-rag/jsonized/*.json
+db/rag/normalized/*.json
+db/rag/chunks/*.json
+db/rag/optimized-chunks/*.json
+db/rag/evidence/ingestion/source-manifest.json
+db/rag/evidence/ingestion/chunk-candidates.jsonl
+db/rag/evidence/ingestion/optimization-evaluations.jsonl
+db/rag/evidence/ingestion/accepted-chunks.jsonl
+db/rag/evidence/ingestion/rewritten-chunks.jsonl
+db/rag/evidence/ingestion/human-check-required.jsonl
+db/rag/evidence/ingestion/rejected-chunks.jsonl
+db/rag/evidence/ingestion/ingestion-summary.json
+db/rag/indexes/documents.jsonl
+db/rag/indexes/chunks.jsonl
+db/rag/embeddings/chunks-embeddings.jsonl
+db/rag/jsonized/*.json
 ```
 
 ## Workflow

@@ -13,6 +13,7 @@ if __package__ in {None, ""}:
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag.cleanup_guard import assert_safe_clean_output_target  # noqa: E402
+from runtime.rag.paths import GENERATED_JSONIZED, KNOWLEDGE_SOURCE_RAG  # noqa: E402
 
 
 UUID_JSON_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.json$")
@@ -20,8 +21,8 @@ UUID_JSON_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Convert RAG files into UUID-named JSON wrapper documents.")
-    parser.add_argument("--rag-dir", default="rag")
-    parser.add_argument("--output-dir", default="rag/jsonized")
+    parser.add_argument("--rag-dir", default=str(KNOWLEDGE_SOURCE_RAG))
+    parser.add_argument("--output-dir", default=str(GENERATED_JSONIZED))
     parser.add_argument("--include-readme", action="store_true")
     parser.add_argument("--delete-source", action="store_true")
     parser.add_argument("--clean-output", action="store_true")

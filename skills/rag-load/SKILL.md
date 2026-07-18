@@ -93,7 +93,7 @@ python runtime/rag/rag_dispatcher.py `
 The dispatcher writes:
 
 ```text
-rag/retrieval/<uuid>.json
+db/rag/retrieval/<uuid>.json
 ```
 
 Use each artifact's `artifact_type` to distinguish `rag-dispatch-plan`, `rag-load-dispatch`, `rag-retrieval-result`, and `rag-context-pack`.
@@ -104,7 +104,7 @@ When a prior plan should be reused across agents, pass it explicitly:
 
 ```powershell
 python runtime/rag/rag_dispatcher.py `
-  --dispatch-plan rag/retrieval/<plan-uuid>.json
+  --dispatch-plan db/rag/retrieval/<plan-uuid>.json
 ```
 
 Do not reimplement compression. Use the existing compression output from `retrieve_context.py`.
@@ -124,9 +124,9 @@ cd C:\github\ariadne-ai-workflow-platform
 ```powershell
 python runtime/rag/retrieve_context.py `
   "<query>" `
-  --chunks-index rag/indexes/chunks.jsonl `
-  --embeddings-index rag/embeddings/chunks-embeddings.jsonl `
-  --output-dir rag/retrieval `
+  --chunks-index db/rag/indexes/chunks.jsonl `
+  --embeddings-index db/rag/embeddings/chunks-embeddings.jsonl `
+  --output-dir db/rag/retrieval `
   --search-mode hybrid `
   --top-k 5 `
   --max-chars 4000
@@ -146,8 +146,8 @@ Add filters only when known:
 Before retrieval, verify these files exist:
 
 ```text
-rag/indexes/chunks.jsonl
-rag/embeddings/chunks-embeddings.jsonl
+db/rag/indexes/chunks.jsonl
+db/rag/embeddings/chunks-embeddings.jsonl
 ```
 
 If missing or clearly stale, run `rag-build` first, then retry `rag-load`.

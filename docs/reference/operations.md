@@ -114,7 +114,7 @@ RAG sourceを必ず反映したい場合:
 ```powershell
 uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
   --issue issue-<issue-number> `
-  --source-rag rag/normalized/<rag-source>.md `
+  --source-rag db/rag/normalized/<rag-source>.md `
   --require-rag
 ```
 
@@ -206,9 +206,9 @@ GitHubにはworkflow本体と、再現に必要なdocs / schema / prompt / test�
 - `work/**/README.md` は追跡対象
 - `work/**` の作業実体は追跡しない
 - `work/db/**` はknowledge source cloneなのでAriadne本体では追跡しない
-- `rag/**` はREADMEも含めてAriadne本体では追跡しない
+- root `rag/**` は使用しない。知識sourceは `work/db/ariadne-knowledge-platform/rag/**`、生成read modelは `db/rag/**` に分離する
 
-RAG source of truthは、標準では `work/db/ariadne-knowledge-platform` にcloneした `ariadne-knowledge-platform` repository側へ置きます。Ariadne本体側の `rag/` はDuckDB、evidence、retrieval resultなどのlocal生成workspaceです。
+RAG source of truthは、標準では `work/db/ariadne-knowledge-platform` にcloneした `ariadne-knowledge-platform` repository側へ置きます。Ariadne本体側の生成read model、evidence、retrieval resultは `db/rag/` に置きます。
 
 確認は次で行います。
 

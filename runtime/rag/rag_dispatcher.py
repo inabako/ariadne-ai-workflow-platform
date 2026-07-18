@@ -13,6 +13,15 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.rag.paths import (  # noqa: E402
+    CHUNKS_INDEX,
+    EMBEDDINGS_INDEX,
+    GENERATED_CHUNKS,
+    GENERATED_INDEXES,
+    GENERATED_NORMALIZED,
+    GENERATED_RETRIEVAL,
+    SOURCE_CORRECTIVE_ACTION_REPORTS,
+)
 from runtime.workflow.context_first import context_entry, context_path, load_manifest, manifest_path_for_work_dir, register_context  # noqa: E402
 
 
@@ -53,8 +62,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--source-type", default="", help="Optional source_type filter, e.g. external-web or internal-work.")
     parser.add_argument("--category", default="", help="Optional external-web category filter.")
     parser.add_argument("--trust-level", default="", help="Optional trust_level filter.")
-    parser.add_argument("--chunks-index", default="rag/indexes/chunks.jsonl")
-    parser.add_argument("--embeddings-index", default="rag/embeddings/chunks-embeddings.jsonl")
+    parser.add_argument("--chunks-index", default=str(CHUNKS_INDEX))
+    parser.add_argument("--embeddings-index", default=str(EMBEDDINGS_INDEX))
     parser.add_argument("--retrieval-backend", default="file", choices=["file", "duckdb"])
     parser.add_argument("--duckdb-path", default="db/rag/ariadne-knowledge.duckdb")
     parser.add_argument("--semantic-hint", default="")
@@ -63,7 +72,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--knowledge-workflow", default="", help="Optional workflow filter for DuckDB knowledge search.")
     parser.add_argument("--min-reliability", type=float, default=None)
     parser.add_argument("--min-freshness", type=float, default=None)
-    parser.add_argument("--output-dir", default="rag/retrieval")
+    parser.add_argument("--output-dir", default=str(GENERATED_RETRIEVAL))
     parser.add_argument("--search-mode", default="hybrid", choices=["keyword", "semantic", "hybrid"])
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--max-chars", type=int, default=4000)
@@ -484,9 +493,9 @@ def ensure_indexes(args: argparse.Namespace, repo_root: Path) -> None:
             args.python,
             "runtime/rag/normalize_documents.py",
             "--source-dir",
-            "rag/corrective-action-report",
+            str(SOURCE_CORRECTIVE_ACTION_REPORTS),
             "--output-dir",
-            "rag/normalized",
+            str(GENERATED_NORMALIZED),
             "--document-type",
             "corrective-action-report",
             "--clean-output",
@@ -495,28 +504,28 @@ def ensure_indexes(args: argparse.Namespace, repo_root: Path) -> None:
             args.python,
             "runtime/rag/chunk_documents.py",
             "--input-dir",
-            "rag/normalized",
+            str(GENERATED_NORMALIZED),
             "--output-dir",
-            "rag/chunks",
+            str(GENERATED_CHUNKS),
             "--clean-output",
         ],
         [
             args.python,
             "runtime/rag/build_index.py",
             "--normalized-dir",
-            "rag/normalized",
+            str(GENERATED_NORMALIZED),
             "--chunks-dir",
-            "rag/chunks",
+            str(GENERATED_CHUNKS),
             "--output-dir",
-            "rag/indexes",
+            str(GENERATED_INDEXES),
         ],
         [
             args.python,
             "runtime/rag/embed_chunks.py",
             "--chunks-index",
-            "rag/indexes/chunks.jsonl",
+            str(CHUNKS_INDEX),
             "--output",
-            "rag/embeddings/chunks-embeddings.jsonl",
+            str(EMBEDDINGS_INDEX),
         ],
     ]
     for command in build_commands:

@@ -24,16 +24,16 @@ def write_chunk(
     *,
     status: str = "approved",
     trust_level: str = "high",
-    source_path: str = "rag/source/report.md",
+    source_path: str = "work/db/ariadne-knowledge-platform/rag/source/report.md",
 ) -> Path:
-    path = repo / "rag" / "chunks" / name
+    path = repo / "db" / "rag" / "chunks" / name
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "schema_version": "1.0",
         "chunk_id": name.removesuffix(".json"),
         "document_id": "doc-1",
         "source_path": source_path,
-        "normalized_path": "rag/normalized/doc-1.json",
+        "normalized_path": "db/rag/normalized/doc-1.json",
         "chunk_index": 1,
         "heading_path": ["Runtime"],
         "content": content,
@@ -56,8 +56,8 @@ def write_chunk(
 def make_args(repo: Path, **overrides: object) -> argparse.Namespace:
     values: dict[str, object] = {
         "repo_root": str(repo),
-        "chunks_dir": "rag/chunks",
-        "output_dir": "rag/optimized-chunks",
+        "chunks_dir": "db/rag/chunks",
+        "output_dir": "db/rag/optimized-chunks",
         "evidence_dir": "db/rag/evidence/ingestion",
         "policy": "runtime/rag/policies/knowledge-ingestion-policy.json",
         "clean_output": False,
@@ -81,7 +81,7 @@ def test_ingestion_optimizer_accepts_complete_traceable_chunk(tmp_path: Path) ->
     assert result["candidate_chunk_count"] == 1
     assert result["accepted_chunk_count"] == 1
     assert result["embedding_allowed_chunk_count"] == 1
-    optimized = json.loads((repo / "rag" / "optimized-chunks" / "accepted.json").read_text(encoding="utf-8"))
+    optimized = json.loads((repo / "db" / "rag" / "optimized-chunks" / "accepted.json").read_text(encoding="utf-8"))
     assert optimized["optimization_decision"] == "ACCEPT"
     assert optimized["metadata"]["content_hash"] == optimized["content_hash"]
 
@@ -266,8 +266,8 @@ def test_ingestion_optimizer_rewrite_retry_limit_and_duplicate_line_specimen(tmp
 
 def test_ingestion_optimizer_clean_output_empty_run_and_invalid_chunk_specimens(tmp_path: Path) -> None:
     repo = make_repo(tmp_path)
-    chunks_dir = repo / "rag" / "chunks"
-    output_dir = repo / "rag" / "optimized-chunks"
+    chunks_dir = repo / "db" / "rag" / "chunks"
+    output_dir = repo / "db" / "rag" / "optimized-chunks"
     evidence_dir = repo / "db" / "rag" / "evidence" / "ingestion"
     chunks_dir.mkdir(parents=True)
     output_dir.mkdir(parents=True)

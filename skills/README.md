@@ -104,5 +104,5 @@ VS Code Copilot Chat の `/` 候補は `.github/prompts/*.prompt.md`、Codex Ski
 Report は以下へ保存します。
 
 ```text
-C:\github\ariadne-ai-workflow-platform\rag\corrective-action-report
+C:\github\ariadne-ai-workflow-platform\work\db\ariadne-knowledge-platform\rag\corrective-action-report
 ```

@@ -70,7 +70,7 @@ GUI SVGはIssue作成前に`work/requirements/svg-input/`へ配置します。Py
 - simulation / bench / field を段階化する。
 - STOP、rollback、observability を後回しにしない。
 - 会話ログではなく artifact と evidence を残す。
-- 学びを `rag/` と workflow docs に戻す。
+- 学びを `work/db/ariadne-knowledge-platform/rag/` と workflow docs に戻す。
 - 人間向けreport、document、review、evidence、RAG source Markdownは既定で日本語にする。
 
 Ariadne workflow では、作れるかより先に、安全に試せるか、止められるか、戻せるか、観測できるかを確認します。
@@ -80,7 +80,7 @@ Ariadne workflow では、作れるかより先に、安全に試せるか、止
 ```text
 .github/    prompts, agents, schemas, shared rules
 docs/       workflow guides and reference docs
-rag/        corrective reports and file-based RAG artifacts
+db/rag/     generated local RAG read models and retrieval artifacts
 runtime/    workflow helper CLI
 skills/     Codex Skill entrypoints
 templates/  requirement, design, report, test templates

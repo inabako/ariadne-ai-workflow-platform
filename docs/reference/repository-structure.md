@@ -15,12 +15,17 @@ docs/
   workflows/   workflow usage guides
   reference/   repository / runtime / data reference
 
-rag/
-  corrective-action-report/
-  external-web/
-  specialist-review/
+work/db/ariadne-knowledge-platform/
+  rag/corrective-action-report/
+  rag/external-web/
+  rag/specialist-review/
+
+db/rag/
   normalized/
   chunks/
+  optimized-chunks/
+  jsonized/
+  evidence/
   indexes/
   embeddings/
   retrieval/

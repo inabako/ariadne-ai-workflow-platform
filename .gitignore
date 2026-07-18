@@ -6,16 +6,17 @@
 .codex/
 
 # Local work workspace
-# GitHubにはworkflow本体とwork構成説明READMEのみを上げる。
-# 要件draft、SVG入力、issue作業、close archive実体は追跡しない。
+# Only workflow body and work structure docs are tracked.
+# Requirement drafts, SVG inputs, issue work, close archives, and local clones are not tracked.
 work/**
 !work/**/
 !work/**/README.md
 work/db/**
 
-# Local RAG knowledge workspace
-# RAG source of truthは work/db/ariadne-knowledge-platform 側へ分離する。
-# Ariadne本体側の rag/ はDuckDB、evidence、retrieval等のlocal生成workspaceとして追跡しない。
+# Legacy root RAG workspace
+# RAG source of truth belongs under work/db/ariadne-knowledge-platform/rag/.
+# Generated local read models and retrieval artifacts belong under db/rag/.
+# Keep accidental root rag/ regeneration untracked.
 rag/**
 
 # Generated database read models

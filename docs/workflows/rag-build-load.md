@@ -33,14 +33,14 @@ source markdown
 ```powershell
 python runtime/rag/rag_build.py `
   --work-id "<work-id>" `
-  --source-dir rag/corrective-action-report `
+  --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
   --document-type corrective-action-report `
   --clean-output
 ```
 
-このCLIは `normalize`、`chunk`、`ingestion optimization`、`index`、`embedding` のstage結果を `rag/retrieval/rag-build-run-latest.json` に保存します。
+このCLIは `normalize`、`chunk`、`ingestion optimization`、`index`、`embedding` のstage結果を `db/rag/retrieval/rag-build-run-latest.json` に保存します。
 
-RAG吸収最適化を一時的に外す場合だけ `--skip-optimization` を指定します。通常は、`rag/optimized-chunks` に出力された `ACCEPT` 済みchunkだけがindex / embedding対象になります。
+RAG吸収最適化を一時的に外す場合だけ `--skip-optimization` を指定します。通常は、`db/rag/optimized-chunks` に出力された `ACCEPT` 済みchunkだけがindex / embedding対象になります。
 
 `--work-id` を指定した場合は、`work/<work-id>/context/context-manifest.json` に `rag-build-run` を登録します。
 
@@ -48,52 +48,52 @@ RAG source reportのrenameを避けたい場合は `--skip-standardize` を指�
 
 ```powershell
 python runtime/rag/standardize_corrective_report_names.py `
-  --source-dir rag/corrective-action-report `
+  --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
   --replace-references
 
 python runtime/rag/normalize_documents.py `
-  --source-dir rag/corrective-action-report `
-  --output-dir rag/normalized `
+  --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
+  --output-dir db/rag/normalized `
   --document-type corrective-action-report `
   --clean-output
 
 python runtime/rag/chunk_documents.py `
-  --input-dir rag/normalized `
-  --output-dir rag/chunks `
+  --input-dir db/rag/normalized `
+  --output-dir db/rag/chunks `
   --clean-output
 
 python runtime/rag/ingestion_optimizer.py `
-  --chunks-dir rag/chunks `
-  --output-dir rag/optimized-chunks `
+  --chunks-dir db/rag/chunks `
+  --output-dir db/rag/optimized-chunks `
   --evidence-dir db/rag/evidence/ingestion `
   --clean-output
 
 python runtime/rag/build_index.py `
-  --normalized-dir rag/normalized `
-  --chunks-dir rag/optimized-chunks `
-  --output-dir rag/indexes
+  --normalized-dir db/rag/normalized `
+  --chunks-dir db/rag/optimized-chunks `
+  --output-dir db/rag/indexes
 
 python runtime/rag/embed_chunks.py `
-  --chunks-index rag/indexes/chunks.jsonl `
-  --output rag/embeddings/chunks-embeddings.jsonl
+  --chunks-index db/rag/indexes/chunks.jsonl `
+  --output db/rag/embeddings/chunks-embeddings.jsonl
 ```
 
 外部Web RAGも、同じJSON pipelineへ載せます。
 
 ```powershell
 python runtime/rag/normalize_documents.py `
-  --source-dir rag/external-web/network `
-  --output-dir rag/normalized `
+  --source-dir work/db/ariadne-knowledge-platform/rag/external-web/network `
+  --output-dir db/rag/normalized `
   --document-type external-web-knowledge
 
 python runtime/rag/chunk_documents.py `
-  --input-dir rag/normalized `
-  --output-dir rag/chunks
+  --input-dir db/rag/normalized `
+  --output-dir db/rag/chunks
 
 python runtime/rag/build_index.py `
-  --normalized-dir rag/normalized `
-  --chunks-dir rag/chunks `
-  --output-dir rag/indexes
+  --normalized-dir db/rag/normalized `
+  --chunks-dir db/rag/chunks `
+  --output-dir db/rag/indexes
 ```
 
 外部Web用metadataは `metadata` に保持されます。
@@ -159,12 +159,12 @@ python runtime/rag/rag_dispatcher.py `
 
 | Path | Purpose |
 | --- | --- |
-| `rag/normalized/*.json` | Markdown reportをmetadata付きUUID JSON documentに変換した最終knowledge record |
-| `rag/chunks/*.json` | retrieval / embeddings用chunk |
-| `rag/indexes/documents.jsonl` | document-level index |
-| `rag/indexes/chunks.jsonl` | chunk-level index |
-| `rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |
-| `rag/retrieval/*.json` | dispatch plan、retrieval result、dispatch aggregate、context pack |
+| `db/rag/normalized/*.json` | Markdown reportをmetadata付きUUID JSON documentに変換した最終knowledge record |
+| `db/rag/chunks/*.json` | retrieval / embeddings用chunk |
+| `db/rag/indexes/documents.jsonl` | document-level index |
+| `db/rag/indexes/chunks.jsonl` | chunk-level index |
+| `db/rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |
+| `db/rag/retrieval/*.json` | dispatch plan、retrieval result、dispatch aggregate、context pack |
 
 ## Boundary
 

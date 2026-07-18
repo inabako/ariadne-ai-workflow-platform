@@ -13,6 +13,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
+from runtime.rag.paths import SOURCE_CORRECTIVE_ACTION_REPORTS  # noqa: E402
 
 
 CROCKFORD_BASE32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
@@ -29,7 +30,7 @@ TARGET_PROJECT_RE = re.compile(r"対象プロジェクト:\s*`(?P<value>[^`]+)`"
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Rename corrective action reports to timestamp_random_repository.md.")
-    parser.add_argument("--source-dir", default="rag/corrective-action-report")
+    parser.add_argument("--source-dir", default=str(SOURCE_CORRECTIVE_ACTION_REPORTS))
     parser.add_argument("--repo-root", default=None)
     parser.add_argument("--replace-references", action="store_true")
     parser.add_argument("--random-length", type=int, default=8, choices=range(5, 9))

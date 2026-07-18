@@ -37,7 +37,7 @@ current branch を勝手に採用しない。user が current branch 利用を�
 Report output directory:
 
 ```text
-C:\github\ariadne-ai-workflow-platform\rag\corrective-action-report
+C:\github\ariadne-ai-workflow-platform\work\db\ariadne-knowledge-platform\rag\corrective-action-report
 ```
 
 After writing the report, register it as Context First artifact:
@@ -46,7 +46,7 @@ After writing the report, register it as Context First artifact:
 python runtime/workflow/corrective_action_report.py register `
   --repository "<target repository>" `
   --target-branch "<target branch>" `
-  --report-path "rag/corrective-action-report/<report>.md"
+  --report-path "work/db/ariadne-knowledge-platform/rag/corrective-action-report/<report>.md"
 ```
 
 Recommended filename:

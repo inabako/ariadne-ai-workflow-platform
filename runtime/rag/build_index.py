@@ -10,13 +10,14 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo  # noqa: E402
+from runtime.rag.paths import GENERATED_CHUNKS, GENERATED_INDEXES, GENERATED_NORMALIZED  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Build JSONL indexes for normalized RAG documents and chunks.")
-    parser.add_argument("--normalized-dir", default="rag/normalized")
-    parser.add_argument("--chunks-dir", default="rag/chunks")
-    parser.add_argument("--output-dir", default="rag/indexes")
+    parser.add_argument("--normalized-dir", default=str(GENERATED_NORMALIZED))
+    parser.add_argument("--chunks-dir", default=str(GENERATED_CHUNKS))
+    parser.add_argument("--output-dir", default=str(GENERATED_INDEXES))
     parser.add_argument("--repo-root", default=None)
     return parser
 

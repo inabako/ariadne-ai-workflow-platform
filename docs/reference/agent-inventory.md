@@ -58,8 +58,8 @@
 | `documentation-writer-agent.prompt.md` | knowledge | docs化 | decision record、troubleshooting、再利用可能な知識化 | 実施済みwork artifactをRAG候補化 | 外部Webはsupporting referenceとして引用/要約 | docs draft作成。仕様確定は不可 | docs taxonomyやRAG schema変更は人間/architect確認 | docs, troubleshooting, RAG notes |
 | `knowledge-capture-agent.prompt.md` | knowledge | 完了後整理 | PR資料、証跡整理、RAG/docs候補抽出、archive準備 | process/test/evidenceから内部RAG候補を抽出 | 外部WebRAG利用箇所をsupporting referenceとして記録 | push/archive/RAG登録は人間承認後 | RAG登録自動化はruntime/skill側へ | PR docs, `knowledge-capture-report.md` |
 | `workflow-help-curator-agent.prompt.md` | knowledge | help maintenance / self-improvement | aiwfctl help registry、schema、docs、testsを同期し、workflow入口不足やhelp driftをFeedback reportへ整理する | 過去のhelp drift、workflow変更、運用ルールを補助参照 | 原則不要。外部仕様名の説明補助に限定 | help contractの更新案、registry/docs/tests変更案、Feedback reportとIssue body候補の整理まで。採用判断とGitHub mutationは不可 | command追加やruntime仕様変更が必要な場合はworkflow ownerへ戻す | `workflow-help-curation-report.md`, `db/registries/registry.duckdb`, `work/feedback/*.md` |
-| `external-web-source-reviewer-agent.prompt.md` | external-web | 知見不足調査 | 外部Web一次情報をclaims/metadataへ圧縮 | 内部RAGと矛盾しないか確認 | 主担当。公式docs/RFC/vendor docsを精査 | claims作成まで。project findingや設計決定は不可 | Python/Go/Networkなどは専門source reviewer候補へ分化 | `rag/external-web/<category>/*.md` |
-| `external-web-rag-dispatcher-agent.prompt.md` | external-web | RAG dispatch | 蓄積済み外部WebRAGを検索・集約 | 内部RAGより弱い補助contextとして扱う | 主担当。カテゴリ別に集約 | aggregate作成まで。Critical itemやfinding確定は不可 | 大規模化時はcategory workerへ分割 | `rag/external-web/retrieval/*-aggregate.md` |
+| `external-web-source-reviewer-agent.prompt.md` | external-web | 知見不足調査 | 外部Web一次情報をclaims/metadataへ圧縮 | 内部RAGと矛盾しないか確認 | 主担当。公式docs/RFC/vendor docsを精査 | claims作成まで。project findingや設計決定は不可 | Python/Go/Networkなどは専門source reviewer候補へ分化 | `work/db/ariadne-knowledge-platform/rag/external-web/<category>/*.md` |
+| `external-web-rag-dispatcher-agent.prompt.md` | external-web | RAG dispatch | 蓄積済み外部WebRAGを検索・集約 | 内部RAGより弱い補助contextとして扱う | 主担当。カテゴリ別に集約 | aggregate作成まで。Critical itemやfinding確定は不可 | 大規模化時はcategory workerへ分割 | `work/db/ariadne-knowledge-platform/rag/external-web/retrieval/*-aggregate.md` |
 | `python-runtime-specialist-agent.prompt.md` | specialist reviewer | specialist review | Python runtime / PyQt / pytest / socket lifecycle / pyqt-app-template適用の専門review | Python関連の過去finding、test gap、review escapeを参照 | Python公式docs等をsupporting referenceとして参照 | review finding、required tests、trusted external knowledgeの提示まで | architecture変更や実装は担当Agentへ戻す | `specialist-review-python-runtime.md` |
 | `go-realtime-gateway-specialist-agent.prompt.md` | specialist reviewer | specialist review | Go realtime gateway / goroutine / context / net / go-microservice-template適用の専門review | gateway/runtime/networkの過去findingを参照 | Go公式docs、標準library docsをsupporting referenceとして参照 | review finding、required tests、trusted external knowledgeの提示まで | protocol採用や実装はarchitect/implementerへ戻す | `specialist-review-go-realtime-gateway.md` |
 | `network-realtime-protocol-specialist-agent.prompt.md` | specialist reviewer | specialist review | UDP/TCP/QUIC/NAT/packet evidence の専門review | network incident、packet evidence、prior riskを参照 | RFC、IANA、vendor docsをsupporting referenceとして参照 | review finding、required tests、trusted external knowledgeの提示まで | project finding確定にはrepo evidence必須 | `specialist-review-network-protocol.md` |
@@ -91,20 +91,20 @@
 
 | Type | Role | Primary Output |
 | --- | --- | --- |
-| source reviewer | 外部Webの一次情報をclaims / metadata / verification notesへ圧縮する | `rag/external-web/<category>/*.md` |
+| source reviewer | 外部Webの一次情報をclaims / metadata / verification notesへ圧縮する | `work/db/ariadne-knowledge-platform/rag/external-web/<category>/*.md` |
 | specialist reviewer | 内部RAG、外部Web RAG、current evidenceを読んで、成果物の妥当性を専門観点でreviewする | `work/<receipt-id>/process-report/specialist-review-<domain>.md` |
 
 | Candidate | Type | Trigger | Review Output | RAG Save Category | Why |
 | --- | --- | --- | --- | --- | --- |
-| `python-runtime-specialist-agent.prompt.md` | specialist reviewer | Python socket/threading/asyncio/subprocess/logging/venv/pytest/PyQtが成果物のriskに関わる | `specialist-review-python-runtime.md` | `rag/specialist-review/python-runtime/`, `rag/external-web/python-runtime/` | localty-system-gui系でPython runtime差分が多い |
-| `go-realtime-gateway-specialist-agent.prompt.md` | specialist reviewer | Go realtime gateway、net/context/sync/time/pprof/raceが設計/実装に関わる | `specialist-review-go-realtime-gateway.md` | `rag/specialist-review/go-runtime/`, `rag/external-web/go-runtime/` | realtime gateway実装で重要 |
-| `network-realtime-protocol-specialist-agent.prompt.md` | specialist reviewer | UDP/TCP/QUIC/NAT/STUN/TURN/ICE/RFCが通信仕様に関わる | `specialist-review-network-protocol.md` | `rag/specialist-review/network/`, `rag/external-web/network/` | remote gatewayとrobot通信で重要 |
-| `video-pipeline-specialist-agent.prompt.md` | specialist reviewer | GStreamer pipeline、receiver、latency、codecが設計/検証に関わる | `specialist-review-video-pipeline.md` | `rag/specialist-review/video/`, `rag/external-web/video/` | GUI/video経路で重要 |
-| `observability-telemetry-specialist-agent.prompt.md` | specialist reviewer | Prometheus/OpenTelemetry/log/trace/metric設計が証跡性に関わる | `specialist-review-observability.md` | `rag/specialist-review/observability/`, `rag/external-web/observability/` | evidenceとincident traceabilityで重要 |
-| `platform-deployment-specialist-agent.prompt.md` | specialist reviewer | Windows/Linux/Raspberry Pi/MSYS2/Docker差分がstartup/integrationに関わる | `specialist-review-platform-deployment.md` | `rag/specialist-review/platform/`, `rag/external-web/platform/` | platform差分がstartup/integrationに影響する |
-| `test-fault-injection-specialist-agent.prompt.md` | specialist reviewer | pytest/Go test/fault injection/tc-netem/packet captureが検証計画に関わる | `specialist-review-testing.md` | `rag/specialist-review/testing/`, `rag/external-web/testing/` | verification designの深みを増やす |
-| `security-remote-access-specialist-agent.prompt.md` | specialist reviewer | VPN、tunnel、auth、operator authority、secret handlingがremote operationに関わる | `specialist-review-remote-security.md` | `rag/specialist-review/security/`, `rag/external-web/security/` | remote gatewayの権限境界で重要 |
-| `safety-control-specialist-agent.prompt.md` | specialist reviewer | STOP、communication loss、safe state、drive zero、watchdogが成果物に関わる | `specialist-review-safety-control.md` | `rag/specialist-review/safety/` | robot固有の安全意図をreview結果として残す |
+| `python-runtime-specialist-agent.prompt.md` | specialist reviewer | Python socket/threading/asyncio/subprocess/logging/venv/pytest/PyQtが成果物のriskに関わる | `specialist-review-python-runtime.md` | `work/db/ariadne-knowledge-platform/rag/specialist-review/python-runtime/`, `work/db/ariadne-knowledge-platform/rag/external-web/python-runtime/` | localty-system-gui系でPython runtime差分が多い |
+| `go-realtime-gateway-specialist-agent.prompt.md` | specialist reviewer | Go realtime gateway、net/context/sync/time/pprof/raceが設計/実装に関わる | `specialist-review-go-realtime-gateway.md` | `work/db/ariadne-knowledge-platform/rag/specialist-review/go-runtime/`, `work/db/ariadne-knowledge-platform/rag/external-web/go-runtime/` | realtime gateway実装で重要 |
+| `network-realtime-protocol-specialist-agent.prompt.md` | specialist reviewer | UDP/TCP/QUIC/NAT/STUN/TURN/ICE/RFCが通信仕様に関わる | `specialist-review-network-protocol.md` | `work/db/ariadne-knowledge-platform/rag/specialist-review/network/`, `work/db/ariadne-knowledge-platform/rag/external-web/network/` | remote gatewayとrobot通信で重要 |
+| `video-pipeline-specialist-agent.prompt.md` | specialist reviewer | GStreamer pipeline、receiver、latency、codecが設計/検証に関わる | `specialist-review-video-pipeline.md` | `work/db/ariadne-knowledge-platform/rag/specialist-review/video/`, `work/db/ariadne-knowledge-platform/rag/external-web/video/` | GUI/video経路で重要 |
+| `observability-telemetry-specialist-agent.prompt.md` | specialist reviewer | Prometheus/OpenTelemetry/log/trace/metric設計が証跡性に関わる | `specialist-review-observability.md` | `work/db/ariadne-knowledge-platform/rag/specialist-review/observability/`, `work/db/ariadne-knowledge-platform/rag/external-web/observability/` | evidenceとincident traceabilityで重要 |
+| `platform-deployment-specialist-agent.prompt.md` | specialist reviewer | Windows/Linux/Raspberry Pi/MSYS2/Docker差分がstartup/integrationに関わる | `specialist-review-platform-deployment.md` | `work/db/ariadne-knowledge-platform/rag/specialist-review/platform/`, `work/db/ariadne-knowledge-platform/rag/external-web/platform/` | platform差分がstartup/integrationに影響する |
+| `test-fault-injection-specialist-agent.prompt.md` | specialist reviewer | pytest/Go test/fault injection/tc-netem/packet captureが検証計画に関わる | `specialist-review-testing.md` | `work/db/ariadne-knowledge-platform/rag/specialist-review/testing/`, `work/db/ariadne-knowledge-platform/rag/external-web/testing/` | verification designの深みを増やす |
+| `security-remote-access-specialist-agent.prompt.md` | specialist reviewer | VPN、tunnel、auth、operator authority、secret handlingがremote operationに関わる | `specialist-review-remote-security.md` | `work/db/ariadne-knowledge-platform/rag/specialist-review/security/`, `work/db/ariadne-knowledge-platform/rag/external-web/security/` | remote gatewayの権限境界で重要 |
+| `safety-control-specialist-agent.prompt.md` | specialist reviewer | STOP、communication loss、safe state、drive zero、watchdogが成果物に関わる | `specialist-review-safety-control.md` | `work/db/ariadne-knowledge-platform/rag/specialist-review/safety/` | robot固有の安全意図をreview結果として残す |
 
 ## Specialist Review Loop
 
@@ -124,10 +124,10 @@ internal RAG load
 
 ```text
 work/<receipt-id>/process-report/specialist-review-<domain>.md
-rag/specialist-review/<domain>/*.md
+work/db/ariadne-knowledge-platform/rag/specialist-review/<domain>/*.md
 ```
 
-`work/<receipt-id>/process-report/` は作業中の一次保存先です。`rag/specialist-review/<domain>/` への登録、または `/rag-build` による吸収は人間承認後に行います。
+`work/<receipt-id>/process-report/` は作業中の一次保存先です。`work/db/ariadne-knowledge-platform/rag/specialist-review/<domain>/` への登録、または `/rag-build` による吸収は人間承認後に行います。
 
 ## Trusted External Knowledge Record
 

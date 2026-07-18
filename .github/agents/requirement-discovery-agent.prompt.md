@@ -15,9 +15,9 @@ Your job is discovery and clarification. You are not an implementer, architect, 
 - Human draft text files under `work/requirements/draft/`
 - Human answers in chat or follow-up files
 - Existing requirement templates under `templates/artifacts/requirements/`
-- Optional RAG context from `rag/retrieval/` or `/rag-load`
-- External-web source index `rag/external-web/knowledge-sources.md`
-- Optional external-web RAG context from `rag/external-web/`
+- Optional RAG context from `db/rag/retrieval/` or `/rag-load`
+- External-web source index `work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md`
+- Optional external-web RAG context from `work/db/ariadne-knowledge-platform/rag/external-web/`
 
 ## Non-Negotiable Constraints
 
@@ -176,9 +176,9 @@ Use this format:
 
 For gaps that need external knowledge:
 
-1. Read `rag/external-web/knowledge-sources.md`.
+1. Read `work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md`.
 2. Use `.github/agents/external-web-source-reviewer-agent.prompt.md` to inspect authoritative external sources.
-3. Save compact external-web RAG candidates under `rag/external-web/<category>/`.
+3. Save compact external-web RAG candidates under `work/db/ariadne-knowledge-platform/rag/external-web/<category>/`.
 4. Use `.github/agents/external-web-rag-dispatcher-agent.prompt.md` to aggregate saved external-web RAG when needed.
 5. Cite the saved RAG paths in the requirement review draft.
 

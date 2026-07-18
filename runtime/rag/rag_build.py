@@ -11,6 +11,15 @@ if __package__ in {None, ""}:
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag import build_index, chunk_documents, duckdb_store, embed_chunks, ingestion_optimizer, normalize_documents  # noqa: E402
+from runtime.rag.paths import (  # noqa: E402
+    EMBEDDINGS_INDEX,
+    GENERATED_CHUNKS,
+    GENERATED_INDEXES,
+    GENERATED_NORMALIZED,
+    GENERATED_OPTIMIZED_CHUNKS,
+    RAG_BUILD_RUN_LATEST,
+    SOURCE_CORRECTIVE_ACTION_REPORTS,
+)
 from runtime.rag import standardize_corrective_report_names  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
@@ -59,7 +68,7 @@ def build_run_artifact(
     source_dir = resolve_repo_path(repo_root, args.source_dir).resolve()
     normalized_dir = resolve_repo_path(repo_root, args.normalized_dir).resolve()
     chunks_dir = resolve_repo_path(repo_root, args.chunks_dir).resolve()
-    optimized_chunks_dir = resolve_repo_path(repo_root, getattr(args, "optimized_chunks_dir", "rag/optimized-chunks")).resolve()
+    optimized_chunks_dir = resolve_repo_path(repo_root, getattr(args, "optimized_chunks_dir", str(GENERATED_OPTIMIZED_CHUNKS))).resolve()
     indexes_dir = resolve_repo_path(repo_root, args.indexes_dir).resolve()
     embeddings_output = resolve_repo_path(repo_root, args.embeddings_output).resolve()
     human_check_reasons: list[str] = []
@@ -231,7 +240,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         optimization_result = ingestion_optimizer.run(
             argparse.Namespace(
                 chunks_dir=args.chunks_dir,
-                output_dir=getattr(args, "optimized_chunks_dir", "rag/optimized-chunks"),
+                output_dir=getattr(args, "optimized_chunks_dir", str(GENERATED_OPTIMIZED_CHUNKS)),
                 evidence_dir=getattr(args, "ingestion_evidence_dir", "db/rag/evidence/ingestion"),
                 policy=getattr(args, "ingestion_policy", "runtime/rag/policies/knowledge-ingestion-policy.json"),
                 repo_root=str(repo_root),
@@ -239,7 +248,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             )
         )
         stages.append(stage_record("optimize-ingestion", optimization_result))
-        index_chunks_dir = getattr(args, "optimized_chunks_dir", "rag/optimized-chunks")
+        index_chunks_dir = getattr(args, "optimized_chunks_dir", str(GENERATED_OPTIMIZED_CHUNKS))
 
     index_result = build_index.run(
         argparse.Namespace(
@@ -326,14 +335,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repo-root", default="")
     parser.add_argument("--work-id", default="")
     parser.add_argument("--work-dir", default="")
-    parser.add_argument("--source-dir", default="rag/corrective-action-report")
+    parser.add_argument("--source-dir", default=str(SOURCE_CORRECTIVE_ACTION_REPORTS))
     parser.add_argument("--document-type", default="corrective-action-report")
-    parser.add_argument("--normalized-dir", default="rag/normalized")
-    parser.add_argument("--chunks-dir", default="rag/chunks")
-    parser.add_argument("--optimized-chunks-dir", default="rag/optimized-chunks")
-    parser.add_argument("--indexes-dir", default="rag/indexes")
-    parser.add_argument("--embeddings-output", default="rag/embeddings/chunks-embeddings.jsonl")
-    parser.add_argument("--output", default="rag/retrieval/rag-build-run-latest.json")
+    parser.add_argument("--normalized-dir", default=str(GENERATED_NORMALIZED))
+    parser.add_argument("--chunks-dir", default=str(GENERATED_CHUNKS))
+    parser.add_argument("--optimized-chunks-dir", default=str(GENERATED_OPTIMIZED_CHUNKS))
+    parser.add_argument("--indexes-dir", default=str(GENERATED_INDEXES))
+    parser.add_argument("--embeddings-output", default=str(EMBEDDINGS_INDEX))
+    parser.add_argument("--output", default=str(RAG_BUILD_RUN_LATEST))
     parser.add_argument("--ingestion-evidence-dir", default="db/rag/evidence/ingestion")
     parser.add_argument("--ingestion-policy", default="runtime/rag/policies/knowledge-ingestion-policy.json")
     parser.add_argument("--skip-optimization", action="store_true")

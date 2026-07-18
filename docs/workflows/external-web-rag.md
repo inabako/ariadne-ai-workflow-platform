@@ -21,13 +21,13 @@
 URL候補は次に置きます。
 
 ```text
-rag/external-web/knowledge-sources.md
+work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md
 ```
 
 ## Directory Layout
 
 ```text
-rag/
+work/db/ariadne-knowledge-platform/rag/
   external-web/
     knowledge-sources.md
     network/
@@ -45,15 +45,15 @@ rag/
 
 | Agent | Purpose | Output |
 | --- | --- | --- |
-| `external-web-source-reviewer-agent.prompt.md` | 外部Webを精査し、claims / metadata / verification notesへ圧縮する | `rag/external-web/<category>/*.md` |
-| `external-web-rag-dispatcher-agent.prompt.md` | 蓄積済み外部Web RAGを検索・集約して要件/設計/改善flowへ渡す | `rag/external-web/retrieval/*-aggregate.md` |
+| `external-web-source-reviewer-agent.prompt.md` | 外部Webを精査し、claims / metadata / verification notesへ圧縮する | `work/db/ariadne-knowledge-platform/rag/external-web/<category>/*.md` |
+| `external-web-rag-dispatcher-agent.prompt.md` | 蓄積済み外部Web RAGを検索・集約して要件/設計/改善flowへ渡す | `work/db/ariadne-knowledge-platform/rag/external-web/retrieval/*-aggregate.md` |
 | Specialist Agents | 内部RAG、外部Web RAG、current evidenceを読んで成果物を専門reviewする | `work/<receipt-id>/process-report/specialist-review-<domain>.md` |
 
 ## Flow
 
 1. Requirement Discoveryで知見不足の領域を見つける。
 2. `work/requirements/draft/<draft-stem>-knowledge-gaps.md` にknowledge gapを書く。
-3. `rag/external-web/knowledge-sources.md` から関連sourceを選ぶ。
+3. `work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md` から関連sourceを選ぶ。
 4. External Web Source Reviewerが外部Webを精査する。
 5. 外部ページ本文ではなく、claim、metadata、verification notesを保存する。
 6. External Web RAG Dispatcherが必要なcategoryを検索・集約する。
@@ -104,30 +104,30 @@ work/<receipt-id>/process-report/specialist-review-<domain>.md
 RAG registration after approval:
 
 ```text
-rag/specialist-review/<domain>/*.md
+work/db/ariadne-knowledge-platform/rag/specialist-review/<domain>/*.md
 ```
 
-外部Web由来のclaim自体は `rag/external-web/<category>/` に保存します。Specialist review結果はproject-specificな判断なので、内部RAG候補として扱います。
+外部Web由来のclaim自体は `work/db/ariadne-knowledge-platform/rag/external-web/<category>/` に保存します。Specialist review結果はproject-specificな判断なので、内部RAG候補として扱います。
 
 ## JSON Pipeline
 
-外部Web RAGの吸収内容は、内部RAGと同じ `rag/normalized/*.json` 形式へ変換します。
+外部Web RAGの吸収内容は、内部RAGと同じ `db/rag/normalized/*.json` 形式へ変換します。
 
 ```text
-rag/external-web/<category>/*.md
-  -> rag/normalized/*.json
-  -> rag/chunks/*.json
-  -> rag/indexes/*.jsonl
-  -> rag/embeddings/*.jsonl
-  -> rag/retrieval/*.json
+work/db/ariadne-knowledge-platform/rag/external-web/<category>/*.md
+  -> db/rag/normalized/*.json
+  -> db/rag/chunks/*.json
+  -> db/rag/indexes/*.jsonl
+  -> db/rag/embeddings/*.jsonl
+  -> db/rag/retrieval/*.json
 ```
 
 Normalize example:
 
 ```powershell
 python runtime/rag/normalize_documents.py `
-  --source-dir rag/external-web/network `
-  --output-dir rag/normalized `
+  --source-dir work/db/ariadne-knowledge-platform/rag/external-web/network `
+  --output-dir db/rag/normalized `
   --document-type external-web-knowledge
 ```
 
@@ -218,9 +218,9 @@ review_agent: network-realtime-protocol-specialist-agent
 reviewed_artifacts:
   - work/issue-123/design-document/network-design.md
 internal_rag_used:
-  - rag/retrieval/<context-pack>.json
+  - db/rag/retrieval/<context-pack>.json
 external_web_rag_used:
-  - rag/external-web/network/<knowledge>.md
+  - work/db/ariadne-knowledge-platform/rag/external-web/network/<knowledge>.md
 tags:
   - specialist-review
   - network

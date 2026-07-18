@@ -22,8 +22,8 @@ You review video transport, receiver, latency, and pipeline assumptions that aff
 ## Inputs
 
 - video design, GUI runtime design, remote gateway architecture, or corrective action scope
-- internal RAG context from `rag/retrieval/`
-- external-web RAG from `rag/external-web/video/`
+- internal RAG context from `db/rag/retrieval/`
+- external-web RAG from `work/db/ariadne-knowledge-platform/rag/external-web/video/`
 - current repository evidence when available
 - planned video tests or evidence
 

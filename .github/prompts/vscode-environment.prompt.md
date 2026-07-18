@@ -77,7 +77,7 @@ Use `work/requirements/devlop-edit-draft/README.md` and `README_*.md` only as op
     - The same registration and refreshed shell can be invoked through `runtime/tools/aiwfctl.cmd path shell`.
 12. Run workspace tests and record evidence.
 13. Update setup / troubleshooting docs.
-14. If the environment pattern is reusable, capture it under `rag/workspace-environment/` as `YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md`.
+14. If the environment pattern is reusable, capture it under `work/db/ariadne-knowledge-platform/rag/workspace-environment/` as `YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md`.
 
 ## Agents
 
@@ -111,4 +111,4 @@ uv run --project runtime python runtime/workflow/vscode_environment.py rag-templ
   --repository "localty"
 ```
 
-Build approved notes with `runtime/rag/normalize_documents.py --source-dir rag/workspace-environment --document-type workspace-environment-pattern`.
+Build approved notes with `runtime/rag/normalize_documents.py --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment --document-type workspace-environment-pattern`.

@@ -28,8 +28,8 @@ You review Python runtime assumptions in requirements, designs, corrective-actio
 - draft artifact to review
 - boilerplate-template-selection.md when pyqt-app-template is considered
 - current repository evidence when available
-- internal RAG context from `rag/retrieval/`
-- external-web RAG from `rag/external-web/python-runtime/`, `python-network/`, `python-gui/`, or `python-testing/`
+- internal RAG context from `db/rag/retrieval/`
+- external-web RAG from `work/db/ariadne-knowledge-platform/rag/external-web/python-runtime/`, `python-network/`, `python-gui/`, or `python-testing/`
 - test evidence or planned test specification
 
 ## Mission

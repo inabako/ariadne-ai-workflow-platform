@@ -30,7 +30,7 @@
 | GitHub知識保守 | GitHub Knowledge Maintenance | target repository、scan / repair mode | GitHub metadata収集、知識gap発見、repair proposal、Human Review、GitHub sync、RAG publish | analysis JSON、repair proposal、RAG候補 | GitHub mutation と RAG publish は承認後 |
 | VSCode環境整備 | VSCode Environment | target workspace | workspace requirement、validation、design、preflight、`.vscode` 実装、test evidence | `.vscode/*`、workspace docs、test evidence | validation fail は open questions へ戻す |
 | 完了後知識回収 | Knowledge Capture | 完了Issue作業 | PR材料、Mermaid sequence、evidence確認、push、PR、RAG/docs候補、archive readiness | PR文面、RAG候補、archive準備 | evidence不足ならpush/PR前に停止 |
-| RAG構築/読込 | RAG Build / Load | Markdown source reports | JSON正規化、chunk化、index、local embeddings、dispatcher、context pack | `rag/normalized/`、`rag/chunks/`、`rag/retrieval/` | source report のmetadata不足は補正または停止 |
+| RAG構築/読込 | RAG Build / Load | Markdown source reports | JSON正規化、chunk化、index、local embeddings、dispatcher、context pack | `db/rag/normalized/`、`db/rag/chunks/`、`db/rag/retrieval/` | source report のmetadata不足は補正または停止 |
 | 外部Web知識補助 | External Web RAG | knowledge gap | source reviewer、claims / metadata / verification notes、category file、dispatcher、specialist review | trusted external knowledge record、内部RAG候補 | 外部知識はrepo evidenceや人間承認済み知見を上書きしない |
 
 ## Requirement Discovery
@@ -167,5 +167,5 @@
 | --- | --- | --- | --- | --- |
 | gap定義 | Knowledge gap / knowledge-sources.md | 何を外部Webで補うか明確にする | source reviewer | 広く雑に収集しない |
 | source review | External Web Source Reviewer | 一次情報や信頼できる出典を確認する | claims / metadata / notes | 出典と検証メモを残す |
-| RAG化 | rag/external-web category files / Dispatcher | categoryごとに再利用可能にする | specialist review | 外部記事本文の過剰保存を避ける |
+| RAG化 | work/db/ariadne-knowledge-platform/rag/external-web category files / Dispatcher | categoryごとに再利用可能にする | specialist review | 外部記事本文の過剰保存を避ける |
 | 採用判断 | Specialist review / Trusted external knowledge record | 採用/不採用claimと検証方法を記録する | Internal RAG candidate | 内部RAG化は承認後 |

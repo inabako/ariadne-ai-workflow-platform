@@ -120,9 +120,9 @@ readiness-report.md
 ```text
 要件を読む
   -> 知らない領域が出る
-  -> rag/external-web/knowledge-sources.md を参照する
+  -> work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md を参照する
   -> 外部Webを精査する
-  -> rag/external-web/<category>/ に蓄積する
+  -> work/db/ariadne-knowledge-platform/rag/external-web/<category>/ に蓄積する
   -> 要件定義review draftに根拠pathと未確認事項を反映する
 ```
 
@@ -135,7 +135,7 @@ work/requirements/draft/<draft-stem>-knowledge-gaps.md
 外部Web RAGのsource index:
 
 ```text
-rag/external-web/knowledge-sources.md
+work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md
 ```
 
 外部Web RAGは補助contextです。Repository、Target Branch、STOP、Communication loss、Safety requirementsは人間確認なしに確定しません。

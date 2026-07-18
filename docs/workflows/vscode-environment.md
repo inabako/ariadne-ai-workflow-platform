@@ -107,9 +107,9 @@ Reference: [VSCode Environment](../reference/vscode-environment.md)
 13. tasks、terminal startup、Docker/runtime integration、AI workflow entry tasksをtestする。
 14. evidenceを記録する。
 15. setup / troubleshooting docsを更新する。
-16. 再利用可能なworkspace knowledgeを `rag/workspace-environment/` にhuman-review可能なsource Markdownとして保存する。
-17. Human approval後、source Markdownを `rag/normalized/` のUUID名JSONへnormalizeする。
-18. `rag/normalized/<uuid>.json` を最終machine-readable knowledge artifactとして扱う。chunk、index、embedding、retrieval filesは派生物です。
+16. 再利用可能なworkspace knowledgeを `work/db/ariadne-knowledge-platform/rag/workspace-environment/` にhuman-review可能なsource Markdownとして保存する。
+17. Human approval後、source Markdownを `db/rag/normalized/` のUUID名JSONへnormalizeする。
+18. `db/rag/normalized/<uuid>.json` を最終machine-readable knowledge artifactとして扱う。chunk、index、embedding、retrieval filesは派生物です。
 
 ## Stop Rules
 
@@ -232,7 +232,7 @@ $env:Path = "$PWD\runtime\tools;$env:Path"
 再利用可能なLocalty VSCode environment knowledgeは、source Markdownとして次へ保存します。
 
 ```text
-rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
+work/db/ariadne-knowledge-platform/rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 ```
 
 正しい名前のnoteを作る例:
@@ -250,32 +250,32 @@ Human approval後、`workspace-environment-pattern` としてnormalizeします�
 
 ```powershell
 uv run --project runtime python runtime/rag/normalize_documents.py `
-  --source-dir rag/workspace-environment `
-  --output-dir rag/normalized `
+  --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment `
+  --output-dir db/rag/normalized `
   --document-type workspace-environment-pattern
 ```
 
 最終着地:
 
 ```text
-rag/normalized/<uuid>.json
+db/rag/normalized/<uuid>.json
 ```
 
 normalize後、必要に応じて派生RAG artifactを生成します。
 
 ```powershell
 uv run --project runtime python runtime/rag/chunk_documents.py `
-  --input-dir rag/normalized `
-  --output-dir rag/chunks
+  --input-dir db/rag/normalized `
+  --output-dir db/rag/chunks
 
 uv run --project runtime python runtime/rag/build_index.py `
-  --normalized-dir rag/normalized `
-  --chunks-dir rag/chunks `
-  --output-dir rag/indexes
+  --normalized-dir db/rag/normalized `
+  --chunks-dir db/rag/chunks `
+  --output-dir db/rag/indexes
 
 uv run --project runtime python runtime/rag/embed_chunks.py `
-  --chunks-index rag/indexes/chunks.jsonl `
-  --output rag/embeddings/chunks-embeddings.jsonl
+  --chunks-index db/rag/indexes/chunks.jsonl `
+  --output db/rag/embeddings/chunks-embeddings.jsonl
 ```
 
 ## Source Skill

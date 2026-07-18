@@ -13,6 +13,7 @@ if __package__ in {None, ""}:
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, write_json  # noqa: E402
 from runtime.rag.cleanup_guard import assert_safe_clean_output_target  # noqa: E402
+from runtime.rag.paths import GENERATED_CHUNKS, GENERATED_NORMALIZED  # noqa: E402
 
 
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
@@ -20,8 +21,8 @@ HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Split normalized RAG documents into JSON chunks.")
-    parser.add_argument("--input-dir", default="rag/normalized")
-    parser.add_argument("--output-dir", default="rag/chunks")
+    parser.add_argument("--input-dir", default=str(GENERATED_NORMALIZED))
+    parser.add_argument("--output-dir", default=str(GENERATED_CHUNKS))
     parser.add_argument("--chunk-size", type=int, default=1800)
     parser.add_argument("--chunk-overlap", type=int, default=180)
     parser.add_argument("--repo-root", default=None)

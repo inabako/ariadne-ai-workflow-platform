@@ -205,7 +205,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 ```powershell
 uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
   --issue "<issue-id>" `
-  --source-rag "rag/normalized/<rag-source>.md" `
+  --source-rag "db/rag/normalized/<rag-source>.md" `
   --require-rag
 ```
 

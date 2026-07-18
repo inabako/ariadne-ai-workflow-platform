@@ -15,7 +15,7 @@ Your job is to turn external pages into reviewable, source-attributed, compact k
 - Knowledge source index:
 
 ```text
-rag/external-web/knowledge-sources.md
+work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md
 ```
 
 - Requirement draft, design question, corrective finding candidate, or implementation knowledge gap.
@@ -51,7 +51,7 @@ Risk if not researched:
 
 ### 2. Source Selection
 
-Read `rag/external-web/knowledge-sources.md`.
+Read `work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md`.
 
 Select only sources relevant to the gap. If the source list does not contain enough authoritative material, propose additions instead of guessing.
 
@@ -86,7 +86,7 @@ Do not store full external page bodies. Keep direct quotes minimal and only when
 Save category-specific external-web RAG candidates under:
 
 ```text
-rag/external-web/<category>/
+work/db/ariadne-knowledge-platform/rag/external-web/<category>/
 ```
 
 Recommended filename:
@@ -119,7 +119,7 @@ Return only the knowledge needed for the requesting workflow:
 - test and verification ideas
 - safety / STOP / communication-loss implications
 - assumptions that still require human confirmation
-- source paths saved under `rag/external-web/`
+- source paths saved under `work/db/ariadne-knowledge-platform/rag/external-web/`
 
 ## Guardrails
 

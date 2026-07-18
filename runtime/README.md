@@ -106,16 +106,16 @@ runtime/posix-bash/aiwf.sh
 
 `chunk_documents.py` は、normalized document を retrieval しやすい chunk JSON に分割します。
 
-`build_index.py` は、document / chunk を JSONL index として `rag/indexes/` に集約します。
+`build_index.py` は、document / chunk を JSONL index として `db/rag/indexes/` に集約します。
 
-`embed_chunks.py` は、chunk index から deterministic sparse embedding を生成し、`rag/embeddings/` に出力します。
+`embed_chunks.py` は、chunk index から deterministic sparse embedding を生成し、`db/rag/embeddings/` に出力します。
 
-`retrieve_context.py` は、JSONL chunk index と local embeddings から query に合うchunkを選び、Agent投入用の圧縮済みcontext packを `rag/retrieval/` に出力します。
+`retrieve_context.py` は、JSONL chunk index と local embeddings から query に合うchunkを選び、Agent投入用の圧縮済みcontext packを `db/rag/retrieval/` に出力します。
 
 `rag_dispatcher.py` は、開発前RAG読み込み用に複数queryを計画し、`retrieve_context.py` を並列実行して、圧縮済みcontext packを集約します。
 
-`jsonize_rag_tree.py` は、`rag/` 配下の非UUID JSON、JSONL、Markdown、text artifact を UUID名の JSON wrapper に変換します。
-`standardize_corrective_report_names.py` は、`rag/corrective-action-report/` 配下のMarkdown reportを `YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md` に統一します。
+`jsonize_rag_tree.py` は、`work/db/ariadne-knowledge-platform/rag/` 配下の非UUID JSON、JSONL、Markdown、text artifact を UUID名の JSON wrapper に変換します。
+`standardize_corrective_report_names.py` は、`work/db/ariadne-knowledge-platform/rag/corrective-action-report/` 配下のMarkdown reportを `YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md` に統一します。
 
 `text_encoding_convert.py` は、Markdown / JSON / Python などのtext fileを指定encodingでstrict decodeし、UTF-8へ安全に変換します。`preview` はhex bytesとencoding別decode previewを表示し、`inspect` は `cp932` / `shift_jis` / `utf-8` などの候補が読めるかだけを報告します。`convert` は `--write` 指定時のみ `.encoding-bak` を残して書き換えます。
 
