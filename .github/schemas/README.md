@@ -29,6 +29,7 @@
 | `github-operation-gate.schema.json` | GitHub read-only収集、mutation、clone、RAG publicationのHuman Check条件 |
 | `human-gates.schema.json` | 人間承認が必要なworkflow操作registryの構造定義 |
 | `workflow-help.schema.json` | `aiwfctl help` 用workflow prompt command registryの構造定義 |
+| `search-terms.schema.json` | registry itemへ `owner_id` で結び付く検索語registryの構造定義 |
 | `tool-candidates.schema.json` | Context First Tool Dispatcher が参照するtool候補registryの構造定義 |
 | `context-manifest.schema.json` | Context First Architectureで `work/<work-id>/context/context-manifest.json` を標準化する構造定義 |
 | `environment-selection.schema.json` | `work/<work-id>/context/environment-selection.json` の標準Context構造定義 |

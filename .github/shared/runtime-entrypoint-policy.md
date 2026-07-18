@@ -20,7 +20,7 @@ When an AI workflow runs on Windows 11, start from the PowerShell-native runtime
 
 This PS1 runtime sets UTF-8 no BOM console encoding, resolves the repository-local runtime paths, avoids Windows Store `python` / `py` aliases, and delegates normal workflow execution to `aiwfctl`.
 
-Do not add workflow-specific decision logic to `runtime/windows-ps1/*.ps1`. If an operation is missing, extend `runtime/common/ctl.py` through the governed self-improvement route first.
+Do not add workflow-specific decision logic to `runtime/windows-ps1/*.ps1`. If an operation is missing, create a self-improvement Feedback report first. Only Accepted Feedback may later become a governed `runtime/common/ctl.py` change.
 
 ## POSIX Bash Runtime
 
@@ -32,7 +32,7 @@ When an AI workflow runs on Linux, WSL, or macOS, start from the bash-native run
 
 This bash runtime sets Python UTF-8 environment variables, resolves the repository-local runtime paths, and delegates normal workflow execution to `aiwfctl`.
 
-Do not add workflow-specific decision logic to `runtime/posix-bash/*.sh`. If an operation is missing, extend `runtime/common/ctl.py` through the governed self-improvement route first.
+Do not add workflow-specific decision logic to `runtime/posix-bash/*.sh`. If an operation is missing, create a self-improvement Feedback report first. Only Accepted Feedback may later become a governed `runtime/common/ctl.py` change.
 
 ## Required Routes
 

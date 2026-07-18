@@ -8,13 +8,15 @@ The legacy JSON registry files were migrated to DuckDB and removed from the runt
 work/db/ariadne-knowledge-platform/registries/
 ```
 
+`workflow_help.json` stores help command/extension payloads. Its `id` is a snake_case feature ID such as `ariadne_new_system`. Search terms are stored separately in `search_terms.json`; each search term has a UUID `id` and links back to the feature ID via `owner_id`.
+
 ## Tables
 
 | Table | Purpose |
 | --- | --- |
 | `workflow_help_commands` | AI workflow prompt commands shown and searched by `aiwfctl help` |
 | `workflow_help_extensions` | Workflow extension help shown by `aiwfctl help` |
-| `workflow_help_search_terms` | Natural-language intent and synonym terms linked to help commands/extensions |
+| `search_terms` | Natural-language intent and synonym terms linked to registry items by stable owner ID |
 | `tool_candidates` | Tool candidate records used by Context First Tool Dispatcher |
 | `human_gates` | Runtime operations that require Human Check |
 | `workflow_environments` | Public environment names shown by `aiwfctl env` |

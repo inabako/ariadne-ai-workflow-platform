@@ -183,10 +183,22 @@ aiwfctl help markdown --output work/help/ai-workflow-help.md
 db/registries/registry.duckdb
 ```
 
+DuckDB read modelのsource JSONは次です。
+
+```text
+work/db/ariadne-knowledge-platform/registries/workflow_help.json
+work/db/ariadne-knowledge-platform/registries/search_terms.json
+```
+
+`workflow_help.json` はcommand / extension本体だけを持ちます。各項目の `id` は `/ariadne-new-system` なら `ariadne_new_system` のように、prompt commandやextension名をsnake_case化した機能IDにします。
+
+検索語は `search_terms.json` に分離します。各検索語の `id` はUUID、`owner_id` は `workflow_help.json` 内のsnake_case機能IDにします。
+
 構造定義は次に置きます。
 
 ```text
 .github/schemas/workflow-help.schema.json
+.github/schemas/search-terms.schema.json
 ```
 
 `db/registries/` はruntime横断で参照するregistry実体、`.github/schemas/` は構造定義専用です。
@@ -197,14 +209,17 @@ db/registries/registry.duckdb
 
 workflow prompt commandを追加、削除、引数変更した場合は、次を更新します。
 
-1. `db/registries/registry.duckdb`
-2. `.github/schemas/workflow-help.schema.json` が必要なら更新
-3. `docs/reference/workflow-help.md`
-4. `runtime/tests/test_ctl_help.py`
+1. `work/db/ariadne-knowledge-platform/registries/workflow_help.json`
+2. `work/db/ariadne-knowledge-platform/registries/search_terms.json`
+3. `db/registries/registry.duckdb`
+4. `.github/schemas/workflow-help.schema.json` / `.github/schemas/search-terms.schema.json` が必要なら更新
+5. `docs/reference/workflow-help.md`
+6. `runtime/tests/test_ctl_help.py`
 
 特に、次の項目は省略しません。
 
 - `command`
+- `id`。prompt commandやextension名をsnake_case化した機能ID。例: `ariadne_new_system`
 - `overview`
 - `prerequisites`
 - `arguments`
@@ -217,6 +232,7 @@ workflow prompt commandを追加、削除、引数変更した場合は、次を
 ## 検索の考え方
 
 `aiwfctl help search` は、registry内の command、overview、argument説明、details、docs などを対象に検索します。
+明示的なintent語、同義語、自然文検索語は `search_terms.json` に置きます。検索語自体の `id` はUUIDにし、help item本体とは `owner_id` のsnake_case機能IDで結びます。
 
 例:
 

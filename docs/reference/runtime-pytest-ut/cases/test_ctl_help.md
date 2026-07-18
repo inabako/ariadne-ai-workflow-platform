@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 43 |
+| cases | 46 |
 
 ## ケース一覧
 
@@ -619,6 +619,57 @@ runtime/tests/test_ctl_help.py::test_workflow_help_search_uses_intent_terms
   - parameter: names=なし, case=なし
   - inline input: `args`
 - 期待結果: 検索語に対応するworkflow候補が返る。
+
+#### RT-UT-CASE-CTL-029A
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_workflow_help_uses_terms_from_separated_json
+```
+
+- 確認内容: `workflow_help.json` から分離した `search_terms.json` を読み込み、`owner_id` 結合でhelp検索へ反映できることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py:1188`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `registry`, `matches`
+- 期待結果: 分離JSONの検索語で対象workflow commandが検索候補に返り、検索語UUIDと `_search_terms.owner_id` のsnake_case機能IDでhelp itemを参照する。
+
+#### RT-UT-CASE-CTL-029B
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_registry_store_builds_search_terms_table_with_owner_id
+```
+
+- 確認内容: registry buildが分離JSONの検索語をDuckDBの `search_terms` tableへ格納し、help item IDと結合できることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py:1242`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `source_dir`, `db_path`, `result`, `registry`, `matches`
+- 期待結果: `search_terms` tableが生成され、検索語 `id` はUUID、`owner_id` は `workflow_help_commands.id` のsnake_case機能IDと一致し、DuckDB read modelからhelp検索へ戻せる。
+
+#### RT-UT-CASE-CTL-029C
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_workflow_help_search_terms_cover_all_prompt_commands
+```
+
+- 確認内容: 全prompt commandに分離済み検索語が付与され、各検索語がUUIDの `id` とsnake_case機能IDの `owner_id` を持つことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: なし
+  - parameter: names=なし, case=なし
+  - inline input: `registry`, `missing`, `terms`
+- 期待結果: 検索語未登録のprompt commandがなく、全検索語がUUIDで、`owner_id` がcommand `id` と一致する。
 
 #### RT-UT-CASE-CTL-030
 

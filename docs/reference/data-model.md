@@ -28,6 +28,7 @@ docs-drift-analysis.schema.json
 github-knowledge-analysis.schema.json
 github-operation-gate.schema.json
 workflow-help.schema.json
+search-terms.schema.json
 tool-candidates.schema.json
 context-manifest.schema.json
 environment-selection.schema.json

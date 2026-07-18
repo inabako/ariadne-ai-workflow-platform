@@ -34,4 +34,4 @@ Windows 11 上で AI workflow を実行する場合、この PS1 runtime を先�
 
 PS1 は workflow の判断や承認を持ちません。Context First、Human Check、GitHub knowledge maintenance、self-improvement などの正式判断は `aiwfctl` / `runtime/common/ctl.py` 側に集約します。
 
-不足している操作がある場合は、PS1 へ直接 workflow ロジックを増やさず、先に `runtime/common/ctl.py` の正式入口として拡張するか、self-improvement Feedback に流します。
+不足している操作がある場合は、PS1 へ直接 workflow ロジックを増やさず、まず self-improvement Feedback に流します。Accepted Feedback になった後でのみ、`runtime/common/ctl.py` の正式入口改修候補にします。

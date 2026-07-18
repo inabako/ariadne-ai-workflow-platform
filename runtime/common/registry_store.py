@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import uuid
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -10,7 +11,15 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso  # noqa: E402
-from runtime.constants.paths import KNOWLEDGE_SOURCE_REGISTRIES, REGISTRY_DB_PATH  # noqa: E402
+from runtime.constants.paths import (  # noqa: E402
+    HUMAN_GATES_REGISTRY_FILE,
+    KNOWLEDGE_SOURCE_REGISTRIES,
+    REGISTRY_DB_PATH,
+    SEARCH_TERMS_REGISTRY_FILE,
+    TOOL_CANDIDATES_REGISTRY_FILE,
+    WORKFLOW_ENVIRONMENT_PROFILES_REGISTRY_FILE,
+    WORKFLOW_HELP_REGISTRY_FILE,
+)
 
 
 DEFAULT_LEGACY_JSON_SOURCE_DIR = KNOWLEDGE_SOURCE_REGISTRIES
@@ -38,7 +47,7 @@ def init_schema(db_path: Path) -> None:
         conn.execute("DROP TABLE IF EXISTS registry_metadata")
         conn.execute("DROP TABLE IF EXISTS workflow_help_commands")
         conn.execute("DROP TABLE IF EXISTS workflow_help_extensions")
-        conn.execute("DROP TABLE IF EXISTS workflow_help_search_terms")
+        conn.execute("DROP TABLE IF EXISTS search_terms")
         conn.execute("DROP TABLE IF EXISTS tool_candidates")
         conn.execute("DROP TABLE IF EXISTS human_gates")
         conn.execute("DROP TABLE IF EXISTS workflow_environments")
@@ -59,11 +68,12 @@ def init_schema(db_path: Path) -> None:
             """
             CREATE TABLE workflow_help_commands (
                 sort_order INTEGER NOT NULL,
+                id VARCHAR NOT NULL,
                 command VARCHAR NOT NULL,
                 workflow VARCHAR,
                 skill VARCHAR,
                 payload_json TEXT NOT NULL,
-                PRIMARY KEY (command)
+                PRIMARY KEY (id)
             )
             """
         )
@@ -71,22 +81,26 @@ def init_schema(db_path: Path) -> None:
             """
             CREATE TABLE workflow_help_extensions (
                 sort_order INTEGER NOT NULL,
+                id VARCHAR NOT NULL,
                 name VARCHAR NOT NULL,
                 payload_json TEXT NOT NULL,
-                PRIMARY KEY (name)
+                PRIMARY KEY (id)
             )
             """
         )
         conn.execute(
             """
-            CREATE TABLE workflow_help_search_terms (
+            CREATE TABLE search_terms (
                 sort_order INTEGER NOT NULL,
-                item_type VARCHAR NOT NULL,
-                item_key VARCHAR NOT NULL,
+                id VARCHAR NOT NULL,
+                owner_registry VARCHAR NOT NULL,
+                owner_type VARCHAR NOT NULL,
+                owner_id VARCHAR NOT NULL,
                 term VARCHAR NOT NULL,
                 locale VARCHAR,
                 kind VARCHAR,
-                payload_json TEXT NOT NULL
+                payload_json TEXT NOT NULL,
+                PRIMARY KEY (id)
             )
             """
         )
@@ -171,36 +185,107 @@ def metadata_for(payload: dict[str, Any], excluded_keys: set[str]) -> dict[str, 
     return {key: value for key, value in payload.items() if key not in excluded_keys}
 
 
-def workflow_search_terms(item: dict[str, Any]) -> list[dict[str, str]]:
+def snake_id(value: str) -> str:
+    normalized = value.strip().lower().lstrip("/")
+    chars = [char if char.isalnum() else "_" for char in normalized]
+    slug = "_".join(part for part in "".join(chars).split("_") if part)
+    return slug or "unknown"
+
+
+def is_uuid(value: str) -> bool:
+    try:
+        uuid.UUID(value)
+    except ValueError:
+        return False
+    return True
+
+
+def search_term_uuid(owner_id: str, term: str, locale: str, kind: str, index: int) -> str:
+    seed = f"ariadne:search_terms:{owner_id}:{term}:{locale}:{kind}:{index}"
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, seed))
+
+
+def workflow_help_id(item_type: str, item: dict[str, Any]) -> str:
+    explicit_id = str(item.get("id", "")).strip()
+    if explicit_id and ":" not in explicit_id and "-" not in explicit_id:
+        return explicit_id
+    if item_type == "command":
+        return snake_id(str(item.get("command", "")))
+    return snake_id(str(item.get("name", "")))
+
+
+def normalize_search_term(raw: Any, *, fallback_id: str = "", owner_id: str = "", index: int = 0) -> dict[str, str] | None:
+    if isinstance(raw, str):
+        term = raw.strip()
+        if not term:
+            return None
+        return {
+            "id": fallback_id if is_uuid(fallback_id) else search_term_uuid(owner_id, term, "", "keyword", index),
+            "owner_registry": "workflow_help",
+            "owner_id": owner_id,
+            "term": term,
+            "locale": "",
+            "kind": "keyword",
+        }
+    if not isinstance(raw, dict):
+        return None
+    term = str(raw.get("term", "")).strip()
+    if not term:
+        return None
+    locale = str(raw.get("locale", "")).strip()
+    kind = str(raw.get("kind", "keyword")).strip() or "keyword"
+    raw_id = str(raw.get("id", "")).strip()
+    fallback = fallback_id if is_uuid(fallback_id) else ""
+    term_id = raw_id if is_uuid(raw_id) else fallback or search_term_uuid(owner_id, term, locale, kind, index)
+    return {
+        "id": term_id,
+        "owner_registry": str(raw.get("owner_registry", "workflow_help")).strip() or "workflow_help",
+        "owner_id": str(raw.get("owner_id", owner_id)).strip() or owner_id,
+        "term": term,
+        "locale": locale,
+        "kind": kind,
+    }
+
+
+def inline_workflow_search_terms(item: dict[str, Any], *, owner_id: str) -> list[dict[str, str]]:
     terms: list[dict[str, str]] = []
     raw_terms = item.get("search_terms", [])
     if not isinstance(raw_terms, list):
         return terms
-    for raw in raw_terms:
-        if isinstance(raw, str):
-            term = raw.strip()
-            if term:
-                terms.append({"term": term, "locale": "", "kind": "keyword"})
-            continue
-        if not isinstance(raw, dict):
-            continue
-        term = str(raw.get("term", "")).strip()
-        if not term:
-            continue
-        terms.append(
-            {
-                "term": term,
-                "locale": str(raw.get("locale", "")).strip(),
-                "kind": str(raw.get("kind", "keyword")).strip() or "keyword",
-            }
-        )
+    for index, raw in enumerate(raw_terms):
+        term = normalize_search_term(raw, owner_id=owner_id, index=index)
+        if term:
+            terms.append(term)
     return terms
 
 
-def insert_workflow_search_terms(
+def read_search_terms_source(source_dir: Path) -> dict[str, Any]:
+    path = source_dir / SEARCH_TERMS_REGISTRY_FILE
+    data = read_json(path, default={})
+    if data in ({}, None):
+        return {"registry_version": "1.0", "terms": []}
+    if not isinstance(data, dict):
+        raise ValueError(f"{SEARCH_TERMS_REGISTRY_FILE} must be a JSON object.")
+    data.setdefault("terms", [])
+    if not isinstance(data["terms"], list):
+        raise ValueError(f"{SEARCH_TERMS_REGISTRY_FILE} terms must be a JSON array.")
+    return data
+
+
+def search_terms_by_owner(search_terms_payload: dict[str, Any]) -> dict[str, list[dict[str, str]]]:
+    grouped: dict[str, list[dict[str, str]]] = {}
+    for index, raw in enumerate(search_terms_payload.get("terms", [])):
+        term = normalize_search_term(raw, index=index)
+        if not term:
+            continue
+        owner_id = term["owner_id"]
+        if owner_id:
+            grouped.setdefault(owner_id, []).append(term)
+    return grouped
+
+
+def insert_search_terms(
     conn: Any,
-    item_type: str,
-    item_key: str,
     terms: list[dict[str, str]],
     *,
     start_index: int,
@@ -208,11 +293,13 @@ def insert_workflow_search_terms(
     next_index = start_index
     for term in terms:
         conn.execute(
-            "INSERT INTO workflow_help_search_terms VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO search_terms VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [
                 next_index,
-                item_type,
-                item_key,
+                term["id"],
+                term.get("owner_registry", "workflow_help"),
+                term.get("owner_type", "workflow_help"),
+                term["owner_id"],
                 term["term"],
                 term.get("locale", ""),
                 term.get("kind", ""),
@@ -241,48 +328,64 @@ def build_registry_read_model(repo_root: Path, source_dir: Path, db_path: Path) 
     db_path = db_path.resolve()
     init_schema(db_path)
 
-    workflow_help = read_source_json(source_dir, "workflow_help.json")
-    tool_candidates_payload = read_source_json(source_dir, "tool_candidates.json")
-    human_gates_payload = read_source_json(source_dir, "human_gates.json")
-    environments_payload = read_source_json(source_dir, "workflow_environment_profiles.json")
+    workflow_help = read_source_json(source_dir, WORKFLOW_HELP_REGISTRY_FILE)
+    search_terms_source_path = source_dir / SEARCH_TERMS_REGISTRY_FILE
+    search_terms_payload = read_search_terms_source(source_dir)
+    search_terms = search_terms_by_owner(search_terms_payload)
+    tool_candidates_payload = read_source_json(source_dir, TOOL_CANDIDATES_REGISTRY_FILE)
+    human_gates_payload = read_source_json(source_dir, HUMAN_GATES_REGISTRY_FILE)
+    environments_payload = read_source_json(source_dir, WORKFLOW_ENVIRONMENT_PROFILES_REGISTRY_FILE)
 
     with connect(db_path) as conn:
         insert_metadata(
             conn,
             "workflow_help",
             metadata_for(workflow_help, {"commands", "extensions"}),
-            source_dir / "workflow_help.json",
+            source_dir / WORKFLOW_HELP_REGISTRY_FILE,
             repo_root,
         )
+        if search_terms_source_path.exists():
+            insert_metadata(
+                conn,
+                "search_terms",
+                metadata_for(search_terms_payload, {"terms"}),
+                search_terms_source_path,
+                repo_root,
+            )
         search_term_count = 0
         for index, item in enumerate(workflow_help.get("commands", [])):
+            owner_id = workflow_help_id("command", item)
             conn.execute(
-                "INSERT INTO workflow_help_commands VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO workflow_help_commands VALUES (?, ?, ?, ?, ?, ?)",
                 [
                     index,
+                    owner_id,
                     str(item.get("command", "")),
                     str(item.get("workflow", "")),
                     str(item.get("skill", "")),
                     json_dumps(item),
                 ],
             )
-            search_term_count = insert_workflow_search_terms(
+            terms = [*search_terms.get(owner_id, []), *inline_workflow_search_terms(item, owner_id=owner_id)]
+            for term in terms:
+                term["owner_type"] = "command"
+            search_term_count = insert_search_terms(
                 conn,
-                "command",
-                str(item.get("command", "")),
-                workflow_search_terms(item),
+                terms,
                 start_index=search_term_count,
             )
         for index, item in enumerate(workflow_help.get("extensions", [])):
+            owner_id = workflow_help_id("extension", item)
             conn.execute(
-                "INSERT INTO workflow_help_extensions VALUES (?, ?, ?)",
-                [index, str(item.get("name", "")), json_dumps(item)],
+                "INSERT INTO workflow_help_extensions VALUES (?, ?, ?, ?)",
+                [index, owner_id, str(item.get("name", "")), json_dumps(item)],
             )
-            search_term_count = insert_workflow_search_terms(
+            terms = [*search_terms.get(owner_id, []), *inline_workflow_search_terms(item, owner_id=owner_id)]
+            for term in terms:
+                term["owner_type"] = "extension"
+            search_term_count = insert_search_terms(
                 conn,
-                "extension",
-                str(item.get("name", "")),
-                workflow_search_terms(item),
+                terms,
                 start_index=search_term_count,
             )
 
@@ -290,7 +393,7 @@ def build_registry_read_model(repo_root: Path, source_dir: Path, db_path: Path) 
             conn,
             "tool_candidates",
             metadata_for(tool_candidates_payload, {"tools"}),
-            source_dir / "tool_candidates.json",
+            source_dir / TOOL_CANDIDATES_REGISTRY_FILE,
             repo_root,
         )
         for index, item in enumerate(tool_candidates_payload.get("tools", [])):
@@ -303,7 +406,7 @@ def build_registry_read_model(repo_root: Path, source_dir: Path, db_path: Path) 
             conn,
             "human_gates",
             metadata_for(human_gates_payload, {"gates"}),
-            source_dir / "human_gates.json",
+            source_dir / HUMAN_GATES_REGISTRY_FILE,
             repo_root,
         )
         for index, item in enumerate(human_gates_payload.get("gates", [])):
@@ -316,7 +419,7 @@ def build_registry_read_model(repo_root: Path, source_dir: Path, db_path: Path) 
             conn,
             "workflow_environment_profiles",
             metadata_for(environments_payload, {"environments", "profiles", "mappings"}),
-            source_dir / "workflow_environment_profiles.json",
+            source_dir / WORKFLOW_ENVIRONMENT_PROFILES_REGISTRY_FILE,
             repo_root,
         )
         for index, item in enumerate(environments_payload.get("environments", [])):
@@ -343,7 +446,7 @@ def build_registry_read_model(repo_root: Path, source_dir: Path, db_path: Path) 
         "tables": [
             "workflow_help_commands",
             "workflow_help_extensions",
-            "workflow_help_search_terms",
+            "search_terms",
             "tool_candidates",
             "human_gates",
             "workflow_environments",
@@ -353,7 +456,7 @@ def build_registry_read_model(repo_root: Path, source_dir: Path, db_path: Path) 
         "counts": {
             "workflow_help_commands": len(workflow_help.get("commands", [])),
             "workflow_help_extensions": len(workflow_help.get("extensions", [])),
-            "workflow_help_search_terms": search_term_count,
+            "search_terms": search_term_count,
             "tool_candidates": len(tool_candidates_payload.get("tools", [])),
             "human_gates": len(human_gates_payload.get("gates", [])),
             "workflow_environments": len(environments_payload.get("environments", [])),
@@ -379,24 +482,37 @@ def load_payloads(conn: Any, table: str) -> list[dict[str, Any]]:
 def attach_workflow_search_terms(conn: Any, data: dict[str, Any]) -> None:
     rows = conn.execute(
         """
-        SELECT item_type, item_key, payload_json
-        FROM workflow_help_search_terms
+        SELECT owner_type, owner_id, payload_json
+        FROM search_terms
+        WHERE owner_registry = 'workflow_help'
         ORDER BY sort_order
         """
     ).fetchall()
     grouped: dict[tuple[str, str], list[dict[str, Any]]] = {}
-    for item_type, item_key, payload_json in rows:
+    for owner_type, owner_id, payload_json in rows:
         value = json.loads(payload_json)
         if isinstance(value, dict):
-            grouped.setdefault((str(item_type), str(item_key)), []).append(value)
+            grouped.setdefault((str(owner_type), str(owner_id)), []).append(value)
     for command in data.get("commands", []):
-        key = ("command", str(command.get("command", "")))
+        key = ("command", workflow_help_id("command", command))
         if key in grouped:
             command["_search_terms"] = grouped[key]
     for extension in data.get("extensions", []):
-        key = ("extension", str(extension.get("name", "")))
+        key = ("extension", workflow_help_id("extension", extension))
         if key in grouped:
             extension["_search_terms"] = grouped[key]
+
+
+def attach_workflow_search_terms_from_json(data: dict[str, Any], search_terms_payload: dict[str, Any]) -> None:
+    grouped = search_terms_by_owner(search_terms_payload)
+    for command in data.get("commands", []):
+        owner_id = workflow_help_id("command", command)
+        if owner_id in grouped:
+            command["_search_terms"] = grouped[owner_id]
+    for extension in data.get("extensions", []):
+        owner_id = workflow_help_id("extension", extension)
+        if owner_id in grouped:
+            extension["_search_terms"] = grouped[owner_id]
 
 
 def load_from_duckdb(repo_root: Path, registry_name: str) -> dict[str, Any]:
@@ -429,10 +545,10 @@ def load_from_duckdb(repo_root: Path, registry_name: str) -> dict[str, Any]:
 
 def legacy_file_for(registry_name: str) -> str:
     return {
-        "workflow_help": "workflow_help.json",
-        "tool_candidates": "tool_candidates.json",
-        "human_gates": "human_gates.json",
-        "workflow_environment_profiles": "workflow_environment_profiles.json",
+        "workflow_help": WORKFLOW_HELP_REGISTRY_FILE,
+        "tool_candidates": TOOL_CANDIDATES_REGISTRY_FILE,
+        "human_gates": HUMAN_GATES_REGISTRY_FILE,
+        "workflow_environment_profiles": WORKFLOW_ENVIRONMENT_PROFILES_REGISTRY_FILE,
     }[registry_name]
 
 
@@ -441,7 +557,10 @@ def load_registry(repo_root: Path, registry_name: str, default: dict[str, Any] |
         return load_from_duckdb(repo_root, registry_name)
     except FileNotFoundError:
         sentinel = object()
-        data = read_json(legacy_registry_dir(repo_root) / legacy_file_for(registry_name), default=sentinel)
+        registry_dir = legacy_registry_dir(repo_root)
+        data = read_json(registry_dir / legacy_file_for(registry_name), default=sentinel)
+        if registry_name == "workflow_help" and isinstance(data, dict):
+            attach_workflow_search_terms_from_json(data, read_search_terms_source(registry_dir))
         return (default or {}) if data is sentinel else data
 
 
@@ -516,7 +635,7 @@ def run_summary(args: argparse.Namespace) -> dict[str, Any]:
             for table in [
                 "workflow_help_commands",
                 "workflow_help_extensions",
-                "workflow_help_search_terms",
+                "search_terms",
                 "tool_candidates",
                 "human_gates",
                 "workflow_environments",

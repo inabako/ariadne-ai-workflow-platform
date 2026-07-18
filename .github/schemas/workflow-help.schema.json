@@ -11,8 +11,9 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["command", "workflow", "skill", "overview", "prerequisites", "arguments", "details", "examples"],
+        "required": ["id", "command", "workflow", "skill", "overview", "prerequisites", "arguments", "details", "examples"],
         "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
           "command": { "type": "string", "pattern": "^/[A-Za-z0-9_.-]+$" },
           "aliases": { "type": "array", "items": { "type": "string" } },
           "workflow": { "type": "string" },
@@ -48,6 +49,7 @@
       "items": {
         "type": "object",
         "required": [
+          "id",
           "name",
           "standalone_command",
           "overview",
@@ -60,6 +62,7 @@
           "examples"
         ],
         "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
           "name": { "type": "string" },
           "aliases": { "type": "array", "items": { "type": "string" } },
           "standalone_command": { "type": "boolean" },

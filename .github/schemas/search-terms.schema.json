@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Search Terms Registry",
+  "type": "object",
+  "required": ["registry_version", "terms"],
+  "properties": {
+    "registry_version": { "type": "string" },
+    "description": { "type": "string" },
+    "terms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "owner_registry", "owner_type", "owner_id", "term", "locale", "kind"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "owner_registry": { "type": "string" },
+          "owner_type": { "type": "string", "enum": ["command", "extension"] },
+          "owner_id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+          "term": { "type": "string", "minLength": 1 },
+          "locale": { "type": "string" },
+          "kind": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

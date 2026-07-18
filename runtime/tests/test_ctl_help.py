@@ -5,8 +5,9 @@ import runpy
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
+from uuid import UUID
 
-from runtime.common import ctl
+from runtime.common import ctl, registry_store
 from runtime.rag import duckdb_store
 
 
@@ -1183,6 +1184,154 @@ def test_workflow_help_search_uses_intent_terms() -> None:
     assert "1. /ariadne-new-system" in output
     assert "show: aiwfctl help show /ariadne-new-system" in output
     assert "## Details" not in output
+
+
+def test_workflow_help_uses_terms_from_separated_json(tmp_path: Path) -> None:
+    registry_dir = tmp_path / "runtime" / "registries"
+    registry_dir.mkdir(parents=True)
+    (registry_dir / "workflow_help.json").write_text(
+        json.dumps(
+            {
+                "registry_version": "1.0",
+                "commands": [
+                    {
+                        "id": "alpha",
+                        "command": "/alpha",
+                        "workflow": "alpha",
+                        "skill": "alpha",
+                        "overview": "alpha overview",
+                        "prerequisites": [],
+                        "arguments": [],
+                        "details": [],
+                        "examples": [],
+                    }
+                ],
+                "extensions": [],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    (registry_dir / "search_terms.json").write_text(
+        json.dumps(
+            {
+                "registry_version": "1.0",
+                "terms": [
+                    {
+                        "id": "11111111-1111-4111-8111-111111111111",
+                        "owner_registry": "workflow_help",
+                        "owner_type": "command",
+                        "owner_id": "alpha",
+                        "term": "入口整理",
+                        "locale": "ja",
+                        "kind": "intent",
+                    }
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    registry = ctl.load_registry(tmp_path)
+    matches = ctl.search_commands(registry, ["入口整理"])
+
+    assert matches[0]["command"] == "/alpha"
+    UUID(matches[0]["_search_terms"][0]["id"])
+    assert matches[0]["_search_terms"][0]["owner_id"] == "alpha"
+
+
+def test_registry_store_builds_search_terms_table_with_owner_id(tmp_path: Path) -> None:
+    source_dir = tmp_path / "work" / "db" / "ariadne-knowledge-platform" / "registries"
+    source_dir.mkdir(parents=True)
+    (source_dir / "workflow_help.json").write_text(
+        json.dumps(
+            {
+                "registry_version": "1.0",
+                "commands": [
+                    {
+                        "id": "alpha",
+                        "command": "/alpha",
+                        "workflow": "alpha",
+                        "skill": "alpha",
+                        "overview": "alpha overview",
+                        "prerequisites": [],
+                        "arguments": [],
+                        "details": [],
+                        "examples": [],
+                    }
+                ],
+                "extensions": [],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    (source_dir / "search_terms.json").write_text(
+        json.dumps(
+            {
+                "registry_version": "1.0",
+                "terms": [
+                    {
+                        "id": "11111111-1111-4111-8111-111111111111",
+                        "owner_registry": "workflow_help",
+                        "owner_type": "command",
+                        "owner_id": "alpha",
+                        "term": "入口整理",
+                        "locale": "ja",
+                        "kind": "intent",
+                    }
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    for name, payload in {
+        "tool_candidates.json": {"registry_version": "1.0", "tools": []},
+        "human_gates.json": {"registry_version": "1.0", "gates": []},
+        "workflow_environment_profiles.json": {
+            "registry_version": "1.0",
+            "environments": [],
+            "profiles": [],
+            "mappings": [],
+        },
+    }.items():
+        (source_dir / name).write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+    db_path = tmp_path / "db" / "registries" / "registry.duckdb"
+    result = registry_store.build_registry_read_model(tmp_path, source_dir, db_path)
+
+    assert "search_terms" in result["tables"]
+    assert result["counts"]["search_terms"] == 1
+    with registry_store.connect(db_path, read_only=True) as conn:
+        command_id = conn.execute("SELECT id FROM workflow_help_commands").fetchone()[0]
+        term_id, owner_id = conn.execute("SELECT id, owner_id FROM search_terms").fetchone()
+    assert command_id == "alpha"
+    UUID(term_id)
+    assert owner_id == command_id
+
+    registry = registry_store.load_workflow_help(tmp_path)
+    matches = ctl.search_commands(registry, ["入口整理"])
+    assert matches[0]["command"] == "/alpha"
+
+
+def test_workflow_help_search_terms_cover_all_prompt_commands() -> None:
+    root = repo_root()
+    registry = ctl.load_registry(root)
+    missing: list[str] = []
+
+    for command in registry["commands"]:
+        terms = command.get("_search_terms", [])
+        if not terms:
+            missing.append(command["command"])
+            continue
+        for term in terms:
+            UUID(term["id"])
+            assert term["owner_id"] == command["id"]
+            assert term["owner_type"] == "command"
+
+    assert not missing
 
 
 def test_environment_profile_registry_referenced_docs_exist() -> None:

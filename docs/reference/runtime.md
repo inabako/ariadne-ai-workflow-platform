@@ -14,7 +14,7 @@
 - close archive は `aiwfctl close-archive ...` で実行します。
 - self-improvement feedback は `aiwfctl self-improvement ...` で実行します。
 
-必要な操作が `aiwfctl` に存在しない場合は、その場で握りつぶさず、まず `aiwfctl self-improvement create-feedback` でFeedback reportを作成します。Human Review / accepted self-improvement flow を通すまで、active workflow内で黙って `runtime/common/ctl.py` を拡張してはいけません。workflow側に新しい `python runtime/workflow/*.py ...` の直叩き手順を増やしてはいけません。
+必要な操作が `aiwfctl` に存在しない場合は、その場で握りつぶさず、まず `aiwfctl self-improvement create-feedback` でFeedback reportを作成します。Human ReviewでAcceptedになったFeedbackだけを、後続の正式な改修候補にします。active workflow内で黙って `runtime/common/ctl.py` を拡張してはいけません。workflow側に新しい `python runtime/workflow/*.py ...` の直叩き手順を増やしてはいけません。
 
 ## Windows 11 PowerShell Runtime
 
@@ -29,7 +29,7 @@ Windows 11 で AI workflow を実行する場合は、まず PowerShell native r
 
 `runtime/windows-ps1/aiwf.ps1` は PowerShell の UTF-8 no BOM 入出力、repo root / runtime root 解決、`uv run ... python ...` の固定だけを担当します。Context First、Human Check、GitHub knowledge maintenance などの workflow 判断は引き続き `aiwfctl` / `runtime/common/ctl.py` が担当します。
 
-不足している操作がある場合、PS1 に直接 workflow logic を増やさず、先に `runtime/common/ctl.py` の正式入口を self-improvement Feedback 経由で拡張します。
+不足している操作がある場合は、PS1 に直接 workflow logic を増やさず、まず self-improvement Feedback に流します。Accepted Feedback になった後でのみ、`runtime/common/ctl.py` の正式入口改修候補にします。
 
 ## POSIX Bash Runtime
 
@@ -44,7 +44,7 @@ Linux / WSL / macOS で AI workflow を実行する場合は、まず bash nativ
 
 `runtime/posix-bash/aiwf.sh` は Bash の `set -Eeuo pipefail`、repo root / runtime root 解決、`PYTHONUTF8=1` / `PYTHONIOENCODING=utf-8`、`uv run ... python ...` の固定だけを担当します。Context First、Human Check、GitHub knowledge maintenance などの workflow 判断は引き続き `aiwfctl` / `runtime/common/ctl.py` が担当します。
 
-不足している操作がある場合、bash に直接 workflow logic を増やさず、先に `runtime/common/ctl.py` の正式入口を self-improvement Feedback 経由で拡張します。
+不足している操作がある場合は、bash に直接 workflow logic を増やさず、まず self-improvement Feedback に流します。Accepted Feedback になった後でのみ、`runtime/common/ctl.py` の正式入口改修候補にします。
 
 ## GitHub CLI Preflight
 
