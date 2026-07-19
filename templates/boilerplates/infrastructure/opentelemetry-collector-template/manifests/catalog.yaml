@@ -1,0 +1,24 @@
+schema_version: "1.0.0"
+collector:
+  default_distribution: "contrib"
+components:
+  receivers:
+    - id: "otlp-receiver"
+      manifest: "../receivers/otlp/manifest.yaml"
+      enabled_by_default: true
+  processors:
+    - id: "memory-limiter-processor"
+      manifest: "../processors/memory-limiter/manifest.yaml"
+      enabled_by_default: true
+    - id: "batch-processor"
+      manifest: "../processors/batch/manifest.yaml"
+      enabled_by_default: true
+  exporters:
+    - id: "debug-exporter"
+      manifest: "../exporters/debug/manifest.yaml"
+      enabled_by_default: true
+  connectors: []
+  extensions:
+    - id: "health-check-extension"
+      manifest: "../extensions/health-check/manifest.yaml"
+      enabled_by_default: true

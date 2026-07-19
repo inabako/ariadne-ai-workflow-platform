@@ -1,0 +1,10 @@
+observability:
+  logging:
+    level: INFO
+    redact_secrets: true
+  metrics:
+    enabled: false
+  audit:
+    enabled: true
+    output: evidence/audit.log
+

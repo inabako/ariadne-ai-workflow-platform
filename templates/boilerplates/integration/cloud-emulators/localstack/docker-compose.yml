@@ -1,0 +1,22 @@
+services:
+  localstack:
+    image: ${LOCALSTACK_IMAGE:-localstack/localstack:3}
+    ports:
+      - "${LOCALSTACK_EDGE_PORT:-4566}:4566"
+    environment:
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-ap-northeast-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-test}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-test}
+      SERVICES: ${SERVICES:-s3,dynamodb,sqs,sns,lambda,kinesis,secretsmanager,cloudwatch}
+      DEBUG: ${LOCALSTACK_DEBUG:-0}
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  localstack-data:

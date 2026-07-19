@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/inabako/ariadne-ai-workflow-platform/.github/schemas/integration-finalization-context.schema.json",
+  "title": "Integration Finalization Context",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "status",
+    "work_id",
+    "workflow",
+    "target_repo",
+    "source_context",
+    "emulator_health_context",
+    "test_plan_context",
+    "evidence_files",
+    "completion_checks",
+    "discomforts",
+    "human_checks",
+    "knowledge_targets",
+    "rules"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "artifact_type": {
+      "const": "integration-finalization-context"
+    },
+    "status": {
+      "enum": [
+        "complete",
+        "complete-with-warnings",
+        "incomplete",
+        "human-check-required"
+      ]
+    },
+    "work_id": {
+      "type": "string"
+    },
+    "workflow": {
+      "const": "system-integration-quality"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "target_repo": {
+      "type": "string"
+    },
+    "source_context": {
+      "type": "string"
+    },
+    "emulator_health_context": {
+      "type": "string"
+    },
+    "test_plan_context": {
+      "type": "string"
+    },
+    "evidence_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "category",
+          "path",
+          "size_bytes",
+          "status"
+        ],
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "status": {
+            "enum": [
+              "present",
+              "empty"
+            ]
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "completion_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "description",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "warning",
+              "missing"
+            ]
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "discomforts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "source",
+          "severity",
+          "detail"
+        ],
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "human_checks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "knowledge_targets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rules": {
+      "type": "object",
+      "required": [
+        "finalize_is_read_only_over_evidence",
+        "do_not_execute_tests_in_finalize",
+        "do_not_use_production_credentials",
+        "source_code_wholesale_knowledge_capture_is_forbidden"
+      ],
+      "properties": {
+        "finalize_is_read_only_over_evidence": {
+          "const": true
+        },
+        "do_not_execute_tests_in_finalize": {
+          "const": true
+        },
+        "do_not_use_production_credentials": {
+          "const": true
+        },
+        "source_code_wholesale_knowledge_capture_is_forbidden": {
+          "const": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "artifacts": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "type": "string"
+        },
+        "report": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "manifest_path": {
+      "type": "string"
+    },
+    "manifest_contexts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

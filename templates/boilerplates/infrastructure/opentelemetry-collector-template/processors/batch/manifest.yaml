@@ -1,0 +1,48 @@
+schema_version: "1.0.0"
+component:
+  id: "batch-processor"
+  collector_type: "processor"
+  collector_name: "batch"
+  display_name: "Batch Processor"
+  description: "Batches telemetry before export."
+source:
+  repository: "opentelemetry-collector"
+  go_module: "go.opentelemetry.io/collector/processor/batchprocessor"
+  module_version: "v0.156.0"
+distribution:
+  required: "core"
+  custom_build_required: false
+signals:
+  traces:
+    supported: true
+    stability: "stable"
+  metrics:
+    supported: true
+    stability: "stable"
+  logs:
+    supported: true
+    stability: "stable"
+dependencies:
+  components: []
+  platforms: []
+conflicts:
+  components: []
+files:
+  config_fragment: "config.yaml"
+  test_config: "test-config.yaml"
+  documentation: "README.md"
+  tests: []
+pipeline:
+  placement: "processor"
+  compatible_pipelines:
+    - "traces"
+    - "metrics"
+    - "logs"
+validation:
+  required_commands:
+    - "collector-config-validation"
+security:
+  network_exposure: false
+  secret_fields: []
+review:
+  human_gate_required: false

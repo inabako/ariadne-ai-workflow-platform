@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RAG Load Dispatch",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "dispatch_id",
+    "dispatch_plan_id",
+    "dispatch_plan",
+    "created_at",
+    "queries",
+    "search_mode",
+    "context_packs",
+    "aggregate_context",
+    "sources"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "artifact_type": {
+      "const": "rag-load-dispatch"
+    },
+    "dispatch_id": {
+      "type": "string"
+    },
+    "dispatch_plan_id": {
+      "type": "string"
+    },
+    "dispatch_plan": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "execution_plan": {
+      "type": "string"
+    },
+    "queries": {
+      "type": "array"
+    },
+    "search_mode": {
+      "type": "string"
+    },
+    "context_packs": {
+      "type": "array"
+    },
+    "aggregate_context": {
+      "type": "string"
+    },
+    "sources": {
+      "type": "array"
+    }
+  },
+  "additionalProperties": true
+}

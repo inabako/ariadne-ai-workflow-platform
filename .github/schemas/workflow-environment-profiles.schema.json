@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Workflow Environment Profiles Registry",
+  "type": "object",
+  "required": ["registry_version", "environments", "profiles", "mappings"],
+  "properties": {
+    "registry_version": { "type": "string" },
+    "description": { "type": "string" },
+    "environments": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "backend", "purpose", "recommended_for", "example_commands", "notes"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$" },
+          "backend": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$" },
+          "purpose": { "type": "string" },
+          "recommended_for": { "type": "array", "items": { "type": "string" } },
+          "example_commands": { "type": "array", "items": { "type": "string" } },
+          "notes": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    },
+    "profiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "environment",
+          "shell",
+          "os",
+          "summary",
+          "applies_when",
+          "primary_tools",
+          "verification",
+          "run_command",
+          "human_check_required_when"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$" },
+          "aliases": { "type": "array", "items": { "type": "string" } },
+          "title": { "type": "string" },
+          "environment": { "type": "string" },
+          "shell": { "type": "string" },
+          "os": { "type": "string" },
+          "summary": { "type": "string" },
+          "applies_when": { "type": "array", "items": { "type": "string" } },
+          "primary_tools": { "type": "array", "items": { "type": "string" } },
+          "verification": { "type": "array", "items": { "type": "string" } },
+          "preflight_profile": { "type": "string" },
+          "run_command": { "type": "string" },
+          "docs": { "type": "array", "items": { "type": "string" } },
+          "human_check_required_when": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    },
+    "mappings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["subject_type", "subject", "profiles", "selection_reason"],
+        "properties": {
+          "subject_type": {
+            "type": "string",
+            "enum": ["command", "extension", "subworkflow", "keyword"]
+          },
+          "subject": { "type": "string" },
+          "profiles": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "selection_reason": { "type": "string" },
+          "triggers": { "type": "array", "items": { "type": "string" } },
+          "docs": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

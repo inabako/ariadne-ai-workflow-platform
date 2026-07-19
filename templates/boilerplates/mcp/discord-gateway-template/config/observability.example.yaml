@@ -1,0 +1,10 @@
+observability:
+  logging:
+    level: INFO
+    redact_discord_tokens: true
+  audit:
+    enabled: true
+    output: evidence/audit.log
+  metrics:
+    enabled: false
+

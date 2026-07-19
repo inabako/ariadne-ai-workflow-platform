@@ -1,0 +1,12 @@
+commands:
+  root: agent
+  subcommands:
+    - submit
+    - status
+    - pause
+    - resume
+    - cancel
+    - artifacts
+    - health
+  sync_on_startup: false
+

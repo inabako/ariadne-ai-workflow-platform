@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RAG Build Run",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "architecture",
+    "created_at",
+    "status",
+    "pipeline",
+    "inputs",
+    "outputs",
+    "stages"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "artifact_type": { "type": "string", "const": "rag-build-run" },
+    "architecture": { "type": "string", "const": "context-first" },
+    "created_at": { "type": "string" },
+    "status": { "type": "string", "enum": ["completed", "failed", "skipped"] },
+    "pipeline": { "type": "string" },
+    "inputs": { "type": "object" },
+    "outputs": { "type": "object" },
+    "stages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "status"],
+        "properties": {
+          "name": { "type": "string" },
+          "status": { "type": "string" },
+          "result": { "type": "object" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "human_check_required": { "type": "boolean" },
+    "human_check_reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": true
+}

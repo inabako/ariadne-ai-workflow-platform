@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Web SVG Layout State",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "issue_id",
+    "issue_prefix",
+    "mode",
+    "status",
+    "enabled",
+    "work_dir",
+    "svg_files",
+    "input_source_files",
+    "svg_input_dir",
+    "input_prefix",
+    "artifacts",
+    "parent_workflow_return"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "issue_id": {
+      "type": "string"
+    },
+    "issue_prefix": {
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "new-app",
+        "existing-app-feature",
+        "corrective-fix",
+        "generic-web-ui"
+      ]
+    },
+    "status": {
+      "enum": [
+        "skipped",
+        "complete",
+        "failed"
+      ]
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "work_dir": {
+      "type": "string"
+    },
+    "svg_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "input_source_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "svg_input_dir": {
+      "type": "string"
+    },
+    "input_prefix": {
+      "enum": [
+        "WEB_SYS",
+        "WEB_FEAT",
+        "WEB_FIX",
+        "WEB",
+        "NEXT_SYS",
+        "NEXT_FEAT",
+        "NEXT_FIX",
+        "NEXT"
+      ]
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "parent_workflow_return": {
+      "type": "object",
+      "required": [
+        "ready",
+        "required_artifacts",
+        "integration_policy"
+      ],
+      "properties": {
+        "ready": {
+          "type": "boolean"
+        },
+        "required_artifacts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "integration_policy": {
+          "const": "review-generated-candidates-before-copy"
+        }
+      }
+    }
+  }
+}
+

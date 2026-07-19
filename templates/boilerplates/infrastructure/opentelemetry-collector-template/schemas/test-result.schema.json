@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Collector Test Result",
+  "type": "object",
+  "required": ["status", "checks"],
+  "properties": {
+    "status": {"enum": ["pass", "warning", "fail"]},
+    "checks": {"type": "array"}
+  }
+}

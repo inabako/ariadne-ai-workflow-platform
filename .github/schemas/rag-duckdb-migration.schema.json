@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RAG DuckDB Migration Evidence",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "created_at",
+    "status",
+    "migration"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "artifact_type": { "type": "string", "const": "rag-duckdb-migration" },
+    "created_at": { "type": "string" },
+    "status": { "type": "string" },
+    "rag_build_run": { "type": "string" },
+    "migration": {
+      "type": "object",
+      "required": [
+        "artifact_type",
+        "db",
+        "source",
+        "target_file_count",
+        "registered_count",
+        "updated_count",
+        "skipped_count",
+        "failed_count"
+      ],
+      "properties": {
+        "artifact_type": { "type": "string", "const": "rag-duckdb-migration-summary" },
+        "db": { "type": "string" },
+        "source": { "type": "string" },
+        "target_file_count": { "type": "integer" },
+        "registered_count": { "type": "integer" },
+        "updated_count": { "type": "integer" },
+        "skipped_count": { "type": "integer" },
+        "failed_count": { "type": "integer" },
+        "error_log": { "type": "string" },
+        "errors": {
+          "type": "array",
+          "items": { "type": "object" }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

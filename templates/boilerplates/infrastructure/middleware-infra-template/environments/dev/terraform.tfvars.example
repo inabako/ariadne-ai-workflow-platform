@@ -1,0 +1,16 @@
+environment = "dev"
+redis_purposes = [
+  "cache",
+  "session",
+  "rate-limit",
+]
+compose_profile     = "redis"
+external_exposure   = false
+tls_enabled         = false
+max_memory          = "512mb"
+eviction_policy     = "allkeys-lru"
+persistence_mode    = "aof"
+enable_backup       = true
+enable_restore_test = true
+evidence_enabled    = true
+

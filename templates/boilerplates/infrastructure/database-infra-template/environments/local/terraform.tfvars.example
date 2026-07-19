@@ -1,0 +1,16 @@
+environment             = "local"
+database_stack_name     = "ariadne-database-local"
+enabled_engines         = ["postgresql"]
+compose_profile         = "single-instance"
+database_name           = "app_db"
+app_username_secret_ref = "database.username"
+app_password_secret_ref = "database.password"
+timezone                = "Asia/Tokyo"
+max_connections         = 100
+enable_backup           = true
+enable_restore_test     = true
+enable_migration        = true
+retention_days          = 7
+external_exposure       = false
+tls_enabled             = false
+

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Self Improvement"
+  short_description: "Collect workflow feedback, review it, and turn accepted items into governed improvement issues."
+  default_prompt: "/self-improvement\n日本語で出力してください。"

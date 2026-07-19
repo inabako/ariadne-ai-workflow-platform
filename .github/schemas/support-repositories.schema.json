@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Support Repositories",
+  "type": "object",
+  "required": ["schema_version", "repositories"],
+  "properties": {
+    "schema_version": { "type": "string", "examples": ["1.0"] },
+    "repositories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["work_id", "name", "repository", "source_dir", "branch", "prepared_at"],
+        "properties": {
+          "schema_version": { "type": "string", "examples": ["1.0"] },
+          "work_id": { "type": "string" },
+          "name": { "type": "string" },
+          "repository": { "type": "string" },
+          "source_dir": { "type": "string" },
+          "remote": { "type": "string" },
+          "branch": { "type": "string" },
+          "commit": { "type": "string" },
+          "action": {
+            "type": "string",
+            "enum": ["cloned", "updated", "exists", "dry-run"]
+          },
+          "prepared_at": { "type": "string" },
+          "dry_run": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+services:
+  stripe-cli:
+    image: ${STRIPE_CLI_IMAGE:-stripe/stripe-cli:latest}
+    command:
+      - listen
+      - --forward-to
+      - ${STRIPE_WEBHOOK_FORWARD_TO:-http://host.docker.internal:3000/api/webhooks/stripe}
+      - --events
+      - ${STRIPE_WEBHOOK_EVENTS:-checkout.session.completed,payment_intent.succeeded,payment_intent.payment_failed}
+    environment:
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      STRIPE_DEVICE_NAME: ${STRIPE_DEVICE_NAME:-ariadne-local-test}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

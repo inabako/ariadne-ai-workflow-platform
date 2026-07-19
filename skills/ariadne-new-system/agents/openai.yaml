@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ariadne New System"
+  short_description: "Start an Ariadne New System workflow."
+  default_prompt: "/ariadne-new-system"

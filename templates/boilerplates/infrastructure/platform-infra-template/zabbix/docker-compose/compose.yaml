@@ -1,0 +1,53 @@
+services:
+  zabbix-postgres:
+    image: postgres:16-alpine
+    container_name: ariadne-zabbix-postgres
+    environment:
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: change-me-in-secret-source
+      POSTGRES_DB: zabbix
+    volumes:
+      - zabbix_db:/var/lib/postgresql/data
+
+  zabbix-server:
+    image: zabbix/zabbix-server-pgsql:alpine-7.0-latest
+    container_name: ariadne-zabbix-server
+    depends_on:
+      - zabbix-postgres
+    ports:
+      - "10051:10051"
+    environment:
+      DB_SERVER_HOST: zabbix-postgres
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: change-me-in-secret-source
+      POSTGRES_DB: zabbix
+
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-pgsql:alpine-7.0-latest
+    container_name: ariadne-zabbix-web
+    depends_on:
+      - zabbix-server
+      - zabbix-postgres
+    ports:
+      - "8082:8080"
+    environment:
+      ZBX_SERVER_HOST: zabbix-server
+      DB_SERVER_HOST: zabbix-postgres
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: change-me-in-secret-source
+      POSTGRES_DB: zabbix
+
+  zabbix-agent:
+    image: zabbix/zabbix-agent:alpine-7.0-latest
+    container_name: ariadne-zabbix-agent
+    depends_on:
+      - zabbix-server
+    ports:
+      - "10050:10050"
+    environment:
+      ZBX_SERVER_HOST: zabbix-server
+      ZBX_HOSTNAME: ariadne-zabbix-agent
+
+volumes:
+  zabbix_db:
+

@@ -1,0 +1,8 @@
+include:
+  - ../../postgresql/docker-compose/compose.yaml
+  - ../../mysql/docker-compose/compose.yaml
+
+networks:
+  default:
+    name: ariadne-database-multi-database
+

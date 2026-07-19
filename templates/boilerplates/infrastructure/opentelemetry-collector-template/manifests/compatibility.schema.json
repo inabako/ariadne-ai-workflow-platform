@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpenTelemetry Collector Compatibility Report",
+  "type": "object",
+  "required": ["schema_version", "status", "distribution", "components"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "status": {"enum": ["pass", "warning", "fail", "human-check-required"]},
+    "distribution": {"type": "string"},
+    "components": {"type": "array"}
+  }
+}

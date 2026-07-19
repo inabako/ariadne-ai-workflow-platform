@@ -1,0 +1,9 @@
+security:
+  allow_file_uri_resources: false
+  allow_unknown_servers: false
+  redact_argument_keys:
+    - token
+    - password
+    - secret
+    - api_key
+

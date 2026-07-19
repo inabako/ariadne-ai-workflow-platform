@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Context First Workflow Selection",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "architecture",
+    "selected_at",
+    "selected_by",
+    "selection_mode",
+    "work_id",
+    "workflow",
+    "command",
+    "intent_summary",
+    "status",
+    "confidence",
+    "human_check_required",
+    "human_check_reasons",
+    "source"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "artifact_type": {
+      "const": "workflow-selection"
+    },
+    "architecture": {
+      "const": "context-first"
+    },
+    "selected_at": {
+      "type": "string"
+    },
+    "selected_by": {
+      "enum": [
+        "dispatcher",
+        "human"
+      ]
+    },
+    "selection_mode": {
+      "enum": [
+        "manual",
+        "auto",
+        "human-check"
+      ]
+    },
+    "work_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workflow": {
+      "type": "string",
+      "minLength": 1
+    },
+    "command": {
+      "type": "string",
+      "minLength": 1
+    },
+    "intent_summary": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "selected",
+        "human-check-required",
+        "skipped"
+      ]
+    },
+    "confidence": {
+      "enum": [
+        "high",
+        "medium",
+        "low",
+        "unknown"
+      ]
+    },
+    "human_check_required": {
+      "type": "boolean"
+    },
+    "human_check_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "registry",
+        "schema"
+      ],
+      "properties": {
+        "registry": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

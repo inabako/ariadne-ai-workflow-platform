@@ -1,0 +1,306 @@
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+from typing import Any, Sequence
+
+if __package__ in {None, ""}:
+    sys.path.append(str(Path(__file__).resolve().parents[2]))
+
+from runtime.common import gate_restart  # noqa: E402
+from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.workspace import (  # noqa: E402
+    CONTEXT_MANIFEST_FILE_NAME,
+    context_dir_for_work_dir as workspace_context_dir_for_work_dir,
+    manifest_path_for_work_dir as workspace_manifest_path_for_work_dir,
+)
+
+
+MANIFEST_FILE_NAME = CONTEXT_MANIFEST_FILE_NAME
+DISPATCHER_CONTEXT_TYPES = {
+    "environment-selection",
+    "workflow-selection",
+    "tool-selection",
+    "runtime-context",
+    "execution-plan",
+}
+
+
+def context_dir_for_work_dir(work_dir: Path) -> Path:
+    return workspace_context_dir_for_work_dir(work_dir)
+
+
+def manifest_path_for_work_dir(work_dir: Path) -> Path:
+    return workspace_manifest_path_for_work_dir(work_dir)
+
+
+def default_manifest(work_id: str) -> dict[str, Any]:
+    return {
+        "schema_version": "1.0",
+        "artifact_type": "context-manifest",
+        "architecture": "context-first",
+        "adoption_phase": "phase-1",
+        "work_id": work_id,
+        "updated_at": utc_now_iso(),
+        "contexts": [],
+        "rules": {
+            "dispatcher_contexts_are_authoritative": True,
+            "workflows_may_update_execution_contexts": True,
+            "missing_required_dispatcher_context_requires_human_check": True,
+        },
+    }
+
+
+def load_manifest(work_dir: Path, work_id: str = "") -> dict[str, Any]:
+    path = manifest_path_for_work_dir(work_dir)
+    data = read_json(path, default=None)
+    if isinstance(data, dict):
+        data.setdefault("schema_version", "1.0")
+        data.setdefault("artifact_type", "context-manifest")
+        data.setdefault("architecture", "context-first")
+        data.setdefault("adoption_phase", "phase-1")
+        data.setdefault("work_id", work_id or work_dir.name)
+        data.setdefault("updated_at", utc_now_iso())
+        data.setdefault("contexts", [])
+        data.setdefault(
+            "rules",
+            {
+                "dispatcher_contexts_are_authoritative": True,
+                "workflows_may_update_execution_contexts": True,
+                "missing_required_dispatcher_context_requires_human_check": True,
+            },
+        )
+        return data
+    return default_manifest(work_id or work_dir.name)
+
+
+def upsert_context(manifest: dict[str, Any], context_entry: dict[str, Any]) -> None:
+    contexts = manifest.setdefault("contexts", [])
+    context_type = context_entry["type"]
+    for index, existing in enumerate(contexts):
+        if existing.get("type") == context_type:
+            contexts[index] = {**existing, **context_entry}
+            return
+    contexts.append(context_entry)
+
+
+def register_context(
+    repo_root: Path,
+    work_dir: Path,
+    *,
+    work_id: str,
+    context_type: str,
+    path: Path,
+    required: bool,
+    generated_by: str,
+    owner: str,
+    schema: str,
+    status: str = "available",
+) -> dict[str, Any]:
+    manifest = load_manifest(work_dir, work_id=work_id)
+    relative_path = relative_to_repo(repo_root, path)
+    upsert_context(
+        manifest,
+        {
+            "type": context_type,
+            "path": relative_path,
+            "required": required,
+            "generated_by": generated_by,
+            "owner": owner,
+            "schema": schema,
+            "status": status,
+            "updated_at": utc_now_iso(),
+        },
+    )
+    manifest["updated_at"] = utc_now_iso()
+    write_json(manifest_path_for_work_dir(work_dir), manifest)
+    return manifest
+
+
+def dispatcher_context_status(manifest: dict[str, Any], required_types: list[str]) -> dict[str, Any]:
+    contexts = {item.get("type"): item for item in manifest.get("contexts", []) if isinstance(item, dict)}
+    missing = [context_type for context_type in required_types if context_type not in contexts]
+    status = "ready" if not missing else "human-check-required"
+    return {
+        "status": status,
+        "missing": missing,
+        "available": sorted(contexts),
+        "human_check_required": bool(missing),
+        "gate_restart": context_first_gate_restart(status, missing),
+        "human_check_reason": "必須Dispatcher Contextが不足しています。" if missing else "",
+    }
+
+
+def context_first_gate_restart(status: str, missing: list[str] | None = None) -> dict[str, Any]:
+    missing_values = list(missing or [])
+    return gate_restart.build_gate_restart(
+        "context-first-gate",
+        restart_reason="missing-required-dispatcher-context" if missing_values else "normal-context-first-gate",
+        repair_available=bool(missing_values),
+        repair_command=(
+            "aiwfctl context init --work-id <work-id> --workflow <workflow-command>"
+            if missing_values
+            else ""
+        ),
+        status_after_restart="pass" if status == "ready" else "fail",
+    )
+
+
+def context_entry(manifest: dict[str, Any], context_type: str) -> dict[str, Any] | None:
+    for item in manifest.get("contexts", []):
+        if isinstance(item, dict) and item.get("type") == context_type:
+            return item
+    return None
+
+
+def context_entries(manifest: dict[str, Any], context_type: str) -> list[dict[str, Any]]:
+    return [
+        item
+        for item in manifest.get("contexts", [])
+        if isinstance(item, dict) and item.get("type") == context_type
+    ]
+
+
+def context_path(repo_root: Path, entry: dict[str, Any]) -> Path:
+    raw_path = Path(str(entry.get("path", "")))
+    return raw_path if raw_path.is_absolute() else repo_root / raw_path
+
+
+def load_context_payloads(repo_root: Path, work_dir: Path, context_type: str) -> list[dict[str, Any]]:
+    manifest = load_manifest(work_dir)
+    payloads: list[dict[str, Any]] = []
+    for entry in context_entries(manifest, context_type):
+        path = context_path(repo_root, entry)
+        payload = read_json(path, default={}) or {}
+        payloads.append(
+            {
+                "entry": entry,
+                "path": relative_to_repo(repo_root, path),
+                "exists": path.exists(),
+                "payload": payload if isinstance(payload, dict) else {},
+            }
+        )
+    return payloads
+
+
+def load_test_evidence_context(repo_root: Path, work_dir: Path) -> dict[str, Any]:
+    payloads = load_context_payloads(repo_root, work_dir, "test-evidence")
+    statuses = [
+        str(item.get("payload", {}).get("status", "") or item.get("entry", {}).get("status", ""))
+        for item in payloads
+    ]
+    has_error = any(status in {"error", "failed", "human-check-required"} for status in statuses)
+    return {
+        "context_type": "test-evidence",
+        "status": "error" if has_error else "available" if payloads else "missing",
+        "count": len(payloads),
+        "items": payloads,
+    }
+
+
+def require_environment_selection(
+    repo_root: Path,
+    work_dir: Path,
+    *,
+    expected_environment: str,
+) -> dict[str, Any]:
+    manifest = load_manifest(work_dir)
+    status = dispatcher_context_status(manifest, ["environment-selection"])
+    if status["human_check_required"]:
+        raise RuntimeError(
+            "Context First gate: environment-selection context is required. "
+            f"Run `aiwfctl env select {expected_environment} --work-id {work_dir.name}` first."
+        )
+
+    entry = context_entry(manifest, "environment-selection")
+    if entry is None:
+        raise RuntimeError("Context First gate: environment-selection context entry was not found.")
+    selection_path = context_path(repo_root, entry)
+    selection = read_json(selection_path, default=None)
+    if not isinstance(selection, dict):
+        raise RuntimeError(f"Context First gate: invalid environment-selection context: {selection_path}")
+    actual_environment = selection.get("environment")
+    if actual_environment != expected_environment:
+        raise RuntimeError(
+            "Context First gate: environment mismatch. "
+            f"expected={expected_environment}, actual={actual_environment or '(missing)'}."
+        )
+    return {
+        "status": "ready",
+        "environment": actual_environment,
+        "context_path": relative_to_repo(repo_root, selection_path),
+        "manifest_path": relative_to_repo(repo_root, manifest_path_for_work_dir(work_dir)),
+    }
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Inspect Context First manifest.")
+    parser.add_argument("--repo-root", default="")
+    parser.add_argument("--work-dir", required=True)
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    show = sub.add_parser("show")
+    show.set_defaults(handler=run_show)
+
+    require = sub.add_parser("require")
+    require.add_argument("--context", action="append", required=True, choices=sorted(DISPATCHER_CONTEXT_TYPES))
+    require.set_defaults(handler=run_require)
+
+    require_environment = sub.add_parser("require-environment")
+    require_environment.add_argument("--environment", required=True)
+    require_environment.set_defaults(handler=run_require_environment)
+    return parser
+
+
+def resolve_work_dir(args: argparse.Namespace) -> tuple[Path, Path]:
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    raw = Path(args.work_dir)
+    work_dir = raw if raw.is_absolute() else repo_root / raw
+    return repo_root, work_dir
+
+
+def run_show(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root, work_dir = resolve_work_dir(args)
+    manifest = load_manifest(work_dir)
+    return {
+        "status": "ok" if manifest_path_for_work_dir(work_dir).exists() else "missing",
+        "manifest_path": relative_to_repo(repo_root, manifest_path_for_work_dir(work_dir)),
+        "manifest": manifest,
+    }
+
+
+def run_require(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root, work_dir = resolve_work_dir(args)
+    manifest = load_manifest(work_dir)
+    status = dispatcher_context_status(manifest, list(args.context))
+    return {
+        **status,
+        "manifest_path": relative_to_repo(repo_root, manifest_path_for_work_dir(work_dir)),
+    }
+
+
+def run_require_environment(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root, work_dir = resolve_work_dir(args)
+    return require_environment_selection(
+        repo_root,
+        work_dir,
+        expected_environment=args.environment,
+    )
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    try:
+        result = args.handler(args)
+    except Exception as exc:  # pragma: no cover
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0 if result.get("status") not in {"human-check-required", "failed"} else 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

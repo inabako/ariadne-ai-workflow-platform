@@ -1,0 +1,8 @@
+include:
+  - ../../grafana/docker-compose/compose.yaml
+  - ../../zabbix/docker-compose/compose.yaml
+
+networks:
+  default:
+    name: ariadne-observability-platform
+

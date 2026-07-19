@@ -1,0 +1,17 @@
+capabilities:
+  prompts:
+    - workflow_instruction
+    - repository_analysis
+    - implementation_plan
+  resources:
+    - workflow://definitions
+    - project://context
+    - model://information
+    - artifact://outputs
+  tools:
+    - health_check
+    - list_workspace_files
+    - read_workspace_file
+    - invoke_local_model
+    - write_output_artifact
+

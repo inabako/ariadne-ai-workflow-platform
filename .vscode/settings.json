@@ -1,0 +1,89 @@
+{
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false,
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "editor.detectIndentation": true,
+  "python.terminal.activateEnvironment": false,
+  "terminal.integrated.env.windows": {
+    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "AIWF_TEXT_ENCODING": "utf-8"
+  },
+  "terminal.integrated.defaultProfile.windows": "Dispatcher PowerShell",
+  "terminal.integrated.cwd": "${workspaceFolder}",
+  "terminal.integrated.profiles.windows": {
+    "Dispatcher PowerShell": {
+      "source": "PowerShell",
+      "args": [
+        "-NoLogo",
+        "-NoExit",
+        "-Command",
+        "[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false); [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); $OutputEncoding = [System.Text.UTF8Encoding]::new($false); chcp 65001 > $null"
+      ],
+      "overrideName": true,
+      "icon": "terminal-powershell"
+    },
+    "Software Workflow PowerShell": {
+      "source": "PowerShell",
+      "args": [
+        "-NoLogo",
+        "-NoExit",
+        "-Command",
+        "[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false); [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); $OutputEncoding = [System.Text.UTF8Encoding]::new($false); chcp 65001 > $null"
+      ],
+      "overrideName": true,
+      "icon": "tools"
+    },
+    "MSYS2 Localty MINGW64": {
+      "path": "C:\\msys64\\usr\\bin\\bash.exe",
+      "args": [
+        "--login",
+        "-i"
+      ],
+      "env": {
+        "MSYSTEM": "MINGW64",
+        "CHERE_INVOKING": "1"
+      },
+      "overrideName": true,
+      "icon": "terminal-bash"
+    },
+    "IaC Workflow PowerShell": {
+      "source": "PowerShell",
+      "args": [
+        "-NoLogo",
+        "-NoExit",
+        "-Command",
+        "[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false); [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); $OutputEncoding = [System.Text.UTF8Encoding]::new($false); chcp 65001 > $null"
+      ],
+      "overrideName": true,
+      "icon": "server-environment"
+    },
+    "Docker Test PowerShell": {
+      "source": "PowerShell",
+      "args": [
+        "-NoLogo",
+        "-NoExit",
+        "-Command",
+        "[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false); [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); $OutputEncoding = [System.Text.UTF8Encoding]::new($false); chcp 65001 > $null"
+      ],
+      "overrideName": true,
+      "icon": "package"
+    },
+    "Evidence PowerShell": {
+      "source": "PowerShell",
+      "args": [
+        "-NoLogo",
+        "-NoExit",
+        "-Command",
+        "[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false); [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); $OutputEncoding = [System.Text.UTF8Encoding]::new($false); chcp 65001 > $null"
+      ],
+      "overrideName": true,
+      "icon": "notebook"
+    }
+  },
+  "markdown.preview.breaks": false,
+  "yaml.validate": true
+}

@@ -1,0 +1,39 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: ariadne-mysql
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    env_file:
+      - env.example
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-app_db}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-me-in-secret-source}
+      MYSQL_USER: ${MYSQL_APP_USER:-app_user}
+      MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD:-change-me-in-secret-source}
+      TZ: ${MYSQL_TIMEZONE:-Asia/Tokyo}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --max_connections=${MYSQL_MAX_CONNECTIONS:-100}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ../init:/docker-entrypoint-initdb.d:ro
+      - ../config/my.cnf.template:/etc/mysql/conf.d/ariadne.cnf.template:ro
+      - mysql_backup:/backup
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    networks:
+      - database_internal
+
+volumes:
+  mysql_data:
+  mysql_backup:
+
+networks:
+  database_internal:
+    internal: true
+

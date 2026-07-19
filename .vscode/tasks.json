@@ -1,0 +1,472 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "workflow:requirement-discovery",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/requirement-discovery",
+        "--skill",
+        "skills/requirement-discovery/SKILL.md"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "workflow:ariadne-new-system",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/ariadne-new-system",
+        "--skill",
+        "skills/ariadne-new-system/SKILL.md"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "workflow:ariadne-new-system-iac",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/ariadne-new-system-iac",
+        "--skill",
+        "skills/ariadne-new-system-iac/SKILL.md"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "workflow:ariadne-feature-maintenance",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/ariadne-feature-maintenance",
+        "--skill",
+        "skills/ariadne-feature-maintenance/SKILL.md"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "workflow:realtime-iac",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/realtime-iac",
+        "--skill",
+        "skills/realtime-iac/SKILL.md"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "workflow:corrective-action-report",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/corrective-action-report",
+        "--skill",
+        "skills/corrective-action-report/SKILL.md"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "workflow:corrective-action-fix",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/corrective-action-fix",
+        "--skill",
+        "skills/corrective-action-fix/SKILL.md"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "workflow:docs-sync",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/docs-sync",
+        "--skill",
+        "skills/docs-sync/SKILL.md"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "workflow:github-knowledge-maintenance",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/github-knowledge-maintenance",
+        "--skill",
+        "skills/github-knowledge-maintenance/SKILL.md"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "workflow:vscode-environment",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/vscode-environment",
+        "--skill",
+        "skills/vscode-environment/SKILL.md"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "workflow:knowledge-capture",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/knowledge-capture",
+        "--skill",
+        "skills/knowledge-capture/SKILL.md"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "workflow:rag-build",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/rag-build",
+        "--skill",
+        "skills/rag-build/SKILL.md"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "workflow:rag-load",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "skill-info",
+        "--command",
+        "/rag-load",
+        "--skill",
+        "skills/rag-load/SKILL.md"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "workflow:vscode-open-questions",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "open-questions",
+        "--work-id",
+        "vscode-environment"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "workflow:vscode-preflight",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "preflight",
+        "--work-id",
+        "vscode-environment",
+        "--source-dir",
+        "${workspaceFolder}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "workflow:aiwfctl-path-shell",
+      "type": "process",
+      "command": "${workspaceFolder}\\runtime\\tools\\register-aiwfctl-path.cmd",
+      "args": [
+        "--shell"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "test:runtime-pytest",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--group",
+        "dev",
+        "pytest",
+        "-q"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}\\runtime"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "test:runtime-coverage",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--group",
+        "dev",
+        "coverage",
+        "run",
+        "--branch",
+        "-m",
+        "pytest"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}\\runtime"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "test:runtime-coverage-report",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--group",
+        "dev",
+        "coverage",
+        "report",
+        "-m"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}\\runtime"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "test:vscode-json",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/validate_vscode_workspace.py",
+        "--workspace",
+        "${workspaceFolder}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "test:vscode-helper-help",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "helper-help"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "test:msys2-localty-smoke",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "msys2-localty-smoke"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "test:docker-version",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "docker-version"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "test:go-version",
+      "type": "process",
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "runtime",
+        "python",
+        "runtime/workflow/vscode_task_runner.py",
+        "go-version"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+external_url 'http://localhost:8080'
+gitlab_rails['gitlab_shell_ssh_port'] = 2222
+gitlab_rails['backup_keep_time'] = 604800
+
+# Set real secrets through an approved secret source in the copied project.
+

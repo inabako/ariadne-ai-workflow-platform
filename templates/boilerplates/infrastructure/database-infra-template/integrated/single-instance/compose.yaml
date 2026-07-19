@@ -1,0 +1,7 @@
+include:
+  - ../../postgresql/docker-compose/compose.yaml
+
+networks:
+  default:
+    name: ariadne-database-single-instance
+

@@ -1,0 +1,9 @@
+server:
+  name: local-model-mcp-server
+  protocol_version: "2025-06-18"
+  transport: stdio
+  http:
+    host: 127.0.0.1
+    port: 8765
+    path: /mcp
+

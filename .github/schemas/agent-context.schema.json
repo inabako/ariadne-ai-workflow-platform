@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Context",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "project",
+    "workflow",
+    "agent",
+    "intent",
+    "safety_context"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "examples": ["1.0"]
+    },
+    "project": {
+      "type": "object",
+      "required": ["name", "repository"],
+      "properties": {
+        "name": { "type": "string" },
+        "repository": { "type": "string" },
+        "target_system": { "type": "string" },
+        "target_robot": { "type": "string" },
+        "environment": { "type": "string" }
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "required": ["name", "phase"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": [
+            "ariadne-new-system-development",
+            "ariadne-feature-maintenance-development",
+            "ariadne-new-system-iac",
+            "realtime-iac"
+          ]
+        },
+        "phase": { "type": "string" },
+        "risk_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical", "unknown"]
+        },
+        "command": {
+          "type": "string",
+          "description": "Source prompt command. Example: /ariadne-new-system-development"
+        }
+      }
+    },
+    "agent": {
+      "type": "object",
+      "required": ["name", "role"],
+      "properties": {
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "input_artifacts": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "output_artifacts": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "intent": {
+      "type": "object",
+      "required": ["summary"],
+      "properties": {
+        "summary": { "type": "string" },
+        "non_goals": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "success_criteria": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "safety_context": {
+      "type": "object",
+      "required": [
+        "stop_behavior_known",
+        "communication_loss_behavior_known",
+        "field_trial_allowed"
+      ],
+      "properties": {
+        "stop_behavior_known": { "type": "boolean" },
+        "communication_loss_behavior_known": { "type": "boolean" },
+        "startup_safe_state_known": { "type": "boolean" },
+        "shutdown_safe_state_known": { "type": "boolean" },
+        "field_trial_allowed": { "type": "boolean" },
+        "open_safety_questions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "constraints": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

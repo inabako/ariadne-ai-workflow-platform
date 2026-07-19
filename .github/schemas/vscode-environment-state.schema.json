@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VSCode Environment State",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "workflow",
+    "work_id",
+    "mode",
+    "target_dir",
+    "draft_dir",
+    "created_at",
+    "status",
+    "required_artifacts"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "artifact_type": {
+      "const": "vscode-environment-state"
+    },
+    "workflow": {
+      "const": "vscode-environment"
+    },
+    "work_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": [
+        "self-provision",
+        "target-workspace",
+        "custom-design"
+      ]
+    },
+    "target_dir": {
+      "type": "string"
+    },
+    "draft_dir": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "initialized",
+        "in-progress",
+        "complete",
+        "blocked"
+      ]
+    },
+    "required_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "additionalProperties": true
+}

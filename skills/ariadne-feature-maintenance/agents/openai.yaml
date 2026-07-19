@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ariadne Feature Maintenance"
+  short_description: "Start a target-system feature or maintenance workflow."
+  default_prompt: "/ariadne-feature-maintenance"

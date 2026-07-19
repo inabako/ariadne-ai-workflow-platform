@@ -1,0 +1,58 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+
+SCHEMA_ROOT = Path(".github/schemas")
+
+
+def schema_file(name: str) -> str:
+    return (SCHEMA_ROOT / f"{name}.schema.json").as_posix()
+
+
+AGENT_CONTEXT_SCHEMA = schema_file("agent-context")
+ARTIFACT_INDEX_SCHEMA = schema_file("artifact-index")
+CONTEXT_MANIFEST_SCHEMA = schema_file("context-manifest")
+CORRECTIVE_ACTION_REPORT_SCHEMA = schema_file("corrective-action-report")
+DECISION_RECORD_SCHEMA = schema_file("decision-record")
+DOCS_DRIFT_ANALYSIS_SCHEMA = schema_file("docs-drift-analysis")
+EMULATOR_HEALTH_CONTEXT_SCHEMA = schema_file("emulator-health-context")
+EMULATOR_SETUP_CONTEXT_SCHEMA = schema_file("emulator-setup-context")
+ENVIRONMENT_SELECTION_SCHEMA = schema_file("environment-selection")
+EXECUTION_PLAN_SCHEMA = schema_file("execution-plan")
+FINDING_RECORD_SCHEMA = schema_file("finding-record")
+FLUTTER_DEVELOPMENT_CONTEXT_SCHEMA = schema_file("flutter-development-context")
+GATE_RESTART_SCHEMA = schema_file("gate-restart")
+GITHUB_KNOWLEDGE_ANALYSIS_SCHEMA = schema_file("github-knowledge-analysis")
+GITHUB_OPERATION_GATE_SCHEMA = schema_file("github-operation-gate")
+GUI_MODE_STATE_SCHEMA = schema_file("gui-mode-state")
+HANDOFF_PACKAGE_SCHEMA = schema_file("handoff-package")
+HUMAN_GATES_SCHEMA = schema_file("human-gates")
+IAC_TEMPLATE_HEALTH_CONTEXT_SCHEMA = schema_file("iac-template-health-context")
+IAC_TEMPLATE_SETUP_CONTEXT_SCHEMA = schema_file("iac-template-setup-context")
+INTEGRATION_FINALIZATION_CONTEXT_SCHEMA = schema_file("integration-finalization-context")
+INTEGRATION_TEST_PLAN_CONTEXT_SCHEMA = schema_file("integration-test-plan-context")
+KNOWLEDGE_CAPTURE_SCHEMA = schema_file("knowledge-capture")
+MCP_SERVER_GROUP_IMPLEMENTATION_CONTEXT_SCHEMA = schema_file("mcp-server-group-implementation-context")
+PYTEST_UT_SPEC_SYNC_REPORT_SCHEMA = schema_file("pytest-ut-spec-sync-report")
+QA_RECORD_SCHEMA = schema_file("qa-record")
+RAG_BUILD_RUN_SCHEMA = schema_file("rag-build-run")
+RAG_DISPATCH_PLAN_SCHEMA = schema_file("rag-dispatch-plan")
+RAG_DUCKDB_MIGRATION_SCHEMA = schema_file("rag-duckdb-migration")
+RAG_DUCKDB_REFERENCE_CHECK_SCHEMA = schema_file("rag-duckdb-reference-check")
+RAG_LOAD_DISPATCH_SCHEMA = schema_file("rag-load-dispatch")
+REALTIME_IAC_HANDOFF_SCHEMA = schema_file("realtime-iac-handoff")
+RUNTIME_CONTEXT_SCHEMA = schema_file("runtime-context")
+RUNTIME_METRICS_SCHEMA = schema_file("runtime-metrics")
+SCM_STATE_SCHEMA = schema_file("scm-state")
+SDK_ANALYSIS_CONTEXT_SCHEMA = schema_file("sdk-analysis-context")
+SDK_EXTERNAL_DISCOVERY_SCHEMA = schema_file("sdk-external-discovery")
+SYSTEM_INTEGRATION_CONTEXT_SCHEMA = schema_file("system-integration-context")
+TEST_EVIDENCE_SCHEMA = schema_file("test-evidence")
+TOOL_CANDIDATES_SCHEMA = schema_file("tool-candidates")
+TOOL_SELECTION_SCHEMA = schema_file("tool-selection")
+VSCODE_ENVIRONMENT_STATE_SCHEMA = schema_file("vscode-environment-state")
+WEB_SVG_LAYOUT_STATE_SCHEMA = schema_file("web-svg-layout-state")
+WORKFLOW_ENVIRONMENT_PROFILES_SCHEMA = schema_file("workflow-environment-profiles")
+WORKFLOW_HELP_SCHEMA = schema_file("workflow-help")
+WORKFLOW_SELECTION_SCHEMA = schema_file("workflow-selection")

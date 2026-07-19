@@ -1,0 +1,34 @@
+middleware:
+  redis:
+    boilerplate: middleware-infra-template
+    enabled: true
+    version: selected-version
+    deployment_mode: docker-compose
+    purpose:
+      - cache
+      - session
+    connection:
+      host: redis
+      port: 6379
+      external_access: false
+      tls_enabled: false
+    authentication:
+      enabled: true
+      password_secret_ref: redis.password
+    memory:
+      max_memory: 512mb
+      eviction_policy: allkeys-lru
+    persistence:
+      enabled: true
+      mode: aof
+      volume_name: redis_data
+    ttl:
+      default_seconds: 3600
+    backup:
+      enabled: true
+      retention_days: 7
+    restore_test:
+      enabled: true
+    evidence:
+      enabled: true
+

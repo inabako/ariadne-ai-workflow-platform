@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/inabako/ariadne-ai-workflow-platform/schemas/system-integration-context.schema.json",
+  "title": "System Integration Context",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "status", "work_id", "workflow", "target_system"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "type": "string", "const": "system-integration-context" },
+    "status": {
+      "type": "string",
+      "enum": ["available", "available-with-warnings", "human-check-required"]
+    },
+    "work_id": { "type": "string" },
+    "workflow": { "type": "string", "const": "system-integration-quality" },
+    "stage": { "type": "string", "enum": ["analyze", "verify"] },
+    "target_system": { "type": "object" },
+    "input_contexts": { "type": "object" },
+    "cloud": { "type": "object" },
+    "payment": { "type": "object" },
+    "integration_points": { "type": "array", "items": { "type": "object" } },
+    "emulator_requested": { "type": "boolean" },
+    "emulator_candidates": { "type": "array", "items": { "type": "object" } },
+    "static_findings": { "type": "array", "items": { "type": "object" } },
+    "verification": { "type": "object" },
+    "human_checks": { "type": "array", "items": { "type": "string" } },
+    "knowledge_targets": { "type": "array", "items": { "type": "string" } },
+    "artifacts": { "type": "object" },
+    "rules": { "type": "object" }
+  }
+}

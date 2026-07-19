@@ -1,0 +1,37 @@
+# Local environment files
+.env
+.env.*
+!.env.example
+.agents/
+.codex/
+
+# Local work workspace
+# Only workflow body and work structure docs are tracked.
+# Requirement drafts, SVG inputs, issue work, close archives, and local clones are not tracked.
+work/**
+!work/**/
+!work/**/README.md
+work/db/**
+
+# Legacy root RAG workspace
+# RAG source of truth belongs under work/db/ariadne-knowledge-platform/rag/.
+# Generated local read models and evidence belong under db/rag/.
+# Keep accidental root rag/ regeneration untracked.
+rag/**
+
+# Generated database read models
+db/rag/**
+db/registries/registry.duckdb
+
+# Python cache
+__pycache__/
+*.py[cod]
+runtime/.pytest_cache/
+.venv/
+.coverage
+coverage.xml
+htmlcov/
+runtime/.coverage_html/
+runtime/.coverage.json
+runtime/logs/
+.gitignore

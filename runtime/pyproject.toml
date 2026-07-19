@@ -1,0 +1,39 @@
+[project]
+name = "ariadne-ai-workflow-platform-runtime"
+version = "0.1.0"
+description = "Runtime tooling for Ariadne AI Workflow Platform."
+readme = "../README.md"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+    "duckdb>=1.1",
+]
+
+[dependency-groups]
+dev = [
+    "coverage[toml]>=7.6",
+    "pytest>=8.2",
+]
+
+[tool.uv]
+package = false
+
+[tool.coverage.run]
+branch = true
+source = ["."]
+omit = [
+    "tests/*",
+    "**/__init__.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise SystemExit\\(main\\(\\)\\)",
+]
+
+[tool.coverage.html]
+directory = ".coverage_html"

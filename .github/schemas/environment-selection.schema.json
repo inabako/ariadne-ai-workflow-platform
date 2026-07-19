@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Workflow Environment Selection Context",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "selected_at",
+    "selected_by",
+    "selection_mode",
+    "environment",
+    "backend",
+    "reason",
+    "work_id",
+    "status",
+    "human_check_required",
+    "context_path",
+    "source"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "artifact_type": { "type": "string", "const": "environment-selection-context" },
+    "selected_at": { "type": "string", "format": "date-time" },
+    "selected_by": {
+      "type": "string",
+      "enum": ["dispatcher", "human", "workflow"]
+    },
+    "selection_mode": {
+      "type": "string",
+      "enum": ["manual", "auto", "human-check"]
+    },
+    "environment": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$" },
+    "backend": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$" },
+    "reason": { "type": "string" },
+    "work_id": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["selected", "human-check-required"] },
+    "human_check_required": { "type": "boolean" },
+    "human_check_reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "recommended_for": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "required_tools": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "preflight_profile": { "type": "string" },
+    "context_path": { "type": "string" },
+    "source": {
+      "type": "object",
+      "required": ["registry", "schema"],
+      "properties": {
+        "registry": { "type": "string" },
+        "schema": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "initialization": { "type": "object" },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}

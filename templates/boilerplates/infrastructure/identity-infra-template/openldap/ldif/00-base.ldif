@@ -1,0 +1,7 @@
+dn: dc=example,dc=local
+objectClass: top
+objectClass: dcObject
+objectClass: organization
+o: Example Organization
+dc: example
+

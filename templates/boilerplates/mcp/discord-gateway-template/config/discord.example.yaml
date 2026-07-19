@@ -1,0 +1,9 @@
+discord:
+  token_env: DISCORD_BOT_TOKEN
+  intents:
+    guilds: true
+    guild_messages: false
+    message_content: false
+  direct_messages:
+    enabled: false
+

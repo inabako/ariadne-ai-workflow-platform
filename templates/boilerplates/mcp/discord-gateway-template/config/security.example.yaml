@@ -1,0 +1,6 @@
+security:
+  human_check_token_ttl_seconds: 900
+  max_goal_chars: 2000
+  max_modal_chars: 1000
+  attachments_enabled: false
+

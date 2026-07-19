@@ -1,0 +1,473 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GitHub Knowledge Analysis",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "workflow",
+    "work_id",
+    "repository",
+    "scan_mode",
+    "repair_mode",
+    "rag_output",
+    "generated_at",
+    "summary",
+    "collection_plan",
+    "knowledge_assets",
+    "narrative_gaps",
+    "repair_proposals",
+    "github_sync_actions",
+    "knowledge_db_candidates",
+    "rag_candidates"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "examples": ["1.0"] },
+    "workflow": { "type": "string", "const": "github-knowledge-maintenance" },
+    "work_id": { "type": "string" },
+    "repository": { "type": "string" },
+    "target_branch": { "type": "string" },
+    "scan_mode": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["repository", "issue", "pull-request", "recent", "full"]
+      }
+    },
+    "repair_mode": {
+      "type": "string",
+      "enum": ["proposal", "apply"]
+    },
+    "rag_output": { "type": "boolean" },
+    "generated_at": { "type": "string" },
+    "summary": { "type": "string" },
+    "collection_plan": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/collection_item" }
+    },
+    "metadata_sources": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/metadata_source" }
+    },
+    "knowledge_assets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/knowledge_asset" }
+    },
+    "narrative_gaps": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/narrative_gap" }
+    },
+    "repair_proposals": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/repair_proposal" }
+    },
+    "history_rewrite_candidates": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/history_rewrite_candidate" }
+    },
+    "message_repair_candidates": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/message_repair_candidate" }
+    },
+    "message_repair_plans": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "message_review_intakes": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "message_repair_packages": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "rebase_replay_executions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rebase_replay_execution" }
+    },
+    "rebase_replay_packages": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rebase_replay_package" }
+    },
+    "rebase_replay_publications": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rebase_replay_publication" }
+    },
+    "github_sync_actions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/github_sync_action" }
+    },
+    "github_sync_review_plans": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "github_sync_review_intakes": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "knowledge_db_candidates": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/knowledge_db_candidate" }
+    },
+    "rag_candidates": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rag_candidate" }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/open_question" }
+    },
+    "guardrails": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "collection_item": {
+      "type": "object",
+      "required": ["id", "source_type", "purpose", "status"],
+      "properties": {
+        "id": { "type": "string" },
+        "source_type": {
+          "type": "string",
+          "enum": ["repository", "issue", "pull-request", "comment", "label", "branch", "tag", "release", "api"]
+        },
+        "command": { "type": "string" },
+        "purpose": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["planned", "collected", "skipped", "blocked"]
+        },
+        "output_ref": { "type": "string" }
+      }
+    },
+    "metadata_source": {
+      "type": "object",
+      "required": ["id", "source_type", "source_ref", "collected_by"],
+      "properties": {
+        "id": { "type": "string" },
+        "source_type": { "type": "string" },
+        "source_ref": { "type": "string" },
+        "collected_by": { "type": "string" },
+        "collected_at": { "type": "string" },
+        "evidence_path": { "type": "string" }
+      }
+    },
+    "knowledge_asset": {
+      "type": "object",
+      "required": ["id", "asset_type", "source_ref", "intent", "reuse_value"],
+      "properties": {
+        "id": { "type": "string" },
+        "asset_type": {
+          "type": "string",
+          "enum": ["intent", "scope", "design-decision", "corrective-action", "maintenance-knowledge", "shared-artifact", "future-rag-candidate"]
+        },
+        "source_ref": { "type": "string" },
+        "intent": { "type": "string" },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "reuse_value": { "type": "string" },
+        "confidence": {
+          "type": "string",
+          "enum": ["high", "medium", "low"]
+        }
+      }
+    },
+    "narrative_gap": {
+      "type": "object",
+      "required": ["id", "asset_ref", "gap_type", "severity", "why_it_matters"],
+      "properties": {
+        "id": { "type": "string" },
+        "asset_ref": { "type": "string" },
+        "gap_type": {
+          "type": "string",
+          "enum": ["intent-gap", "scope-gap", "decision-gap", "impact-gap", "maintenance-gap", "rag-value-gap", "evidence-gap", "semantic-subject-gap", "pull-request-title-gap", "commit-history-gap"]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"]
+        },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "why_it_matters": { "type": "string" },
+        "blocks_repair": { "type": "boolean" }
+      }
+    },
+    "repair_proposal": {
+      "type": "object",
+      "required": ["id", "target", "proposal_type", "reason", "approval_required"],
+      "properties": {
+        "id": { "type": "string" },
+        "target": { "type": "string" },
+        "proposal_type": {
+          "type": "string",
+          "enum": ["issue-supplement", "pr-supplement", "commit-message-supplement", "history-rewrite-plan", "car-supplement", "readme-supplement", "docs-supplement", "adr-supplement"]
+        },
+        "reason": { "type": "string" },
+        "before_summary": { "type": "string" },
+        "after_summary": { "type": "string" },
+        "draft_body": { "type": "string" },
+        "approval_required": { "type": "boolean" }
+      }
+    },
+    "history_rewrite_candidate": {
+      "type": "object",
+      "required": ["id", "file_paths", "suspect_commits", "recommended_action", "reason", "approval_status"],
+      "properties": {
+        "id": { "type": "string" },
+        "file_paths": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": { "type": "string" }
+        },
+        "suspect_commits": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "expected_commit": { "type": "string" },
+        "repair_goal": {
+          "type": "string",
+          "enum": ["absorb-into-existing-commit", "drop-empty-or-noise-commit", "split-into-independent-commit", "keep-with-evidence", "manual-review-required", "no-rewrite"]
+        },
+        "independent_responsibility": { "type": "string" },
+        "evidence_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "completion_criteria": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "recommended_action": {
+          "type": "string",
+          "enum": ["non-interactive-git-cli-rewrite", "manual-review-required", "amend-before-push", "split-commit", "no-rewrite"]
+        },
+        "content_review_evidence": {
+          "type": "object"
+        },
+        "reason": { "type": "string" },
+        "before_summary": { "type": "string" },
+        "after_summary": { "type": "string" },
+        "message_override": { "type": ["string", "object"] },
+        "proposed_commit_message": { "type": "string" },
+        "proposed_message": { "type": "string" },
+        "approval_status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"]
+        },
+        "before_after_sha_mapping": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "replay_package_ref": { "type": "string" },
+        "rollback_plan": { "type": "string" },
+        "draft_commands": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "verification_commands": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "execution_status": {
+          "type": "string",
+          "enum": ["pending", "dry-run", "applied", "verified", "pushed", "failed", "verification-failed"]
+        },
+        "executed_at": { "type": "string" },
+        "execution_result": {
+          "type": "object"
+        }
+      }
+    },
+    "rebase_replay_package": {
+      "type": "object",
+      "properties": {
+        "generated_at": { "type": "string" },
+        "package_path": { "type": "string" },
+        "candidate_ids": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "target_branch": { "type": "string" },
+        "source_ref": { "type": "string" },
+        "apply_mode": {
+          "type": "string",
+          "enum": ["direct", "git-3way", "auto-3way"]
+        },
+        "allow_push": { "type": "boolean" }
+      }
+    },
+    "message_repair_candidate": {
+      "type": "object",
+      "required": ["id", "commit", "current_subject", "proposed_subject", "proposed_commit_message", "approval_status"],
+      "properties": {
+        "id": { "type": "string" },
+        "commit": { "type": "string" },
+        "current_subject": { "type": "string" },
+        "proposed_subject": { "type": "string" },
+        "proposed_commit_message": { "type": "string" },
+        "file_paths": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "reason": { "type": "string" },
+        "approval_status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"]
+        },
+        "execution_status": {
+          "type": "string",
+          "enum": ["pending", "dry-run", "applied", "verified", "pushed", "failed", "verification-failed"]
+        },
+        "verification_commands": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "replay_package_ref": { "type": "string" },
+        "before_after_sha_mapping": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "human_review_decision": { "type": "string" },
+        "human_reviewed_at": { "type": "string" },
+        "human_review_source": { "type": "string" },
+        "executed_at": { "type": "string" },
+        "execution_result": { "type": "object" }
+      }
+    },
+    "rebase_replay_execution": {
+      "type": "object",
+      "properties": {
+        "dry_run": { "type": "boolean" },
+        "source_tip": { "type": "string" },
+        "new_tip": { "type": "string" },
+        "before_count": { "type": "integer" },
+        "after_count": { "type": "integer" },
+        "tree_equal": { "type": "boolean" },
+        "pushed": { "type": "boolean" },
+        "remote_before": { "type": "string" },
+        "remote_after": { "type": "string" },
+        "worktree_path": { "type": "string" },
+        "report_path": { "type": "string" },
+        "mapping_path": { "type": "string" },
+        "apply_mode": {
+          "type": "string",
+          "enum": ["direct", "git-3way", "auto-3way"]
+        },
+        "apply_results": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "push_result": {
+          "type": ["object", "null"],
+          "properties": {
+            "command": { "type": "string" },
+            "stdout": { "type": "string" },
+            "remote_after": { "type": "string" }
+          }
+        },
+        "package_path": { "type": "string" }
+      }
+    },
+    "rebase_replay_publication": {
+      "type": "object",
+      "required": ["published_at", "target_branch", "remote", "expected_remote_sha", "new_tip", "remote_before", "remote_after", "report_path"],
+      "properties": {
+        "published_at": { "type": "string" },
+        "target_branch": { "type": "string" },
+        "remote": { "type": "string" },
+        "expected_remote_sha": { "type": "string" },
+        "new_tip": { "type": "string" },
+        "remote_before": { "type": "string" },
+        "remote_after": { "type": "string" },
+        "report_path": { "type": "string" }
+      }
+    },
+    "github_sync_action": {
+      "type": "object",
+      "required": ["id", "target_type", "target_id", "operation", "approval_status"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "target_type": {
+          "type": "string",
+          "enum": ["issue", "pull-request", "issue-comment", "pr-comment", "repository-doc", "api"]
+        },
+        "target_id": { "type": "string" },
+        "operation": {
+          "type": "string",
+          "enum": ["edit", "comment", "api", "generate-file"]
+        },
+        "reason": { "type": "string" },
+        "draft_command": { "type": "string" },
+        "approval_status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"]
+        },
+        "human_review_decision": {
+          "type": "string",
+          "enum": ["OK", "NG"]
+        },
+        "human_reviewed_at": { "type": "string" },
+        "human_review_source": { "type": "string" },
+        "rejection_reason": { "type": "string" },
+        "execution_status": {
+          "type": "string",
+          "enum": ["pending", "dry-run", "applied", "failed"]
+        },
+        "executed_at": { "type": "string" },
+        "execution_result": {
+          "type": "object",
+          "properties": {
+            "command": { "type": "string" },
+            "skipped": { "type": "boolean" },
+            "returncode": { "type": "integer" },
+            "stdout": { "type": "string" },
+            "stderr": { "type": "string" }
+          }
+        }
+      }
+    },
+    "knowledge_db_candidate": {
+      "type": "object",
+      "required": ["id", "candidate_type", "source_ref", "knowledge_value"],
+      "properties": {
+        "id": { "type": "string" },
+        "candidate_type": { "type": "string" },
+        "source_ref": { "type": "string" },
+        "knowledge_value": { "type": "string" },
+        "storage_recommendation": { "type": "string" },
+        "requires_human_approval": { "type": "boolean" }
+      }
+    },
+    "rag_candidate": {
+      "type": "object",
+      "required": ["id", "candidate_type", "source_ref", "knowledge_value"],
+      "properties": {
+        "id": { "type": "string" },
+        "candidate_type": { "type": "string" },
+        "source_ref": { "type": "string" },
+        "knowledge_value": { "type": "string" },
+        "limits": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["candidate", "approved", "rejected"]
+        }
+      }
+    },
+    "open_question": {
+      "type": "object",
+      "required": ["id", "question", "blocks"],
+      "properties": {
+        "id": { "type": "string" },
+        "question": { "type": "string" },
+        "reason": { "type": "string" },
+        "blocks": { "type": "boolean" }
+      }
+    }
+  }
+}

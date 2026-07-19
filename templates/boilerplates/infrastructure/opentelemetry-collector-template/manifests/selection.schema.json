@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpenTelemetry Collector Selection Manifest",
+  "type": "object",
+  "required": ["schema_version", "collector", "selection", "pipelines"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "collector": {"type": "object"},
+    "selection": {"type": "object"},
+    "pipelines": {"type": "object"}
+  }
+}

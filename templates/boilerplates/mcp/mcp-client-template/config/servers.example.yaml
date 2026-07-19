@@ -1,0 +1,11 @@
+servers:
+  local-model:
+    transport: in_memory
+    command: ""
+    url: ""
+    enabled: true
+  remote-http:
+    transport: streamable_http
+    url: http://127.0.0.1:8765/mcp
+    enabled: false
+

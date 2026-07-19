@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Realtime IaC Handoff",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "source_workflow",
+    "target_workflow",
+    "work_id",
+    "created_at",
+    "source_artifacts",
+    "shared_artifact_validation",
+    "blocked_areas",
+    "residual_risks",
+    "target_repository",
+    "target_branch",
+    "required_human_approvals",
+    "required_environment",
+    "recommended_next_commands"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "artifact_type": {
+      "const": "realtime-iac-handoff"
+    },
+    "source_workflow": {
+      "type": "string"
+    },
+    "target_workflow": {
+      "const": "realtime-iac"
+    },
+    "work_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "source_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "shared_artifact_validation": {
+      "type": "object",
+      "required": [
+        "path",
+        "judgment"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "judgment": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "blocked_areas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "residual_risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "iac_repository_mode": {
+      "type": "string"
+    },
+    "target_repository": {
+      "type": "string"
+    },
+    "target_branch": {
+      "type": "string"
+    },
+    "required_human_approvals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "required_environment": {
+      "const": "docker"
+    },
+    "recommended_next_commands": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "boilerplate_template_expectation": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

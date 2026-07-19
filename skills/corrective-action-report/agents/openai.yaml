@@ -1,0 +1,4 @@
+interface:
+  display_name: "Corrective Action Report"
+  short_description: "Analyze a target repository and branch for improvement points."
+  default_prompt: "/corrective-action-report\n日本語で出力してください。"

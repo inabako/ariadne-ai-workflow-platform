@@ -1,0 +1,14 @@
+jenkins:
+  systemMessage: "Ariadne platform Jenkins. Replace placeholder security settings before production."
+  numExecutors: 0
+  mode: NORMAL
+  clouds: []
+
+security:
+  queueItemAuthenticator:
+    authenticators: []
+
+unclassified:
+  location:
+    url: "http://localhost:8081/"
+

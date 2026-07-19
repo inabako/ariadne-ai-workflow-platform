@@ -1,0 +1,29 @@
+database:
+  boilerplate: database-infra-template
+  engine: postgresql
+  version: selected-version
+  deployment_mode: docker-compose
+  connection:
+    host: database
+    port: 5432
+    database_name: app_db
+    username_secret: database.username
+    password_secret: database.password
+  configuration:
+    timezone: Asia/Tokyo
+    encoding: UTF-8
+    max_connections: 100
+  persistence:
+    enabled: true
+    volume_name: app_db_data
+  migration:
+    enabled: true
+    tool: project-defined
+  backup:
+    enabled: true
+    retention_days: 7
+  restore_test:
+    enabled: true
+  evidence:
+    enabled: true
+

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QA Record",
+  "type": "object",
+  "required": [
+    "id",
+    "question",
+    "impact",
+    "blocking",
+    "owner_agent"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "examples": ["QA-001"]
+    },
+    "owner_agent": { "type": "string" },
+    "question": { "type": "string" },
+    "reason": { "type": "string" },
+    "impact": { "type": "string" },
+    "blocking": { "type": "boolean" },
+    "required_by_phase": { "type": "string" },
+    "answer": { "type": "string" },
+    "answered_by": { "type": "string" },
+    "answered_at": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["open", "answered", "deferred", "obsolete"]
+    },
+    "related_artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
+
