@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from runtime.common import registry_store
+from runtime.observability.logger import RuntimeEventLogger
 from runtime.workflow import self_improvement
 
 
@@ -47,6 +48,56 @@ def test_init_and_create_feedback(tmp_path: Path) -> None:
     assert "参照docsが不明" in text
     assert "Proposed" in text
     assert "High" in text
+
+
+def test_create_feedback_includes_runtime_log_analysis_for_trace(tmp_path: Path) -> None:
+    event_logger = RuntimeEventLogger(repo_root=tmp_path, component="ctl", trace_id="trace123")
+    event_logger.emit(
+        "runtime_command_started",
+        command="help search",
+        input={"json": False, "repo_root": str(tmp_path), "work_id": ""},
+        output={},
+    )
+    event_logger.emit(
+        "runtime_command_completed",
+        command="help search",
+        input={"json": False, "repo_root": str(tmp_path), "work_id": ""},
+        output={
+            "status": "blocked",
+            "exit_code": 2,
+            "duration_ms": 29,
+            "output_bytes": 562,
+            "reason": "required_argument_missing",
+        },
+    )
+    args = argparse.Namespace(
+        repo_root=str(tmp_path),
+        target_workflow="/self-improvement",
+        reporter="Human",
+        situation="runtime observation needs feedback context",
+        friction="runtime log analysis was not included in feedback reports",
+        impact="feedback review needed manual log inspection",
+        proposed_improvement="include runtime log analysis in feedback reports",
+        evidence=["logs/runtime/runtime-events.log"],
+        priority="High",
+        category="Observability",
+        runtime_trace_id="trace123",
+        runtime_log="",
+        output="",
+    )
+
+    result = self_improvement.run_create_feedback(args)
+
+    text = (tmp_path / result["feedback"]).read_text(encoding="utf-8-sig")
+    assert "## Runtime Observation" in text
+    assert "Trace ID: `trace123`" in text
+    assert "Events: 2 / 2" in text
+    assert "Commands: `help search`" in text
+    assert "Statuses: blocked: 1" in text
+    assert "Reasons: required_argument_missing: 1" in text
+    assert "## Runtime Log Analysis" in text
+    assert "Outcome: `blocked`" in text
+    assert "seq=00002 event=runtime_command_completed command=help search status=blocked" in text
 
 
 def test_init_feedback_preserves_existing_readme_and_template_reader(tmp_path: Path) -> None:

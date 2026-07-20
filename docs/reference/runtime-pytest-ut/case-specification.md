@@ -13,9 +13,9 @@ coverage 推移と監査履歴は repository root の `Runtime pytest 分岐・C
 | 項目 | 値 |
 | --- | ---: |
 | pytest files | 39 |
-| pytest test functions | 680 |
-| pytest collected cases | 722 |
-| pytest result | `725 passed` |
+| pytest test functions | 681 |
+| pytest collected cases | 723 |
+| pytest result | `726 passed` |
 | statement coverage | 99.66% |
 | total coverage | 99.48% |
 
@@ -79,7 +79,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_retrieval_runtime.py](cases/test_retrieval_runtime.md) | 23 |
 | [test_scm_runtime.py](cases/test_scm_runtime.md) | 53 |
 | [test_sdk_analysis.py](cases/test_sdk_analysis.md) | 11 |
-| [test_self_improvement_workflow.py](cases/test_self_improvement_workflow.md) | 14 |
+| [test_self_improvement_workflow.py](cases/test_self_improvement_workflow.md) | 15 |
 | [test_svg_layout_modes.py](cases/test_svg_layout_modes.md) | 19 |
 | [test_system_integration.py](cases/test_system_integration.md) | 15 |
 | [test_vscode_environment_workflow.py](cases/test_vscode_environment_workflow.md) | 10 |

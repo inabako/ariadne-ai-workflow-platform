@@ -94,6 +94,17 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . self-improve
 
 Human Review結果を同じFeedback reportへ追記します。
 
+Runtime event log を根拠にする場合は、trace id を指定すると Feedback report に `Runtime Observation` と `Runtime Log Analysis` が追加されます。
+
+```powershell
+uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+  --target-workflow "/self-improvement" `
+  --situation "runtime log analysis needs feedback context" `
+  --friction "feedback review needs manual log inspection" `
+  --runtime-trace-id "<trace-id>" `
+  --runtime-log logs/runtime/runtime-events.log
+```
+
 ```powershell
 uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement review-feedback `
   --feedback work/feedback/<feedback>.md `

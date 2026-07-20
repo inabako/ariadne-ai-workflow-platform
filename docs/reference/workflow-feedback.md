@@ -31,6 +31,17 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . self-improve
 
 既存reportに追記する方が自然な場合は、同じ `work/feedback/*.md` を更新します。
 
+Runtime event log を根拠にする場合は、`--runtime-trace-id` を指定します。Feedback report には `Runtime Observation` と `Runtime Log Analysis` が追加され、該当traceのcommand、status、reason、duration、blocked / failed event が要約されます。
+
+```powershell
+uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+  --target-workflow "/self-improvement" `
+  --situation "runtime log analysis needs feedback context" `
+  --friction "feedback review needs manual log inspection" `
+  --runtime-trace-id "<trace-id>" `
+  --runtime-log logs/runtime/runtime-events.log
+```
+
 ## Review Flow
 
 Feedbackがたまったら `/self-improvement` を実行します。

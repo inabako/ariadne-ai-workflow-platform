@@ -63,6 +63,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . self-improve
 uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback --target-workflow "/docs-sync" --situation "docs整備中" --friction "参照docsが不明"
 uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement review-feedback --feedback work/feedback/<feedback>.md --decision accepted --reviewer Human --reason "改善価値がある"
 uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement issue-body --feedback work/feedback/<feedback>.md
+uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback --target-workflow "/self-improvement" --situation "runtime log analysis needs feedback context" --friction "feedback review needs manual log inspection" --runtime-trace-id "<trace-id>" --runtime-log logs/runtime/runtime-events.log
 uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement branch-name --issue-number 42
 uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
 ```

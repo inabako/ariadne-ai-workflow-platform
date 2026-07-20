@@ -1533,6 +1533,8 @@ def build_parser() -> argparse.ArgumentParser:
     self_improvement_create.add_argument("--evidence", action="append", default=[])
     self_improvement_create.add_argument("--priority", default="Medium", choices=["Low", "Medium", "High"])
     self_improvement_create.add_argument("--category", default="Workflow")
+    self_improvement_create.add_argument("--runtime-trace-id", default="")
+    self_improvement_create.add_argument("--runtime-log", default="")
     self_improvement_create.add_argument("--output", default="")
     self_improvement_create.add_argument("--json", action="store_true")
     self_improvement_review = self_improvement_sub.add_parser("review-feedback", help="Append human review result.")
@@ -2309,6 +2311,7 @@ def _run_impl(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 "Self Improvement\n\n"
                 "Usage:\n"
                 "  aiwfctl self-improvement create-feedback --target-workflow <workflow> --situation <text> --friction <text>\n"
+                "  aiwfctl self-improvement create-feedback --target-workflow <workflow> --situation <text> --friction <text> --runtime-trace-id <trace-id>\n"
                 "  aiwfctl self-improvement review-feedback --feedback <path> --decision accepted --reviewer Human --reason <text>\n"
                 "  aiwfctl self-improvement issue-body --feedback <path>\n"
                 "  aiwfctl self-improvement evidence-scaffold --work-id issue-<number>\n"
