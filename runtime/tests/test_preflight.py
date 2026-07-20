@@ -74,6 +74,40 @@ def test_basic_checks_report_detected_state(monkeypatch: pytest.MonkeyPatch, tmp
     assert missing_path.to_dict()["detected"] == ""
 
 
+def test_preflight_parser_accepts_runtime_dev_profile() -> None:
+    args = preflight.build_parser().parse_args(["--profile", "runtime-dev"])
+
+    assert args.profile == "runtime-dev"
+
+
+def test_uv_runtime_check_uses_repo_local_wrapper_when_uv_is_not_on_path(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: None)
+    uv_cmd = tmp_path / "runtime" / "windows-script" / "uv.cmd"
+    uv_cmd.parent.mkdir(parents=True)
+    uv_cmd.write_text("@echo off\n", encoding="utf-8")
+
+    check = preflight.uv_runtime_check(tmp_path)
+
+    assert check.ok is True
+    assert check.detected == str(uv_cmd)
+    assert "register-uv-path.cmd" in (check.install_command or "")
+
+
+def test_windows_aiwf_cmd_wraps_powershell_with_process_bypass() -> None:
+    root = Path(__file__).resolve().parents[2]
+    wrapper = root / "runtime" / "windows-script" / "aiwf.cmd"
+
+    text = wrapper.read_text(encoding="utf-8")
+    tools_cmd_files = list((root / "runtime" / "tools").glob("*.cmd"))
+
+    assert "powershell -NoProfile -ExecutionPolicy Bypass -File" in text
+    assert "%~dp0aiwf.ps1" in text
+    assert tools_cmd_files == []
+
+
 def test_env_path_check_reads_repo_env(tmp_path: Path) -> None:
     terraform = tmp_path / "terraform.exe"
     terraform.write_text("", encoding="utf-8")
@@ -105,6 +139,30 @@ def test_python_module_check_uses_current_interpreter(monkeypatch: pytest.Monkey
     assert check.ok is True
     assert check.detected == sys.executable
     assert calls == [[sys.executable, "-c", "import pytest"]]
+
+
+def test_runtime_pytest_check_uses_uv_project_command(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    uv_cmd = tmp_path / "runtime" / "windows-script" / "uv.cmd"
+    uv_cmd.parent.mkdir(parents=True)
+    uv_cmd.write_text("@echo off\n", encoding="utf-8")
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: None)
+    calls: list[list[str]] = []
+
+    def fake_run(command, cwd=None, env=None):
+        calls.append(list(command))
+        assert cwd == tmp_path
+        return subprocess.CompletedProcess(command, 0, stdout="pytest 9.9.9\n", stderr="")
+
+    monkeypatch.setattr(preflight, "run_command", fake_run)
+
+    check = preflight.runtime_pytest_check(tmp_path, required=True)
+
+    assert check.ok is True
+    assert check.detected == "pytest 9.9.9"
+    assert calls == [[str(uv_cmd), "run", "--project", "runtime", "--group", "dev", "pytest", "--version"]]
 
 
 def test_docker_compose_check_uses_compose_version(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -158,7 +216,7 @@ def test_github_cli_checks_split_version_auth_and_env_token(monkeypatch: pytest.
             protocol_dir="",
             support_branch="develop",
             msys2_root=str(tmp_path / "msys64"),
-            work_id="github-knowledge-repo-recent",
+            work_id="github/original/recent",
             github_hostname="github.com",
         ),
         tmp_path,
@@ -373,6 +431,18 @@ def test_docker_compose_profile_declares_required_docker_checks(monkeypatch: pyt
     [
         ("corrective-action-fix", {"path:msys2-bash", "python-module:pytest"}),
         ("web-nextjs", {"exe:node", "exe:npm", "exe:npx", "path:target-package-json"}),
+        (
+            "runtime-dev",
+            {
+                "exe:uv",
+                "exe:py",
+                "path:runtime-windows-script-uv",
+                "path:runtime-windows-script-aiwfctl",
+                "path:runtime-windows-script-aiwf-cmd",
+                "path:runtime-windows-script-aiwf-ps1",
+                "runtime:pytest",
+            },
+        ),
         ("vscode-environment", {"exe:code", "exe:docker", "exe:go", "path:msys2-bash", "path:target-workspace"}),
     ],
 )
@@ -384,6 +454,12 @@ def test_build_checks_profiles_add_expected_checks(
 ) -> None:
     source_dir = tmp_path / "source"
     source_dir.mkdir()
+    windows_script_dir = tmp_path / "runtime" / "windows-script"
+    windows_script_dir.mkdir(parents=True)
+    (windows_script_dir / "uv.cmd").write_text("@echo off\n", encoding="utf-8")
+    (windows_script_dir / "aiwfctl.cmd").write_text("@echo off\n", encoding="utf-8")
+    (windows_script_dir / "aiwf.cmd").write_text("@echo off\n", encoding="utf-8")
+    (windows_script_dir / "aiwf.ps1").write_text("Write-Output 'ok'\n", encoding="utf-8")
     monkeypatch.setattr(preflight.shutil, "which", lambda name: f"C:/tools/{name}.exe")
     monkeypatch.setattr(
         preflight,

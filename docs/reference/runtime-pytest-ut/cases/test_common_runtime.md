@@ -19,7 +19,7 @@ runtime/tests/test_common_runtime.py::test_slugify_and_relative_to_repo_are_stab
 - 確認内容: pytest case `slugify and relative to repo are stable` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_common_runtime.py:34`
+  - source: `runtime/tests/test_common_runtime.py:35`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -36,7 +36,7 @@ runtime/tests/test_common_runtime.py::test_ensure_work_tree_creates_standard_dir
 - 確認内容: pytest case `ensure work tree creates standard directories` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_common_runtime.py:45`
+  - source: `runtime/tests/test_common_runtime.py:46`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -53,7 +53,7 @@ runtime/tests/test_common_runtime.py::test_artifact_index_upsert_replaces_existi
 - 確認内容: pytest case `artifact index upsert replaces existing artifact` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_common_runtime.py:53`
+  - source: `runtime/tests/test_common_runtime.py:54`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -70,7 +70,7 @@ runtime/tests/test_common_runtime.py::test_write_json_writes_utf8_json_with_pare
 - 確認内容: pytest case `write json writes utf8 json with parent dirs` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_common_runtime.py:65`
+  - source: `runtime/tests/test_common_runtime.py:66`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -87,7 +87,7 @@ runtime/tests/test_common_runtime.py::test_common_root_receipt_json_and_markdown
 - 確認内容: pytest case `common root receipt json and markdown edges` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_common_runtime.py:73`
+  - source: `runtime/tests/test_common_runtime.py:74`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -104,7 +104,7 @@ runtime/tests/test_common_runtime.py::test_env_line_and_repository_slug_normaliz
 - 確認内容: pytest case `env line and repository slug normalization` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_common_runtime.py:94`
+  - source: `runtime/tests/test_common_runtime.py:95`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -121,11 +121,28 @@ runtime/tests/test_common_runtime.py::test_env_file_process_and_github_resolutio
 - 確認内容: pytest case `env file process and github resolution edges` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_common_runtime.py:111`
+  - source: `runtime/tests/test_common_runtime.py:112`
   - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
+
+#### RT-UT-CASE-023A
+
+- pytest node id:
+
+```text
+runtime/tests/test_common_runtime.py::test_knowledge_source_repository_env_helpers
+```
+
+- Confirm: knowledge source repository ENV から repo name、backup path、clone URL が安定して組み立つことを確認します。
+- Input:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_common_runtime.py:141`
+  - fixture/arg: なし
+  - parameter: names=なし, case=なし
+  - inline input: `settings`
+- Expected: `ARIADNE_KNOWLEDGE_REPOSITORY` から `work/db/<repo-name>` が解決され、明示URLがある場合はそれが優先される。
 
 #### RT-UT-CASE-024
 
@@ -138,7 +155,7 @@ runtime/tests/test_common_runtime.py::test_extract_repository_config_from_markdo
 - 確認内容: pytest case `extract repository config from markdown text` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_common_runtime.py:140`
+  - source: `runtime/tests/test_common_runtime.py:155`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `text`
@@ -155,7 +172,7 @@ runtime/tests/test_common_runtime.py::test_defensive_specimen_repository_config_
 - 確認内容: defensive specimen repository config ignores empty values and remote alias を検証する。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_common_runtime.py:158`
+  - source: `runtime/tests/test_common_runtime.py:173`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `text`
@@ -172,7 +189,7 @@ runtime/tests/test_common_runtime.py::test_requirement_config_files_and_artifact
 - 確認内容: pytest case `requirement config files and artifact index edges` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_common_runtime.py:170`
+  - source: `runtime/tests/test_common_runtime.py:185`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル

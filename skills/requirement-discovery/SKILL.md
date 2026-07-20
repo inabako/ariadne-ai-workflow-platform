@@ -68,6 +68,13 @@ work/<work-id>/context/sdk-external-discovery.json
 work/<work-id>/requirements/sdk-external-requirements.md
 ```
 
+When `sdk analyze` writes Knowledge JSON under `work/db/.../rag/jsonized`, it also records cleanup evidence in `artifact-index.json`. After the Knowledge source is absorbed, confirm temporary work cleanup through the generic ctl:
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-check --work-id <work-id>
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-apply --work-id <work-id> --human-check approved
+```
+
 The SDK analysis context is optional supporting context. It must not replace human confirmation for license, adoption, vendor lock-in, auth management, production network usage, cost, deprecated / unsupported SDK status, or unclear security behavior.
 
 The SDK external discovery context is a search plan and evidence handoff. It identifies official docs, package registry, release notes, security advisory, and deprecation checks to perform. Do not store full external page bodies.
@@ -251,6 +258,13 @@ External-web RAG artifacts, when used:
 work/db/ariadne-knowledge-platform/rag/external-web/<category>/*.md
 work/db/ariadne-knowledge-platform/rag/external-web/retrieval/*-aggregate.md
 ```
+
+Cleanup classification:
+
+- `external-web/<category>/*.md` is reviewed long-lived source Knowledge and may become cleanup evidence when registered in `artifact-index.json`.
+- `external-web/retrieval/*-aggregate.md` is retrieval/session output and is not cleanup evidence by itself.
+- normalized/jsonized durable Knowledge records may be cleanup evidence only when the producing workflow registers them in `artifact-index.json`.
+- chunks, indexes, embeddings, retrieval JSON, and ingestion evidence are derived artifacts and must not be the only cleanup evidence.
 
 Final artifact after human OK:
 

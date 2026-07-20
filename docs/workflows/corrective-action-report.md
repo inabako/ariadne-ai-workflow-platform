@@ -31,6 +31,13 @@ python runtime/workflow/corrective_action_report.py register `
   --report-path "work/db/ariadne-knowledge-platform/rag/corrective-action-report/<report>.md"
 ```
 
+When the report front matter status is approved/published/verified/ready, registration also records cleanup evidence in `artifact-index.json`. Confirm temporary work cleanup through the generic ctl:
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-check --work-id "<work-id>"
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-apply --work-id "<work-id>" --human-check approved
+```
+
 生成されるContext:
 
 ```text

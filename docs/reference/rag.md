@@ -85,6 +85,27 @@ source markdown
   -> load dispatch aggregate
 ```
 
+## Cleanup Classification
+
+`aiwfctl work cleanup-check/apply` removes temporary workflow work scopes only after long-lived Knowledge absorption is confirmed. RAG paths are classified as follows.
+
+| Class | Paths | Cleanup Role |
+| --- | --- | --- |
+| Long-lived source Knowledge | `work/db/ariadne-knowledge-platform/rag/corrective-action-report/`, `github-knowledge/`, `workspace-environment/`, `external-web/<category>/`, `specialist-review/<domain>/` | May be registered in `artifact-index.json` as cleanup evidence after human approval or equivalent workflow verification. |
+| Final durable Knowledge record | `work/db/ariadne-knowledge-platform/rag/normalized/*.json` | Primary machine-readable Knowledge record. May be used as cleanup evidence when produced from approved sources. |
+| Compatibility Knowledge wrapper | `work/db/ariadne-knowledge-platform/rag/jsonized/*.json` | May be cleanup evidence for workflows that directly produce wrapper Knowledge, such as SDK analysis. It is not the preferred final RAG record when a normalized document exists. |
+| Derived build artifacts | `chunks/`, `optimized-chunks/`, `indexes/`, `embeddings/` | Not cleanup evidence by themselves. They are rebuildable from source/normalized Knowledge and must not justify deleting a temporary work scope alone. |
+| Retrieval artifacts | `retrieval/*.json`, `external-web/retrieval/*.md` | Not cleanup evidence. They are query/session outputs for loading context and may be regenerated. |
+| Ingestion evidence | `db/rag/evidence/ingestion/` | Not cleanup evidence. It explains build quality decisions but does not prove Knowledge absorption. |
+| Temporary workflow work | `work/<work-id>/`, `work/github/<scope>/<scan-mode>/` | Cleanup target only. Remove through `aiwfctl work cleanup-check` then `cleanup-apply --human-check approved`. |
+
+Rules:
+
+- `artifact-index.json` is the cleanup contract. A RAG file outside `artifact-index.json` does not automatically make cleanup safe.
+- Draft or review-pending source notes should use `cleanup_ready: false` or omit cleanup evidence until approval.
+- Derived build/retrieval artifacts must not be the only evidence for `work cleanup-check`.
+- `work/db/<ARIADNE_KNOWLEDGE_REPOSITORY>/` is long-lived local Knowledge backup storage and is not a cleanup target.
+
 ## Output Files
 
 | Path | Purpose |

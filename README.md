@@ -109,20 +109,20 @@ work/       per-workflow artifacts and cloned sources
 Runtime helper CLI は `runtime/` にあります。詳細は [Runtime](docs/reference/runtime.md) と `runtime/**/README.md` を参照してください。
 
 AI workflow prompt command のスペル、必須引数、引数の設定内容、処理概要、詳細をターミナルから確認する場合は `aiwfctl help` を使います。
-VSCode統合ターミナルでは `.vscode/settings.json` により `runtime/tools` が `PATH` に追加されるため、短い `aiwfctl` で呼び出せます。
+VSCode統合ターミナルでは `.vscode/settings.json` により `runtime/windows-script` が `PATH` に追加されるため、短い `aiwfctl` で呼び出せます。
 
-既に開いているterminalにはPATH変更が反映されません。VSCodeのterminalを閉じて開き直すか、PATH未反映のterminalでは `.\runtime\tools\aiwfctl.cmd help list` のように直接呼び出してください。
+既に開いているterminalにはPATH変更が反映されません。VSCodeのterminalを閉じて開き直すか、PATH未反映のterminalでは `.\runtime\windows-script\aiwfctl.cmd help list` のように直接呼び出してください。
 
 通常のPowerShellやWindows Terminalからも `aiwfctl` とだけ呼びたい場合は、User Pathへ登録します。
 
 ```powershell
-.\runtime\tools\register-aiwfctl-path.cmd
+.\runtime\windows-script\register-aiwfctl-path.cmd
 ```
 
 `aiwfctl.cmd` から呼ぶ場合:
 
 ```powershell
-.\runtime\tools\aiwfctl.cmd path register
+.\runtime\windows-script\aiwfctl.cmd path register
 ```
 
 登録後、新しいPowerShellを開いてから `aiwfctl help list` を実行してください。
@@ -131,25 +131,25 @@ Windows Terminal や VSCode 本体を登録前から開いていた場合は、�
 登録後、すぐに `aiwfctl` が使えるPowerShell sessionを開く場合:
 
 ```powershell
-.\runtime\tools\register-aiwfctl-path.cmd --shell
+.\runtime\windows-script\register-aiwfctl-path.cmd --shell
 ```
 
 `aiwfctl.cmd` から登録と更新済みsession起動をまとめて行う場合:
 
 ```powershell
-.\runtime\tools\aiwfctl.cmd path shell
+.\runtime\windows-script\aiwfctl.cmd path shell
 ```
 
 現在のPowerShellだけ一時的にPATHを通す場合:
 
 ```powershell
-$env:Path = "$PWD\runtime\tools;$env:Path"
+$env:Path = "$PWD\runtime\windows-script;$env:Path"
 ```
 
-User Path登録後に現在のPowerShellへ反映する場合は、現在のPATHを壊さないように `runtime\tools` だけを先頭追加します。
+User Path登録後に現在のPowerShellへ反映する場合は、現在のPATHを壊さないように `runtime\windows-script` だけを先頭追加します。
 
 ```powershell
-$env:Path = "$PWD\runtime\tools;$env:Path"
+$env:Path = "$PWD\runtime\windows-script;$env:Path"
 ```
 
 ```powershell

@@ -23,7 +23,7 @@ Build a VSCode environment as Workspace as Code so AI agents and humans can repr
 
 ## 日本語実行方針
 
-このworkflowは、AIさんがAI workflow repositoryを実行しやすくするためのVSCode環境整備を目的にします。記入済み草案は必須ではありません。引数なしの場合はself-provision modeとしてcurrent repositoryを対象にし、既存の `.vscode`、`runtime/tools`、workflow registry、docs、testsを読んで、不足しているrepo-local tooling、task、validator、evidence導線を整えます。
+このworkflowは、AIさんがAI workflow repositoryを実行しやすくするためのVSCode環境整備を目的にします。記入済み草案は必須ではありません。引数なしの場合はself-provision modeとしてcurrent repositoryを対象にし、既存の `.vscode`、`runtime/windows-script`、`runtime/tools`、workflow registry、docs、testsを読んで、不足しているrepo-local tooling、task、validator、evidence導線を整えます。
 
 target workspace pathが指定された場合は、target-workspace modeとして対象repoを読みます。この場合も草案は任意です。対象repoの既存設定と実装証跡から安全に推定できるものは推定し、既存 `.vscode` filesは読んでから保全的に変更します。
 
@@ -68,13 +68,13 @@ Use `work/requirements/devlop-edit-draft/README.md` and `README_*.md` only as op
 9. Create `vscode-design.md`.
 10. Create `terminal-design.md`.
 11. Implement `.vscode/settings.json`, `tasks.json`, `launch.json`, `extensions.json`, and optional `workspace.code-workspace`.
-    - If the workspace has repo-local command tools such as `runtime/tools/*.cmd`, add that tools directory to `terminal.integrated.env.windows.Path`.
+    - If the workspace has repo-local command scripts such as `runtime/windows-script/*.cmd`, add that scripts directory to `terminal.integrated.env.windows.Path`.
     - For this workflow repository, include `${workspaceFolder}\\runtime\\tools` so `aiwfctl help` works in VSCode integrated terminals.
     - Read `work/<work-id>/context/runtime-context.json` `encoding_contract` and apply UTF-8 First settings before editing Japanese Markdown, prompts, JSON, or workflow docs.
     - Set `.vscode/settings.json` `files.encoding=utf8`, `files.autoGuessEncoding=false`, `PYTHONUTF8=1`, `PYTHONIOENCODING=utf-8`, and `AIWF_TEXT_ENCODING=utf-8`; add PowerShell UTF-8 startup commands and `.editorconfig` UTF-8 rules.
     - Do not add an invented `[encoding]` table to Codex `~/.codex/config.toml` or `.codex/config.toml` expecting Codex to enforce it. Codex config should contain documented Codex settings only; put UTF-8 policy in `AGENTS.md` or workflow docs and enforce it with `aiwfctl doctor`.
-    - Add a provisioning/support task for `runtime/tools/register-aiwfctl-path.cmd --shell` when `aiwfctl` should also work from normal PowerShell or Windows Terminal.
-    - The same registration and refreshed shell can be invoked through `runtime/tools/aiwfctl.cmd path shell`.
+    - Add a provisioning/support task for `runtime/windows-script/register-aiwfctl-path.cmd --shell` when `aiwfctl` should also work from normal PowerShell or Windows Terminal.
+    - The same registration and refreshed shell can be invoked through `runtime/windows-script/aiwfctl.cmd path shell`.
 12. Run workspace tests and record evidence.
 13. Update setup / troubleshooting docs.
 14. If the environment pattern is reusable, capture it under `work/db/ariadne-knowledge-platform/rag/workspace-environment/` as `YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md`.

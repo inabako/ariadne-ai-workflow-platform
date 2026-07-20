@@ -26,14 +26,14 @@ aiwfctl flutter finalize --work-id <work-id>
 Flutter SDKを `C:\flutter` に導入済みだが、PowerShellから `flutter` が見つからない場合は、repo-local helperでUser PATHへ登録します。
 
 ```powershell
-.\runtime\tools\register-flutter-path.cmd --check
-.\runtime\tools\register-flutter-path.cmd --shell
+.\runtime\windows-script\register-flutter-path.cmd --check
+.\runtime\windows-script\register-flutter-path.cmd --shell
 ```
 
 SDKを別pathへ置いた場合:
 
 ```powershell
-.\runtime\tools\register-flutter-path.cmd --shell C:\tools\flutter
+.\runtime\windows-script\register-flutter-path.cmd --shell C:\tools\flutter
 ```
 
 ## target宣言

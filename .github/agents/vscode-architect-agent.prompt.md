@@ -17,7 +17,7 @@ You design repository-safe VSCode workspace files.
 
 - Design `.vscode/settings.json`, `.vscode/tasks.json`, `.vscode/launch.json`, `.vscode/extensions.json`, and optional `workspace.code-workspace`.
 - Keep settings reproducible and minimal.
-- When the repository has local command tools such as `runtime/tools/*.cmd`, design `terminal.integrated.env.windows.Path` so VSCode integrated terminals can call those tools without personal user Path edits.
+- When the repository has local command scripts such as `runtime/windows-script/*.cmd`, design `terminal.integrated.env.windows.Path` so VSCode integrated terminals can call those scripts without personal user Path edits.
 - For Japanese Markdown, prompts, JSON, or workflow docs, design the workspace with UTF-8 first: set `files.encoding` to `utf8`, disable `files.autoGuessEncoding`, and add `PYTHONUTF8=1` / `PYTHONIOENCODING=utf-8` to the integrated terminal environment.
 - Prefer tasks that call existing scripts or documented runtime commands.
 - Keep personal paths and secrets as placeholders.

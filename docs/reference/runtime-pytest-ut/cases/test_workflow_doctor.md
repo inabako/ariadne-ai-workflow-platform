@@ -424,7 +424,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_repair_encoding_clea
 - 確認内容: doctor gate が text-boundary warning で停止し、`--repair-encoding` 後に同じ doctor gate から pass へ復帰することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_workflow_doctor.py:532`
+  - source: `runtime/tests/test_workflow_doctor.py:533`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -441,7 +441,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_main_prints_pass_jso
 - 確認内容: workflow_doctor CLI mainがpass JSONを出力することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_workflow_doctor.py:584`
+  - source: `runtime/tests/test_workflow_doctor.py:585`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -458,7 +458,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_main_returns_one_on_
 - 確認内容: fail-on-warning時にCLI mainが非ゼロ終了することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_workflow_doctor.py:603`
+  - source: `runtime/tests/test_workflow_doctor.py:604`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -475,7 +475,7 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_ut_spec_sync_finding
 - 確認内容: UT spec sync findingsとskip optionの扱いを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_workflow_doctor.py:625`
+  - source: `runtime/tests/test_workflow_doctor.py:626`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -492,7 +492,7 @@ runtime/tests/test_workflow_doctor.py::test_defensive_specimen_workflow_doctor_r
 - 確認内容: UT spec input section欠落をdoctorが報告することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_workflow_doctor.py:662`
+  - source: `runtime/tests/test_workflow_doctor.py:663`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -509,7 +509,7 @@ runtime/tests/test_workflow_doctor.py::test_defensive_specimen_workflow_doctor_r
 - 確認内容: stale caseとbad input positionだけがあるsync結果をdoctorが報告することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_workflow_doctor.py:674`
+  - source: `runtime/tests/test_workflow_doctor.py:675`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -526,7 +526,7 @@ runtime/tests/test_workflow_doctor.py::test_defensive_specimen_workflow_doctor_r
 - 確認内容: stale caseのみのsync結果をdoctorが報告することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_workflow_doctor.py:700`
+  - source: `runtime/tests/test_workflow_doctor.py:701`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -543,7 +543,7 @@ runtime/tests/test_workflow_doctor.py::test_defensive_specimen_workflow_doctor_a
 - 確認内容: cleanなUT spec sync結果をdoctorが受け入れることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_workflow_doctor.py:721`
+  - source: `runtime/tests/test_workflow_doctor.py:722`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル

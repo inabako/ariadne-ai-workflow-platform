@@ -23,6 +23,12 @@ from runtime.constants.paths import (  # noqa: E402
 
 
 DEFAULT_LEGACY_JSON_SOURCE_DIR = KNOWLEDGE_SOURCE_REGISTRIES
+REQUIRED_REGISTRY_SOURCE_FILES = (
+    WORKFLOW_HELP_REGISTRY_FILE,
+    TOOL_CANDIDATES_REGISTRY_FILE,
+    HUMAN_GATES_REGISTRY_FILE,
+    WORKFLOW_ENVIRONMENT_PROFILES_REGISTRY_FILE,
+)
 
 
 def registry_db_path(repo_root: Path) -> Path:
@@ -31,6 +37,18 @@ def registry_db_path(repo_root: Path) -> Path:
 
 def legacy_registry_dir(repo_root: Path) -> Path:
     return repo_root / "runtime" / "registries"
+
+
+def default_source_dir(repo_root: Path) -> Path:
+    return repo_root / DEFAULT_LEGACY_JSON_SOURCE_DIR
+
+
+def missing_source_files(source_dir: Path) -> list[str]:
+    return [name for name in REQUIRED_REGISTRY_SOURCE_FILES if not (source_dir / name).is_file()]
+
+
+def source_registry_available(source_dir: Path) -> bool:
+    return not missing_source_files(source_dir)
 
 
 def connect(db_path: Path, read_only: bool = False):
@@ -466,6 +484,59 @@ def build_registry_read_model(repo_root: Path, source_dir: Path, db_path: Path) 
     }
 
 
+def registry_table_counts(db_path: Path) -> dict[str, int]:
+    with connect(db_path, read_only=True) as conn:
+        return {
+            table: conn.execute(f"SELECT count(*) FROM {table}").fetchone()[0]
+            for table in [
+                "workflow_help_commands",
+                "workflow_help_extensions",
+                "search_terms",
+                "tool_candidates",
+                "human_gates",
+                "workflow_environments",
+                "environment_profiles",
+                "environment_mappings",
+            ]
+        }
+
+
+def ensure_registry_read_model(
+    repo_root: Path,
+    source_dir: Path | None = None,
+    db_path: Path | None = None,
+    *,
+    rebuild: bool = False,
+) -> dict[str, Any]:
+    source = (source_dir or default_source_dir(repo_root)).resolve()
+    target = (db_path or registry_db_path(repo_root)).resolve()
+    if target.exists() and not rebuild:
+        return {
+            "status": "completed",
+            "artifact_type": "runtime-registry-duckdb-read-model",
+            "action": "existing",
+            "db": relative_to_repo(repo_root, target),
+            "source_dir": relative_to_repo(repo_root, source),
+            "counts": registry_table_counts(target),
+        }
+
+    missing = missing_source_files(source)
+    if missing:
+        return {
+            "status": "skipped",
+            "artifact_type": "runtime-registry-duckdb-read-model",
+            "action": "missing-source",
+            "db": relative_to_repo(repo_root, target),
+            "source_dir": relative_to_repo(repo_root, source),
+            "missing_sources": [relative_to_repo(repo_root, source / name) for name in missing],
+        }
+
+    existed = target.exists()
+    result = build_registry_read_model(repo_root, source, target)
+    result["action"] = "rebuilt" if existed else "built"
+    return result
+
+
 def load_metadata(conn: Any, registry_name: str) -> dict[str, Any]:
     row = conn.execute("SELECT metadata_json FROM registry_metadata WHERE registry_name = ?", [registry_name]).fetchone()
     if not row:
@@ -556,6 +627,9 @@ def load_registry(repo_root: Path, registry_name: str, default: dict[str, Any] |
     try:
         return load_from_duckdb(repo_root, registry_name)
     except FileNotFoundError:
+        ensure_result = ensure_registry_read_model(repo_root)
+        if ensure_result.get("action") in {"built", "rebuilt"}:
+            return load_from_duckdb(repo_root, registry_name)
         sentinel = object()
         registry_dir = legacy_registry_dir(repo_root)
         data = read_json(registry_dir / legacy_file_for(registry_name), default=sentinel)
@@ -608,6 +682,10 @@ def build_parser() -> argparse.ArgumentParser:
     build = sub.add_parser("build")
     build.add_argument("--source-dir", default=str(DEFAULT_LEGACY_JSON_SOURCE_DIR))
     build.set_defaults(handler=run_build)
+    ensure = sub.add_parser("ensure")
+    ensure.add_argument("--source-dir", default=str(DEFAULT_LEGACY_JSON_SOURCE_DIR))
+    ensure.add_argument("--rebuild", action="store_true")
+    ensure.set_defaults(handler=run_ensure)
     sub.add_parser("summary").set_defaults(handler=run_summary)
     return parser
 
@@ -626,28 +704,24 @@ def run_build(args: argparse.Namespace) -> dict[str, Any]:
     )
 
 
+def run_ensure(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    return ensure_registry_read_model(
+        repo_root,
+        resolve_repo_path(repo_root, args.source_dir),
+        resolve_repo_path(repo_root, args.db),
+        rebuild=bool(args.rebuild),
+    )
+
+
 def run_summary(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     db_path = resolve_repo_path(repo_root, args.db)
-    with connect(db_path, read_only=True) as conn:
-        counts = {
-            table: conn.execute(f"SELECT count(*) FROM {table}").fetchone()[0]
-            for table in [
-                "workflow_help_commands",
-                "workflow_help_extensions",
-                "search_terms",
-                "tool_candidates",
-                "human_gates",
-                "workflow_environments",
-                "environment_profiles",
-                "environment_mappings",
-            ]
-        }
     return {
         "status": "completed",
         "artifact_type": "runtime-registry-duckdb-summary",
         "db": relative_to_repo(repo_root, db_path),
-        "counts": counts,
+        "counts": registry_table_counts(db_path),
     }
 
 

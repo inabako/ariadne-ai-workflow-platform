@@ -58,6 +58,7 @@ runtime/tests/test_sdk_analysis.py::test_sdk_analysis_writes_context_report_requ
   - Context First manifestに `sdk-analysis` が登録される
   - `work/db/ariadne-knowledge-platform/rag/jsonized/*.json` にKnowledge JSON候補が生成される
 
+  - `work_cleanup.ready_for_check` is true and generic `work cleanup-check` is ready for the SDK analysis work scope
 #### RT-UT-CASE-567
 
 - pytest node id:

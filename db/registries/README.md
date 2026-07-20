@@ -31,6 +31,14 @@ Build or refresh the DuckDB registry from the backup JSON source:
 uv run --project runtime python runtime/common/registry_store.py --repo-root . build
 ```
 
+Ensure the DuckDB registry exists, rebuilding it from the backup JSON source only when it is missing:
+
+```powershell
+uv run --project runtime python runtime/common/registry_store.py --repo-root . ensure
+```
+
+Runtime registry readers also run this ensure step automatically when `db/registries/registry.duckdb` is missing and the backup JSON source is complete.
+
 Inspect row counts:
 
 ```powershell

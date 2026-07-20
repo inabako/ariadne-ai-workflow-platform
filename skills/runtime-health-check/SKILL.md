@@ -40,13 +40,13 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 Run pytest:
 
 ```powershell
-.\tools\uv.cmd run --project . --group dev pytest tests -q
+.\windows-script\uv.cmd run --project . --group dev pytest tests -q
 ```
 
 Run UT specification synchronization and register Context First test evidence:
 
 ```powershell
-.\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py `
+.\windows-script\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py `
   --spec ..\docs\reference\runtime-pytest-ut\case-specification.md `
   --runtime-root . `
   check `
@@ -61,7 +61,7 @@ Run UT specification synchronization and register Context First test evidence:
 Run workflow doctor:
 
 ```powershell
-.\tools\uv.cmd run --project . --group dev python workflow\workflow_doctor.py `
+.\windows-script\uv.cmd run --project . --group dev python workflow\workflow_doctor.py `
   --repo-root .. `
   --fail-on-warning
 ```
@@ -69,7 +69,7 @@ Run workflow doctor:
 Run aiwfctl doctor:
 
 ```powershell
-.\tools\uv.cmd run --project . --group dev python ctl.py `
+.\windows-script\uv.cmd run --project . --group dev python ctl.py `
   --repo-root .. `
   doctor `
   --json `
@@ -79,7 +79,7 @@ Run aiwfctl doctor:
 Run Japanese Markdown guard:
 
 ```powershell
-.\tools\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
+.\windows-script\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
   --paths ..\docs\reference\runtime-pytest-ut\test-items.md ..\docs\reference\runtime-pytest-ut\case-specification.md ..\.github\schemas\README.md ..\.github\agents\runtime-quality-gate-agent.prompt.md `
   --fail-on-violation
 ```

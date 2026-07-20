@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
 from runtime.common import ctl
-from runtime.workflow import sdk_analysis
+from runtime.workflow import sdk_analysis, work_cleanup
 
 
 def test_sdk_analysis_skips_when_sdk_input_is_missing(tmp_path: Path) -> None:
@@ -47,7 +48,16 @@ def test_sdk_analysis_writes_context_report_requirements_and_knowledge(tmp_path:
     context = json.loads((repo_root / "work" / "issue-123" / "context" / "sdk-analysis-context.json").read_text(encoding="utf-8"))
     assert context["artifact_type"] == "sdk-analysis-context"
     assert context["artifacts"]["knowledge_json"].startswith("work/db/ariadne-knowledge-platform/rag/jsonized/")
+    assert context["work_cleanup"]["ready_for_check"] is True
+    assert context["next_action"]["action"] == "check-work-cleanup"
+    assert context["artifacts"]["work_cleanup_check"] == "aiwfctl work cleanup-check --work-id issue-123"
     assert "sdk-analysis" in context["manifest_contexts"]
+    artifact_index = json.loads((repo_root / "work" / "issue-123" / "context" / "artifact-index.json").read_text(encoding="utf-8"))
+    assert artifact_index["artifacts"][0]["id"] == "SDK-ANALYSIS-KNOWLEDGE"
+    check = work_cleanup.cleanup_check(
+        argparse.Namespace(work_id="issue-123", repo_root=str(repo_root), recursive=False, required_artifact=[])
+    )
+    assert check["status"] == "ready"
     knowledge_files = list((repo_root / "work" / "db" / "ariadne-knowledge-platform" / "rag" / "jsonized").glob("*.json"))
     assert len(knowledge_files) == 1
     knowledge = json.loads(knowledge_files[0].read_text(encoding="utf-8"))

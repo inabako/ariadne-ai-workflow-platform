@@ -23,7 +23,7 @@
 - target: current repository / workspace root
 - 目的: このAI workflow repository自身を、AIさんが実行しやすいVSCode環境にする
 - 記入済み草案: 不要
-- 判断材料: `.vscode/`, `runtime/tools/`, `runtime/workflow/`, `db/registries/`, docs, prompts, tests
+- 判断材料: `.vscode/`, `runtime/windows-script/`, `runtime/tools/`, `runtime/workflow/`, `db/registries/`, docs, prompts, tests
 
 ### 2. target-workspace mode
 
@@ -74,6 +74,16 @@ work/<work-id>/context/context-manifest.json
 work/<work-id>/process-report/
 work/<work-id>/test-evidence/
 ```
+
+Local RAG backup artifacts:
+
+```text
+work/db/<ARIADNE_KNOWLEDGE_REPOSITORY>/
+work/db/<ARIADNE_KNOWLEDGE_REPOSITORY>/rag/
+work/db/<ARIADNE_KNOWLEDGE_REPOSITORY>/rag/{corrective-action-report,github-knowledge,workspace-environment,normalized,chunks,optimized-chunks,jsonized,indexes,embeddings,retrieval}/
+```
+
+Provisioning creates these directories when missing. This is a local backup area only; the workflow does not clone, create `.git`, commit, or push.
 
 Target workspace artifacts:
 
@@ -132,14 +142,14 @@ Reference: [VSCode Environment](../reference/vscode-environment.md)
 
 ## Repo-local Tools PATH
 
-target workspace に `runtime/tools/*.cmd` などのrepo-local command toolがある場合、`.vscode/settings.json` の `terminal.integrated.env.windows.Path` にtools directoryを追加します。
+target workspace に `runtime/windows-script/*.cmd` などのrepo-local command scriptがある場合、`.vscode/settings.json` の `terminal.integrated.env.windows.Path` にwindows-script directoryを追加します。
 
 このworkflow repositoryでは次を設定します。
 
 ```json
 {
   "terminal.integrated.env.windows": {
-    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}",
+    "Path": "${workspaceFolder}\\runtime\\windows-script;${env:Path}",
     "PYTHONUTF8": "1",
     "PYTHONIOENCODING": "utf-8",
     "AIWF_TEXT_ENCODING": "utf-8"
@@ -212,19 +222,19 @@ workflow:aiwfctl-path-shell
 このtaskは次を実行します。
 
 ```powershell
-.\runtime\tools\register-aiwfctl-path.cmd --shell
+.\runtime\windows-script\register-aiwfctl-path.cmd --shell
 ```
 
 同じ処理は `aiwfctl.cmd` からも呼び出せます。
 
 ```powershell
-.\runtime\tools\aiwfctl.cmd path shell
+.\runtime\windows-script\aiwfctl.cmd path shell
 ```
 
 既に開いているterminalにはPATH変更が反映されません。terminalを閉じて開き直すか、現在のPowerShellで次を実行します。
 
 ```powershell
-$env:Path = "$PWD\runtime\tools;$env:Path"
+$env:Path = "$PWD\runtime\windows-script;$env:Path"
 ```
 
 ## RAG Capture
@@ -249,6 +259,16 @@ Markdown noteはreview sourceです。最終knowledge artifactはUUID名JSONで�
 Human approval後、`workspace-environment-pattern` としてnormalizeします。
 
 ```powershell
+uv run --project runtime python runtime/workflow/vscode_environment.py rag-template `
+  --work-id "vscode-environment" `
+  --topic "localty-vscode-environment" `
+  --repository "localty" `
+  --status approved
+```
+
+Draft RAG source notes are not cleanup evidence. After approval, refresh the source with `--status approved`, then normalize it:
+
+```powershell
 uv run --project runtime python runtime/rag/normalize_documents.py `
   --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment `
   --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
@@ -262,6 +282,13 @@ work/db/ariadne-knowledge-platform/rag/normalized/<uuid>.json
 ```
 
 normalize後、必要に応じて派生RAG artifactを生成します。
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-check --work-id vscode-environment
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-apply --work-id vscode-environment --human-check approved
+```
+
+After long-lived Knowledge absorption is confirmed, verify temporary work cleanup through the generic ctl. Then continue derived RAG artifact generation as needed:
 
 ```powershell
 uv run --project runtime python runtime/rag/chunk_documents.py `

@@ -193,6 +193,32 @@ work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl
 work/db/ariadne-knowledge-platform/rag/jsonized/*.json
 ```
 
+## Cleanup Classification
+
+RAG build outputs are mostly derived artifacts. Do not use chunks, optimized chunks, indexes, embeddings, retrieval files, or ingestion evidence as the only proof that a temporary workflow work scope can be removed.
+
+Cleanup evidence must come from `artifact-index.json` entries that point to approved long-lived Knowledge sources or final durable Knowledge records:
+
+- long-lived source Markdown under `work/db/ariadne-knowledge-platform/rag/{corrective-action-report,github-knowledge,workspace-environment,external-web/<category>,specialist-review/<domain>}/`
+- normalized UUID JSON under `work/db/ariadne-knowledge-platform/rag/normalized/*.json`
+- wrapper Knowledge JSON under `work/db/ariadne-knowledge-platform/rag/jsonized/*.json` only when the producing workflow directly treats it as Knowledge, such as SDK analysis
+
+Never treat these as cleanup evidence by themselves:
+
+- `work/db/ariadne-knowledge-platform/rag/chunks/`
+- `work/db/ariadne-knowledge-platform/rag/optimized-chunks/`
+- `work/db/ariadne-knowledge-platform/rag/indexes/`
+- `work/db/ariadne-knowledge-platform/rag/embeddings/`
+- `work/db/ariadne-knowledge-platform/rag/retrieval/`
+- `db/rag/evidence/ingestion/`
+
+After Knowledge absorption is confirmed, remove temporary workflow work only through:
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-check --work-id <work-id>
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-apply --work-id <work-id> --human-check approved
+```
+
 ## Workflow
 
 1. Inspect the source report directory.

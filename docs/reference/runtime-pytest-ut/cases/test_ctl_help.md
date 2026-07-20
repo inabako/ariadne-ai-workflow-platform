@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 46 |
+| cases | 50 |
 
 ## ケース一覧
 
@@ -22,25 +22,25 @@ runtime/tests/test_ctl_help.py::test_ctl_parser_uses_aiwfctl_program_name
   - source: `runtime/tests/test_ctl_help.py:18`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: `args`, `publish_args`
+  - inline input: `args`, `status_args`, `verify_args`, `cleanup_args`, `publish_args`
 - 期待結果: parserのprogram nameが `aiwfctl` として扱われる。
 
-#### RT-UT-CASE-CTL-WINDOWS-PS1
+#### RT-UT-CASE-CTL-WINDOWS-SCRIPT
 
 - pytest node id:
 
 ```text
-runtime/tests/test_ctl_help.py::test_windows_ps1_runtime_contract
+runtime/tests/test_ctl_help.py::test_windows_script_runtime_contract
 ```
 
 - 確認内容: Windows 11向けPowerShell runtimeとLinux/WSL/macOS向けbash runtimeがUTF-8、repo-local `uv run`、`aiwfctl`委譲、pytest / spec / BOM tool入口を持ち、workflow module直叩きを含まないことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:45`
+  - source: `runtime/tests/test_ctl_help.py:57`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- 期待結果: `runtime/windows-ps1/aiwf.ps1` と `runtime/posix-bash/aiwf.sh` がOS別shell入口として固定され、通常workflow判断は `aiwfctl` / `runtime/common/ctl.py` へ委譲される。
+  - inline input: `wrapper_text`
+- 期待結果: `runtime/windows-script/aiwf.cmd`、`runtime/windows-script/aiwf.ps1`、`runtime/posix-bash/aiwf.sh` がOS別shell入口として固定され、通常workflow判断は `aiwfctl` / `runtime/common/ctl.py` へ委譲される。
 
 #### RT-UT-CASE-CTL-RUNTIME-PYTEST
 
@@ -53,7 +53,7 @@ runtime/tests/test_ctl_help.py::test_pytest_config_and_cache_are_runtime_scoped
 - 確認内容: pytest config と cache が repo root ではなく runtime 配下に閉じ込められることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:85`
+  - source: `runtime/tests/test_ctl_help.py:103`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `gitignore`, `text`
@@ -70,7 +70,7 @@ runtime/tests/test_ctl_help.py::test_ctl_without_modifier_warns_and_does_not_sho
 - 確認内容: ルートコマンドだけを実行した場合に、一覧を直接表示せず利用方法の警告へ誘導することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:99`
+  - source: `runtime/tests/test_ctl_help.py:117`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -87,7 +87,7 @@ runtime/tests/test_ctl_help.py::test_ctl_help_without_modifier_warns_and_does_no
 - 確認内容: `aiwfctl help` 単体実行時に、help subcommandの指定を促すことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:112`
+  - source: `runtime/tests/test_ctl_help.py:130`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -104,7 +104,7 @@ runtime/tests/test_ctl_help.py::test_ctl_warning_can_be_colored_yellow
 - 確認内容: 警告表示が色付き出力設定に従ってyellow ANSI escapeを付与できることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:124`
+  - source: `runtime/tests/test_ctl_help.py:142`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -121,7 +121,7 @@ runtime/tests/test_ctl_help.py::test_ctl_knowledge_usage_and_search_export_conte
 - 確認内容: `aiwfctl knowledge` のusage、検索、context export routeが動作し、Context First manifestへ登録できることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:135`
+  - source: `runtime/tests/test_ctl_help.py:153`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `manifest`
@@ -138,7 +138,7 @@ runtime/tests/test_ctl_help.py::test_ctl_github_knowledge_sync_apply_dry_run_upd
 - 確認内容: `aiwfctl github-knowledge sync-apply` が承認済みGitHub sync actionをruntime経由でdry-runし、analysis JSONへ結果を戻すことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:310`
+  - source: `runtime/tests/test_ctl_help.py:328`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `updated`
@@ -155,10 +155,10 @@ runtime/tests/test_ctl_help.py::test_ctl_github_knowledge_rebase_package_and_app
 - 確認内容: `aiwfctl github-knowledge rebase-package` と `rebase-apply` が承認済みreplay packageを生成し、dry-runでanalysis JSONへ戻し、Runtime Observability の `runtime-metrics.json` をContext Firstへ登録することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:398`
+  - source: `runtime/tests/test_ctl_help.py:416`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: `package_args`, `package_result`, `package`, `apply_args`, `apply_result`, `updated`, `metrics`, `runtime_metrics_contexts`
+  - inline input: `package_args`, `package_result`, `package`, `apply_args`, `apply_result`, `updated`
 - 期待結果: rebase replay packageが生成され、dry-run execution結果とpackage参照がanalysis JSONに記録され、`context/runtime-metrics.json` と `test-evidence/runtime-metrics.json` が生成される。
 
 #### RT-UT-CASE-CTL-HUMAN-GATE
@@ -172,7 +172,7 @@ runtime/tests/test_ctl_help.py::test_ctl_human_gate_check_blocks_until_approved
 - 確認内容: `aiwfctl human-gate` がHuman Check未承認を遮断し、承認値だけを通すことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:517`
+  - source: `runtime/tests/test_ctl_help.py:559`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `pending_args`, `approved_args`
@@ -189,7 +189,7 @@ runtime/tests/test_ctl_help.py::test_ctl_self_improvement_review_flow_uses_offic
 - 確認内容: self-improvement review flowが正式な `aiwfctl` 入口を使い、Feedback reviewを記録できることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:577`
+  - source: `runtime/tests/test_ctl_help.py:619`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `create_args`, `create_result`, `review_args`, `review_result`
@@ -206,7 +206,7 @@ runtime/tests/test_ctl_help.py::test_ctl_close_archive_prepare_and_prune_dry_run
 - 確認内容: close archive prepare/pruneが `aiwfctl close-archive` 入口からdry-runで実行できることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:630`
+  - source: `runtime/tests/test_ctl_help.py:672`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `prepare_args`, `prepare_result`, `prune_args`, `prune_result`
@@ -223,7 +223,7 @@ runtime/tests/test_ctl_help.py::test_ctl_env_select_gui_mode_returns_windows_msy
 - 確認内容: `gui-mode` の環境選択がWindows/MSYS2 GUI向けprofileへ解決されることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:678`
+  - source: `runtime/tests/test_ctl_help.py:720`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -240,7 +240,7 @@ runtime/tests/test_ctl_help.py::test_ctl_env_select_web_svg_returns_wsl_web_prof
 - 確認内容: `web-svg` の環境選択がWSL/Web向けprofileへ解決されることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:691`
+  - source: `runtime/tests/test_ctl_help.py:733`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -257,7 +257,7 @@ runtime/tests/test_ctl_help.py::test_ctl_env_select_unknown_requires_human_check
 - 確認内容: 未知のenvironment指定時にHuman Checkへ戻すことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:704`
+  - source: `runtime/tests/test_ctl_help.py:746`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -274,7 +274,7 @@ runtime/tests/test_ctl_help.py::test_ctl_env_without_subcommand_shows_environmen
 - 確認内容: `aiwfctl env` 単体実行時にEnvironment Management usageを表示することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:721`
+  - source: `runtime/tests/test_ctl_help.py:763`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -291,7 +291,7 @@ runtime/tests/test_ctl_help.py::test_ctl_env_list_shows_public_environments_not_
 - 確認内容: `env list` が内部profileではなく利用者向けenvironment名を表示することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:734`
+  - source: `runtime/tests/test_ctl_help.py:776`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -308,7 +308,7 @@ runtime/tests/test_ctl_help.py::test_ctl_env_show_uses_public_environment_name
 - 確認内容: `env show` がpublic environment名で詳細を表示することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:747`
+  - source: `runtime/tests/test_ctl_help.py:789`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -325,7 +325,7 @@ runtime/tests/test_ctl_help.py::test_ctl_env_select_tool_name_requires_human_che
 - 確認内容: tool名らしい入力をenvironmentとして指定した場合に候補付きHuman Checkへ戻すことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:764`
+  - source: `runtime/tests/test_ctl_help.py:806`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -342,7 +342,7 @@ runtime/tests/test_ctl_help.py::test_ctl_env_select_writes_workflow_context
 - 確認内容: `env select --work-id` が `environment-selection.json` とcontext manifestを生成することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:776`
+  - source: `runtime/tests/test_ctl_help.py:818`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `data`, `manifest`
@@ -359,7 +359,7 @@ runtime/tests/test_ctl_help.py::test_ctl_env_select_warns_before_overwriting_dif
 - 確認内容: 既存のenvironment-selection contextと異なる選択を書き込む前に警告を残すことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:823`
+  - source: `runtime/tests/test_ctl_help.py:867`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `data`
@@ -376,7 +376,7 @@ runtime/tests/test_ctl_help.py::test_ctl_help_list_contains_workflow_commands
 - 確認内容: `help list` がworkflow command一覧を表示することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:879`
+  - source: `runtime/tests/test_ctl_help.py:925`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -393,7 +393,7 @@ runtime/tests/test_ctl_help.py::test_ctl_help_show_includes_arguments_and_detail
 - 確認内容: `help show` が対象workflowの引数、詳細、docsを表示することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:903`
+  - source: `runtime/tests/test_ctl_help.py:949`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -410,7 +410,7 @@ runtime/tests/test_ctl_help.py::test_corrective_action_fix_help_declares_report_
 - 確認内容: `/corrective-action-fix` helpがreport sourceを明示することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:916`
+  - source: `runtime/tests/test_ctl_help.py:962`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -427,7 +427,7 @@ runtime/tests/test_ctl_help.py::test_vscode_environment_help_declares_repo_local
 - 確認内容: `/vscode-environment` helpがrepo-local tools PATHの導線を明示することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:928`
+  - source: `runtime/tests/test_ctl_help.py:974`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -444,7 +444,7 @@ runtime/tests/test_ctl_help.py::test_realtime_iac_help_declares_docker_context_g
 - 確認内容: `/realtime-iac` helpがDocker environment context gateを明示することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:942`
+  - source: `runtime/tests/test_ctl_help.py:988`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -461,7 +461,7 @@ runtime/tests/test_ctl_help.py::test_ariadne_new_system_iac_help_declares_execut
 - 確認内容: `/ariadne-new-system-iac` helpがexecution plan handoffを明示することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:952`
+  - source: `runtime/tests/test_ctl_help.py:998`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -478,7 +478,7 @@ runtime/tests/test_ctl_help.py::test_ctl_context_init_creates_phase3_contexts
 - 確認内容: `context init` がPhase 3向けの初期context群を生成することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:963`
+  - source: `runtime/tests/test_ctl_help.py:1009`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -495,7 +495,7 @@ runtime/tests/test_ctl_help.py::test_ctl_context_show_and_require_use_context_fi
 - 確認内容: `aiwfctl context show/require` がContext First runtime経由でcontext状態を参照できることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1006`
+  - source: `runtime/tests/test_ctl_help.py:1052`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `show_result`, `require_args`, `require_result`
@@ -512,7 +512,7 @@ runtime/tests/test_ctl_help.py::test_ctl_doctor_runs_workflow_doctor
 - 確認内容: `aiwfctl doctor` がworkflow_doctorへ委譲し、結果を整形することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1049`
+  - source: `runtime/tests/test_ctl_help.py:1095`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -529,7 +529,7 @@ runtime/tests/test_ctl_help.py::test_defensive_specimen_ctl_doctor_formats_warni
 - 確認内容: doctor warningのpath表示が見やすく整形されることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1077`
+  - source: `runtime/tests/test_ctl_help.py:1123`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -546,7 +546,7 @@ runtime/tests/test_ctl_help.py::test_ctl_help_search_finds_svg_gui_workflows
 - 確認内容: `help search` がSVG/GUI関連workflowを検索できることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1113`
+  - source: `runtime/tests/test_ctl_help.py:1159`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -563,7 +563,7 @@ runtime/tests/test_ctl_help.py::test_ctl_help_show_includes_svg_extension_detail
 - 確認内容: SVG extensionのhelp detailが表示されることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1128`
+  - source: `runtime/tests/test_ctl_help.py:1174`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -580,7 +580,7 @@ runtime/tests/test_ctl_help.py::test_ctl_help_show_includes_mcp_group_extension_
 - 確認内容: MCP group extensionのhelp detailが表示されることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1143`
+  - source: `runtime/tests/test_ctl_help.py:1189`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -597,7 +597,7 @@ runtime/tests/test_ctl_help.py::test_ctl_help_markdown_writes_searchable_file
 - 確認内容: `help markdown` が検索可能なMarkdownファイルを生成することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1156`
+  - source: `runtime/tests/test_ctl_help.py:1202`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`, `text`
@@ -614,7 +614,7 @@ runtime/tests/test_ctl_help.py::test_workflow_help_registry_referenced_files_exi
 - 確認内容: workflow help registryが参照するdocsやskill fileが存在することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1180`
+  - source: `runtime/tests/test_ctl_help.py:1226`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -631,7 +631,7 @@ runtime/tests/test_ctl_help.py::test_workflow_help_search_uses_intent_terms
 - 確認内容: workflow help searchが明示的なintent/search termsを使って候補を返すことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1202`
+  - source: `runtime/tests/test_ctl_help.py:1248`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -648,7 +648,7 @@ runtime/tests/test_ctl_help.py::test_workflow_help_uses_terms_from_separated_jso
 - 確認内容: `workflow_help.json` から分離した `search_terms.json` を読み込み、`owner_id` 結合でhelp検索へ反映できることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1221`
+  - source: `runtime/tests/test_ctl_help.py:1267`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -665,7 +665,7 @@ runtime/tests/test_ctl_help.py::test_registry_store_builds_search_terms_table_wi
 - 確認内容: registry buildが分離JSONの検索語をDuckDBの `search_terms` tableへ格納し、help item IDと結合できることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1276`
+  - source: `runtime/tests/test_ctl_help.py:1380`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -676,13 +676,91 @@ runtime/tests/test_ctl_help.py::test_registry_store_builds_search_terms_table_wi
 - pytest node id:
 
 ```text
+runtime/tests/test_ctl_help.py::test_registry_store_ensure_builds_missing_duckdb_from_source_backup
+```
+- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py:1455`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- Expected: Placeholder; pytest assertion defines the expected result.
+
+
+- 遒ｺ隱榊・螳ｹ: registry DuckDB read model縺梧ｬ關ｽ譎ゅ↓backup JSON source縺九ｉ閾ｪ蜍募・讒九〒縺阪ｋ縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
+- 蜈･蜉帛､:
+  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
+  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
+- 譛溷ｾ・ｵ先棡: missing DuckDB縺後～built` action縺ｧ逕滓・縺輔ｌ縲√Ξ繧ｸ繧ｹ繝医Μcount縺瑚ｿ斐ｋ縲・
+
+#### RT-UT-CASE-CTL-029D
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_registry_load_auto_builds_missing_duckdb_from_default_source_backup
+```
+- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py:1473`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- Expected: Placeholder; pytest assertion defines the expected result.
+
+
+- 遒ｺ隱榊・螳ｹ: workflow help / environment registry load譎ゅ↓DuckDB縺後↑縺代ｌ縺ｰdefault source backup縺九ｉ閾ｪ蜍募・讒九☆繧九％縺ｨ繧堤｢ｺ隱阪＠縺ｾ縺吶・
+- 蜈･蜉帛､:
+  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
+  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
+- 譛溷ｾ・ｵ先棡: load蜃ｦ逅・後↓ `db/registries/registry.duckdb` 縺悟ｭ伜惠縺励∵､懃ｴ｢隱槭→environment縺瑚ｪｭ縺ｿ蜿悶ｌ繧九・
+
+#### RT-UT-CASE-CTL-029E
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_registry_store_ensure_skips_when_source_backup_is_incomplete
+```
+- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py:1487`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- Expected: Placeholder; pytest assertion defines the expected result.
+
+
+- 遒ｺ隱榊・螳ｹ: registry source backup縺御ｸ榊ｮ悟・譎ゅ↓荳ｭ騾泌濠縺ｮDuckDB繧剃ｽ懈・縺帙★skip縺吶ｋ縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
+- 蜈･蜉帛､:
+  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
+  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
+- 譛溷ｾ・ｵ先棡: `missing-source` action縺ｨmissing source list縺瑚ｿ斐ｊ縲．uckDB file縺ｯ逕滓・縺輔ｌ縺ｪ縺・・
+
+#### RT-UT-CASE-CTL-029F
+
+- pytest node id:
+
+```text
 runtime/tests/test_ctl_help.py::test_workflow_help_search_terms_cover_all_prompt_commands
 ```
 
 - 確認内容: 全prompt commandに分離済み検索語が付与され、各検索語がUUIDの `id` とsnake_case機能IDの `owner_id` を持つことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1351`
+  - source: `runtime/tests/test_ctl_help.py:1500`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `missing`
@@ -699,7 +777,7 @@ runtime/tests/test_ctl_help.py::test_environment_profile_registry_referenced_doc
 - 確認内容: environment profile registryが参照するdocsが存在することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1369`
+  - source: `runtime/tests/test_ctl_help.py:1518`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -716,7 +794,7 @@ runtime/tests/test_ctl_help.py::test_ctl_registry_and_search_helper_edge_cases
 - 確認内容: registry読み込み、検索helper、未知command処理などの境界条件を確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1391`
+  - source: `runtime/tests/test_ctl_help.py:1540`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `registry`
@@ -733,7 +811,7 @@ runtime/tests/test_ctl_help.py::test_ctl_environment_selection_mapping_branches
 - 確認内容: environment selection mappingの分岐を確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1432`
+  - source: `runtime/tests/test_ctl_help.py:1581`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `registry`
@@ -750,7 +828,7 @@ runtime/tests/test_ctl_help.py::test_ctl_environment_formatting_and_context_warn
 - 確認内容: environment selectionの表示整形とcontext warning helperを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1471`
+  - source: `runtime/tests/test_ctl_help.py:1620`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `profile`, `context`, `record`, `registry`
@@ -767,7 +845,7 @@ runtime/tests/test_ctl_help.py::test_ctl_help_formatting_empty_lists_and_open_se
 - 確認内容: help formattingの空list境界とopen/search pathを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1605`
+  - source: `runtime/tests/test_ctl_help.py:1754`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `registry`, `open_args`, `markdown_args`, `search_args`
@@ -784,7 +862,7 @@ runtime/tests/test_ctl_help.py::test_ctl_color_mode_and_main_output
 - 確認内容: `AIWFCTL_COLOR` とmain outputの分岐を確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1651`
+  - source: `runtime/tests/test_ctl_help.py:1800`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -801,8 +879,24 @@ runtime/tests/test_ctl_help.py::test_ctl_run_manual_error_and_json_branches
 - 確認内容: `ctl.run` のmanual error branchとJSON output branchを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1677`
+  - source: `runtime/tests/test_ctl_help.py:1826`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: error時のexit codeとmessage、JSON出力分岐が期待どおり返る。
+#### RT-UT-CASE-CTL-037
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_work_cleanup_check_and_apply_requires_absorbed_knowledge
+```
+
+- Confirm: `aiwfctl work cleanup-check/apply` verifies long-lived Knowledge absorption before removing a temporary work scope.
+- Input:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py:1906`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `blocked_args`, `ready_args`, `pending_args`, `apply_args`
+- Expected: cleanup is blocked before RAG evidence exists, becomes ready after `work/db/.../rag/github-knowledge` evidence, and apply requires `--human-check approved` before removing `work/github/original`.

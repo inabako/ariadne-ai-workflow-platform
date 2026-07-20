@@ -14,7 +14,7 @@
 | target-workspace | `/vscode-environment <target-workspace-path>` | 指定workspace | 任意 |
 | custom-design | `--custom-design` または特殊要件あり | current repositoryまたは指定workspace | 任意。複雑な設計意図の補助 |
 
-self-provision modeでは、このrepositoryの `.vscode`、`runtime/tools`、`aiwfctl`、workflow registry、docs、testsを読んで、AI workflowを実行しやすい環境へ整えます。
+self-provision modeでは、このrepositoryの `.vscode`、`runtime/windows-script`、`aiwfctl`、workflow registry、docs、testsを読んで、AI workflowを実行しやすい環境へ整えます。
 
 custom-design modeでは、terminal構成、Docker、extension policy、launch設定、multi-root、personal/local-only pathなど、repo evidenceだけでは判断できない内容をHuman質問または任意draftで補います。
 
@@ -44,12 +44,12 @@ Default terminalは `Dispatcher PowerShell` です。
 
 `.vscode/settings.json` は、repo-local command toolをVSCode統合ターミナルから直接呼べるように、Windows terminal PATHへtools directoryを追加します。
 
-このrepositoryでは `runtime/tools/aiwfctl.cmd` を使うため、次を設定します。
+このrepositoryでは `runtime/windows-script/aiwfctl.cmd` を使うため、次を設定します。
 
 ```json
 {
   "terminal.integrated.env.windows": {
-    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}",
+    "Path": "${workspaceFolder}\\runtime\\windows-script;${env:Path}",
     "PYTHONUTF8": "1",
     "PYTHONIOENCODING": "utf-8",
     "AIWF_TEXT_ENCODING": "utf-8"
@@ -66,7 +66,7 @@ aiwfctl help list
 既に開いているterminalにはPATH変更が反映されません。terminalを閉じて開き直すか、現在のPowerShellで次を実行します。
 
 ```powershell
-$env:Path = "$PWD\runtime\tools;$env:Path"
+$env:Path = "$PWD\runtime\windows-script;$env:Path"
 ```
 
 ## UTF-8 First
@@ -104,31 +104,31 @@ chcp 65001 > $null
 通常のPowerShellやWindows Terminalにも恒久的に反映する場合は、User Path登録用helperを実行します。
 
 ```powershell
-.\runtime\tools\register-aiwfctl-path.cmd
+.\runtime\windows-script\register-aiwfctl-path.cmd
 ```
 
 `aiwfctl.cmd` から呼ぶ場合:
 
 ```powershell
-.\runtime\tools\aiwfctl.cmd path register
+.\runtime\windows-script\aiwfctl.cmd path register
 ```
 
 登録後、すぐに `aiwfctl` が使えるPowerShell sessionを開く場合:
 
 ```powershell
-.\runtime\tools\register-aiwfctl-path.cmd --shell
+.\runtime\windows-script\register-aiwfctl-path.cmd --shell
 ```
 
 `aiwfctl.cmd` から登録と更新済みsession起動をまとめて行う場合:
 
 ```powershell
-.\runtime\tools\aiwfctl.cmd path shell
+.\runtime\windows-script\aiwfctl.cmd path shell
 ```
 
-登録後も同じPowerShellで `aiwfctl` が見つからない場合は、現在のPATHを壊さないように `runtime\tools` だけを先頭追加します。
+登録後も同じPowerShellで `aiwfctl` が見つからない場合は、現在のPATHを壊さないように `runtime\windows-script` だけを先頭追加します。
 
 ```powershell
-$env:Path = "$PWD\runtime\tools;$env:Path"
+$env:Path = "$PWD\runtime\windows-script;$env:Path"
 ```
 
 ## Task Labels
@@ -172,7 +172,7 @@ Workflow taskとsmoke-check taskは、`runtime/workflow/vscode_task_runner.py` �
 
 `workflow:vscode-preflight` と `test:go-version` は、Go確認前にPython task runner内でMachine/User PATHを再読込します。VSCode起動後にGoをinstallした場合の古いPATH問題を避けます。
 
-`workflow:aiwfctl-path-shell` は、`runtime/tools/register-aiwfctl-path.cmd --shell` を実行し、User Path登録後に `aiwfctl` が使えるPowerShell sessionを開くprovisioning taskです。同じ動作は `runtime/tools/aiwfctl.cmd path shell` からも呼べます。
+`workflow:aiwfctl-path-shell` は、`runtime/windows-script/register-aiwfctl-path.cmd --shell` を実行し、User Path登録後に `aiwfctl` が使えるPowerShell sessionを開くprovisioning taskです。同じ動作は `runtime/windows-script/aiwfctl.cmd path shell` からも呼べます。
 
 ## Preflight
 
@@ -202,6 +202,8 @@ work/vscode-environment/test-evidence/
 command resultとhuman-check notesは `workspace-test.md` に記録します。
 
 ## Knowledge Finalization
+
+Provisioning creates the local RAG backup directory tree under `work/db/<ARIADNE_KNOWLEDGE_REPOSITORY>/` if it is missing. This tree is a local backup/source area; provisioning does not clone, create `.git`, commit, or push.
 
 再利用可能なVSCode environment knowledgeは、まずhuman-review可能なMarkdownへ保存します。
 

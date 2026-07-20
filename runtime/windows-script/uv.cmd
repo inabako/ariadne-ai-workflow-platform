@@ -33,7 +33,7 @@ echo   uv run --group dev pytest -q
 echo   uv run --group dev coverage run --branch -m pytest
 echo.
 echo If uv is installed but not found, run:
-echo   runtime\tools\register-uv-path.cmd --shell
+echo   runtime\windows-script\register-uv-path.cmd --shell
 exit /b 9009
 
 :run_uv

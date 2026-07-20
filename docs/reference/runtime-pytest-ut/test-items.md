@@ -14,9 +14,9 @@ pytest node id 単位の詳細な単体試験仕様は [Runtime pytest 単体試
 | --- | ---: |
 | pytest対象ディレクトリ | `runtime/tests` |
 | pytest files | 39 |
-| pytest test functions | 678 |
-| pytest collected tests | 685 |
-| pytest result | `685 passed` |
+| pytest test functions | 680 |
+| pytest collected tests | 722 |
+| pytest result | `722 passed` |
 | statement coverage | 96% |
 | total coverage | 96% |
 | missing lines | 397 |
@@ -26,7 +26,7 @@ pytest node id 単位の詳細な単体試験仕様は [Runtime pytest 単体試
 
 ```powershell
 cd C:\github\ariadne-ai-workflow-platform\runtime
-.\tools\uv.cmd run --project . --group dev pytest tests -q
+.\windows-script\uv.cmd run --project . --group dev pytest tests -q
 ```
 
 coverageを更新する場合:
@@ -35,15 +35,15 @@ coverageを更新する場合:
 cd C:\github\ariadne-ai-workflow-platform\runtime
 Remove-Item -LiteralPath .coverage.json -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath .coverage -ErrorAction SilentlyContinue
-.\tools\uv.cmd run --project . --group dev coverage run --data-file .coverage -m pytest tests -q
-.\tools\uv.cmd run --project . --group dev coverage json --data-file .coverage -o .coverage.json
+.\windows-script\uv.cmd run --project . --group dev coverage run --data-file .coverage -m pytest tests -q
+.\windows-script\uv.cmd run --project . --group dev coverage json --data-file .coverage -o .coverage.json
 ```
 
 pytest node単位の完全一覧を確認する場合:
 
 ```powershell
 cd C:\github\ariadne-ai-workflow-platform\runtime
-.\tools\uv.cmd run --project . --group dev pytest --collect-only -q tests
+.\windows-script\uv.cmd run --project . --group dev pytest --collect-only -q tests
 ```
 
 ## テスト項目表
@@ -51,16 +51,16 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | ID | pytest file | test functions | collected tests | 主対象 | 主なUT観点 | runtimeを支える意味 |
 | --- | --- | ---: | ---: | --- | --- | --- |
 | RT-UT-001 | `runtime/tests/test_close_archive.py` | 16 | 16 | `runtime/workflow/close_archive.py` | close archive prepare、audit、prune、RAG参照、削除承認、archive path安全性 | 完了作業の知識保存とworkspace cleanupを安全に分離する |
-| RT-UT-002 | `runtime/tests/test_common_runtime.py` | 10 | 10 | `runtime/common/*` | slug、repo root、artifact index、JSON/Markdown、env、repository設定抽出 | 全workflowが共有する基礎関数を安定させる |
+| RT-UT-002 | `runtime/tests/test_common_runtime.py` | 11 | 11 | `runtime/common/*`, `runtime/constants/paths.py` | slug、repo root、artifact index、JSON/Markdown、env、repository設定抽出、knowledge source repository ENV | 全workflowが共有する基礎関数を安定させる |
 | RT-UT-003 | `runtime/tests/test_context_first.py` | 34 | 34 | `runtime/workflow/context_first.py`、関連workflow | context manifest、environment selection、test-evidence読取、dispatcher context、IaC handoff、各workflowのContext First登録 | workflow実行前に必要contextを固定し、AIの推測実行を減らす |
 | RT-UT-004 | `runtime/tests/test_corrective_action_report.py` | 6 | 6 | `runtime/workflow/corrective_action_report.py` | corrective action report context登録、front matter解析、section count、show/register CLI | 改善レポートを後続fix workflowへ渡せる構造にする |
 | RT-UT-005 | `runtime/tests/test_coverage_audit.py` | 14 | 14 | `runtime/tools/coverage_audit.py`, `runtime/tools/text_encoding_convert.py`, `runtime/tools/text_encoding_guard.py`, `runtime/tools/utf8_bom.py` | runtime module集計、CLI検査、coverage実行、JSON/Markdown出力、script path load、encoding候補検査・hex preview・SJIS/CP932からUTF-8への安全変換、decode error・不可逆欠落検出、UTF-8 BOM検出・除去 | runtime品質を継続監査する自己診断を支える |
-| RT-UT-006 | `runtime/tests/test_ctl_help.py` | 47 | 47 | `runtime/common/ctl.py`, `runtime/windows-ps1/aiwf.ps1`, `runtime/posix-bash/aiwf.sh` | `aiwfctl help`、Windows 11 PowerShell入口、Linux/WSL/macOS bash入口、runtime-local pytest config/cache、`aiwfctl doctor`、`aiwfctl knowledge`、GitHub knowledge sync/rebase apply、human-gate、close-archive、env選択、検索、警告表示、Context First初期化、registry参照、分離search_terms registry、DuckDB `search_terms` table、全prompt commandの検索語coverage | 肥大化したworkflowをCLI索引から迷わず呼べるようにする |
+| RT-UT-006 | `runtime/tests/test_ctl_help.py` | 51 | 51 | `runtime/common/ctl.py`, `runtime/workflow/work_cleanup.py`, `runtime/windows-script/aiwf.cmd`, `runtime/windows-script/aiwf.ps1`, `runtime/posix-bash/aiwf.sh` | `aiwfctl help`、Windows 11 PowerShell入口、Linux/WSL/macOS bash入口、runtime-local pytest config/cache、`aiwfctl doctor`、`aiwfctl knowledge`、`aiwfctl work cleanup-check/apply`、GitHub knowledge sync/rebase apply、human-gate、close-archive、env選択、検索、警告表示、Context First初期化、registry参照、分離search_terms registry、DuckDB `search_terms` table、全prompt commandの検索語coverage | 肥大化したworkflowをCLI索引から迷わず呼べるようにし、一時work作業場をKnowledge吸収確認後に安全cleanupできるようにする |
 | RT-UT-007 | `runtime/tests/test_dispatcher_context.py` | 12 | 12 | `runtime/workflow/dispatcher_context.py` | workflow/tool candidate scoring、Human Check、registry fallback、context生成 | Intentからworkflow/tool選定へ進むdispatcherの判断根拠を固定する |
 | RT-UT-008 | `runtime/tests/test_docs_sync_workflow.py` | 11 | 11 | `runtime/workflow/docs_sync.py` | docs-sync init、SCM context gate、analysis template、Issue body、CLI dispatch | 実装とdocs差分をdocs-only workflowとして安全に切り出す |
 | RT-UT-009 | `runtime/tests/test_flutter_multiplatform.py` | 16 | 16 | `runtime/workflow/flutter_multiplatform.py`、`runtime/common/ctl.py` | target未指定Human Check、yaml/CLI target読込、host OS別build可否、boilerplate展開、verify/build evidence、WebDriver不足判断、finalize完了判定、aiwfctl入口 | Flutter multi-platform開発でtarget/platform/build環境を推測せず、実試験証跡と完了判定をContext Firstで後続workflowへ渡す |
 | RT-UT-009A | `runtime/tests/test_gate_restart.py` | 4 | 4 | `runtime/common/gate_restart.py`, `.github/shared/gate-restart-policy.md`, `.github/schemas/gate-restart.schema.json` | gate failure後の同一gate再開、repair command必須化、pass/fail後の固定遷移 | gate異常を下流工程へ飛ばさず、修復後も同じgateから本線復帰させる |
-| RT-UT-010 | `runtime/tests/test_github_knowledge_maintenance.py` | 38 | 38 | `runtime/workflow/github_knowledge_maintenance.py` | GitHub knowledge init、operation gate、tool selection、artifact integrity、repair/rebase detect/plan/review-intake/package/apply/sync plan/apply/RAG candidate | GitHub情報を長期知識資産化する前のhuman gateと出力を守る |
+| RT-UT-010 | `runtime/tests/test_github_knowledge_maintenance.py` | 50 | 50 | `runtime/workflow/github_knowledge_maintenance.py` | GitHub knowledge init、operation gate、tool selection、artifact integrity、repair/rebase detect/plan/review-intake/package/apply/sync plan/apply/RAG candidate、resume encoding gate | GitHub情報を長期知識資産化する前のhuman gateと出力を守る |
 | RT-UT-011 | `runtime/tests/test_github_runtime.py` | 32 | 36 | `runtime/github/*` | REST/GraphQL API、Issue作成、PR作成、linked branch、title/body生成、error response | GitHub mutationをmockで安全に検証し、実API依存を局所化する |
 | RT-UT-012 | `runtime/tests/test_iac_template.py` | 6 | 6 | `runtime/workflow/iac_template.py`、`runtime/common/ctl.py` | IaC template catalog、OpenTelemetry Collector template copy、overwrite guard、health evidence、Terraform ENV path、aiwfctl route | Infrastructure boilerplateをtemplate原本からwork配下へ安全に展開し、非破壊healthとContext First evidenceを残す |
 | RT-UT-013 | `runtime/tests/test_init_corrective_action_fix.py` | 9 | 9 | `runtime/workflow/init_corrective_action_fix.py` | corrective report解析、manifest優先、work初期化、report context登録、CLI | 改善レポートから修正workflowへ入る入口を安定させる |
@@ -69,7 +69,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | RT-UT-016 | `runtime/tests/test_mcp_boilerplate_templates.py` | 3 | 3 | `templates/boilerplates/*` | MCP layered template contract、boilerplate index、OpenTelemetry Collector template contract | repo-local boilerplateが索引と必須ファイル契約を満たしていることを確認する |
 | RT-UT-017 | `runtime/tests/test_mcp_server_group_workflow.py` | 12 | 12 | `runtime/workflow/mcp_server_group.py`、`runtime/common/ctl.py` | MCP server/client/agent template展開、境界分離、Context First evidence、CLI route | MCP関連boilerplateを用途別に分け、安全にwork配下へ展開する |
 | RT-UT-018 | `runtime/tests/test_observability_metrics.py` | 17 | 17 | `runtime/observability/*` | monthly rotation、JSONL append、token/context/cost、evidence、Context First registration、non-fatal warning | Runtime metricsをbridge instrumentationとして観測可能にする |
-| RT-UT-019 | `runtime/tests/test_preflight.py` | 29 | 31 | `runtime/environment/preflight.py` | Docker、Python、MSYS2、Localty protocol、Terraform ENV path、GitHub CLI auth、install approval、Markdown report | 実行環境不足を作業前に検出し、人間承認なしのinstallやcredential設定を防ぐ |
+| RT-UT-019 | `runtime/tests/test_preflight.py` | 36 | 36 | `runtime/environment/preflight.py` | Docker、Python、MSYS2、Localty protocol、Terraform ENV path、GitHub CLI auth、install approval、Markdown report | 実行環境不足を作業前に検出し、人間承認なしのinstallやcredential設定を防ぐ |
 | RT-UT-020 | `runtime/tests/test_pytest_ut_spec_sync.py` | 20 | 20 | `runtime/tools/pytest_ut_spec_sync.py` | pytest収集結果とUT仕様書の同期確認、入力値抽出、差分検知、Markdown report、Context First manifest登録 | UT仕様書がpytest実体からずれたときに検出し、コンテキストの可観測性を保つ |
 | RT-UT-021 | `runtime/tests/test_rag_artifact_migration.py` | 19 | 19 | `runtime/rag/migrate_retrieval_artifacts.py`、`standardize_corrective_report_names.py` | retrieval artifact移行、UUID化、Markdown jsonize、report名標準化、参照更新 | RAG資産の肥大化に耐える命名・参照・移行を守る |
 | RT-UT-022 | `runtime/tests/test_rag_build.py` | 8 | 8 | `runtime/rag/rag_build.py` | normalize/chunk/index/embed pipeline統合、standardize制御、DuckDB migration evidence、context登録、CLI | RAG buildを一貫したpipeline artifactとして残す |
@@ -86,8 +86,8 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | RT-UT-033 | `runtime/tests/test_self_improvement_workflow.py` | 14 | 14 | `runtime/workflow/self_improvement.py`、`skills/*/SKILL.md`、`db/registries/registry.duckdb` | feedback report作成、Human Review追記、Issue body生成、evidence scaffold、feedback出力妥当化、help registry妥当化 | Ariadne自身のworkflow改善候補を安全に保存し、運用判断から改善Issueへつなぐ |
 | RT-UT-034 | `runtime/tests/test_svg_layout_modes.py` | 19 | 19 | `runtime/workflow/gui_mode.py`、`web_svg_layout_mode.py` | SVG解析、input claim、PyQt/QTest候補、React/Playwright候補、validation、self-test | GUI/Web SVG入力から画面候補生成までをworkflow拡張として守る |
 | RT-UT-035 | `runtime/tests/test_system_integration.py` | 15 | 15 | `runtime/workflow/system_integration.py`、`runtime/common/ctl.py` | system integration context生成、SDK cloud/payment metadata読取、emulator候補分類、emulator template展開、emulator health/preflight、Integration Test runbook生成、Integration Test evidence/finalize確認、Context First登録、aiwfctl入口 | 生成・修正コードを対象システムへ自然に統合し、emulatorと本番差分や起動前提の欠落、Integration Test手順の曖昧さ、完了判定漏れを見える形にする |
-| RT-UT-036 | `runtime/tests/test_vscode_environment_workflow.py` | 10 | 10 | `runtime/workflow/vscode_environment.py` | self-provision、draft/open questions、RAG template、requirements、validation、CLI | AI workflow実行環境をVSCode workspace as codeとして整える |
-| RT-UT-037 | `runtime/tests/test_vscode_workspace.py` | 2 | 2 | `.vscode/*`、`runtime/tools/aiwfctl.cmd` | aiwfctl PATH task、cmd usage | VSCodeから`aiwfctl`を迷わず呼べる導線を守る |
+| RT-UT-036 | `runtime/tests/test_vscode_environment_workflow.py` | 10 | 10 | `runtime/workflow/vscode_environment.py`, `runtime/constants/paths.py` | self-provision、local RAG backup directory provisioning、draft/open questions、RAG template、requirements、validation、CLI | AI workflow実行環境をVSCode workspace as codeとして整え、ローカルKnowledgeバックアップ階層をGit pushなしで準備する |
+| RT-UT-037 | `runtime/tests/test_vscode_workspace.py` | 2 | 2 | `.vscode/*`、`runtime/windows-script/aiwfctl.cmd` | aiwfctl PATH task、cmd usage | VSCodeから`aiwfctl`を迷わず呼べる導線を守る |
 | RT-UT-038 | `runtime/tests/test_workflow_doctor.py` | 32 | 32 | `runtime/workflow/workflow_doctor.py`, `runtime/common/text_boundary.py`, `runtime/common/gate_restart.py` | tracked policy、required files、pytest runtime boundary、human gate registry、close archive completeness、text-boundary repair、gate restart、UT仕様書同期チェック、fail-on-warning | workflow repository自身の健康診断と本線復帰を自動化する |
 | RT-UT-039 | `runtime/tests/test_workflow_state_noise_validation.py` | 21 | 21 | `runtime/workflow/workflow_state.py`、`noise_reduction.py`、`validate_output_language.py`、`validate_vscode_workspace.py` | workflow state、noise reduction、Japanese output guard、VSCode workspace JSON検証 | 要件定義前処理・状態管理・出力言語品質を守る |
 

@@ -1,11 +1,11 @@
 @echo off
 setlocal
 chcp 65001 >nul
-set "ARIADNE_TOOLS_DIR=%~dp0"
+set "ARIADNE_SCRIPT_DIR=%~dp0"
 set "ARIADNE_UV_PATH_MODE=%~1"
 
 powershell -NoProfile -Command ^
-  "$tools = [System.IO.Path]::GetFullPath($env:ARIADNE_TOOLS_DIR).TrimEnd('\');" ^
+  "$tools = [System.IO.Path]::GetFullPath($env:ARIADNE_SCRIPT_DIR).TrimEnd('\');" ^
   "$mode = [Environment]::GetEnvironmentVariable('ARIADNE_UV_PATH_MODE', 'Process');" ^
   "$candidateDirs = @($tools, (Join-Path $env:USERPROFILE '.local\bin'), (Join-Path $env:USERPROFILE '.cargo\bin'), (Join-Path $env:LOCALAPPDATA 'Programs\uv'));" ^
   "$candidateDirs = @($candidateDirs | Where-Object { $_ -and (Test-Path $_) } | ForEach-Object { [System.IO.Path]::GetFullPath($_).TrimEnd('\') } | Select-Object -Unique);" ^
@@ -19,7 +19,7 @@ powershell -NoProfile -Command ^
 
 if "%ARIADNE_UV_PATH_MODE%"=="--check" exit /b %ERRORLEVEL%
 if "%ARIADNE_UV_PATH_MODE%"=="--shell" (
-  set "Path=%ARIADNE_TOOLS_DIR%;%USERPROFILE%\.local\bin;%USERPROFILE%\.cargo\bin;%LOCALAPPDATA%\Programs\uv;%Path%"
+  set "Path=%ARIADNE_SCRIPT_DIR%;%USERPROFILE%\.local\bin;%USERPROFILE%\.cargo\bin;%LOCALAPPDATA%\Programs\uv;%Path%"
   echo.
   echo Starting a refreshed PowerShell session with Ariadne runtime tools on Path...
   powershell -NoLogo -NoExit -Command "Write-Host 'Ariadne uv session ready'; Get-Command uv -ErrorAction SilentlyContinue; Write-Host 'Try: uv --version'"
@@ -29,4 +29,4 @@ if "%ARIADNE_UV_PATH_MODE%"=="--shell" (
 echo.
 echo Existing PowerShell sessions do not inherit User Path changes.
 echo If uv is still not found in this session, run:
-echo   $env:Path="%ARIADNE_TOOLS_DIR%;$env:USERPROFILE\.local\bin;$env:USERPROFILE\.cargo\bin;$env:LOCALAPPDATA\Programs\uv;$env:Path"
+echo   $env:Path="%ARIADNE_SCRIPT_DIR%;$env:USERPROFILE\.local\bin;$env:USERPROFILE\.cargo\bin;$env:LOCALAPPDATA\Programs\uv;$env:Path"

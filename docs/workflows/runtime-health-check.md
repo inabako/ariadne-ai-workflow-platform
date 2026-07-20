@@ -54,9 +54,9 @@ pass / fail 報告
 ```powershell
 cd C:\github\ariadne-ai-workflow-platform\runtime
 
-.\tools\uv.cmd run --project . --group dev pytest tests -q
+.\windows-script\uv.cmd run --project . --group dev pytest tests -q
 
-.\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py `
+.\windows-script\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py `
   --spec ..\docs\reference\runtime-pytest-ut\case-specification.md `
   --runtime-root . `
   check `
@@ -67,17 +67,17 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
   --register-context `
   --required-context
 
-.\tools\uv.cmd run --project . --group dev python workflow\workflow_doctor.py `
+.\windows-script\uv.cmd run --project . --group dev python workflow\workflow_doctor.py `
   --repo-root .. `
   --fail-on-warning
 
-.\tools\uv.cmd run --project . --group dev python ctl.py `
+.\windows-script\uv.cmd run --project . --group dev python ctl.py `
   --repo-root .. `
   doctor `
   --json `
   --fail-on-warning
 
-.\tools\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
+.\windows-script\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
   --paths ..\docs\reference\runtime-pytest-ut\test-items.md ..\docs\reference\runtime-pytest-ut\case-specification.md ..\.github\schemas\README.md ..\.github\agents\runtime-quality-gate-agent.prompt.md `
   --fail-on-violation
 ```

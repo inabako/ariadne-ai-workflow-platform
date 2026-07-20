@@ -212,6 +212,15 @@ RAG source of truthは、標準では `work/db/ariadne-knowledge-platform` にcl
 
 確認は次で行います。
 
+The knowledge source repository name is configured by `ARIADNE_KNOWLEDGE_REPOSITORY` in `.env` or process ENV. The runtime derives the backup path as `work/db/<ARIADNE_KNOWLEDGE_REPOSITORY>` and keeps generated DuckDB read models under `db/rag/`. Provisioning creates the backup directory tree locally when missing, but does not clone, create `.git`, commit, or push.
+
+Temporary workflow workspaces are removed only after long-lived Knowledge absorption is confirmed. For GitHub knowledge maintenance, check a whole branch/original scope before cleanup:
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-check --work-id github/original --recursive
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-apply --work-id github/original --recursive --human-check approved
+```
+
 ```powershell
 python runtime/workflow/workflow_doctor.py
 ```

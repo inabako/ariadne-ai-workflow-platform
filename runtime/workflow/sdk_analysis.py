@@ -31,6 +31,7 @@ from runtime.constants.workspace import (  # noqa: E402
 )
 from runtime.rag import duckdb_store  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
+from runtime.workflow import work_cleanup_hint  # noqa: E402
 
 
 SCHEMA_VERSION = "1.0"
@@ -1431,6 +1432,27 @@ def write_outputs(
         artifacts["duckdb_rebuild_command"] = (
             f"aiwfctl knowledge rebuild --source-repo {duckdb_store.DEFAULT_SOURCE_REPO_PATH.as_posix()} --reset"
         )
+        context["artifacts"] = artifacts
+        work_cleanup_hint.register_long_lived_artifact(
+            repo_root,
+            work_dir,
+            work_id=str(context.get("work_id", "")),
+            workflow_name="sdk-analysis",
+            artifact_id="SDK-ANALYSIS-KNOWLEDGE",
+            title=str(record.get("title", "SDK Analysis Knowledge")),
+            path=knowledge_path,
+            artifact_type="knowledge-json",
+            status="verified" if context.get("status") == "available" else str(context.get("status", "draft")),
+            owner_agent="sdk-analysis",
+            summary=str(record.get("summary", "SDK analysis Knowledge JSON.")),
+        )
+        work_cleanup = work_cleanup_hint.record(repo_root, work_dir, str(context.get("work_id", "")))
+        context["work_cleanup"] = work_cleanup
+        context["next_action"] = work_cleanup_hint.next_action(
+            work_cleanup,
+            reason="SDK analysis Knowledge JSON is available in the long-lived knowledge area.",
+        )
+        artifacts["work_cleanup_check"] = work_cleanup.get("check_command", "")
         context["artifacts"] = artifacts
         write_json(context_path, context)
     return artifacts

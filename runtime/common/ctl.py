@@ -18,6 +18,7 @@ from runtime.constants.paths import (  # noqa: E402
     GENERATED_JSONIZED,
     GENERATED_OPTIMIZED_CHUNKS,
     KNOWLEDGE_SOURCE_REPO,
+    KNOWLEDGE_SOURCE_REPO_NAME,
 )
 from runtime.constants.schemas import ENVIRONMENT_SELECTION_SCHEMA  # noqa: E402
 from runtime.constants.workspace import (  # noqa: E402
@@ -46,6 +47,7 @@ from runtime.workflow import mcp_server_group  # noqa: E402
 from runtime.workflow import sdk_analysis  # noqa: E402
 from runtime.workflow import self_improvement  # noqa: E402
 from runtime.workflow import system_integration  # noqa: E402
+from runtime.workflow import work_cleanup  # noqa: E402
 from runtime.workflow import workflow_doctor  # noqa: E402
 from runtime.workflow import context_first  # noqa: E402
 from runtime.workflow import dispatcher_context  # noqa: E402
@@ -570,9 +572,9 @@ def format_unknown_environment(registry: dict[str, Any], target: str, record: di
 
 
 def run_environment_quick_checks(repo_root: Path, profile: dict[str, Any]) -> dict[str, Any]:
-    runtime_tools = repo_root / "runtime" / "tools"
+    runtime_windows_script = repo_root / "runtime" / "windows-script"
     path_entries = [Path(entry).resolve() for entry in os.environ.get("PATH", "").split(os.pathsep) if entry.strip()]
-    runtime_tools_in_path = runtime_tools.resolve() in path_entries
+    runtime_windows_script_in_path = runtime_windows_script.resolve() in path_entries
     tool_names = ["aiwfctl"]
     for tool in profile.get("primary_tools", []):
         normalized = str(tool).strip()
@@ -581,15 +583,19 @@ def run_environment_quick_checks(repo_root: Path, profile: dict[str, Any]) -> di
     tool_names = sorted(set(tool_names))
     checks = {
         "repo_root": str(repo_root),
-        "runtime_tools": relative_to_repo(repo_root, runtime_tools),
-        "runtime_tools_exists": runtime_tools.exists(),
-        "runtime_tools_in_path": runtime_tools_in_path,
-        "aiwfctl_cmd_exists": (runtime_tools / "aiwfctl.cmd").exists(),
+        "runtime_windows_script": relative_to_repo(repo_root, runtime_windows_script),
+        "runtime_windows_script_exists": runtime_windows_script.exists(),
+        "runtime_windows_script_in_path": runtime_windows_script_in_path,
+        "aiwfctl_cmd_exists": (runtime_windows_script / "aiwfctl.cmd").exists(),
         "workflow_doctor_exists": (repo_root / "runtime" / "workflow" / "workflow_doctor.py").exists(),
         "tool_presence": {tool: bool(shutil.which(tool)) for tool in tool_names},
         "path_hint": "aiwfctl path shell",
     }
-    checks["status"] = "ready" if checks["runtime_tools_exists"] and checks["aiwfctl_cmd_exists"] and checks["workflow_doctor_exists"] else "human-check-required"
+    checks["status"] = (
+        "ready"
+        if checks["runtime_windows_script_exists"] and checks["aiwfctl_cmd_exists"] and checks["workflow_doctor_exists"]
+        else "human-check-required"
+    )
     return checks
 
 
@@ -728,8 +734,8 @@ def format_environment_selection(record: dict[str, Any]) -> str:
         "",
         "Initialization",
         f"  status              : {init.get('status', 'not-run') if isinstance(init, dict) else 'not-run'}",
-        f"  runtime/tools exists: {str(checks.get('runtime_tools_exists', False)).lower()}",
-        f"  runtime/tools in PATH: {str(checks.get('runtime_tools_in_path', False)).lower()}",
+        f"  runtime/windows-script exists: {str(checks.get('runtime_windows_script_exists', False)).lower()}",
+        f"  runtime/windows-script in PATH: {str(checks.get('runtime_windows_script_in_path', False)).lower()}",
         f"  aiwfctl.cmd exists  : {str(checks.get('aiwfctl_cmd_exists', False)).lower()}",
         f"  doctor script exists: {str(checks.get('workflow_doctor_exists', False)).lower()}",
     ]
@@ -1298,6 +1304,39 @@ def build_parser() -> argparse.ArgumentParser:
     github_integrity.add_argument("--output", default="")
     github_integrity.add_argument("--fail-on-finding", action="store_true")
     github_integrity.add_argument("--json", action="store_true")
+    github_status = github_knowledge_sub.add_parser("status", help="Summarize current GitHub knowledge workflow state.")
+    github_status.add_argument("--work-id", required=True)
+    github_status.add_argument("--analysis-path", default="")
+    github_status.add_argument("--json", action="store_true")
+    github_next = github_knowledge_sub.add_parser("next-action", help="Show the next safe resume action.")
+    github_next.add_argument("--work-id", required=True)
+    github_next.add_argument("--analysis-path", default="")
+    github_next.add_argument("--json", action="store_true")
+    github_resume = github_knowledge_sub.add_parser("resume", help="Alias for next-action; does not mutate by default.")
+    github_resume.add_argument("--work-id", required=True)
+    github_resume.add_argument("--analysis-path", default="")
+    github_resume.add_argument("--json", action="store_true")
+    github_verify_remote = github_knowledge_sub.add_parser(
+        "verify-remote",
+        help="Verify package expected_remote_sha against the current remote branch.",
+    )
+    github_verify_remote.add_argument("--work-id", required=True)
+    github_verify_remote.add_argument("--analysis-path", default="")
+    github_verify_remote.add_argument("--package-path", default="")
+    github_verify_remote.add_argument("--target-branch", default="")
+    github_verify_remote.add_argument("--remote", default="")
+    github_verify_remote.add_argument("--expected-remote-sha", default="")
+    github_verify_remote.add_argument("--json", action="store_true")
+    github_cleanup_worktree = github_knowledge_sub.add_parser(
+        "cleanup-worktree",
+        help="Inspect or remove a GitHub knowledge replay worktree.",
+    )
+    github_cleanup_worktree.add_argument("--work-id", required=True)
+    github_cleanup_worktree.add_argument("--analysis-path", default="")
+    github_cleanup_worktree.add_argument("--target-branch", default="")
+    github_cleanup_worktree.add_argument("--force", action="store_true", help="Actually remove the replay worktree.")
+    github_cleanup_worktree.add_argument("--prune", action="store_true", help="Run git worktree prune after cleanup.")
+    github_cleanup_worktree.add_argument("--json", action="store_true")
     github_repair_plan = github_knowledge_sub.add_parser("repair-plan", help="Create a human review repair plan.")
     github_repair_plan.add_argument("--work-id", required=True)
     github_repair_plan.add_argument("--analysis-path", default="")
@@ -1408,6 +1447,7 @@ def build_parser() -> argparse.ArgumentParser:
     github_rebase_package.add_argument("--remote", default="origin")
     github_rebase_package.add_argument("--expected-remote-sha", default="")
     github_rebase_package.add_argument("--allow-push", action="store_true")
+    github_rebase_package.add_argument("--push-allowed", dest="allow_push", action="store_true")
     github_rebase_package.add_argument("--apply-mode", choices=["direct", "git-3way", "auto-3way"], default="direct")
     github_rebase_package.add_argument("--json", action="store_true")
     github_message_package = github_knowledge_sub.add_parser(
@@ -1423,6 +1463,7 @@ def build_parser() -> argparse.ArgumentParser:
     github_message_package.add_argument("--remote", default="origin")
     github_message_package.add_argument("--expected-remote-sha", default="")
     github_message_package.add_argument("--allow-push", action="store_true")
+    github_message_package.add_argument("--push-allowed", dest="allow_push", action="store_true")
     github_message_package.add_argument("--apply-mode", choices=["direct", "git-3way", "auto-3way"], default="auto-3way")
     github_message_package.add_argument("--json", action="store_true")
     github_rebase_apply = github_knowledge_sub.add_parser(
@@ -1461,6 +1502,20 @@ def build_parser() -> argparse.ArgumentParser:
     github_rag_candidate.add_argument("--publish-rag", action="store_true")
     github_rag_candidate.add_argument("--human-check", choices=["pending", "approved"], default="pending")
     github_rag_candidate.add_argument("--json", action="store_true")
+
+    work_cmd = sub.add_parser("work", help="Check and cleanup completed temporary work directories.")
+    work_sub = work_cmd.add_subparsers(dest="work_command")
+    work_check = work_sub.add_parser("cleanup-check", help="Check whether a work directory can be removed.")
+    work_check.add_argument("--work-id", required=True)
+    work_check.add_argument("--recursive", action="store_true")
+    work_check.add_argument("--required-artifact", action="append", default=[])
+    work_check.add_argument("--json", action="store_true")
+    work_apply = work_sub.add_parser("cleanup-apply", help="Remove a cleanup-ready work directory after Human Check.")
+    work_apply.add_argument("--work-id", required=True)
+    work_apply.add_argument("--recursive", action="store_true")
+    work_apply.add_argument("--required-artifact", action="append", default=[])
+    work_apply.add_argument("--human-check", choices=["pending", "approved"], default="pending")
+    work_apply.add_argument("--json", action="store_true")
 
     self_improvement_cmd = sub.add_parser("self-improvement", help="Manage Ariadne workflow feedback and Human Check review artifacts.")
     self_improvement_sub = self_improvement_cmd.add_subparsers(dest="self_improvement_command")
@@ -1692,7 +1747,7 @@ def format_knowledge_usage() -> str:
             f"  aiwfctl knowledge verify --query workflow --query runtime --work-dir {reference_work_dir} --work-id duckdb-reference-check",
             "",
             "DuckDBファイルは生成read modelです。source of truthはfile-based RAG artifactです。",
-            f"外部Knowledge正本は ariadne-knowledge-platform を {source_repo} にcloneして使います。",
+            f"外部Knowledge正本は {KNOWLEDGE_SOURCE_REPO_NAME} を {source_repo} にcloneして使います。",
         ]
     ) + "\n"
 
@@ -2040,6 +2095,10 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
                 "  aiwfctl github-knowledge init --repository <owner/repo>\n"
                 "  default work folders: work/github/<target-branch>/<scan-mode> or work/github/original/<scan-mode>\n"
                 "  aiwfctl github-knowledge analysis-template --work-id <work-id>\n"
+                "  aiwfctl github-knowledge status --work-id <work-id>\n"
+                "  aiwfctl github-knowledge next-action --work-id <work-id>\n"
+                "  aiwfctl github-knowledge verify-remote --work-id <work-id>\n"
+                "  aiwfctl github-knowledge cleanup-worktree --work-id <work-id> --force\n"
                 "  aiwfctl github-knowledge artifact-integrity --work-id <work-id>\n"
                 "  aiwfctl github-knowledge detect-rebase --work-id <work-id>\n"
                 "  aiwfctl github-knowledge repair-plan --work-id <work-id>\n"
@@ -2071,6 +2130,11 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
             "init": "init",
             "analysis-template": "analysis-template",
             "artifact-integrity": "artifact-integrity",
+            "status": "status",
+            "next-action": "next-action",
+            "resume": "resume",
+            "verify-remote": "verify-remote",
+            "cleanup-worktree": "cleanup-worktree",
             "repair-plan": "repair-plan",
             "detect-rebase": "detect-rebase-candidates",
             "rebase-plan": "rebase-plan",
@@ -2137,6 +2201,35 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
             lines.append(f"Status  : {result.get('status', '')}")
         if "findings" in result:
             lines.append(f"Findings: {len(result.get('findings', []))}")
+        if "next_action" in result:
+            next_action = result.get("next_action", {}) or {}
+            lines.append(f"Next    : {next_action.get('action', '')}")
+            if next_action.get("reason"):
+                lines.append(f"Reason  : {next_action.get('reason', '')}")
+            if next_action.get("verify_command"):
+                lines.append(f"Verify  : {next_action.get('verify_command', '')}")
+            if next_action.get("command"):
+                lines.append(f"Command : {next_action.get('command', '')}")
+            if next_action.get("cleanup_command"):
+                lines.append(f"Cleanup : {next_action.get('cleanup_command', '')}")
+        if "latest_package" in result:
+            package = result.get("latest_package", {}) or {}
+            lines.append(f"Package : {package.get('path', '')}")
+            lines.append(f"Push OK : {str(package.get('allow_push', False)).lower()}")
+        if "worktree" in result:
+            worktree = result.get("worktree", {}) or {}
+            lines.append(f"Worktree: {worktree.get('path', '')}")
+            lines.append(f"Exists  : {str(worktree.get('exists', False)).lower()}")
+        if "matches" in result:
+            lines.append(f"Matches : {str(result.get('matches', False)).lower()}")
+        if "actual_remote_sha" in result:
+            lines.append(f"Remote  : {result.get('actual_remote_sha', '')}")
+        if "removed" in result:
+            lines.append(f"Removed : {str(result.get('removed', False)).lower()}")
+        if "exists_after" in result:
+            lines.append(f"Exists After: {str(result.get('exists_after', False)).lower()}")
+        if "force_required" in result:
+            lines.append(f"Force Required: {str(result.get('force_required', False)).lower()}")
         if "report_json" in result:
             lines.append(f"JSON    : {result.get('report_json', '')}")
         if "rebase_replay_package" in result:
@@ -2169,6 +2262,42 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
             lines.append(f"Dry Run : {str(result.get('dry_run', False)).lower()}")
         if "executed" in result:
             lines.append(f"Executed: {str(result.get('executed', False)).lower()}")
+        return 0, "\n".join(lines).rstrip() + "\n"
+
+    if command == "work":
+        work_command = getattr(args, "work_command", None)
+        if work_command is None:
+            return 1, (
+                "Work Cleanup\n\n"
+                "Usage:\n"
+                "  aiwfctl work cleanup-check --work-id github/original --recursive\n"
+                "  aiwfctl work cleanup-apply --work-id github/original --recursive --human-check approved\n"
+            )
+        try:
+            work_args = argparse.Namespace(**vars(args))
+            work_args.command = work_command
+            work_args.repo_root = str(repo_root)
+            result = work_cleanup.run(work_args)
+        except Exception as exc:
+            return 1, f"Work cleanup failed: {exc}\n"
+        if getattr(args, "json", False):
+            return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        lines = [
+            "Work Cleanup",
+            "",
+            f"Command : {work_command}",
+            f"Status  : {result.get('status', '')}",
+            f"Target  : {result.get('target', '')}",
+            f"Checks  : {len(result.get('checks', []))}",
+        ]
+        if "removed" in result:
+            lines.append(f"Removed : {str(result.get('removed', False)).lower()}")
+        if result.get("apply_command"):
+            lines.append(f"Apply   : {result.get('apply_command', '')}")
+        blockers = result.get("blockers", [])
+        if blockers:
+            lines.extend(["", "Blockers"])
+            lines.extend(f"  - {item}" for item in blockers)
         return 0, "\n".join(lines).rstrip() + "\n"
 
     if command == "self-improvement":

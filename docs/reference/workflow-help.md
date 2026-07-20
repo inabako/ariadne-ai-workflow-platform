@@ -22,16 +22,16 @@ AI workflow は command、Skill、prompt、runtime helper、docs が分かれて
 PowerShell:
 
 ```powershell
-.\runtime\tools\aiwfctl.cmd help
+.\runtime\windows-script\aiwfctl.cmd help
 ```
 
 cmd:
 
 ```cmd
-runtime\tools\aiwfctl.cmd help
+runtime\windows-script\aiwfctl.cmd help
 ```
 
-VSCode統合ターミナルでは `.vscode/settings.json` が `${workspaceFolder}\runtime\tools` を `PATH` に追加するため、次のように呼び出せます。
+VSCode統合ターミナルでは `.vscode/settings.json` が `${workspaceFolder}\runtime\windows-script` を `PATH` に追加するため、次のように呼び出せます。
 
 ```powershell
 aiwfctl help
@@ -42,32 +42,32 @@ aiwfctl help
 現在のPowerShellだけ一時的にPATHを通す場合:
 
 ```powershell
-$env:Path = "$PWD\runtime\tools;$env:Path"
+$env:Path = "$PWD\runtime\windows-script;$env:Path"
 aiwfctl help list
 ```
 
 PATH未反映のterminalでは、次のように直接呼び出せます。
 
 ```powershell
-.\runtime\tools\aiwfctl.cmd help list
+.\runtime\windows-script\aiwfctl.cmd help list
 ```
 
 通常のPowerShellやWindows Terminalからも `aiwfctl` とだけ呼びたい場合は、User Pathへ登録します。
 
 ```powershell
-.\runtime\tools\register-aiwfctl-path.cmd
+.\runtime\windows-script\register-aiwfctl-path.cmd
 ```
 
 `aiwfctl.cmd` から呼ぶ場合:
 
 ```powershell
-.\runtime\tools\aiwfctl.cmd path register
+.\runtime\windows-script\aiwfctl.cmd path register
 ```
 
 登録状態を確認する場合:
 
 ```powershell
-.\runtime\tools\aiwfctl.cmd path check
+.\runtime\windows-script\aiwfctl.cmd path check
 ```
 
 登録後、新しいPowerShellを開いてから確認します。
@@ -76,13 +76,13 @@ Windows Terminal や VSCode 本体を登録前から開いていた場合は、�
 登録後、すぐに `aiwfctl` が使えるPowerShell sessionを開く場合:
 
 ```powershell
-.\runtime\tools\register-aiwfctl-path.cmd --shell
+.\runtime\windows-script\register-aiwfctl-path.cmd --shell
 ```
 
 `aiwfctl.cmd` から登録と更新済みsession起動をまとめて行う場合:
 
 ```powershell
-.\runtime\tools\aiwfctl.cmd path shell
+.\runtime\windows-script\aiwfctl.cmd path shell
 ```
 
 VSCode taskから実行する場合:
@@ -96,13 +96,13 @@ Get-Command aiwfctl
 aiwfctl help list
 ```
 
-User Path登録後に現在のPowerShellへ反映する場合は、現在のPATHを壊さないように `runtime\tools` だけを先頭追加します。
+User Path登録後に現在のPowerShellへ反映する場合は、現在のPATHを壊さないように `runtime\windows-script` だけを先頭追加します。
 
 ```powershell
-$env:Path = "$PWD\runtime\tools;$env:Path"
+$env:Path = "$PWD\runtime\windows-script;$env:Path"
 ```
 
-repo root の `runtime/tools` がPATHに入っている場合も、`aiwfctl help` で呼び出せます。
+repo root の `runtime/windows-script` がPATHに入っている場合も、`aiwfctl help` で呼び出せます。
 
 PowerShell のExecutionPolicyに依存しないよう、標準入口は `.ps1` ではなく `.cmd` に統一します。
 

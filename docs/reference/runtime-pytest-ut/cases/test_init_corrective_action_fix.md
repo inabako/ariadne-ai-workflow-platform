@@ -127,6 +127,25 @@ runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fi
   - inline input: `agent`, `artifact_index`, `report_context`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
+#### RT-UT-CASE-190A
+
+- pytest node id:
+
+```text
+runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fix_uses_work_db_report_as_cleanup_evidence
+```
+
+- Confirm: corrective-action-fix initialization uses an existing `work/db/...` corrective action report as long-lived Knowledge cleanup evidence.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_init_corrective_action_fix.py:280`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - inline input: corrective action report Markdown under `work/db/ariadne-knowledge-platform/rag/corrective-action-report/`
+- Expected:
+  - `work_cleanup.ready_for_check` is true
+  - `next_action.action == "check-work-cleanup"`
+  - generic `work cleanup-check` returns `status == "ready"`
+
 #### RT-UT-CASE-191
 
 - pytest node id:

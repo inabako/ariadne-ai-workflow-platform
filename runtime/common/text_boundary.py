@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from runtime.common.common import relative_to_repo, utc_now_iso
+from runtime.constants.encoding import MOJIBAKE_MARKERS, SOURCE_ENCODINGS
 
 TEXT_EXTENSIONS = {
     ".cfg",
@@ -26,27 +27,6 @@ EXCLUDED_DIR_NAMES = {
     "node_modules",
 }
 DEFAULT_PATHS = [".github", "docs", "runtime", "skills", "templates"]
-SOURCE_ENCODINGS = ("cp932", "shift_jis")
-MOJIBAKE_MARKERS = (
-    "\u7e3a",
-    "\u7e67",
-    "\u7e5d",
-    "\u7e32",
-    "\u8b41",
-    "\u8b4c",
-    "\u8700",
-    "\u8737",
-    "\u86f9",
-    "\u86fb",
-    "\u8c41",
-    "\u96b1",
-    "\u9081",
-    "\u8373",
-    "\u9015",
-    "\u9a65",
-    "\u87c7",
-    "\ufffd",
-)
 ALLOW_MOJIBAKE_EXAMPLE = "text-boundary: allow-mojibake-example"
 
 

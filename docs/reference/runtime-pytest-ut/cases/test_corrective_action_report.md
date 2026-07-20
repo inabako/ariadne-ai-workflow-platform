@@ -76,6 +76,25 @@ runtime/tests/test_corrective_action_report.py::test_corrective_action_report_re
   - inline input: `context`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
+#### RT-UT-CASE-064A
+
+- pytest node id:
+
+```text
+runtime/tests/test_corrective_action_report.py::test_corrective_action_report_registers_approved_work_db_report_for_cleanup
+```
+
+- Confirm: approved corrective action report sources under `work/db/...` are registered as long-lived Knowledge cleanup evidence.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_corrective_action_report.py:181`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - inline input: approved corrective action report Markdown under `work/db/ariadne-knowledge-platform/rag/corrective-action-report/`
+- Expected:
+  - `work_cleanup.ready_for_check` is true
+  - `next_action.action == "check-work-cleanup"`
+  - generic `work cleanup-check` returns `status == "ready"`
+
 #### RT-UT-CASE-065
 
 - pytest node id:

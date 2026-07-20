@@ -12,7 +12,15 @@ import pytest
 from runtime.workflow import github_knowledge_maintenance
 
 
-def make_work_dir(tmp_path: Path, work_id: str = "github-knowledge-repo-recent") -> tuple[Path, Path]:
+DEFAULT_GITHUB_WORK_ID = "github/original/recent"
+BRANCH_GITHUB_WORK_ID = "github/dev-bk/recent"
+
+
+def work_id_for_path(work_dir: Path) -> str:
+    return github_knowledge_maintenance.work_id_from_work_dir(work_dir)
+
+
+def make_work_dir(tmp_path: Path, work_id: str = DEFAULT_GITHUB_WORK_ID) -> tuple[Path, Path]:
     repo_root = tmp_path
     work_dir = repo_root / "work" / work_id
     (work_dir / "context").mkdir(parents=True)
@@ -158,6 +166,11 @@ def test_build_parser_parses_every_subcommand() -> None:
     assert parser.parse_args(["init", "--repository", "owner/repo"]).command == "init"
     assert parser.parse_args(["analysis-template", "--work-id", "w"]).command == "analysis-template"
     assert parser.parse_args(["artifact-integrity", "--work-id", "w"]).command == "artifact-integrity"
+    assert parser.parse_args(["status", "--work-id", "w"]).command == "status"
+    assert parser.parse_args(["next-action", "--work-id", "w"]).command == "next-action"
+    assert parser.parse_args(["resume", "--work-id", "w"]).command == "resume"
+    assert parser.parse_args(["verify-remote", "--work-id", "w", "--expected-remote-sha", "abc"]).command == "verify-remote"
+    assert parser.parse_args(["cleanup-worktree", "--work-id", "w", "--force"]).command == "cleanup-worktree"
     assert parser.parse_args(["repair-plan", "--work-id", "w"]).command == "repair-plan"
     assert parser.parse_args(["detect-rebase-candidates", "--work-id", "w"]).command == "detect-rebase-candidates"
     assert parser.parse_args(["detect-rebase-candidates", "--work-id", "w", "--all-history"]).all_history is True
@@ -167,7 +180,9 @@ def test_build_parser_parses_every_subcommand() -> None:
     assert parser.parse_args(["message-review-intake", "--work-id", "w"]).command == "message-review-intake"
     assert parser.parse_args(["rebase-apply", "--work-id", "w", "--candidate-id", "HISTORY-1"]).command == "rebase-apply"
     assert parser.parse_args(["rebase-replay-package", "--work-id", "w"]).command == "rebase-replay-package"
+    assert parser.parse_args(["rebase-replay-package", "--work-id", "w", "--push-allowed"]).allow_push is True
     assert parser.parse_args(["message-repair-package", "--work-id", "w"]).command == "message-repair-package"
+    assert parser.parse_args(["message-repair-package", "--work-id", "w", "--push-allowed"]).allow_push is True
     assert parser.parse_args(["rebase-replay-apply", "--work-id", "w"]).command == "rebase-replay-apply"
     assert (
         parser.parse_args(["rebase-replay-apply", "--work-id", "w", "--apply-mode", "git-3way"]).apply_mode
@@ -206,11 +221,246 @@ def test_repository_name_and_default_work_id_variants() -> None:
         github_knowledge_maintenance.default_work_id("repo", ["pull-request"], default_owner="owner", target_branch="dev/bk-01")
         == "github/dev-bk-01/pull-request"
     )
+    assert github_knowledge_maintenance.work_id_from_work_dir(
+        Path("C:/repo/work/github/original/recent")
+    ) == "github/original/recent"
     report_name = github_knowledge_maintenance.rag_source_report_name("Repo Topic!")
     assert re.fullmatch(r"\d{14}_[A-Z0-9]{6}_Repo-Topic\.md", report_name)
 
+
+def test_status_reports_package_execution_and_next_action(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis = sample_analysis()
+    analysis["target_branch"] = "feature/issue-2-v0.0.2"
+    analysis["message_repair_candidates"] = [
+        {
+            "id": "MESSAGE-REPAIR-001",
+            "approval_status": "approved",
+            "execution_status": "pending",
+            "commit": "abc123",
+            "proposed_commit_message": "test(runtime): improve resume command\n",
+        }
+    ]
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    write_json(
+        work_dir / "context" / "message-repair-package.json",
+        {
+            "target_branch": "feature/issue-2-v0.0.2",
+            "source_ref": "origin/feature/issue-2-v0.0.2",
+            "remote": "origin",
+            "apply_mode": "auto-3way",
+            "allow_push": True,
+            "expected_remote_sha": "abc123",
+            "candidate_ids": ["MESSAGE-REPAIR-001"],
+            "message_overrides": [{"commit": "abc123", "message": "test(runtime): improve resume command\n"}],
+        },
+    )
+
+    result = github_knowledge_maintenance.run(
+        argparse.Namespace(
+            command="status",
+            work_id=work_id_for_path(work_dir),
+            analysis_path="",
+            repo_root=str(repo_root),
+        )
+    )
+
+    assert result["latest_package"]["allow_push"] is True
+    assert result["latest_package"]["expected_remote_sha"] == "abc123"
+    assert result["message_repair_candidates"]["unresolved"] == 1
+    assert result["next_action"]["action"] == "verify-remote-then-rebase-apply"
+    assert "--push" in result["next_action"]["command"]
+
+
+def test_next_action_prefers_reuse_worktree_when_replay_worktree_exists(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis = sample_analysis()
+    analysis["target_branch"] = "feature/issue-2-v0.0.2"
+    analysis["history_rewrite_candidates"][0]["approval_status"] = "approved"
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    write_json(
+        work_dir / "context" / "rebase-replay-package.json",
+        {
+            "target_branch": "feature/issue-2-v0.0.2",
+            "source_ref": "origin/feature/issue-2-v0.0.2",
+            "remote": "origin",
+            "apply_mode": "direct",
+            "allow_push": False,
+            "expected_remote_sha": "",
+            "candidate_ids": ["HISTORY-1"],
+            "absorb": [{"target": "def5678", "sources": ["abc1234"]}],
+        },
+    )
+    replay_dir = work_dir / "git-worktree" / "feature-issue-2-v0.0.2"
+    replay_dir.mkdir(parents=True)
+    monkeypatch.setattr(github_knowledge_maintenance, "git_text", lambda *_args, **_kwargs: "## replay\n")
+
+    result = github_knowledge_maintenance.run(
+        argparse.Namespace(
+            command="next-action",
+            work_id=work_id_for_path(work_dir),
+            analysis_path="",
+            repo_root=str(repo_root),
+        )
+    )
+
+    assert result["next_action"]["action"] == "resume-rebase-apply-with-reuse-worktree"
+    assert "--reuse-worktree" in result["next_action"]["command"]
+    assert "cleanup-worktree" in result["next_action"]["cleanup_command"]
+
+
+def test_resume_blocks_when_analysis_json_is_corrupt(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis_path = work_dir / "context" / "github-knowledge-analysis.json"
+    analysis_path.write_text("{invalid", encoding="utf-8")
+
+    result = github_knowledge_maintenance.run(
+        argparse.Namespace(
+            command="resume",
+            work_id=work_id_for_path(work_dir),
+            analysis_path="",
+            repo_root=str(repo_root),
+        )
+    )
+
+    assert result["encoding_gate"]["status"] == "block"
+    assert result["next_action"]["state"] == "encoding-gate-blocked"
+    assert result["next_action"]["action"] == "repair-artifact-integrity-before-resume"
+    assert any("json-parse-failed" in finding["message"] for finding in result["encoding_gate"]["findings"])
+
+
+def test_resume_blocks_push_package_without_expected_remote_sha(tmp_path: Path) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis = sample_analysis()
+    analysis["summary"] = "譛 marker should block resume artifacts."
+    analysis["history_rewrite_candidates"][0]["approval_status"] = "approved"
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    write_json(
+        work_dir / "context" / "rebase-replay-package.json",
+        {
+            "target_branch": "main",
+            "source_ref": "origin/main",
+            "remote": "origin",
+            "apply_mode": "direct",
+            "allow_push": True,
+            "expected_remote_sha": "",
+            "candidate_ids": ["HISTORY-1"],
+            "absorb": [{"target": "def5678", "sources": ["abc1234"]}],
+        },
+    )
+
+    result = github_knowledge_maintenance.run(
+        argparse.Namespace(
+            command="next-action",
+            work_id=work_id_for_path(work_dir),
+            analysis_path="",
+            repo_root=str(repo_root),
+        )
+    )
+
+    assert result["encoding_gate"]["status"] == "block"
+    assert result["next_action"]["state"] == "encoding-gate-blocked"
+    assert any("mojibake-marker-present" in finding["message"] for finding in result["encoding_gate"]["findings"])
+    assert any("expected-remote-sha" in finding["message"] for finding in result["encoding_gate"]["findings"])
+
+
+def test_verify_remote_compares_expected_sha_from_package(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis = sample_analysis()
+    analysis["target_branch"] = "feature/issue-2-v0.0.2"
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    write_json(
+        work_dir / "context" / "rebase-replay-package.json",
+        {
+            "target_branch": "feature/issue-2-v0.0.2",
+            "source_ref": "origin/feature/issue-2-v0.0.2",
+            "remote": "origin",
+            "apply_mode": "direct",
+            "allow_push": True,
+            "expected_remote_sha": "abc123",
+            "candidate_ids": [],
+        },
+    )
+    monkeypatch.setattr(
+        github_knowledge_maintenance,
+        "git_text",
+        lambda *_args, **_kwargs: "abc123\trefs/heads/feature/issue-2-v0.0.2\n",
+    )
+
+    result = github_knowledge_maintenance.run(
+        argparse.Namespace(
+            command="verify-remote",
+            work_id=work_id_for_path(work_dir),
+            analysis_path="",
+            package_path="",
+            target_branch="",
+            remote="",
+            expected_remote_sha="",
+            repo_root=str(repo_root),
+        )
+    )
+
+    assert result["matches"] is True
+    assert result["next_action"] == "safe-to-push"
+
+
+def test_cleanup_worktree_requires_force_before_removal(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo_root, work_dir = make_work_dir(tmp_path)
+    analysis = sample_analysis()
+    analysis["target_branch"] = "feature/issue-2-v0.0.2"
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    replay_dir = work_dir / "git-worktree" / "feature-issue-2-v0.0.2"
+    replay_dir.mkdir(parents=True)
+    calls: list[list[str]] = []
+
+    def fake_git_text(_repo: Path, args: list[str], **_kwargs: object) -> str:
+        calls.append(args)
+        if args[:3] == ["worktree", "remove", "--force"]:
+            replay_dir.rmdir()
+        return ""
+
+    monkeypatch.setattr(github_knowledge_maintenance, "git_text", fake_git_text)
+    dry_result = github_knowledge_maintenance.run(
+        argparse.Namespace(
+            command="cleanup-worktree",
+            work_id=work_id_for_path(work_dir),
+            analysis_path="",
+            target_branch="",
+            force=False,
+            prune=False,
+            repo_root=str(repo_root),
+        )
+    )
+    assert dry_result["force_required"] is True
+    assert dry_result["exists_after"] is True
+
+    remove_result = github_knowledge_maintenance.run(
+        argparse.Namespace(
+            command="cleanup-worktree",
+            work_id=work_id_for_path(work_dir),
+            analysis_path="",
+            target_branch="",
+            force=True,
+            prune=False,
+            repo_root=str(repo_root),
+        )
+    )
+    assert remove_result["removed"] is True
+    assert remove_result["exists_after"] is False
+    assert any(args[:3] == ["worktree", "remove", "--force"] for args in calls)
+
+
 def test_init_work_rejects_existing_without_reuse_and_script_load(tmp_path: Path) -> None:
-    repo_root, work_dir = make_work_dir(tmp_path, "github-knowledge-repo-recent")
+    repo_root, work_dir = make_work_dir(tmp_path, "github/original/recent")
 
     with pytest.raises(FileExistsError, match="Work directory already exists"):
         github_knowledge_maintenance.init_work(
@@ -221,7 +471,7 @@ def test_init_work_rejects_existing_without_reuse_and_script_load(tmp_path: Path
                 scan_mode=["recent"],
                 repair_mode="proposal",
                 rag_output=False,
-                work_id=work_dir.name,
+                work_id=work_id_for_path(work_dir),
                 repo_root=str(repo_root),
                 reuse_existing=False,
             )
@@ -322,12 +572,12 @@ def test_load_analysis_reports_missing_work_missing_file_and_non_object(tmp_path
         github_knowledge_maintenance.load_analysis(repo_root, "missing", "")
 
     with pytest.raises(FileNotFoundError, match="GitHub knowledge analysis does not exist"):
-        github_knowledge_maintenance.load_analysis(repo_root, work_dir.name, "")
+        github_knowledge_maintenance.load_analysis(repo_root, work_id_for_path(work_dir), "")
 
     write_json(work_dir / "context" / "github-knowledge-analysis.json", [])
 
     with pytest.raises(ValueError, match="must be a JSON object"):
-        github_knowledge_maintenance.load_analysis(repo_root, work_dir.name, "")
+        github_knowledge_maintenance.load_analysis(repo_root, work_id_for_path(work_dir), "")
 
 
 def test_default_analysis_ignores_non_string_assumptions_and_analysis_template_missing_work(tmp_path: Path) -> None:
@@ -553,7 +803,7 @@ def test_create_detect_rebase_candidates_writes_analysis(monkeypatch: pytest.Mon
     result = github_knowledge_maintenance.create_detect_rebase_candidates(
         argparse.Namespace(
             command="detect-rebase-candidates",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             analysis_path="",
             git_repo=str(repo_root),
             base="HEAD~30",
@@ -575,7 +825,7 @@ def test_create_detect_rebase_candidates_writes_analysis(monkeypatch: pytest.Mon
     result = github_knowledge_maintenance.create_detect_rebase_candidates(
         argparse.Namespace(
             command="detect-rebase-candidates",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             analysis_path="",
             git_repo=str(repo_root),
             base="HEAD~30",
@@ -601,7 +851,7 @@ def test_create_repair_plan_writes_output_and_registers_artifact(tmp_path: Path)
     result = github_knowledge_maintenance.create_repair_plan(
         argparse.Namespace(
             command="repair-plan",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             analysis_path="",
             output=str(output_path),
             repo_root=str(repo_root),
@@ -624,7 +874,7 @@ def test_create_rebase_plan_writes_output_and_registers_artifact(tmp_path: Path)
     result = github_knowledge_maintenance.create_rebase_plan(
         argparse.Namespace(
             command="rebase-plan",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             analysis_path="",
             output=str(output_path),
             repo_root=str(repo_root),
@@ -653,7 +903,7 @@ def test_create_artifact_integrity_report_passes_for_valid_analysis_and_rebase_p
     result = github_knowledge_maintenance.create_artifact_integrity_report(
         argparse.Namespace(
             command="artifact-integrity",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             analysis_path="",
             output="",
             fail_on_finding=False,
@@ -678,7 +928,7 @@ def test_create_artifact_integrity_report_fails_for_invalid_analysis_json(tmp_pa
     result = github_knowledge_maintenance.create_artifact_integrity_report(
         argparse.Namespace(
             command="artifact-integrity",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             analysis_path="",
             output="",
             fail_on_finding=False,
@@ -695,7 +945,7 @@ def test_create_artifact_integrity_report_fails_for_invalid_analysis_json(tmp_pa
         github_knowledge_maintenance.create_artifact_integrity_report(
             argparse.Namespace(
                 command="artifact-integrity",
-                work_id=work_dir.name,
+                work_id=work_id_for_path(work_dir),
                 analysis_path="",
                 output="",
                 fail_on_finding=True,
@@ -753,7 +1003,7 @@ def test_create_rebase_review_intake_reads_ok_ng_checklist(tmp_path: Path) -> No
     result = github_knowledge_maintenance.create_rebase_review_intake(
         argparse.Namespace(
             command="rebase-review-intake",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             analysis_path="",
             plan_path=str(plan_path),
             human_check="approved",
@@ -773,7 +1023,7 @@ def test_create_rebase_review_intake_reads_ok_ng_checklist(tmp_path: Path) -> No
     assert approved["repair_goal"] == "absorb-into-existing-commit"
     assert approved["recommended_action"] == "non-interactive-git-cli-rewrite"
     assert approved["draft_commands"] == []
-    assert approved["replay_package_ref"] == f"work/{work_dir.name}/context/rebase-replay-package.json"
+    assert approved["replay_package_ref"] == f"work/{work_id_for_path(work_dir)}/context/rebase-replay-package.json"
     assert approved["human_review_decision"] == "OK"
     assert rejected["approval_status"] == "rejected"
     assert rejected["repair_goal"] == "no-rewrite"
@@ -801,7 +1051,7 @@ def test_create_rebase_apply_requires_human_and_candidate_approval(tmp_path: Pat
         github_knowledge_maintenance.create_rebase_apply(
             argparse.Namespace(
                 command="rebase-apply",
-                work_id=work_dir.name,
+                work_id=work_id_for_path(work_dir),
                 candidate_id="HISTORY-1",
                 analysis_path="",
                 git_repo=str(repo_root),
@@ -815,7 +1065,7 @@ def test_create_rebase_apply_requires_human_and_candidate_approval(tmp_path: Pat
     result = github_knowledge_maintenance.create_rebase_apply(
         argparse.Namespace(
             command="rebase-apply",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             candidate_id="HISTORY-1",
             analysis_path="",
             git_repo=str(repo_root),
@@ -880,7 +1130,7 @@ def test_apply_commit_patch_auto_3way_falls_back(monkeypatch: pytest.MonkeyPatch
 
 
 def test_rebase_replay_package_generates_from_approved_candidate(tmp_path: Path) -> None:
-    repo_root, work_dir = make_work_dir(tmp_path, "github-knowledge-owner-repo-recent")
+    repo_root, work_dir = make_work_dir(tmp_path, "github/dev-bk/recent")
     analysis = sample_analysis()
     analysis["target_branch"] = "dev-bk"
     candidate = analysis["history_rewrite_candidates"][0]
@@ -902,7 +1152,7 @@ def test_rebase_replay_package_generates_from_approved_candidate(tmp_path: Path)
     result = github_knowledge_maintenance.create_rebase_replay_package(
         argparse.Namespace(
             command="rebase-replay-package",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             candidate_id=["HISTORY-REPLAY-1"],
             analysis_path="",
             output="",
@@ -918,7 +1168,7 @@ def test_rebase_replay_package_generates_from_approved_candidate(tmp_path: Path)
 
     package_path = work_dir / "context" / "rebase-replay-package.json"
     package = json.loads(package_path.read_text(encoding="utf-8"))
-    assert result["rebase_replay_package"] == f"work/{work_dir.name}/context/rebase-replay-package.json"
+    assert result["rebase_replay_package"] == f"work/{work_id_for_path(work_dir)}/context/rebase-replay-package.json"
     assert package["target_branch"] == "dev-bk"
     assert package["source_ref"] == "dev-bk"
     assert package["apply_mode"] == "auto-3way"
@@ -930,7 +1180,7 @@ def test_rebase_replay_package_generates_from_approved_candidate(tmp_path: Path)
     assert not list((work_dir / "context").glob("*rebase*.py"))
     updated = json.loads((work_dir / "context" / "github-knowledge-analysis.json").read_text(encoding="utf-8"))
     updated_candidate = updated["history_rewrite_candidates"][0]
-    assert updated_candidate["replay_package_ref"] == f"work/{work_dir.name}/context/rebase-replay-package.json"
+    assert updated_candidate["replay_package_ref"] == f"work/{work_id_for_path(work_dir)}/context/rebase-replay-package.json"
     assert updated["rebase_replay_packages"][0]["apply_mode"] == "auto-3way"
     artifact_index = json.loads((work_dir / "context" / "artifact-index.json").read_text(encoding="utf-8"))
     assert any(item["id"] == "GITHUB-HISTORY-REBASE-REPLAY-PACKAGE" for item in artifact_index["artifacts"])
@@ -946,7 +1196,7 @@ def test_rebase_replay_package_rejects_unapproved_candidate(tmp_path: Path) -> N
         github_knowledge_maintenance.create_rebase_replay_package(
             argparse.Namespace(
                 command="rebase-replay-package",
-                work_id=work_dir.name,
+                work_id=work_id_for_path(work_dir),
                 candidate_id=["HISTORY-1"],
                 analysis_path="",
                 output="",
@@ -983,7 +1233,7 @@ def test_rebase_replay_package_requires_split_message(tmp_path: Path) -> None:
         github_knowledge_maintenance.create_rebase_replay_package(
             argparse.Namespace(
                 command="rebase-replay-package",
-                work_id=work_dir.name,
+                work_id=work_id_for_path(work_dir),
                 candidate_id=["HISTORY-1"],
                 analysis_path="",
                 output="",
@@ -999,7 +1249,7 @@ def test_rebase_replay_package_requires_split_message(tmp_path: Path) -> None:
 
 
 def test_rebase_replay_apply_uses_worktree_and_builtin_runtime(tmp_path: Path) -> None:
-    repo_root, work_dir = make_work_dir(tmp_path, "github-knowledge-owner-repo-recent")
+    repo_root, work_dir = make_work_dir(tmp_path, "github/dev-bk/recent")
     run_git(repo_root, ["init"])
     run_git(repo_root, ["config", "user.name", "Tester"])
     run_git(repo_root, ["config", "user.email", "tester@example.com"])
@@ -1020,7 +1270,7 @@ def test_rebase_replay_apply_uses_worktree_and_builtin_runtime(tmp_path: Path) -
             "expected_commit": target_commit,
             "rollback_plan": f"git reset --hard {source_tip}",
             "draft_commands": [],
-            "replay_package_ref": "work/github-knowledge-owner-repo-recent/context/rebase-replay-package.json",
+            "replay_package_ref": "work/github/dev-bk/recent/context/rebase-replay-package.json",
             "verification_commands": ["git diff --quiet dev-bk..HEAD"],
         }
     )
@@ -1051,7 +1301,7 @@ def test_rebase_replay_apply_uses_worktree_and_builtin_runtime(tmp_path: Path) -
     result = github_knowledge_maintenance.create_rebase_replay_apply(
         argparse.Namespace(
             command="rebase-replay-apply",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             package_path="",
             analysis_path="",
             human_check="approved",
@@ -1069,7 +1319,7 @@ def test_rebase_replay_apply_uses_worktree_and_builtin_runtime(tmp_path: Path) -
     assert result["before_count"] == 3
     assert result["after_count"] == 2
     assert all(item["returncode"] == 0 for item in result["verification_results"])
-    assert result["worktree_path"] == f"work/{work_dir.name}/git-worktree/dev-bk"
+    assert result["worktree_path"] == f"work/{work_id_for_path(work_dir)}/git-worktree/dev-bk"
     replay_log = run_git(repo_root / result["worktree_path"], ["log", "--format=%s"])
     assert "feat(runtime): add example workflow" in replay_log
     assert "update: test" not in replay_log
@@ -1085,7 +1335,7 @@ def test_rebase_replay_apply_uses_worktree_and_builtin_runtime(tmp_path: Path) -
 
 
 def test_rebase_replay_apply_preserves_final_tree_when_absorbed_patch_context_moved(tmp_path: Path) -> None:
-    repo_root, work_dir = make_work_dir(tmp_path, "github-knowledge-owner-repo-recent")
+    repo_root, work_dir = make_work_dir(tmp_path, "github/dev-bk/recent")
     run_git(repo_root, ["init"])
     run_git(repo_root, ["config", "user.name", "Tester"])
     run_git(repo_root, ["config", "user.email", "tester@example.com"])
@@ -1109,7 +1359,7 @@ def test_rebase_replay_apply_preserves_final_tree_when_absorbed_patch_context_mo
             "suspect_commits": [source_commit],
             "rollback_plan": f"git reset --hard {source_tip}",
             "draft_commands": [],
-            "replay_package_ref": "work/github-knowledge-owner-repo-recent/context/rebase-replay-package.json",
+            "replay_package_ref": "work/github/dev-bk/recent/context/rebase-replay-package.json",
             "verification_commands": ["git diff --quiet dev-bk..HEAD"],
         }
     )
@@ -1131,7 +1381,7 @@ def test_rebase_replay_apply_preserves_final_tree_when_absorbed_patch_context_mo
     result = github_knowledge_maintenance.create_rebase_replay_apply(
         argparse.Namespace(
             command="rebase-replay-apply",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             package_path="",
             analysis_path="",
             human_check="approved",
@@ -1159,7 +1409,7 @@ def test_rebase_replay_apply_preserves_final_tree_when_absorbed_patch_context_mo
 
 
 def test_rebase_replay_apply_resolves_absorb_cycle_to_earliest_anchor(tmp_path: Path) -> None:
-    repo_root, work_dir = make_work_dir(tmp_path, "github-knowledge-owner-repo-recent")
+    repo_root, work_dir = make_work_dir(tmp_path, "github/dev-bk/recent")
     run_git(repo_root, ["init"])
     run_git(repo_root, ["config", "user.name", "Tester"])
     run_git(repo_root, ["config", "user.email", "tester@example.com"])
@@ -1208,7 +1458,7 @@ def test_rebase_replay_apply_resolves_absorb_cycle_to_earliest_anchor(tmp_path: 
     result = github_knowledge_maintenance.create_rebase_replay_apply(
         argparse.Namespace(
             command="rebase-replay-apply",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             package_path="",
             analysis_path="",
             human_check="approved",
@@ -1236,7 +1486,7 @@ def test_rebase_replay_apply_resolves_absorb_cycle_to_earliest_anchor(tmp_path: 
 
 
 def test_message_repair_plan_intake_package_and_replay_apply(tmp_path: Path) -> None:
-    repo_root, work_dir = make_work_dir(tmp_path, "github-knowledge-owner-repo-recent")
+    repo_root, work_dir = make_work_dir(tmp_path, "github/dev-bk/recent")
     run_git(repo_root, ["init"])
     run_git(repo_root, ["config", "user.name", "Tester"])
     run_git(repo_root, ["config", "user.email", "tester@example.com"])
@@ -1255,7 +1505,7 @@ def test_message_repair_plan_intake_package_and_replay_apply(tmp_path: Path) -> 
     plan = github_knowledge_maintenance.create_message_repair_plan(
         argparse.Namespace(
             command="message-repair-plan",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             analysis_path="",
             git_repo=str(repo_root),
             source_ref="dev-bk",
@@ -1274,7 +1524,7 @@ def test_message_repair_plan_intake_package_and_replay_apply(tmp_path: Path) -> 
     intake = github_knowledge_maintenance.create_message_review_intake(
         argparse.Namespace(
             command="message-review-intake",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             analysis_path="",
             plan_path=str(plan_path),
             human_check="approved",
@@ -1287,7 +1537,7 @@ def test_message_repair_plan_intake_package_and_replay_apply(tmp_path: Path) -> 
     package = github_knowledge_maintenance.create_message_repair_package(
         argparse.Namespace(
             command="message-repair-package",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             candidate_id=[],
             analysis_path="",
             output="",
@@ -1306,7 +1556,7 @@ def test_message_repair_plan_intake_package_and_replay_apply(tmp_path: Path) -> 
     result = github_knowledge_maintenance.create_rebase_replay_apply(
         argparse.Namespace(
             command="rebase-replay-apply",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             package_path=str(repo_root / package["message_repair_package"]),
             analysis_path="",
             human_check="approved",
@@ -1330,7 +1580,7 @@ def test_message_repair_plan_intake_package_and_replay_apply(tmp_path: Path) -> 
 
 
 def test_publish_verified_replay_pushes_existing_verified_tip(tmp_path: Path) -> None:
-    repo_root, work_dir = make_work_dir(tmp_path, "github-knowledge-owner-repo-recent")
+    repo_root, work_dir = make_work_dir(tmp_path, "github/dev-bk/recent")
     remote_repo = tmp_path / "remote.git"
     run_git(repo_root, ["init"])
     run_git(repo_root, ["config", "user.name", "Tester"])
@@ -1382,9 +1632,9 @@ def test_publish_verified_replay_pushes_existing_verified_tip(tmp_path: Path) ->
             "pushed": False,
             "remote_before": "",
             "remote_after": "",
-            "worktree_path": f"work/{work_dir.name}/git-worktree/dev-bk",
-            "report_path": f"work/{work_dir.name}/process-report/github-history-rebase-replay-execution.md",
-            "mapping_path": f"work/{work_dir.name}/context/github-history-rebase-replay-sha-map.tsv",
+            "worktree_path": f"work/{work_id_for_path(work_dir)}/git-worktree/dev-bk",
+            "report_path": f"work/{work_id_for_path(work_dir)}/process-report/github-history-rebase-replay-execution.md",
+            "mapping_path": f"work/{work_id_for_path(work_dir)}/context/github-history-rebase-replay-sha-map.tsv",
             "apply_mode": "auto-3way",
             "apply_results": [],
         }
@@ -1395,7 +1645,7 @@ def test_publish_verified_replay_pushes_existing_verified_tip(tmp_path: Path) ->
     result = github_knowledge_maintenance.create_publish_verified_replay(
         argparse.Namespace(
             command="publish-verified-replay",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             analysis_path="",
             target_branch="dev-bk",
             remote="origin",
@@ -1437,7 +1687,7 @@ def test_rebase_replay_apply_dry_run_does_not_create_worktree(tmp_path: Path) ->
     result = github_knowledge_maintenance.create_rebase_replay_apply(
         argparse.Namespace(
             command="rebase-replay-apply",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             package_path="",
             analysis_path="",
             human_check="approved",
@@ -1450,7 +1700,7 @@ def test_rebase_replay_apply_dry_run_does_not_create_worktree(tmp_path: Path) ->
     )
 
     assert result["dry_run"] is True
-    assert result["worktree_path"] == f"work/{work_dir.name}/git-worktree/dev-bk"
+    assert result["worktree_path"] == f"work/{work_id_for_path(work_dir)}/git-worktree/dev-bk"
     assert not (work_dir / "git-worktree" / "dev-bk").exists()
 
 
@@ -1529,7 +1779,7 @@ def test_create_sync_review_plan_and_intake_reads_ok_ng_checklist(tmp_path: Path
     result = github_knowledge_maintenance.create_sync_review_plan(
         argparse.Namespace(
             command="github-sync-review-plan",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             analysis_path="",
             output="",
             repo_root=str(repo_root),
@@ -1551,7 +1801,7 @@ def test_create_sync_review_plan_and_intake_reads_ok_ng_checklist(tmp_path: Path
     intake = github_knowledge_maintenance.create_sync_review_intake(
         argparse.Namespace(
             command="github-sync-review-intake",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             analysis_path="",
             plan_path="",
             human_check="approved",
@@ -1595,7 +1845,7 @@ def test_create_sync_apply_requires_approval_and_records_result(tmp_path: Path) 
         github_knowledge_maintenance.create_sync_apply(
             argparse.Namespace(
                 command="github-sync-apply",
-                work_id=work_dir.name,
+                work_id=work_id_for_path(work_dir),
                 action_id="SYNC-1",
                 analysis_path="",
                 human_check="pending",
@@ -1608,7 +1858,7 @@ def test_create_sync_apply_requires_approval_and_records_result(tmp_path: Path) 
         github_knowledge_maintenance.create_sync_apply(
             argparse.Namespace(
                 command="github-sync-apply",
-                work_id=work_dir.name,
+                work_id=work_id_for_path(work_dir),
                 action_id="SYNC-1",
                 analysis_path="",
                 human_check="approved",
@@ -1624,7 +1874,7 @@ def test_create_sync_apply_requires_approval_and_records_result(tmp_path: Path) 
     result = github_knowledge_maintenance.create_sync_apply(
         argparse.Namespace(
             command="github-sync-apply",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             action_id="SYNC-1",
             analysis_path="",
             human_check="approved",
@@ -1652,7 +1902,7 @@ def test_create_sync_apply_blocks_unresolved_rebase_candidates(tmp_path: Path) -
         github_knowledge_maintenance.create_sync_apply(
             argparse.Namespace(
                 command="github-sync-apply",
-                work_id=work_dir.name,
+                work_id=work_id_for_path(work_dir),
                 action_id="SYNC-1",
                 analysis_path="",
                 human_check="approved",
@@ -1687,7 +1937,7 @@ def test_create_sync_apply_blocks_unresolved_message_repair_candidates(tmp_path:
         github_knowledge_maintenance.create_sync_apply(
             argparse.Namespace(
                 command="github-sync-apply",
-                work_id=work_dir.name,
+                work_id=work_id_for_path(work_dir),
                 action_id="SYNC-1",
                 analysis_path="",
                 human_check="approved",
@@ -1705,7 +1955,7 @@ def test_create_rag_candidate_requires_human_approval_for_publish(tmp_path: Path
         github_knowledge_maintenance.create_rag_candidate(
             argparse.Namespace(
                 command="rag-candidate",
-                work_id=work_dir.name,
+                work_id=work_id_for_path(work_dir),
                 analysis_path="",
                 topic="",
                 output="",
@@ -1725,7 +1975,7 @@ def test_create_rag_candidate_writes_explicit_output_with_ready_gate(tmp_path: P
     result = github_knowledge_maintenance.create_rag_candidate(
         argparse.Namespace(
             command="rag-candidate",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             analysis_path="",
             topic="repo topic",
             output=str(output_path),
@@ -1749,7 +1999,7 @@ def test_create_rag_candidate_default_and_publish_outputs(tmp_path: Path) -> Non
     default_result = github_knowledge_maintenance.create_rag_candidate(
         argparse.Namespace(
             command="rag-candidate",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             analysis_path="",
             topic="repo topic",
             output="",
@@ -1761,7 +2011,7 @@ def test_create_rag_candidate_default_and_publish_outputs(tmp_path: Path) -> Non
     publish_result = github_knowledge_maintenance.create_rag_candidate(
         argparse.Namespace(
             command="rag-candidate",
-            work_id=work_dir.name,
+            work_id=work_id_for_path(work_dir),
             analysis_path="",
             topic="repo topic",
             output="",
@@ -1772,9 +2022,31 @@ def test_create_rag_candidate_default_and_publish_outputs(tmp_path: Path) -> Non
     )
 
     assert default_result["published"] is False
-    assert default_result["rag_candidate"].startswith(f"work/{work_dir.name}/process-report/github-knowledge-rag-candidate-")
+    assert default_result["rag_candidate"].startswith(f"work/{work_id_for_path(work_dir)}/process-report/github-knowledge-rag-candidate-")
+    assert default_result["work_cleanup"]["ready_for_check"] is False
+    assert default_result["next_action"] == {}
     assert publish_result["published"] is True
     assert publish_result["rag_candidate"].startswith("work/db/ariadne-knowledge-platform/rag/github-knowledge/")
+    assert publish_result["work_cleanup"]["ready_for_check"] is True
+    assert publish_result["next_action"]["action"] == "check-work-cleanup"
+    assert "work cleanup-check --work-id github/original --recursive" in publish_result["next_action"]["command"]
+    assert "work cleanup-apply --work-id github/original --recursive --human-check approved" in publish_result["next_action"]["cleanup_command"]
+
+    analysis = sample_analysis()
+    analysis["history_rewrite_candidates"] = []
+    analysis["message_repair_candidates"] = []
+    write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
+    status_result = github_knowledge_maintenance.create_next_action(
+        argparse.Namespace(
+            command="next-action",
+            work_id=work_id_for_path(work_dir),
+            analysis_path="",
+            repo_root=str(repo_root),
+        )
+    )
+
+    assert status_result["next_action"]["action"] == "check-work-cleanup"
+    assert status_result["status_summary"]["work_cleanup"]["ready_for_check"] is True
 
 
 def test_run_dispatches_commands_and_rejects_unknown(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1784,6 +2056,15 @@ def test_run_dispatches_commands_and_rejects_unknown(monkeypatch: pytest.MonkeyP
         "create_analysis_template",
         lambda args: {"command": "analysis-template"},
     )
+    monkeypatch.setattr(
+        github_knowledge_maintenance,
+        "create_artifact_integrity_report",
+        lambda args: {"command": "artifact-integrity"},
+    )
+    monkeypatch.setattr(github_knowledge_maintenance, "create_status", lambda args: {"command": "status"})
+    monkeypatch.setattr(github_knowledge_maintenance, "create_next_action", lambda args: {"command": args.command})
+    monkeypatch.setattr(github_knowledge_maintenance, "create_verify_remote", lambda args: {"command": "verify-remote"})
+    monkeypatch.setattr(github_knowledge_maintenance, "create_cleanup_worktree", lambda args: {"command": "cleanup-worktree"})
     monkeypatch.setattr(github_knowledge_maintenance, "create_repair_plan", lambda args: {"command": "repair-plan"})
     monkeypatch.setattr(
         github_knowledge_maintenance,
@@ -1839,6 +2120,12 @@ def test_run_dispatches_commands_and_rejects_unknown(monkeypatch: pytest.MonkeyP
     for command in [
         "init",
         "analysis-template",
+        "artifact-integrity",
+        "status",
+        "next-action",
+        "resume",
+        "verify-remote",
+        "cleanup-worktree",
         "repair-plan",
         "detect-rebase-candidates",
         "rebase-plan",

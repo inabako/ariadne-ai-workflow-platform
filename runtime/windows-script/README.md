@@ -1,13 +1,15 @@
-# Windows PowerShell Runtime
+# Windows Script Runtime
 
 Windows 11 で Ariadne AI Workflow を動かす場合は、まずこの PS1 runtime を入口にします。
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 help
-.\runtime\windows-ps1\aiwf.ps1 ctl help search github knowledge
-.\runtime\windows-ps1\aiwf.ps1 pytest -q
-.\runtime\windows-ps1\aiwf.ps1 spec-check
+.\runtime\windows-script\aiwf.cmd help
+.\runtime\windows-script\aiwf.cmd ctl help search github knowledge
+.\runtime\windows-script\aiwf.cmd pytest -q
+.\runtime\windows-script\aiwf.cmd spec-check
 ```
+
+Use `runtime/windows-script/aiwf.cmd` as the normal PATH-friendly Windows entrypoint. It delegates to `runtime/windows-script/aiwf.cmd`, which invokes this PS1 runtime with process-scoped `-ExecutionPolicy Bypass`, so the repository does not require changing the user's PowerShell policy.
 
 ## 役割
 

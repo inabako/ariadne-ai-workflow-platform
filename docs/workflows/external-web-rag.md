@@ -41,6 +41,21 @@ work/db/ariadne-knowledge-platform/rag/
     retrieval/
 ```
 
+## Cleanup Classification
+
+External-web RAG has two different artifact classes:
+
+- `work/db/ariadne-knowledge-platform/rag/external-web/<category>/*.md` is long-lived source Knowledge after review. It may become cleanup evidence when registered in `artifact-index.json` with approved/verified status.
+- `work/db/ariadne-knowledge-platform/rag/external-web/retrieval/*.md` is retrieval or aggregate output. It is not cleanup evidence by itself and can be regenerated from source/indexed Knowledge.
+
+The normalized JSON generated from reviewed external-web sources is the durable machine-readable Knowledge record:
+
+```text
+work/db/ariadne-knowledge-platform/rag/normalized/*.json
+```
+
+Chunks, indexes, embeddings, and retrieval/context-pack outputs are derived artifacts. Do not use them alone to justify removing `work/<work-id>` through cleanup.
+
 ## Agents
 
 | Agent | Purpose | Output |

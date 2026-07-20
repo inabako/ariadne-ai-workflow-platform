@@ -13,7 +13,13 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo, slugify, utc_now_iso, write_json  # noqa: E402
-from runtime.constants.paths import GENERATED_NORMALIZED, RAG_NORMALIZE_SCRIPT, SOURCE_WORKSPACE_ENVIRONMENT  # noqa: E402
+from runtime.constants.paths import (  # noqa: E402
+    GENERATED_NORMALIZED,
+    KNOWLEDGE_SOURCE_LOCAL_BACKUP_DIRS,
+    KNOWLEDGE_SOURCE_REPO,
+    RAG_NORMALIZE_SCRIPT,
+    SOURCE_WORKSPACE_ENVIRONMENT,
+)
 from runtime.constants.schemas import RUNTIME_CONTEXT_SCHEMA, VSCODE_ENVIRONMENT_STATE_SCHEMA  # noqa: E402
 from runtime.constants.workspace import (
     CONTEXT_DIR_NAME,
@@ -26,6 +32,7 @@ from runtime.constants.workspace import (
     work_dir_for_id,
 )  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
+from runtime.workflow import work_cleanup_hint  # noqa: E402
 
 
 DEFAULT_DRAFT_DIR = "work/requirements/devlop-edit-draft"
@@ -103,6 +110,17 @@ def ensure_work_dirs(base: Path) -> None:
         (base / name).mkdir(parents=True, exist_ok=True)
 
 
+def ensure_knowledge_source_local_backup(repo_root: Path) -> list[str]:
+    created: list[str] = []
+    for relative_dir in KNOWLEDGE_SOURCE_LOCAL_BACKUP_DIRS:
+        target = repo_root / relative_dir
+        existed = target.exists()
+        target.mkdir(parents=True, exist_ok=True)
+        if not existed:
+            created.append(relative_to_repo(repo_root, target))
+    return created
+
+
 def utf8_first_contract() -> dict[str, Any]:
     return {
         "policy": "utf-8-first",
@@ -145,6 +163,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
     if base.exists() and not args.reuse_existing:
         raise FileExistsError(f"Work directory already exists: {base}. Re-run with --reuse-existing after confirming reuse.")
     ensure_work_dirs(base)
+    created_backup_dirs = ensure_knowledge_source_local_backup(repo_root)
     target_dir = Path(args.target_dir).resolve() if args.target_dir else None
     state = {
         "schema_version": "1.0",
@@ -182,8 +201,14 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
         },
         "encoding_contract": utf8_first_contract(),
         "tool_paths": [
-            "runtime/tools",
+            "runtime/windows-script",
         ],
+        "knowledge_source_backup": {
+            "mode": "local-backup",
+            "push_to_git": False,
+            "source_repo": KNOWLEDGE_SOURCE_REPO.as_posix(),
+            "created_dirs": created_backup_dirs,
+        },
         "verification_commands": [
             "aiwfctl path check",
             "aiwfctl help list",
@@ -224,6 +249,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
         "work_dir": relative_to_repo(repo_root, base),
         "state_path": relative_to_repo(repo_root, state_path),
         "runtime_context_path": relative_to_repo(repo_root, runtime_context_path),
+        "knowledge_source_backup": runtime_context["knowledge_source_backup"],
         **state,
     }
 
@@ -257,7 +283,7 @@ def draft_template_text() -> str:
 - Java:
 - MSYS2:
 - Repo-local command tools:
-  - TODO: 例 `${workspaceFolder}\\runtime\\tools` を `terminal.integrated.env.windows.Path` に追加するか
+  - TODO: 例 `${workspaceFolder}\\runtime\\windows-script` を `terminal.integrated.env.windows.Path` に追加するか
 - その他:
 
 ## 必要 VSCode 拡張
@@ -618,6 +644,8 @@ uv run --project runtime python {RAG_NORMALIZE_SCRIPT.as_posix()} `
 
 def write_rag_template(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = repo_root_from(args)
+    base = work_dir(repo_root, args.work_id)
+    ensure_work_dirs(base)
     source_dir = (repo_root / args.source_dir).resolve()
     try:
         source_dir.relative_to(repo_root.resolve())
@@ -627,7 +655,30 @@ def write_rag_template(args: argparse.Namespace) -> dict[str, Any]:
     path = source_dir / rag_filename(args.topic)
     source_path = relative_to_repo(repo_root, path)
     path.write_text(rag_template_text(args, source_path), encoding="utf-8")
-    return {"path": source_path, "document_type": "workspace-environment-pattern"}
+    work_cleanup_hint.register_long_lived_artifact(
+        repo_root,
+        base,
+        work_id=args.work_id,
+        workflow_name="vscode-environment",
+        artifact_id="VSCODE-ENVIRONMENT-RAG-SOURCE",
+        title="VSCode Environment RAG Source",
+        path=path,
+        artifact_type="rag-source",
+        status=args.status,
+        owner_agent="vscode-environment",
+        summary="Reusable VSCode workspace environment knowledge source.",
+    )
+    work_cleanup = work_cleanup_hint.record(repo_root, base, args.work_id)
+    return {
+        "path": source_path,
+        "document_type": "workspace-environment-pattern",
+        "work_id": args.work_id,
+        "work_cleanup": work_cleanup,
+        "next_action": work_cleanup_hint.next_action(
+            work_cleanup,
+            reason="Approved VSCode environment Knowledge output is available in the long-lived knowledge area.",
+        ),
+    }
 
 
 def requirements_text(work_id: str, mode: str) -> str:
@@ -688,7 +739,7 @@ Repo-local command tools がある場合、VSCode integrated terminal の PATH �
 ```json
 {{
   "terminal.integrated.env.windows": {{
-    "Path": "${{workspaceFolder}}\\runtime\\tools;${{env:Path}}",
+    "Path": "${{workspaceFolder}}\\runtime\\windows-script;${{env:Path}}",
     "PYTHONUTF8": "1",
     "PYTHONIOENCODING": "utf-8",
     "AIWF_TEXT_ENCODING": "utf-8"
@@ -744,7 +795,7 @@ Codex 向けに UTF-8 方針を永続化したい場合は、`AGENTS.md` や wor
 
 | Label | Command | Depends On | Evidence |
 | --- | --- | --- | --- |
-| workflow:aiwfctl-path-shell | `runtime/tools/register-aiwfctl-path.cmd --shell` | repo-local tools | `Get-Command aiwfctl`, `aiwfctl help list` |
+| workflow:aiwfctl-path-shell | `runtime/windows-script/register-aiwfctl-path.cmd --shell` | repo-local tools | `Get-Command aiwfctl`, `aiwfctl help list` |
 | TODO | TODO | TODO | TODO |
 
 ## Debug / Launch Target

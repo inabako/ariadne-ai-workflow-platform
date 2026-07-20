@@ -709,7 +709,7 @@ def runtime_context(
             "terminal_scope": "current workspace terminal",
         },
         "tool_paths": [
-            "runtime/tools",
+            "runtime/windows-script",
         ],
         "verification_commands": [
             "uv run --project runtime python runtime/common/ctl.py --repo-root . context show --work-dir work/<work-id>",

@@ -21,13 +21,15 @@
 Windows 11 で AI workflow を実行する場合は、まず PowerShell native runtime を使います。
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 help
-.\runtime\windows-ps1\aiwf.ps1 ctl help search github knowledge
-.\runtime\windows-ps1\aiwf.ps1 pytest -q
-.\runtime\windows-ps1\aiwf.ps1 spec-check
+.\runtime\windows-script\aiwf.cmd help
+.\runtime\windows-script\aiwf.cmd ctl help search github knowledge
+.\runtime\windows-script\aiwf.cmd pytest -q
+.\runtime\windows-script\aiwf.cmd spec-check
 ```
 
-`runtime/windows-ps1/aiwf.ps1` は PowerShell の UTF-8 no BOM 入出力、repo root / runtime root 解決、`uv run ... python ...` の固定だけを担当します。Context First、Human Check、GitHub knowledge maintenance などの workflow 判断は引き続き `aiwfctl` / `runtime/common/ctl.py` が担当します。
+`runtime/windows-script/aiwf.cmd` is the normal PATH-friendly Windows entrypoint. It delegates to `runtime/windows-script/aiwf.cmd`, which invokes `runtime/windows-script/aiwf.ps1` with process-scoped `-ExecutionPolicy Bypass`, so the repository does not require changing the user's PowerShell policy.
+
+`runtime/windows-script/aiwf.ps1` は PowerShell の UTF-8 no BOM 入出力、repo root / runtime root 解決、`uv run ... python ...` の固定だけを担当します。Context First、Human Check、GitHub knowledge maintenance などの workflow 判断は引き続き `aiwfctl` / `runtime/common/ctl.py` が担当します。
 
 不足している操作がある場合は、PS1 に直接 workflow logic を増やさず、まず self-improvement Feedback に流します。Accepted Feedback になった後でのみ、`runtime/common/ctl.py` の正式入口改修候補にします。
 
@@ -52,13 +54,13 @@ GitHub metadata / sync workflow では、`gh --version` と `gh auth status` を
 Windows 11 では次を正式入口にします。
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 preflight --profile github-cli --work-id "<work-id>"
+.\runtime\windows-script\aiwf.cmd preflight --profile github-cli --work-id "<work-id>"
 ```
 
 未ログインで `GITHUB_TOKEN` / `GH_TOKEN` / `GITHUB_API_TOKEN` / `GITHUB_API_KEY` が repository `.env` または process ENV にある場合は、次で `gh auth login --with-token` と `gh auth setup-git` を実行します。token値はreportへ出力しません。
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 preflight --profile github-cli --gh-login-from-env --human-check approved
+.\runtime\windows-script\aiwf.cmd preflight --profile github-cli --gh-login-from-env --human-check approved
 ```
 
 GitHub passwordをENVに保存しません。GitHub CLI/API と git remote の認証情報はtokenを共用できますが、runtimeは値をログ出力しないことを前提に扱います。
@@ -80,7 +82,7 @@ GitHub passwordをENVに保存しません。GitHub CLI/API と git remote の�
 
 | Script | Responsibility |
 | --- | --- |
-| `runtime/common/ctl.py` | `runtime/tools/aiwfctl.cmd` から呼び出される `aiwfctl help` / `aiwfctl env` の実体。help検索、Environment Dispatcher、`work/<work-id>/context/environment-selection.json` 作成を行う |
+| `runtime/common/ctl.py` | `runtime/windows-script/aiwfctl.cmd` から呼び出される `aiwfctl help` / `aiwfctl env` の実体。help検索、Environment Dispatcher、`work/<work-id>/context/environment-selection.json` 作成を行う |
 | `db/registries/registry.duckdb` | `aiwfctl env` が参照する利用者向けEnvironmentと内部Backend profile registry |
 | `runtime/intake/intake_requirements.py` | `work/requirements/` の要件定義書を受付ID単位で移動し、初期contextを作る |
 | `runtime/environment/preflight.py` | 必要tool / packageを確認し、install listを作る |
@@ -135,6 +137,7 @@ GitHub / SCM 連携で必要な値は、repository root の環境ファイルで
 ```env
 GITHUB_OWNER=
 GITHUB_TOKEN=
+ARIADNE_KNOWLEDGE_REPOSITORY=ariadne-knowledge-platform
 ```
 
 `GITHUB_OWNER` を設定すると、`localty-system-gui` のようなrepository名だけの指定を `<GITHUB_OWNER>/localty-system-gui` として解決できます。
@@ -183,10 +186,10 @@ uv run --group dev coverage report -m
 `uv` がPATHにない場合は、Ariadne runtime toolsのPATHを登録します。
 
 ```powershell
-.\runtime\tools\register-uv-path.cmd --shell
+.\runtime\windows-script\register-uv-path.cmd --shell
 ```
 
-`runtime\tools\uv.cmd` は、実uvが見つからない場合にinstall guidanceを表示します。
+`runtime\windows-script\uv.cmd` は、実uvが見つからない場合にinstall guidanceを表示します。
 
 生成物の既定言語を確認する場合:
 

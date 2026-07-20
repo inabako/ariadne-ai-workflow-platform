@@ -267,6 +267,8 @@ work/<work-id>/requirements/sdk-external-requirements.md
 work/db/ariadne-knowledge-platform/rag/jsonized/<knowledge-id>.json
 ```
 
+When Knowledge JSON is generated, `artifact-index.json` also records cleanup evidence. After absorption is confirmed, run `aiwfctl work cleanup-check --work-id <work-id>` before removing the temporary work scope.
+
 `sdk-analysis-context.json` は Context First manifest に `sdk-analysis` として登録されます。secret-like literalは値をコピーせず、検出事実だけをHuman Checkへ渡します。
 
 AWS / GCP SDKでは、provider、言語、package manager、SDK世代、候補サービス、credential model、region / project要件、local test候補、cloud固有のHuman Checkを `cloud` として構造化します。`sdk-files.json` にはSHA-256付きinventoryを保存します。
@@ -340,5 +342,5 @@ uv run --group dev coverage html
 `uv` がPATHにない場合:
 
 ```powershell
-.\runtime\tools\register-uv-path.cmd --shell
+.\runtime\windows-script\register-uv-path.cmd --shell
 ```

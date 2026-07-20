@@ -1,10 +1,10 @@
 @echo off
 setlocal
 chcp 65001 >nul
-set "AIWFCTL_TOOLS_DIR=%~dp0"
+set "AIWFCTL_SCRIPT_DIR=%~dp0"
 set "AIWFCTL_PATH_MODE=%~1"
 powershell -NoProfile -Command ^
-  "$tool = [System.IO.Path]::GetFullPath($env:AIWFCTL_TOOLS_DIR).TrimEnd('\');" ^
+  "$tool = [System.IO.Path]::GetFullPath($env:AIWFCTL_SCRIPT_DIR).TrimEnd('\');" ^
   "$mode = [Environment]::GetEnvironmentVariable('AIWFCTL_PATH_MODE', 'Process');" ^
   "$current = [Environment]::GetEnvironmentVariable('Path', 'User');" ^
   "$parts = @($current -split ';' | Where-Object { $_ -and $_.Trim() });" ^
@@ -15,7 +15,7 @@ powershell -NoProfile -Command ^
   "Write-Output 'Open a new PowerShell session, then run: aiwfctl help list'"
 if "%AIWFCTL_PATH_MODE%"=="--check" exit /b %ERRORLEVEL%
 if "%AIWFCTL_PATH_MODE%"=="--shell" (
-  set "Path=%AIWFCTL_TOOLS_DIR%;%Path%"
+  set "Path=%AIWFCTL_SCRIPT_DIR%;%Path%"
   echo.
   echo Starting a refreshed PowerShell session with aiwfctl on Path...
   powershell -NoLogo -NoExit -Command "Write-Host 'aiwfctl session ready'; Get-Command aiwfctl; Write-Host 'Try: aiwfctl help list'"
@@ -24,4 +24,4 @@ if "%AIWFCTL_PATH_MODE%"=="--shell" (
 echo.
 echo Existing PowerShell sessions do not inherit User Path changes.
 echo If aiwfctl is still not found in this session, run:
-echo   $env:Path="%AIWFCTL_TOOLS_DIR%;$env:Path"
+echo   $env:Path="%AIWFCTL_SCRIPT_DIR%;$env:Path"

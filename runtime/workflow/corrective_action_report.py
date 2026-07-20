@@ -20,6 +20,7 @@ from runtime.constants.workspace import (  # noqa: E402
     work_dir_for_id,
 )
 from runtime.workflow.context_first import register_context  # noqa: E402
+from runtime.workflow import work_cleanup_hint  # noqa: E402
 
 
 FRONT_MATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?", re.DOTALL)
@@ -164,6 +165,20 @@ def run_register(args: argparse.Namespace) -> dict[str, Any]:
     context = build_report_context(repo_root, args, report_path)
     write_json(context_path, context)
     register_report_context(repo_root, work_dir, work_id, context_path)
+    work_cleanup_hint.register_long_lived_artifact(
+        repo_root,
+        work_dir,
+        work_id=work_id,
+        workflow_name="corrective-action-report",
+        artifact_id="CORRECTIVE-ACTION-REPORT",
+        title=report_path.name,
+        path=report_path,
+        artifact_type="rag-source",
+        status=str(context.get("status", "draft")),
+        owner_agent="corrective-action-report",
+        summary="Corrective action report RAG source.",
+    )
+    work_cleanup = work_cleanup_hint.record(repo_root, work_dir, work_id)
     return {
         "status": "registered" if context["report_exists"] else "registered-missing-report",
         "work_id": work_id,
@@ -171,6 +186,11 @@ def run_register(args: argparse.Namespace) -> dict[str, Any]:
         "context_path": relative_to_repo(repo_root, context_path),
         "report_path": context["report_path"],
         "manifest_path": relative_to_repo(repo_root, manifest_path_for_work_dir(work_dir)),
+        "work_cleanup": work_cleanup,
+        "next_action": work_cleanup_hint.next_action(
+            work_cleanup,
+            reason="Approved corrective action report Knowledge source is available in the long-lived knowledge area.",
+        ),
     }
 
 

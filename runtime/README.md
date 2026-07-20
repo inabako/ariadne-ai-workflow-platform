@@ -29,6 +29,10 @@ GitHub / SCM 連携情報は repository root の環境ファイルで管理し�
 
 Runtime は `runtime/common/env.py` を通じて `.env` を読み込みます。
 
+`ARIADNE_KNOWLEDGE_REPOSITORY` stores the repository name used for file-based RAG source backup. The runtime resolves it to `work/db/<repository-name>`, defaulting to `work/db/ariadne-knowledge-platform`.
+
+The VSCode environment provisioning workflow creates the local backup directory tree when it is missing. This is a local source/backup area only; provisioning does not clone, commit, or push the knowledge repository.
+
 ## Implemented CLI
 
 ```text
@@ -58,7 +62,8 @@ runtime/rag/jsonize_rag_tree.py
 runtime/rag/standardize_corrective_report_names.py
 runtime/tools/text_encoding_convert.py
 runtime/tools/text_encoding_guard.py
-runtime/windows-ps1/aiwf.ps1
+runtime/windows-script/aiwf.cmd
+runtime/windows-script/aiwf.ps1
 runtime/posix-bash/aiwf.sh
 ```
 
@@ -96,9 +101,9 @@ runtime/posix-bash/aiwf.sh
 
 `pull_request_manager.py` は、Issue branch push後に `develop` へのPull Request draft / createを行います。PR titleはIssue titleを使い、PR bodyにはMermaid sequence diagramを含めます。
 
-`common/ctl.py` は、AI workflow prompt command のターミナルヘルプを提供します。repo root の `runtime/tools/aiwfctl.cmd` から呼び出し、command一覧、詳細、検索、Markdown出力を行います。VSCode統合ターミナルでは `.vscode/settings.json` により `runtime/tools` が `PATH` に追加されるため、`aiwfctl help` で呼び出せます。
+`common/ctl.py` は、AI workflow prompt command のターミナルヘルプを提供します。repo root の `runtime/windows-script/aiwfctl.cmd` から呼び出し、command一覧、詳細、検索、Markdown出力を行います。VSCode統合ターミナルでは `.vscode/settings.json` により `runtime/windows-script` が `PATH` に追加されるため、`aiwfctl help` で呼び出せます。
 
-`windows-ps1/aiwf.ps1` と `posix-bash/aiwf.sh` は、OS別shellから `common/ctl.py`、pytest、UT仕様同期、BOM scan / strip へ入るための薄いruntime入口です。
+`windows-script/aiwf.cmd` / `windows-script/aiwf.ps1` と `posix-bash/aiwf.sh` は、OS別shellから `common/ctl.py`、pytest、UT仕様同期、BOM scan / strip へ入るための薄いruntime入口です。
 
 `observability/metrics.py` は、workflow / agent / token / context / cost / error の観測値を記録します。Runtime全体の時系列ログは `runtime/logs/runtime-metrics-YYYYMM.jsonl` へ月次ローテーションで追記し、workflow単位の要約は `work/<work-id>/test-evidence/runtime-metrics.json` と `work/<work-id>/context/runtime-metrics.json` に保存できます。
 
@@ -128,8 +133,8 @@ runtime/posix-bash/aiwf.sh
 Windows 11:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 preflight --profile github-cli --work-id "<work-id>"
-.\runtime\windows-ps1\aiwf.ps1 preflight --profile github-cli --gh-login-from-env --human-check approved
+.\runtime\windows-script\aiwf.cmd preflight --profile github-cli --work-id "<work-id>"
+.\runtime\windows-script\aiwf.cmd preflight --profile github-cli --gh-login-from-env --human-check approved
 ```
 
 POSIX:

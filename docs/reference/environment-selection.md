@@ -21,7 +21,7 @@ aiwfctl env select flutter
 PATHが未反映の場合は、repo-local wrapperから直接呼びます。
 
 ```powershell
-.\runtime\tools\aiwfctl.cmd env select gui-mode
+.\runtime\windows-script\aiwfctl.cmd env select gui-mode
 ```
 
 ## 利用者向けEnvironmentとBackend
@@ -265,12 +265,12 @@ Flutter Web Integration Testまで実行する場合は、`flutter drive -d chro
 Flutter SDKを導入済みでもPATH未反映の場合:
 
 ```powershell
-.\runtime\tools\register-flutter-path.cmd --check
-.\runtime\tools\register-flutter-path.cmd --shell
+.\runtime\windows-script\register-flutter-path.cmd --check
+.\runtime\windows-script\register-flutter-path.cmd --shell
 ```
 
 標準配置は `C:\flutter` です。別pathにSDKを置いた場合は第2引数でSDK rootを渡します。
 
 ```powershell
-.\runtime\tools\register-flutter-path.cmd --shell C:\tools\flutter
+.\runtime\windows-script\register-flutter-path.cmd --shell C:\tools\flutter
 ```

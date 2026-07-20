@@ -55,11 +55,11 @@ function Assert-AiwfRepoRoot {
 function Get-AiwfUvPath {
     $uvCommand = Get-Command uv -ErrorAction SilentlyContinue
     if ($null -eq $uvCommand) {
-        $localUv = Join-Path $RuntimeRoot "tools/uv.cmd"
+        $localUv = Join-Path $RuntimeRoot "windows-script/uv.cmd"
         if (Test-Path -LiteralPath $localUv -PathType Leaf) {
             return $localUv
         }
-        throw "uv was not found on PATH. Run runtime/tools/register-uv-path.cmd --shell, then open a new terminal."
+        throw "uv was not found on PATH. Run runtime/windows-script/register-uv-path.cmd --shell, then open a new terminal."
     }
     return $uvCommand.Source
 }
@@ -111,13 +111,13 @@ function Show-AiwfHelp {
 Ariadne Windows PowerShell runtime
 
 Usage:
-  .\runtime\windows-ps1\aiwf.ps1 ctl <aiwfctl-args>
-  .\runtime\windows-ps1\aiwf.ps1 doctor [aiwfctl-doctor-args]
-  .\runtime\windows-ps1\aiwf.ps1 pytest [pytest-args]
-  .\runtime\windows-ps1\aiwf.ps1 preflight [preflight-args]
-  .\runtime\windows-ps1\aiwf.ps1 spec-check
-  .\runtime\windows-ps1\aiwf.ps1 bom-scan [utf8_bom scan args]
-  .\runtime\windows-ps1\aiwf.ps1 bom-strip [utf8_bom strip args]
+  .\runtime\windows-script\aiwf.cmd ctl <aiwfctl-args>
+  .\runtime\windows-script\aiwf.cmd doctor [aiwfctl-doctor-args]
+  .\runtime\windows-script\aiwf.cmd pytest [pytest-args]
+  .\runtime\windows-script\aiwf.cmd preflight [preflight-args]
+  .\runtime\windows-script\aiwf.cmd spec-check
+  .\runtime\windows-script\aiwf.cmd bom-scan [utf8_bom scan args]
+  .\runtime\windows-script\aiwf.cmd bom-strip [utf8_bom strip args]
 
 Resolved paths:
   Repo root    : $RepoRoot

@@ -1105,7 +1105,7 @@ def test_github_knowledge_registers_tool_selection_and_gate(tmp_path: Path) -> N
         scan_mode=["recent"],
         repair_mode="apply",
         rag_output=True,
-        work_id="github-knowledge-repo-recent",
+        work_id="github/original/recent",
         reuse_existing=False,
         intent_summary="",
         repo_root=str(tmp_path),
@@ -1113,7 +1113,7 @@ def test_github_knowledge_registers_tool_selection_and_gate(tmp_path: Path) -> N
 
     github_knowledge_maintenance.init_work(args)
 
-    work_dir = tmp_path / "work" / "github-knowledge-repo-recent"
+    work_dir = tmp_path / "work" / "github" / "original" / "recent"
     manifest = context_first.load_manifest(work_dir)
     context_types = {item["type"] for item in manifest["contexts"]}
     gate = json.loads((work_dir / "context" / "github-operation-gate.json").read_text(encoding="utf-8"))
@@ -1132,7 +1132,7 @@ def test_github_knowledge_sync_plan_requires_mutation_gate(tmp_path: Path) -> No
             scan_mode=["recent"],
             repair_mode="apply",
             rag_output=False,
-            work_id="github-knowledge-repo-recent",
+            work_id="github/original/recent",
             reuse_existing=False,
             intent_summary="",
             repo_root=str(tmp_path),
@@ -1141,7 +1141,7 @@ def test_github_knowledge_sync_plan_requires_mutation_gate(tmp_path: Path) -> No
     github_knowledge_maintenance.create_analysis_template(
         argparse.Namespace(
             command="analysis-template",
-            work_id="github-knowledge-repo-recent",
+            work_id="github/original/recent",
             analysis_path="",
             repo_root=str(tmp_path),
         )
@@ -1150,7 +1150,7 @@ def test_github_knowledge_sync_plan_requires_mutation_gate(tmp_path: Path) -> No
     result = github_knowledge_maintenance.create_sync_plan(
         argparse.Namespace(
             command="github-sync-plan",
-            work_id="github-knowledge-repo-recent",
+            work_id="github/original/recent",
             analysis_path="",
             output="",
             repo_root=str(tmp_path),

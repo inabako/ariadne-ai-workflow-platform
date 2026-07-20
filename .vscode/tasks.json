@@ -317,7 +317,7 @@
     {
       "label": "workflow:aiwfctl-path-shell",
       "type": "process",
-      "command": "${workspaceFolder}\\runtime\\tools\\register-aiwfctl-path.cmd",
+      "command": "${workspaceFolder}\\runtime\\windows-script\\register-aiwfctl-path.cmd",
       "args": [
         "--shell"
       ],

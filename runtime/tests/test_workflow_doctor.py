@@ -65,7 +65,7 @@ def test_missing_required_files_reports_core_runtime_assets(tmp_path: Path) -> N
 
     assert ".gitignore" in missing
     assert "runtime/pytest.ini" in missing
-    assert "runtime/tools/aiwfctl.cmd" in missing
+    assert "runtime/windows-script/aiwfctl.cmd" in missing
     assert "runtime/tools/pytest_ut_spec_sync.py" in missing
     assert "runtime/observability/metrics.py" in missing
     assert "runtime/tests/test_observability_metrics.py" in missing
@@ -516,6 +516,7 @@ def test_text_boundary_scan_and_repair_recovers_utf8_saved_mojibake(tmp_path: Pa
     target = docs / "guide.md"
     target.write_text(f"# {mojibake}\n", encoding="utf-8")
 
+    assert text_boundary.marker_count("譛") == 1
     scan = text_boundary.scan_text_boundary(tmp_path, ["docs"], {".md"})
     assert scan["status"] == "finding"
     assert scan["findings"][0]["kind"] == "semantic-mojibake-marker"

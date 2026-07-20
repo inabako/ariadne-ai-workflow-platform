@@ -36,6 +36,7 @@ from runtime.constants.workspace import (  # noqa: E402
     work_dir_for_id,
 )
 from runtime.workflow.context_first import context_entry, context_path, load_manifest, register_context  # noqa: E402
+from runtime.workflow import work_cleanup_hint  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -344,6 +345,9 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         },
     )
     if report_rel:
+        report_path = Path(report_rel)
+        if not report_path.is_absolute():
+            report_path = repo_root / report_path
         upsert_artifact(
             index,
             {
@@ -358,6 +362,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
                 "depends_on": [],
                 "consumed_by": ["corrective-action-fix", "rag-build", "rag-load"],
                 "summary": "Corrective action report used as implementation input.",
+                "cleanup_ready": relative_to_repo(repo_root, report_path).startswith("work/db/"),
                 "unresolved_items": [],
             },
         )
@@ -373,6 +378,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         report_resolution=report_input["resolution"],
         source_context_path=report_input["context_path"],
     )
+    work_cleanup = work_cleanup_hint.record(repo_root, work_dir, work_id)
     return {
         "work_id": work_id,
         "work_dir": relative_to_repo(repo_root, work_dir),
@@ -382,6 +388,11 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         "report_path": report_rel,
         "report_resolution": report_input["resolution"],
         "report_context_path": report_input["context_path"],
+        "work_cleanup": work_cleanup,
+        "next_action": work_cleanup_hint.next_action(
+            work_cleanup,
+            reason="Corrective action report Knowledge source is available in the long-lived knowledge area.",
+        ),
     }
 
 

@@ -7,7 +7,7 @@
   "editor.detectIndentation": true,
   "python.terminal.activateEnvironment": false,
   "terminal.integrated.env.windows": {
-    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}",
+    "Path": "${workspaceFolder}\\runtime\\windows-script;${env:Path}",
     "PYTHONUTF8": "1",
     "PYTHONIOENCODING": "utf-8",
     "AIWF_TEXT_ENCODING": "utf-8"

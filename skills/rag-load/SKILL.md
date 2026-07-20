@@ -111,6 +111,21 @@ Do not reimplement compression. Use the existing compression output from `retrie
 
 Markdown dispatch or context-pack files are optional debug artifacts and are written only when `--write-markdown` is explicitly used.
 
+## Cleanup Classification
+
+RAG load / retrieval outputs are session artifacts, not Knowledge absorption evidence.
+
+Do not use these as the only evidence for `aiwfctl work cleanup-check`:
+
+- `work/db/ariadne-knowledge-platform/rag/retrieval/*.json`
+- `work/db/ariadne-knowledge-platform/rag/external-web/retrieval/*.md`
+- dispatch plans
+- retrieval results
+- context packs
+- aggregate Markdown written for debugging or handoff
+
+These files may be referenced by a development workflow, but they are derived from existing indexes and source Knowledge. They can be regenerated and must not justify deleting temporary work by themselves. Cleanup evidence must come from approved long-lived Knowledge source files or durable normalized/jsonized Knowledge records registered in `artifact-index.json`.
+
 ## Direct Retrieval Template
 
 Use direct `retrieve_context.py` only for debugging a single query.

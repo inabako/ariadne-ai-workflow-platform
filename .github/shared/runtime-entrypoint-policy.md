@@ -87,4 +87,4 @@ On Linux, WSL, or macOS, prefer the bash-native form:
 ./runtime/posix-bash/aiwf.sh ctl <command>
 ```
 
-Short `aiwfctl <command>` examples are acceptable only when the surrounding document already states that `runtime/tools` is on `PATH`.
+Short `aiwfctl <command>` examples are acceptable only when the surrounding document already states that `runtime/windows-script` is on `PATH`.
