@@ -35,6 +35,43 @@ logs/runtime-metrics-YYYYMM.jsonl
 
 `logs/` はローカル生成物であり、Git管理対象にしません。
 
+## Runtime Event Log
+
+Runtime Event Log は、runtime の実行順序を人間と AI Agent が追跡するための時系列ログです。
+
+保存先:
+
+```text
+logs/runtime/runtime-events.log
+```
+
+1イベントを1行として追記します。1ファイルが5MBを超える場合はローテーションし、既定では最大5世代を保持します。
+
+形式:
+
+```text
+timestamp | trace-id | sequence | json
+```
+
+例:
+
+```text
+2026-07-21T06:15:32.692+09:00 | 8b8d3b4c | 00002 | {"component":"dispatcher","event":"dispatcher_selected","dispatcher":"rag","input":{"json":false,"repo_root":"C:\\github\\v0.0.2\\ariadne-ai-workflow-platform","work_id":""},"output":{"status":"blocked","exit_code":2,"duration_ms":29,"output_bytes":562,"reason":"required_argument_missing"}}
+```
+
+各項目の意味:
+
+| 項目 | 内容 |
+| --- | --- |
+| timestamp | local timezone付きの ISO-8601 timestamp |
+| trace-id | 1回の runtime 実行を関連付ける短い識別子 |
+| sequence | 同一 trace 内のイベント順序。`00001` から始まる |
+| json | component、event、input、output、関連 metadata |
+
+`command` は JSON root の metadata として記録し、`input` へは重複して入れません。`input` には実行条件、`output` には終了状態、exit code、duration、出力量、共通 reason を記録します。
+
+Runtime Event Log は実行時の観測材料です。secret、token、password、credential などの機密情報は mask し、必要な判断材料だけを Evidence や process report へ昇格させます。
+
 ## Workflow単位の証跡
 
 workflow単位の要約は、必要に応じて次の場所へ保存します。

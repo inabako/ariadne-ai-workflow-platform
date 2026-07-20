@@ -130,6 +130,44 @@ def test_ctl_without_modifier_warns_and_does_not_show_list() -> None:
     assert "## Workflow Commands" not in output
 
 
+def test_ctl_run_writes_runtime_event_log_for_each_command(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+    registry = tmp_path / "runtime" / "registries"
+    registry.mkdir(parents=True)
+    (registry / "workflow_help.json").write_text('{"commands": [], "extensions": []}', encoding="utf-8")
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "help", "list"])
+    code, output = ctl.run(args)
+
+    assert code == 0
+    assert "## Workflow Commands" in output
+    log_path = tmp_path / "logs" / "runtime" / "runtime-events.log"
+    lines = log_path.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 2
+    started_prefix = lines[0].split(" | ", 3)
+    completed_prefix = lines[1].split(" | ", 3)
+    assert started_prefix[1] == completed_prefix[1]
+    assert started_prefix[2] == "00001"
+    assert completed_prefix[2] == "00002"
+    started = json.loads(started_prefix[3])
+    completed = json.loads(completed_prefix[3])
+    assert started["component"] == "ctl"
+    assert started["event"] == "runtime_command_started"
+    assert started["command"] == "help list"
+    assert "command" not in started["input"]
+    assert started["input"] == {
+        "json": False,
+        "repo_root": str(tmp_path),
+        "work_id": "",
+    }
+    assert completed["event"] == "runtime_command_completed"
+    assert "command" not in completed["input"]
+    assert completed["output"]["exit_code"] == 0
+    assert completed["output"]["reason"] == "completed"
+    assert isinstance(completed["output"]["duration_ms"], int)
+    assert completed["output"]["duration_ms"] >= 0
+
+
 def test_ctl_help_without_modifier_warns_and_does_not_show_list() -> None:
     args = ctl.build_parser().parse_args(["--repo-root", str(repo_root()), "help"])
 

@@ -14,6 +14,12 @@ def jsonl_rows(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
 
 
+def runtime_event_payload(line: str) -> dict:
+    parts = line.split(" | ", 3)
+    assert len(parts) == 4
+    return json.loads(parts[3])
+
+
 def test_monthly_log_path_uses_year_month_suffix() -> None:
     now = datetime(2026, 7, 9, tzinfo=timezone.utc)
 
@@ -56,6 +62,53 @@ def test_append_jsonl_returns_warning_without_raising_when_parent_is_file(tmp_pa
 
     assert result["status"] == "warning"
     assert "runtime metrics write failed" in result["warning"]
+
+
+def test_runtime_event_logger_writes_pipe_prefixed_json_line(tmp_path: Path) -> None:
+    event_logger = logger.RuntimeEventLogger(repo_root=tmp_path, component="dispatcher", trace_id="8b8d3b4c")
+
+    first = event_logger.emit(
+        "dispatcher_selected",
+        dispatcher="rag",
+        input={"query": "runtime", "api_token": "hidden"},
+        output={"route": "rag"},
+    )
+    second = event_logger.emit("dispatcher_completed")
+
+    log_path = tmp_path / "logs" / "runtime" / "runtime-events.log"
+    lines = log_path.read_text(encoding="utf-8").splitlines()
+    assert first["status"] == "ok"
+    assert second["sequence"] == 2
+    assert len(lines) == 2
+    assert " | 8b8d3b4c | 00001 | " in lines[0]
+    payload = runtime_event_payload(lines[0])
+    assert payload == {
+        "component": "dispatcher",
+        "dispatcher": "rag",
+        "event": "dispatcher_selected",
+        "input": {"api_token": "***", "query": "runtime"},
+        "output": {"route": "rag"},
+    }
+
+
+def test_runtime_event_logger_rotates_when_max_bytes_is_exceeded(tmp_path: Path) -> None:
+    event_logger = logger.RuntimeEventLogger(
+        repo_root=tmp_path,
+        component="ctl",
+        trace_id="trace123",
+        max_bytes=120,
+        backup_count=2,
+    )
+
+    event_logger.emit("first", output={"text": "x" * 80})
+    event_logger.emit("second", output={"text": "y" * 80})
+
+    log_path = tmp_path / "logs" / "runtime" / "runtime-events.log"
+    rotated_path = tmp_path / "logs" / "runtime" / "runtime-events.log.1"
+    assert log_path.exists()
+    assert rotated_path.exists()
+    assert '"event":"second"' in log_path.read_text(encoding="utf-8")
+    assert '"event":"first"' in rotated_path.read_text(encoding="utf-8")
 
 
 def test_schema_helpers_sanitize_negative_and_invalid_values() -> None:

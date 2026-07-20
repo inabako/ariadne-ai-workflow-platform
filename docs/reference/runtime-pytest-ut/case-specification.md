@@ -15,7 +15,7 @@ coverage 推移と監査履歴は repository root の `Runtime pytest 分岐・C
 | pytest files | 39 |
 | pytest test functions | 680 |
 | pytest collected cases | 722 |
-| pytest result | `722 passed` |
+| pytest result | `725 passed` |
 | statement coverage | 99.66% |
 | total coverage | 99.48% |
 
@@ -51,7 +51,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_context_first.py](cases/test_context_first.md) | 34 |
 | [test_corrective_action_report.py](cases/test_corrective_action_report.md) | 7 |
 | [test_coverage_audit.py](cases/test_coverage_audit.md) | 14 |
-| [test_ctl_help.py](cases/test_ctl_help.md) | 51 |
+| [test_ctl_help.py](cases/test_ctl_help.md) | 52 |
 | [test_dispatcher_context.py](cases/test_dispatcher_context.md) | 12 |
 | [test_docs_sync_workflow.py](cases/test_docs_sync_workflow.md) | 11 |
 | [test_flutter_multiplatform.py](cases/test_flutter_multiplatform.md) | 16 |
@@ -64,7 +64,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_knowledge_capture.py](cases/test_knowledge_capture.md) | 7 |
 | [test_mcp_boilerplate_templates.py](cases/test_mcp_boilerplate_templates.md) | 3 |
 | [test_mcp_server_group_workflow.py](cases/test_mcp_server_group_workflow.md) | 12 |
-| [test_observability_metrics.py](cases/test_observability_metrics.md) | 17 |
+| [test_observability_metrics.py](cases/test_observability_metrics.md) | 19 |
 | [test_preflight.py](cases/test_preflight.md) | 36 |
 | [test_pytest_ut_spec_sync.py](cases/test_pytest_ut_spec_sync.md) | 21 |
 | [test_rag_artifact_migration.py](cases/test_rag_artifact_migration.md) | 19 |

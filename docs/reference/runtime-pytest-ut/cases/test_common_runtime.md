@@ -136,7 +136,7 @@ runtime/tests/test_common_runtime.py::test_knowledge_source_repository_env_helpe
 ```
 
 - Confirm: knowledge source repository ENV から repo name、backup path、clone URL が安定して組み立つことを確認します。
-- Input:
+- 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_common_runtime.py:141`
   - fixture/arg: なし

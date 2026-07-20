@@ -6,6 +6,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
+from time import perf_counter
 from typing import Any, Sequence
 
 if __package__ in {None, ""}:
@@ -36,6 +37,7 @@ from runtime.constants.workspace import (  # noqa: E402
     work_dir_for_id,
     work_path_pattern,
 )
+from runtime.observability.logger import RuntimeEventLogger  # noqa: E402
 from runtime.observability.metrics import RuntimeMetricsCollector  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
 from runtime.workflow import close_archive  # noqa: E402
@@ -1847,7 +1849,7 @@ def format_knowledge_result(result: dict[str, Any]) -> str:
     return json.dumps(result, ensure_ascii=False, indent=2) + "\n"
 
 
-def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
+def _run_impl(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
     repo_root = repo_root_from_args(args)
     registry = load_registry(repo_root)
     command = args.command
@@ -2596,6 +2598,117 @@ def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
         return 0, f"wrote: {relative_to_repo(repo_root, output)}\n"
 
     return 1, f"Unknown help command: {help_command}\n"
+
+
+def _command_path(args: argparse.Namespace) -> str:
+    command = str(getattr(args, "command", "") or "")
+    if not command:
+        return ""
+    subcommand_attributes = [
+        "help_command",
+        "env_command",
+        "context_command",
+        "human_gate_command",
+        "knowledge_command",
+        "knowledge_source_command",
+        "sdk_command",
+        "flutter_command",
+        "mcp_group_command",
+        "github_knowledge_command",
+        "work_command",
+        "self_improvement_command",
+        "close_archive_command",
+        "iac_command",
+        "iac_template_command",
+        "integration_command",
+        "integration_emulator_command",
+    ]
+    parts = [command]
+    for attribute in subcommand_attributes:
+        value = str(getattr(args, attribute, "") or "")
+        if value:
+            parts.append(value)
+    return " ".join(parts)
+
+
+def _runtime_log_input(args: argparse.Namespace, repo_root: Path) -> dict[str, Any]:
+    return {
+        "json": bool(getattr(args, "json", False)),
+        "repo_root": str(repo_root),
+        "work_id": str(getattr(args, "work_id", "") or ""),
+    }
+
+
+def _runtime_status_for_exit_code(code: int) -> str:
+    if code == 0:
+        return "completed"
+    if code == 2:
+        return "blocked"
+    return "failed"
+
+
+def _runtime_reason_for_result(code: int, output: str) -> str:
+    normalized = output.lower()
+    if code == 0:
+        return "completed"
+    if "human check" in normalized or "human-check" in normalized:
+        return "human_check_required"
+    if "usage:" in normalized or "警告" in output:
+        return "required_argument_missing"
+    if "unknown" in normalized:
+        return "unknown_command"
+    if "failed:" in normalized or "error" in normalized:
+        return "runtime_error"
+    if code == 2:
+        return "blocked"
+    return "command_failed"
+
+
+def _elapsed_ms(started: float) -> int:
+    return max(int((perf_counter() - started) * 1000), 0)
+
+
+def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
+    repo_root = repo_root_from_args(args)
+    event_logger = RuntimeEventLogger(repo_root=repo_root, component="ctl")
+    command_path = _command_path(args)
+    started = perf_counter()
+    event_logger.emit(
+        "runtime_command_started",
+        command=command_path,
+        input=_runtime_log_input(args, repo_root),
+    )
+    try:
+        code, output = _run_impl(args, color=color)
+    except Exception as exc:
+        event_logger.emit(
+            "runtime_command_failed",
+            command=command_path,
+            error_type=type(exc).__name__,
+            input=_runtime_log_input(args, repo_root),
+            output={
+                "status": "failed",
+                "exit_code": 1,
+                "duration_ms": _elapsed_ms(started),
+                "output_bytes": 0,
+                "reason": "exception",
+                "error": str(exc),
+            },
+        )
+        raise
+    event_logger.emit(
+        "runtime_command_completed",
+        command=command_path,
+        input=_runtime_log_input(args, repo_root),
+        output={
+            "status": _runtime_status_for_exit_code(code),
+            "exit_code": code,
+            "duration_ms": _elapsed_ms(started),
+            "output_bytes": len(output.encode("utf-8")),
+            "reason": _runtime_reason_for_result(code, output),
+        },
+    )
+    return code, output
 
 
 def main(argv: Sequence[str] | None = None) -> int:

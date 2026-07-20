@@ -136,11 +136,12 @@ runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fi
 ```
 
 - Confirm: corrective-action-fix initialization uses an existing `work/db/...` corrective action report as long-lived Knowledge cleanup evidence.
-- Input:
-  - pytest node: above node id
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_init_corrective_action_fix.py:280`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - inline input: corrective action report Markdown under `work/db/ariadne-knowledge-platform/rag/corrective-action-report/`
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - Expected:
   - `work_cleanup.ready_for_check` is true
   - `next_action.action == "check-work-cleanup"`
@@ -157,7 +158,7 @@ runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fi
 - 確認内容: pytest case `init corrective action fix run missing report has no report artifact` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_init_corrective_action_fix.py:280`
+  - source: `runtime/tests/test_init_corrective_action_fix.py:298`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `artifact_index`
@@ -174,7 +175,7 @@ runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fi
 - 確認内容: pytest case `init corrective action fix parser and main paths` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_init_corrective_action_fix.py:293`
+  - source: `runtime/tests/test_init_corrective_action_fix.py:311`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `args`

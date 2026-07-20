@@ -85,11 +85,12 @@ runtime/tests/test_corrective_action_report.py::test_corrective_action_report_re
 ```
 
 - Confirm: approved corrective action report sources under `work/db/...` are registered as long-lived Knowledge cleanup evidence.
-- Input:
-  - pytest node: above node id
-  - source: `runtime/tests/test_corrective_action_report.py:181`
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_corrective_action_report.py:191`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - inline input: approved corrective action report Markdown under `work/db/ariadne-knowledge-platform/rag/corrective-action-report/`
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - Expected:
   - `work_cleanup.ready_for_check` is true
   - `next_action.action == "check-work-cleanup"`
@@ -106,7 +107,7 @@ runtime/tests/test_corrective_action_report.py::test_corrective_action_report_re
 - 確認内容: pytest case `corrective action report register missing report and show missing` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_corrective_action_report.py:181`
+  - source: `runtime/tests/test_corrective_action_report.py:212`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `context`
@@ -123,7 +124,7 @@ runtime/tests/test_corrective_action_report.py::test_corrective_action_report_pa
 - 確認内容: pytest case `corrective action report parser and main paths` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_corrective_action_report.py:211`
+  - source: `runtime/tests/test_corrective_action_report.py:242`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `register_args`, `show_args`
