@@ -149,10 +149,10 @@ runtime/tests/test_observability_metrics.py::test_duration_timer_records_elapsed
 - pytest node id:
 
 ```text
-runtime/tests/test_observability_metrics.py::test_collector_defaults_log_dir_under_runtime_logs
+runtime/tests/test_observability_metrics.py::test_collector_defaults_log_dir_under_repo_logs
 ```
 
-- 確認内容: pytest case `collector defaults log dir under runtime logs` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
+- 確認内容: pytest case `collector defaults log dir under repo logs` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_observability_metrics.py:87`

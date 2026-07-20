@@ -31,7 +31,7 @@ Ariadne は、AI Agent が作業を進める前に必要な文脈、判断、証
 まず読む場所:
 
 1. [docs/README.md](docs/README.md)
-2. [docs/governance/README.md](docs/governance/README.md)
+2. [docs/governance/ariadne/README.md](docs/governance/ariadne/README.md)
 3. [docs/workflows/README.md](docs/workflows/README.md)
 4. [docs/reference/repository-structure.md](docs/reference/repository-structure.md)
 
@@ -94,7 +94,9 @@ work/       per-workflow artifacts and cloned sources
 | Area | Document |
 | --- | --- |
 | Docs index | [docs/README.md](docs/README.md) |
-| Platform Governance | [docs/governance/README.md](docs/governance/README.md) |
+| Governance index | [docs/governance/README.md](docs/governance/README.md) |
+| Ariadne Governance | [docs/governance/ariadne/README.md](docs/governance/ariadne/README.md) |
+| Implementation Governance | [docs/governance/implementation/README.md](docs/governance/implementation/README.md) |
 | Workflow index | [docs/workflows/README.md](docs/workflows/README.md) |
 | Runtime CLI | [docs/reference/runtime.md](docs/reference/runtime.md) |
 | Templates | [docs/reference/templates.md](docs/reference/templates.md) |

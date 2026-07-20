@@ -105,7 +105,7 @@ runtime/posix-bash/aiwf.sh
 
 `windows-script/aiwf.cmd` / `windows-script/aiwf.ps1` と `posix-bash/aiwf.sh` は、OS別shellから `common/ctl.py`、pytest、UT仕様同期、BOM scan / strip へ入るための薄いruntime入口です。
 
-`observability/metrics.py` は、workflow / agent / token / context / cost / error の観測値を記録します。Runtime全体の時系列ログは `runtime/logs/runtime-metrics-YYYYMM.jsonl` へ月次ローテーションで追記し、workflow単位の要約は `work/<work-id>/test-evidence/runtime-metrics.json` と `work/<work-id>/context/runtime-metrics.json` に保存できます。
+`observability/metrics.py` は、workflow / agent / token / context / cost / error の観測値を記録します。Runtime全体の時系列ログは `logs/runtime-metrics-YYYYMM.jsonl` へ月次ローテーションで追記し、workflow単位の要約は `work/<work-id>/test-evidence/runtime-metrics.json` と `work/<work-id>/context/runtime-metrics.json` に保存できます。
 
 `normalize_documents.py` は、Markdown report を metadata 付きの RAG document JSON に変換します。
 

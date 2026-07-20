@@ -20,7 +20,7 @@ Runtime Observability は、Ariadne AI Workflow Platform の runtime がどの�
 Runtime全体の時系列ログは、既定で月次ローテーションされます。
 
 ```text
-runtime/logs/runtime-metrics-YYYYMM.jsonl
+logs/runtime-metrics-YYYYMM.jsonl
 ```
 
 1イベントを1 JSON行として追記します。
@@ -33,7 +33,7 @@ runtime/logs/runtime-metrics-YYYYMM.jsonl
 {"event":"workflow_completed","workflow_name":"/runtime-health-check","duration_ms":3200}
 ```
 
-`runtime/logs/` はローカル生成物であり、Git管理対象にしません。
+`logs/` はローカル生成物であり、Git管理対象にしません。
 
 ## Workflow単位の証跡
 
@@ -52,7 +52,7 @@ work/<work-id>/context/runtime-metrics.json
 成功時、Human Check停止時、例外停止時のいずれでも、可能な範囲で次の出力を残します。
 
 ```text
-runtime/logs/runtime-metrics-YYYYMM.jsonl
+logs/runtime-metrics-YYYYMM.jsonl
 work/<work-id>/test-evidence/runtime-metrics.json
 work/<work-id>/context/runtime-metrics.json
 work/<work-id>/context/context-manifest.json

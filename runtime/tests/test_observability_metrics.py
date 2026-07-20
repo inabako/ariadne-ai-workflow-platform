@@ -17,24 +17,24 @@ def jsonl_rows(path: Path) -> list[dict]:
 def test_monthly_log_path_uses_year_month_suffix() -> None:
     now = datetime(2026, 7, 9, tzinfo=timezone.utc)
 
-    path = logger.monthly_log_path(Path("runtime/logs"), now=now)
+    path = logger.monthly_log_path(Path("logs"), now=now)
 
-    assert path.as_posix() == "runtime/logs/runtime-metrics-202607.jsonl"
+    assert path.as_posix() == "logs/runtime-metrics-202607.jsonl"
 
 
 def test_resolve_log_path_rotates_base_runtime_metrics_file() -> None:
     now = datetime(2026, 8, 1, tzinfo=timezone.utc)
 
-    path = logger.resolve_log_path(base_path=Path("runtime/logs/runtime-metrics.jsonl"), now=now)
+    path = logger.resolve_log_path(base_path=Path("logs/runtime-metrics.jsonl"), now=now)
 
-    assert path.as_posix() == "runtime/logs/runtime-metrics-202608.jsonl"
+    assert path.as_posix() == "logs/runtime-metrics-202608.jsonl"
 
 
 def test_resolve_log_path_can_disable_rotation_for_base_or_directory() -> None:
-    base_path = Path("runtime/logs/runtime-metrics.jsonl")
+    base_path = Path("logs/runtime-metrics.jsonl")
 
     assert logger.resolve_log_path(base_path=base_path, rotate_monthly=False) == base_path
-    assert logger.resolve_log_path(log_dir=Path("runtime/logs"), rotate_monthly=False).as_posix() == "runtime/logs/runtime-metrics.jsonl"
+    assert logger.resolve_log_path(log_dir=Path("logs"), rotate_monthly=False).as_posix() == "logs/runtime-metrics.jsonl"
 
 
 def test_append_jsonl_appends_one_record_per_line(tmp_path: Path) -> None:
@@ -84,10 +84,10 @@ def test_duration_timer_records_elapsed_duration() -> None:
     assert timer["duration_ms"] >= 0
 
 
-def test_collector_defaults_log_dir_under_runtime_logs(tmp_path: Path) -> None:
+def test_collector_defaults_log_dir_under_repo_logs(tmp_path: Path) -> None:
     collector = RuntimeMetricsCollector(repo_root=tmp_path)
 
-    assert collector.log_path().parent == tmp_path / "runtime" / "logs"
+    assert collector.log_path().parent == tmp_path / "logs"
 
 
 def test_collector_records_non_fatal_log_write_warning(tmp_path: Path) -> None:
@@ -106,7 +106,7 @@ def test_collector_records_workflow_agent_token_context_and_monthly_jsonl(tmp_pa
         repo_root=tmp_path,
         workflow_id="runtime-health-check",
         workflow_name="/runtime-health-check",
-        log_dir=tmp_path / "runtime" / "logs",
+        log_dir=tmp_path / "logs",
     )
 
     collector.workflow_started()
@@ -138,7 +138,7 @@ def test_collector_records_workflow_agent_token_context_and_monthly_jsonl(tmp_pa
 
 
 def test_collector_records_human_check_evidence_and_runtime_error(tmp_path: Path) -> None:
-    collector = RuntimeMetricsCollector(repo_root=tmp_path, workflow_name="/demo", log_dir=tmp_path / "runtime" / "logs")
+    collector = RuntimeMetricsCollector(repo_root=tmp_path, workflow_name="/demo", log_dir=tmp_path / "logs")
 
     collector.workflow_started()
     collector.human_check_required(reason="needs approval")
@@ -154,7 +154,7 @@ def test_collector_records_human_check_evidence_and_runtime_error(tmp_path: Path
 
 def test_collector_failed_workflow_saves_human_check_required_evidence(tmp_path: Path) -> None:
     work_dir = tmp_path / "work" / "issue-1"
-    collector = RuntimeMetricsCollector(repo_root=tmp_path, work_dir=work_dir, log_dir=tmp_path / "runtime" / "logs")
+    collector = RuntimeMetricsCollector(repo_root=tmp_path, work_dir=work_dir, log_dir=tmp_path / "logs")
 
     collector.workflow_started()
     result = collector.workflow_failed(error="boom")
@@ -172,7 +172,7 @@ def test_collector_saves_workflow_evidence_and_registers_context(tmp_path: Path)
         repo_root=repo_root,
         work_dir=work_dir,
         workflow_name="/runtime-health-check",
-        log_dir=repo_root / "runtime" / "logs",
+        log_dir=repo_root / "logs",
     )
 
     collector.workflow_started()
@@ -190,11 +190,11 @@ def test_collector_saves_workflow_evidence_and_registers_context(tmp_path: Path)
 
 
 def test_collector_evidence_summary_can_skip_work_dir_or_manifest_registration(tmp_path: Path) -> None:
-    no_work = RuntimeMetricsCollector(repo_root=tmp_path, log_dir=tmp_path / "runtime" / "logs")
+    no_work = RuntimeMetricsCollector(repo_root=tmp_path, log_dir=tmp_path / "logs")
     assert no_work.save_evidence_summary()["status"] == "skipped"
 
     work_dir = tmp_path / "work" / "issue-1"
-    collector = RuntimeMetricsCollector(repo_root=tmp_path, work_dir=work_dir, log_dir=tmp_path / "runtime" / "logs")
+    collector = RuntimeMetricsCollector(repo_root=tmp_path, work_dir=work_dir, log_dir=tmp_path / "logs")
     collector.workflow_started()
     result = collector.save_evidence_summary(register_context=False)
 
@@ -207,7 +207,7 @@ def test_collector_evidence_summary_returns_warning_without_raising(tmp_path: Pa
     work_dir = tmp_path / "work" / "issue-1"
     work_dir.mkdir(parents=True)
     (work_dir / "test-evidence").write_text("occupied", encoding="utf-8")
-    collector = RuntimeMetricsCollector(repo_root=tmp_path, work_dir=work_dir, log_dir=tmp_path / "runtime" / "logs")
+    collector = RuntimeMetricsCollector(repo_root=tmp_path, work_dir=work_dir, log_dir=tmp_path / "logs")
 
     result = collector.save_evidence_summary()
 

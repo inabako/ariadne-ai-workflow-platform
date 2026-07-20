@@ -40,7 +40,7 @@ def resolve_log_path(
         suffix = path.suffix or ".jsonl"
         stem = path.stem or "runtime-metrics"
         return path.with_name(f"{stem}-{(now or _now_utc()).strftime('%Y%m')}{suffix}")
-    directory = log_dir or Path("runtime") / "logs"
+    directory = log_dir or Path("logs")
     if rotate_monthly:
         return monthly_log_path(directory, now=now)
     return directory / "runtime-metrics.jsonl"

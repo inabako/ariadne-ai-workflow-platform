@@ -55,5 +55,5 @@ Feedbackがたまったら `/self-improvement` を実行します。
 ## 関連資料
 
 - [Self-Improvement Workflow](../workflows/self-improvement.md)
-- [Workflow Evolution Policy](../governance/workflow-evolution-policy.md)
-- [Platform Fit Check](../governance/platform-fit-check.md)
+- [Workflow Evolution Policy](../governance/ariadne/workflow-evolution-policy.md)
+- [Platform Fit Check](../governance/ariadne/platform-fit-check.md)

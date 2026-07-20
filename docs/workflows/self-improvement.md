@@ -182,7 +182,7 @@ work/issue-<issue-number>/
 
 ## Platform Governance
 
-Issue化前に [Platform Fit Check](../governance/platform-fit-check.md) を確認します。
+Issue化前に [Platform Fit Check](../governance/ariadne/platform-fit-check.md) を確認します。
 
 通過できない改善案はIssue化せず、Feedback report上でRejectedまたはDeferredにします。
 

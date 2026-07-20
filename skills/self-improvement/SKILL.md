@@ -107,4 +107,4 @@ GitHub Issue作成、branch作成、push、Pull Request作成、RAG登録、clos
 - 既存のGitHub / SCM helper logicを重複実装しません。
 - branch名は `feature/issue-<issue-number>` に固定します。
 - work folderは `work/issue-<issue-number>` に固定します。
-- Issue作成前に `docs/governance/` とPlatform Fit Checkを確認します。
+- Issue作成前に `docs/governance/ariadne/` とPlatform Fit Checkを確認します。

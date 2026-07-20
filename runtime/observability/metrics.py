@@ -27,7 +27,7 @@ def _duration_ms(started: float | None) -> int:
 
 
 def _default_log_dir(repo_root: Path) -> Path:
-    return repo_root / "runtime" / "logs"
+    return repo_root / "logs"
 
 
 def register_runtime_metrics_context(

@@ -8,7 +8,7 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 
 1. [Brand Guide](brand/README.md)
    - Ariadneという名前、Context Firstの思想、糸巻の意味、AIと人間の役割を確認する。
-2. [Platform Governance](governance/README.md)
+2. [Platform Governance](governance/ariadne/README.md)
    - 改善時に守る設計思想、責任境界、Platform Fit Checkを確認する。
 3. [Workflows](workflows/README.md)
    - どの slash command / Skill を使うかを決める。
@@ -36,13 +36,14 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 
 | Document | Purpose |
 | --- | --- |
-| [Platform Governance](governance/README.md) | Governance全体の入口、各文書へのリンク、Self-Improvement Workflowとの関係 |
-| [Platform Governance Charter](governance/platform-governance.md) | Ariadne全体のMission、Philosophy、Core Principles、Non Goals |
-| [Architecture Principles](governance/architecture-principles.md) | 責務分離、Context First、Dispatcher First、Human Check、UTF-8などの設計原則 |
-| [Workflow Evolution Policy](governance/workflow-evolution-policy.md) | Feedback、Issue、Human Review、Evidenceへつなぐworkflow改善方針 |
-| [Human Responsibility](governance/human-responsibility.md) | HumanとAI Agentの責任境界 |
-| [Platform Fit Check](governance/platform-fit-check.md) | 改善案がplatform思想に適合するか判断するchecklist |
-| [Repository Governance](governance/repository-governance.md) | Repository Curation、branch、Issue、Evidence、UTF-8、RAG、DuckDB運用方針 |
+| [Platform Governance](governance/ariadne/README.md) | Governance全体の入口、各文書へのリンク、Self-Improvement Workflowとの関係 |
+| [Platform Governance Charter](governance/ariadne/platform-governance.md) | Ariadne全体のMission、Philosophy、Core Principles、Non Goals |
+| [Architecture Principles](governance/ariadne/architecture-principles.md) | 責務分離、Context First、Dispatcher First、Human Check、UTF-8などの設計原則 |
+| [Workflow Evolution Policy](governance/ariadne/workflow-evolution-policy.md) | Feedback、Issue、Human Review、Evidenceへつなぐworkflow改善方針 |
+| [Human Responsibility](governance/ariadne/human-responsibility.md) | HumanとAI Agentの責任境界 |
+| [Platform Fit Check](governance/ariadne/platform-fit-check.md) | 改善案がplatform思想に適合するか判断するchecklist |
+| [Repository Governance](governance/ariadne/repository-governance.md) | Repository Curation、branch、Issue、Evidence、UTF-8、RAG、DuckDB運用方針 |
+| [Implementation Governance](governance/implementation/README.md) | Ariadneが生成・変更・保守する成果物の実装規約 |
 
 ## Brand Docs
 

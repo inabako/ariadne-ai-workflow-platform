@@ -33,5 +33,6 @@ coverage.xml
 htmlcov/
 runtime/.coverage_html/
 runtime/.coverage.json
+logs/
 runtime/logs/
 .gitignore
