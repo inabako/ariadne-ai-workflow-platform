@@ -29,9 +29,9 @@
 | `infrastructure/identity-infra-template/` | OpenLDAP identity / directory infrastructure | `docs/workflows/realtime-iac.md` | available |
 | `infrastructure/opentelemetry-collector-template/` | OpenTelemetry Collector receiver / processor / exporter infrastructure | `docs/workflows/realtime-iac.md` | available |
 | `integration/cloud-emulators/` | Local cloud / external service emulator environment | `docs/workflows/system-integration-quality.md` | available |
-| `mcp/local-model-mcp-server-template/` | Local model MCP server capability provider | `docs/workflows/mcp-server-group-implementation.md` | available |
+| `mcp/mcp-server-template/` | FastMCP adapter-separated MCP server capability provider | `docs/workflows/mcp-server-group-implementation.md` | available |
 | `mcp/mcp-client-template/` | Reusable MCP client facade / session manager | `docs/workflows/mcp-server-group-implementation.md` | available |
-| `mcp/local-ai-agent-runtime-template/` | Local AI agent runtime / job workflow engine | `docs/workflows/mcp-server-group-implementation.md` | available |
+| `mcp/ai-agent-runtime-template/` | AI agent runtime / job workflow engine | `docs/workflows/mcp-server-group-implementation.md` | available |
 | `mcp/discord-gateway-template/` | Discord operation gateway for local Agent Runtime | `docs/workflows/mcp-server-group-implementation.md` | available |
 
 ## Workflow Rule

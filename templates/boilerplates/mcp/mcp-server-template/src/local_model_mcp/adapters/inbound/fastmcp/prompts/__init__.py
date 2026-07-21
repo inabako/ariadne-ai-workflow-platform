@@ -1,0 +1,1 @@
+"""FastMCP prompt registration helpers."""

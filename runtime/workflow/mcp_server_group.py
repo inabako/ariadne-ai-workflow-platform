@@ -26,7 +26,7 @@ ARTIFACT_TYPE = "mcp-server-group-implementation-context"
 DEFAULT_SCHEMA = MCP_SERVER_GROUP_IMPLEMENTATION_CONTEXT_SCHEMA
 COMPONENTS = {
     "local-model-mcp-server": {
-        "template_path": "templates/boilerplates/mcp/local-model-mcp-server-template",
+        "template_path": "templates/boilerplates/mcp/mcp-server-template",
         "destination": "local-model-mcp-server",
         "role": "MCP Server capability provider",
     },
@@ -36,7 +36,7 @@ COMPONENTS = {
         "role": "Reusable MCP Client facade",
     },
     "local-ai-agent-runtime": {
-        "template_path": "templates/boilerplates/mcp/local-ai-agent-runtime-template",
+        "template_path": "templates/boilerplates/mcp/ai-agent-runtime-template",
         "destination": "local-ai-agent-runtime",
         "role": "Agent Runtime job/workflow engine",
     },

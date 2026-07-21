@@ -31,7 +31,7 @@ created_at:
 
 | Component | Type | Language / Framework | Template Candidate | Match |
 | --- | --- | --- | --- | --- |
-|  | Go gateway / Next.js webapp / PyQt GUI / Flutter app / realtime gateway IaC / platform infrastructure / database infrastructure / middleware infrastructure / identity infrastructure / MCP server / MCP client / agent runtime / Discord gateway / other |  | go-microservice-template / nextjs-app-template / pyqt-app-template / flutter-app-template / microservice-infra-template / platform-infra-template / database-infra-template / middleware-infra-template / identity-infra-template / local-model-mcp-server-template / mcp-client-template / local-ai-agent-runtime-template / discord-gateway-template / none | yes / no |
+|  | Go gateway / Next.js webapp / PyQt GUI / Flutter app / realtime gateway IaC / platform infrastructure / database infrastructure / middleware infrastructure / identity infrastructure / MCP server / MCP client / agent runtime / Discord gateway / other |  | go-microservice-template / nextjs-app-template / pyqt-app-template / flutter-app-template / microservice-infra-template / platform-infra-template / database-infra-template / middleware-infra-template / identity-infra-template / mcp-server-template / mcp-client-template / ai-agent-runtime-template / discord-gateway-template / none | yes / no |
 
 ## Template Availability
 
@@ -46,9 +46,9 @@ created_at:
 | database-infra-template | `templates/boilerplates/infrastructure/database-infra-template/` | yes / no | `docs/workflows/realtime-iac.md` |
 | middleware-infra-template | `templates/boilerplates/infrastructure/middleware-infra-template/` | yes / no | `docs/workflows/realtime-iac.md` |
 | identity-infra-template | `templates/boilerplates/infrastructure/identity-infra-template/` | yes / no | `docs/workflows/realtime-iac.md` |
-| local-model-mcp-server-template | `templates/boilerplates/mcp/local-model-mcp-server-template/` | yes / no | `docs/workflows/mcp-server-group-implementation.md` |
+| mcp-server-template | `templates/boilerplates/mcp/mcp-server-template/` | yes / no | `docs/workflows/mcp-server-group-implementation.md` |
 | mcp-client-template | `templates/boilerplates/mcp/mcp-client-template/` | yes / no | `docs/workflows/mcp-server-group-implementation.md` |
-| local-ai-agent-runtime-template | `templates/boilerplates/mcp/local-ai-agent-runtime-template/` | yes / no | `docs/workflows/mcp-server-group-implementation.md` |
+| ai-agent-runtime-template | `templates/boilerplates/mcp/ai-agent-runtime-template/` | yes / no | `docs/workflows/mcp-server-group-implementation.md` |
 | discord-gateway-template | `templates/boilerplates/mcp/discord-gateway-template/` | yes / no | `docs/workflows/mcp-server-group-implementation.md` |
 
 ## Decision

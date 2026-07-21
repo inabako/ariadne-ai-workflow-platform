@@ -26,9 +26,9 @@ aiwfctl mcp-group run-workflow --work-id <work-id> --components local-model-mcp-
 
 | Component | Template | Destination |
 | --- | --- | --- |
-| `local-model-mcp-server` | `templates/boilerplates/mcp/local-model-mcp-server-template` | `work/<work-id>/implementation/mcp-server-group/local-model-mcp-server` |
+| `local-model-mcp-server` | `templates/boilerplates/mcp/mcp-server-template` | `work/<work-id>/implementation/mcp-server-group/local-model-mcp-server` |
 | `mcp-client` | `templates/boilerplates/mcp/mcp-client-template` | `work/<work-id>/implementation/mcp-server-group/mcp-client` |
-| `local-ai-agent-runtime` | `templates/boilerplates/mcp/local-ai-agent-runtime-template` | `work/<work-id>/implementation/mcp-server-group/local-ai-agent-runtime` |
+| `local-ai-agent-runtime` | `templates/boilerplates/mcp/ai-agent-runtime-template` | `work/<work-id>/implementation/mcp-server-group/local-ai-agent-runtime` |
 | `discord-gateway` | `templates/boilerplates/mcp/discord-gateway-template` | `work/<work-id>/implementation/mcp-server-group/discord-gateway` |
 
 Default component は `local-model-mcp-server,mcp-client` です。

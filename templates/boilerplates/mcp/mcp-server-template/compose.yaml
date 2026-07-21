@@ -1,0 +1,12 @@
+services:
+  local-model-mcp:
+    build: .
+    environment:
+      LOCAL_MODEL_MCP_INPUT_ROOT: /app/workspace/input
+      LOCAL_MODEL_MCP_OUTPUT_ROOT: /app/workspace/output
+      LOCAL_MODEL_MCP_MODEL_ID: mock-local-model
+      LOCAL_MODEL_MCP_TRANSPORT: stdio
+    volumes:
+      - ./workspace/input:/app/workspace/input:ro
+      - ./workspace/output:/app/workspace/output
+    command: ["python", "-m", "local_model_mcp", "--health"]

@@ -9,7 +9,7 @@ BOILERPLATES = REPO_ROOT / "templates" / "boilerplates"
 
 def test_mcp_layered_boilerplates_have_required_template_contract() -> None:
     expected = {
-        "local-model-mcp-server-template": [
+        "mcp-server-template": [
             "README.md",
             "pyproject.toml",
             "config/server.example.yaml",
@@ -17,7 +17,21 @@ def test_mcp_layered_boilerplates_have_required_template_contract() -> None:
             "config/prompts.example.yaml",
             "config/resources.example.yaml",
             "config/tools.example.yaml",
+            "Dockerfile",
+            "compose.yaml",
+            "src/local_model_mcp/bootstrap.py",
             "src/local_model_mcp/server.py",
+            "src/local_model_mcp/application/dto/requests.py",
+            "src/local_model_mcp/application/dto/responses.py",
+            "src/local_model_mcp/application/ports/inbound/use_case_port.py",
+            "src/local_model_mcp/application/ports/outbound/model_port.py",
+            "src/local_model_mcp/application/ports/outbound/workspace_port.py",
+            "src/local_model_mcp/application/use_cases/local_model_capabilities.py",
+            "src/local_model_mcp/adapters/inbound/fastmcp/server.py",
+            "src/local_model_mcp/adapters/inbound/fastmcp/mappers/request_mapper.py",
+            "src/local_model_mcp/adapters/inbound/fastmcp/mappers/response_mapper.py",
+            "src/local_model_mcp/adapters/inbound/fastmcp/mappers/error_mapper.py",
+            "src/local_model_mcp/adapters/outbound/workspace/repository.py",
             "src/local_model_mcp/tool_policy.py",
             "src/local_model_mcp/audit.py",
             "src/local_model_mcp/http_security.py",
@@ -27,8 +41,17 @@ def test_mcp_layered_boilerplates_have_required_template_contract() -> None:
             "docs/prompt-migration-guide.md",
             "docs/security-guidelines.md",
             "docs/ollama-integration.md",
+            "docs/dependency-rules.md",
+            "docs/adding-a-tool.md",
+            "docs/adding-an-adapter.md",
+            "docs/deployment.md",
+            "docs/fastmcp-adapter-separation-report.md",
             "scripts/inspect.sh",
             "tests/test_local_model_mcp_server.py",
+            "scripts/run.sh",
+            "scripts/run.ps1",
+            "scripts/test.sh",
+            "scripts/test.ps1",
             "scripts/validate.sh",
             "evidence/.gitkeep",
         ],
@@ -52,7 +75,7 @@ def test_mcp_layered_boilerplates_have_required_template_contract() -> None:
             "scripts/validate.sh",
             "evidence/.gitkeep",
         ],
-        "local-ai-agent-runtime-template": [
+        "ai-agent-runtime-template": [
             "README.md",
             "pyproject.toml",
             "config/runtime.example.yaml",
@@ -115,9 +138,9 @@ def test_boilerplate_index_lists_mcp_layered_templates() -> None:
     reference = (REPO_ROOT / "docs" / "reference" / "templates.md").read_text(encoding="utf-8")
 
     for template_name in [
-        "local-model-mcp-server-template/",
+        "mcp-server-template/",
         "mcp-client-template/",
-        "local-ai-agent-runtime-template/",
+        "ai-agent-runtime-template/",
         "discord-gateway-template/",
     ]:
         assert template_name in index
