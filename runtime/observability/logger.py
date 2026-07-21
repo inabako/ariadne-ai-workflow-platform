@@ -14,6 +14,8 @@ DEFAULT_RUNTIME_EVENT_LOG_DIR = Path("logs") / "runtime"
 DEFAULT_RUNTIME_EVENT_LOG_FILE = "runtime-events.log"
 DEFAULT_RUNTIME_EVENT_MAX_BYTES = 5 * 1024 * 1024
 DEFAULT_RUNTIME_EVENT_BACKUP_COUNT = 5
+DEFAULT_RUNTIME_EVENT_SCHEMA_VERSION = "1.0"
+DEFAULT_RUNTIME_TRACE_ID_BYTES = 12
 SENSITIVE_KEYS = ("secret", "token", "password", "credential", "apikey", "api_key", "private_key")
 
 
@@ -83,7 +85,7 @@ def runtime_event_log_path(repo_root: Path, log_dir: Path | None = None) -> Path
 
 
 def generate_trace_id() -> str:
-    return secrets.token_hex(4)
+    return secrets.token_hex(DEFAULT_RUNTIME_TRACE_ID_BYTES)
 
 
 def _is_sensitive_key(key: str) -> bool:
@@ -185,6 +187,7 @@ class RuntimeEventLogger:
         *,
         repo_root: Path,
         component: str,
+        workflow: str = "",
         trace_id: str | None = None,
         log_dir: Path | None = None,
         max_bytes: int = DEFAULT_RUNTIME_EVENT_MAX_BYTES,
@@ -192,6 +195,7 @@ class RuntimeEventLogger:
     ) -> None:
         self.repo_root = repo_root
         self.component = component
+        self.workflow = workflow
         self.trace_id = trace_id or os.environ.get("AIWF_TRACE_ID") or generate_trace_id()
         self.log_path = runtime_event_log_path(repo_root, log_dir=log_dir)
         self.max_bytes = max_bytes
@@ -203,15 +207,28 @@ class RuntimeEventLogger:
         self,
         event: str,
         *,
+        level: str = "info",
+        workflow: str | None = None,
+        phase: str = "",
+        operation_id: str = "",
+        attempt: int = 1,
+        diagnostics: dict[str, Any] | None = None,
         input: dict[str, Any] | None = None,
         output: dict[str, Any] | None = None,
         **metadata: Any,
     ) -> dict[str, Any]:
         self.sequence += 1
         payload = {
+            **metadata,
+            "schema_version": DEFAULT_RUNTIME_EVENT_SCHEMA_VERSION,
+            "level": level or "info",
             "component": self.component,
             "event": event,
-            **metadata,
+            "workflow": self.workflow if workflow is None else workflow,
+            "phase": phase,
+            "operation_id": operation_id,
+            "attempt": attempt if isinstance(attempt, int) and attempt > 0 else 1,
+            "diagnostics": diagnostics or {},
             "input": input or {},
             "output": output or {},
         }

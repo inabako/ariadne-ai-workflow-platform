@@ -64,6 +64,13 @@ def test_append_jsonl_returns_warning_without_raising_when_parent_is_file(tmp_pa
     assert "runtime metrics write failed" in result["warning"]
 
 
+def test_generate_trace_id_returns_24_hex_characters() -> None:
+    trace_id = logger.generate_trace_id()
+
+    assert len(trace_id) == 24
+    int(trace_id, 16)
+
+
 def test_runtime_event_logger_writes_pipe_prefixed_json_line(tmp_path: Path) -> None:
     event_logger = logger.RuntimeEventLogger(repo_root=tmp_path, component="dispatcher", trace_id="8b8d3b4c")
 
@@ -83,9 +90,16 @@ def test_runtime_event_logger_writes_pipe_prefixed_json_line(tmp_path: Path) -> 
     assert " | 8b8d3b4c | 00001 | " in lines[0]
     payload = runtime_event_payload(lines[0])
     assert payload == {
+        "schema_version": "1.0",
+        "level": "info",
         "component": "dispatcher",
         "dispatcher": "rag",
         "event": "dispatcher_selected",
+        "workflow": "",
+        "phase": "",
+        "operation_id": "",
+        "attempt": 1,
+        "diagnostics": {},
         "input": {"api_token": "***", "query": "runtime"},
         "output": {"route": "rag"},
     }

@@ -26,7 +26,6 @@ db/registries/registry.duckdb
 # Python cache
 __pycache__/
 *.py[cod]
-.pytest_cache/
 runtime/.pytest_cache/
 .venv/
 .coverage

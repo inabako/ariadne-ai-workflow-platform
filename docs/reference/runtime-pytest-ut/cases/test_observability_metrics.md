@@ -93,6 +93,23 @@ runtime/tests/test_observability_metrics.py::test_append_jsonl_returns_warning_w
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
 
+#### RT-UT-CASE-212TRACE
+
+- pytest node id:
+
+```text
+runtime/tests/test_observability_metrics.py::test_generate_trace_id_returns_24_hex_characters
+```
+
+- 確認内容: Runtime Event Log の自動生成 trace id が衝突しにくい24桁hexで生成されることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_observability_metrics.py:67`
+  - fixture/arg: なし
+  - parameter: names=なし, case=なし
+  - inline input: `logger.generate_trace_id()`
+- 期待結果: 生成された trace id は24文字で、hex文字列として解釈できる。
+
 #### RT-UT-CASE-212A
 
 - pytest node id:

@@ -8,6 +8,7 @@ from types import SimpleNamespace
 from uuid import UUID
 
 from runtime.common import ctl, registry_store
+from runtime.observability import command_event
 from runtime.rag import duckdb_store
 
 
@@ -154,6 +155,17 @@ def test_ctl_run_writes_runtime_event_log_for_each_command(tmp_path: Path) -> No
     assert started["component"] == "ctl"
     assert started["event"] == "runtime_command_started"
     assert started["command"] == "help list"
+    assert started["schema_version"] == "1.0"
+    assert started["level"] == "info"
+    assert started["workflow"] == "help"
+    assert started["phase"] == "execute"
+    assert started["operation_id"] == "help:list"
+    assert started["attempt"] == 1
+    assert started["diagnostics"] == {
+        "recoverable": False,
+        "next_action": "",
+        "resume_command": "",
+    }
     assert "command" not in started["input"]
     assert started["input"] == {
         "json": False,
@@ -161,11 +173,34 @@ def test_ctl_run_writes_runtime_event_log_for_each_command(tmp_path: Path) -> No
         "work_id": "",
     }
     assert completed["event"] == "runtime_command_completed"
+    assert completed["level"] == "info"
+    assert completed["workflow"] == "help"
+    assert completed["phase"] == "execute"
+    assert completed["operation_id"] == "help:list"
+    assert completed["diagnostics"] == {
+        "recoverable": False,
+        "next_action": "",
+        "resume_command": "",
+    }
     assert "command" not in completed["input"]
     assert completed["output"]["exit_code"] == 0
     assert completed["output"]["reason"] == "completed"
     assert isinstance(completed["output"]["duration_ms"], int)
     assert completed["output"]["duration_ms"] >= 0
+
+
+def test_runtime_diagnostics_for_blocked_command_include_next_action() -> None:
+    diagnostics = command_event.runtime_diagnostics_for_result(
+        "self-improvement create-feedback",
+        "blocked",
+        "required_argument_missing",
+    )
+
+    assert diagnostics == {
+        "recoverable": True,
+        "next_action": "review_command_usage",
+        "resume_command": "aiwfctl self-improvement create-feedback",
+    }
 
 
 def test_ctl_help_without_modifier_warns_and_does_not_show_list() -> None:

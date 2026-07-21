@@ -93,6 +93,23 @@ runtime/tests/test_ctl_help.py::test_ctl_run_writes_runtime_event_log_for_each_c
   - inline input: `args`, `started`, `completed`
 - 期待結果: `logs/runtime/runtime-events.log` に同一trace idで `runtime_command_started` と `runtime_command_completed` が `00001`、`00002` の順に保存される。
 
+#### RT-UT-CASE-CTL-002A
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_runtime_diagnostics_for_blocked_command_include_next_action
+```
+
+- 確認内容: blocked になった Runtime command の診断情報に、復帰可能性、次アクション、復帰コマンド候補が含まれることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py:170`
+  - fixture/arg: なし
+  - parameter: names=なし, case=なし
+  - inline input: `command_path`, `status`, `reason`
+- 期待結果: `recoverable` が `true` になり、`next_action` と `resume_command` が Runtime Event Log の `diagnostics` として利用できる形で返る。
+
 #### RT-UT-CASE-CTL-003
 
 - pytest node id:
