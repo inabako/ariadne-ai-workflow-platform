@@ -1,6 +1,6 @@
 # MCP Server Group Implementation
 
-MCP Server Group Implementation は、Ariadne の MCP 系 boilerplate を使って、MCP Server 群、Reusable MCP Client、Local AI Agent Runtime、Discord Gateway を段階的に実装するための workflow extension です。
+MCP Server Group Implementation は、Ariadne の MCP 系 boilerplate を使って、MCP Server 群、Reusable MCP Client、AI Agent Runtime、Discord Gateway を段階的に実装するための workflow extension です。
 
 目的はテンプレートを単にコピーすることではなく、サービス間の責務境界を Context First artifact に残し、Human Check が必要な構成を先に止めることです。
 
@@ -8,7 +8,7 @@ MCP Server Group Implementation は、Ariadne の MCP 系 boilerplate を使っ�
 
 - Local Model MCP Server boilerplate を MCP capability provider として展開する。
 - Reusable MCP Client boilerplate を runtime / gateway から使う境界として展開する。
-- Local AI Agent Runtime boilerplate を job / workflow execution 層として展開する。
+- AI Agent Runtime boilerplate を job / workflow execution 層として展開する。
 - Discord Gateway boilerplate を外部操作 gateway として展開する。
 - 選択した component、template copy 結果、boundary check を `work/<work-id>/context/` と `work/<work-id>/reports/` に保存する。
 

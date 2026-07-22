@@ -13,7 +13,7 @@ agent: agent
 
 ## Runtime Entrypoint
 
-Follow `.github/shared/runtime-entrypoint-policy.md`. Use `aiwfctl` / `runtime/common/ctl.py` as the official entrypoint for Context First, Human Check, GitHub knowledge maintenance, close archive, and self-improvement operations.
+Follow `.github/shared/runtime-entrypoint-policy.md`. Use `aiwfctl` / `runtime/ctl/ctl.py` as the official entrypoint for Context First, Human Check, GitHub knowledge maintenance, close archive, and self-improvement operations.
 
 On Windows 11, start from `.\runtime\windows-ps1\aiwf.ps1 ctl ...`; the PS1 runtime handles PowerShell/UTF-8/path normalization and then delegates to `aiwfctl`.
 
@@ -64,7 +64,7 @@ Use `original` when no `--target-branch` is provided.
 Initialize:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge init `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge init `
   --repository "<target-repository>" `
   --scan-mode recent `
   --repair-mode proposal `
@@ -74,21 +74,21 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
 Create analysis scaffold:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge analysis-template `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge analysis-template `
   --work-id "<work-id>"
 ```
 
 Create repair plan:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge repair-plan `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge repair-plan `
   --work-id "<work-id>"
 ```
 
 Detect small rebase candidates:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge detect-rebase `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge detect-rebase `
   --work-id "<work-id>" `
   --base "HEAD~30" `
   --head "HEAD"
@@ -97,7 +97,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
 Create GitHub sync plan:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge sync-plan `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge sync-plan `
   --work-id "<work-id>"
 ```
 
@@ -128,27 +128,27 @@ aiwfctl github-knowledge sync-apply `
 Create high-risk rebase review plan:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-plan `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-plan `
   --work-id "<work-id>"
 ```
 
 Execute approved rebase candidate:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-review-intake `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-review-intake `
   --work-id "<work-id>" `
   --human-check approved
 ```
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-package `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-package `
   --work-id "<work-id>" `
   --target-branch "<branch>" `
   --apply-mode direct
 ```
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-apply `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-apply `
   --work-id "<work-id>" `
   --package-path "work/<work-id>/context/rebase-replay-package.json" `
   --human-check approved
@@ -207,14 +207,14 @@ Message repair must not change the final tree. The runtime records before/after 
 Create RAG candidate:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rag-candidate `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rag-candidate `
   --work-id "<work-id>"
 ```
 
 Publish RAG candidate only after approval:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rag-candidate `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rag-candidate `
   --work-id "<work-id>" `
   --publish-rag `
   --human-check approved

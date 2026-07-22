@@ -16,7 +16,7 @@
 runtime/tests/test_mcp_boilerplate_templates.py::test_mcp_layered_boilerplates_have_required_template_contract
 ```
 
-- 確認内容: MCP server、MCP client、local AI agent runtime、Discord gateway の各boilerplateが必須ファイル契約を満たすことを確認します。
+- 確認内容: MCP server、MCP client、AI Agent Runtime、Discord gateway の各boilerplateが必須ファイル契約を満たすことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_mcp_boilerplate_templates.py:10`

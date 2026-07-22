@@ -45,7 +45,7 @@ Target Branch: develop
 
 ```powershell
 aiwfctl env select docker --work-id <receipt-id>
-uv run --project runtime python runtime/common/ctl.py --repo-root . context require-environment `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . context require-environment `
   --work-dir work/<receipt-id> `
   --environment docker
 ```

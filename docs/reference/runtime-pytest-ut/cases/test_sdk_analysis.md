@@ -5,7 +5,7 @@
 ## 対象
 
 - `runtime/workflow/sdk_analysis.py`
-- `runtime/common/ctl.py`
+- `runtime/ctl/ctl.py`
 
 | 項目 | 値 |
 | --- | ---: |

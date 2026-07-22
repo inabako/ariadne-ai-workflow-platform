@@ -105,7 +105,7 @@ def create_handoff(
         "required_environment": "docker",
         "recommended_next_commands": [
             f"aiwfctl env select docker --work-id {work_id}",
-            "uv run --project runtime python runtime/common/ctl.py --repo-root . context require-environment "
+            "uv run --project runtime python runtime/ctl/ctl.py --repo-root . context require-environment "
             f"--work-dir work/{work_id} --environment docker",
             "/realtime-iac",
         ],
@@ -144,7 +144,7 @@ def create_execution_plan(
         ],
         "next_commands": [
             f"aiwfctl env select docker --work-id {work_id}",
-            "uv run --project runtime python runtime/common/ctl.py --repo-root . context require-environment "
+            "uv run --project runtime python runtime/ctl/ctl.py --repo-root . context require-environment "
             f"--work-dir work/{work_id} --environment docker",
             "/realtime-iac",
         ],

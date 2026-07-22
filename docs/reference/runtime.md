@@ -4,7 +4,7 @@
 
 ## Official Runtime Entrypoint
 
-通常のworkflow実行では、`aiwfctl` / `runtime/common/ctl.py` を正式入口として使います。
+通常のworkflow実行では、`aiwfctl` / `runtime/ctl/ctl.py` を正式入口として使います。
 
 - 共通policyは `.github/shared/runtime-entrypoint-policy.md` です。
 - `runtime/workflow/*.py` は内部実装moduleです。runtime開発や単体テストを除き、workflow手順・SKILL・agent promptから直接実行しません。
@@ -14,7 +14,7 @@
 - close archive は `aiwfctl close-archive ...` で実行します。
 - self-improvement feedback は `aiwfctl self-improvement ...` で実行します。
 
-必要な操作が `aiwfctl` に存在しない場合は、その場で握りつぶさず、まず `aiwfctl self-improvement create-feedback` でFeedback reportを作成します。Human ReviewでAcceptedになったFeedbackだけを、後続の正式な改修候補にします。active workflow内で黙って `runtime/common/ctl.py` を拡張してはいけません。workflow側に新しい `python runtime/workflow/*.py ...` の直叩き手順を増やしてはいけません。
+必要な操作が `aiwfctl` に存在しない場合は、その場で握りつぶさず、まず `aiwfctl self-improvement create-feedback` でFeedback reportを作成します。Human ReviewでAcceptedになったFeedbackだけを、後続の正式な改修候補にします。active workflow内で黙って `runtime/ctl/ctl.py` を拡張してはいけません。workflow側に新しい `python runtime/workflow/*.py ...` の直叩き手順を増やしてはいけません。
 
 ## Windows 11 PowerShell Runtime
 
@@ -29,9 +29,9 @@ Windows 11 で AI workflow を実行する場合は、まず PowerShell native r
 
 `runtime/windows-script/aiwf.cmd` is the normal PATH-friendly Windows entrypoint. It delegates to `runtime/windows-script/aiwf.cmd`, which invokes `runtime/windows-script/aiwf.ps1` with process-scoped `-ExecutionPolicy Bypass`, so the repository does not require changing the user's PowerShell policy.
 
-`runtime/windows-script/aiwf.ps1` は PowerShell の UTF-8 no BOM 入出力、repo root / runtime root 解決、`uv run ... python ...` の固定だけを担当します。Context First、Human Check、GitHub knowledge maintenance などの workflow 判断は引き続き `aiwfctl` / `runtime/common/ctl.py` が担当します。
+`runtime/windows-script/aiwf.ps1` は PowerShell の UTF-8 no BOM 入出力、repo root / runtime root 解決、`uv run ... python ...` の固定だけを担当します。Context First、Human Check、GitHub knowledge maintenance などの workflow 判断は引き続き `aiwfctl` / `runtime/ctl/ctl.py` が担当します。
 
-不足している操作がある場合は、PS1 に直接 workflow logic を増やさず、まず self-improvement Feedback に流します。Accepted Feedback になった後でのみ、`runtime/common/ctl.py` の正式入口改修候補にします。
+不足している操作がある場合は、PS1 に直接 workflow logic を増やさず、まず self-improvement Feedback に流します。Accepted Feedback になった後でのみ、`runtime/ctl/ctl.py` の正式入口改修候補にします。
 
 ## POSIX Bash Runtime
 
@@ -44,9 +44,9 @@ Linux / WSL / macOS で AI workflow を実行する場合は、まず bash nativ
 ./runtime/posix-bash/aiwf.sh spec-check
 ```
 
-`runtime/posix-bash/aiwf.sh` は Bash の `set -Eeuo pipefail`、repo root / runtime root 解決、`PYTHONUTF8=1` / `PYTHONIOENCODING=utf-8`、`uv run ... python ...` の固定だけを担当します。Context First、Human Check、GitHub knowledge maintenance などの workflow 判断は引き続き `aiwfctl` / `runtime/common/ctl.py` が担当します。
+`runtime/posix-bash/aiwf.sh` は Bash の `set -Eeuo pipefail`、repo root / runtime root 解決、`PYTHONUTF8=1` / `PYTHONIOENCODING=utf-8`、`uv run ... python ...` の固定だけを担当します。Context First、Human Check、GitHub knowledge maintenance などの workflow 判断は引き続き `aiwfctl` / `runtime/ctl/ctl.py` が担当します。
 
-不足している操作がある場合は、bash に直接 workflow logic を増やさず、まず self-improvement Feedback に流します。Accepted Feedback になった後でのみ、`runtime/common/ctl.py` の正式入口改修候補にします。
+不足している操作がある場合は、bash に直接 workflow logic を増やさず、まず self-improvement Feedback に流します。Accepted Feedback になった後でのみ、`runtime/ctl/ctl.py` の正式入口改修候補にします。
 
 ## GitHub CLI Preflight
 
@@ -82,7 +82,7 @@ GitHub passwordをENVに保存しません。GitHub CLI/API と git remote の�
 
 | Script | Responsibility |
 | --- | --- |
-| `runtime/common/ctl.py` | `runtime/windows-script/aiwfctl.cmd` から呼び出される `aiwfctl help` / `aiwfctl env` の実体。help検索、Environment Dispatcher、`work/<work-id>/context/environment-selection.json` 作成を行う |
+| `runtime/ctl/ctl.py` | `runtime/windows-script/aiwfctl.cmd` から呼び出される `aiwfctl help` / `aiwfctl env` の実体。help検索、Environment Dispatcher、`work/<work-id>/context/environment-selection.json` 作成を行う |
 | `db/registries/registry.duckdb` | `aiwfctl env` が参照する利用者向けEnvironmentと内部Backend profile registry |
 | `runtime/intake/intake_requirements.py` | `work/requirements/` の要件定義書を受付ID単位で移動し、初期contextを作る |
 | `runtime/environment/preflight.py` | 必要tool / packageを確認し、install listを作る |

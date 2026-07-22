@@ -36,7 +36,7 @@ work/db/ariadne-knowledge-platform/registries/workflow_help.json
 work/db/ariadne-knowledge-platform/registries/search_terms.json
 .github/schemas/workflow-help.schema.json
 .github/schemas/search-terms.schema.json
-runtime/common/ctl.py
+runtime/ctl/ctl.py
 runtime/tests/test_ctl_help.py
 docs/reference/workflow-help.md
 .github/prompts/*.prompt.md

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/contracts/agent-runtime/evidence.schema.json",
+  "title": "Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "evidence_id", "trace_id", "workflow_id", "source", "type", "path", "status", "created_at"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "evidence_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "pattern": "^[0-9a-f]{24}$" },
+    "workflow_id": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "minLength": 1 },
+    "type": { "type": "string", "minLength": 1 },
+    "path": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["available", "missing", "blocked"] },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

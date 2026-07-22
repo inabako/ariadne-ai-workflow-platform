@@ -152,7 +152,7 @@ runtime/tests/test_flutter_multiplatform.py::test_ctl_parser_accepts_flutter_sub
 runtime/tests/test_flutter_multiplatform.py::test_aiwfctl_flutter_namespace_runs_runtime
 ```
 
-- 確認内容: `runtime/common/ctl.py` がFlutter namespaceをruntime moduleへdispatchし、CLI出力を整形することを確認します。
+- 確認内容: `runtime/ctl/ctl.py` がFlutter namespaceをruntime moduleへdispatchし、CLI出力を整形することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_flutter_multiplatform.py:192`

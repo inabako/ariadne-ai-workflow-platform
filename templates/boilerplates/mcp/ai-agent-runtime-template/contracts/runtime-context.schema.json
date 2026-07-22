@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/contracts/agent-runtime/runtime-context.schema.json",
+  "title": "RuntimeContext",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "workflow_id", "trace_id", "agent", "tools", "model", "human_check", "retry", "limits", "evidence", "checkpoint"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "workflow_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "pattern": "^[0-9a-f]{24}$" },
+    "agent": { "type": "object" },
+    "tools": { "type": "object" },
+    "model": { "type": "object" },
+    "human_check": { "type": "object" },
+    "retry": { "type": "object" },
+    "limits": { "type": "object" },
+    "evidence": { "type": "object" },
+    "checkpoint": { "type": "object" }
+  }
+}

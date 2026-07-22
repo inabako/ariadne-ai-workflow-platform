@@ -214,7 +214,7 @@ Workflowは次を行いません。
 Context First の基本確認:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . context require `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . context require `
   --work-dir work/issue-123 `
   --context environment-selection
 ```

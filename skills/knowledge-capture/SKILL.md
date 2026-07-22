@@ -196,14 +196,14 @@ work/close/improvement/<issue-id>/
 Prepare after human approval:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare --issue "<issue-id>" --require-rag
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive audit --issue "<issue-id>"
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare --issue "<issue-id>" --require-rag
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive audit --issue "<issue-id>"
 ```
 
 `close_archive.py prepare` はRAG source Markdownを自動検出し、吸収済みの具体的な知識をclose reportへ書き込みます。重要なRAG sourceが分かっている場合は、明示指定してください。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --issue "<issue-id>" `
   --source-rag "work/db/ariadne-knowledge-platform/rag/normalized/<rag-source>.json" `
   --require-rag
@@ -216,13 +216,13 @@ Do not keep source checkouts, `.git`, `.venv`, `node_modules`, build output, or 
 Prune is dry-run by default:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prune --issue "<issue-id>"
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prune --issue "<issue-id>"
 ```
 
 Actual pruning requires approval:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prune `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prune `
   --issue "<issue-id>" `
   --execute `
   --human-check approved
@@ -285,7 +285,7 @@ Create or update a Feedback report when you observe ambiguity, repeated checks, 
 Use the existing helper when creating a new report:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "<slash-command>" `
   --reporter "AI workflow" `
   --situation "<what was happening>" `

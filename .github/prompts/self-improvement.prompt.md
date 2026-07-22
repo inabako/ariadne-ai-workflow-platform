@@ -27,12 +27,12 @@ Ariadne AI Workflow Platform のworkflow実行中に発生した摩擦、ノイ�
 ## Runtime Helpers
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement init-feedback
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback --target-workflow "/docs-sync" --situation "<situation>" --friction "<friction>"
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement review-feedback --feedback work/feedback/<feedback>.md --decision accepted --reviewer "Human" --reason "<reason>"
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement issue-body --feedback work/feedback/<feedback>.md
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement branch-name --issue-number 42
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement init-feedback
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback --target-workflow "/docs-sync" --situation "<situation>" --friction "<friction>"
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement review-feedback --feedback work/feedback/<feedback>.md --decision accepted --reviewer "Human" --reason "<reason>"
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement issue-body --feedback work/feedback/<feedback>.md
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement branch-name --issue-number 42
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
 ```
 
 ## Guardrails

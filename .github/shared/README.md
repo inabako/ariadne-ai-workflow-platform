@@ -19,7 +19,7 @@
 | `localty-principles.md` | Localty の共通判断原則 |
 | `output-language-policy.md` | report / document / evidence / RAG source の既定言語ルール |
 | `risk-and-severity.md` | risk level と severity の共通定義 |
-| `runtime-entrypoint-policy.md` | `aiwfctl` / `runtime/common/ctl.py` を正式runtime入口にする共通ルール |
+| `runtime-entrypoint-policy.md` | `aiwfctl` / `runtime/ctl/ctl.py` を正式runtime入口にする共通ルール |
 
 ## Rule
 

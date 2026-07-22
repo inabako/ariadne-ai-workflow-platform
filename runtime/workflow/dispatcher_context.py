@@ -712,7 +712,7 @@ def runtime_context(
             "runtime/windows-script",
         ],
         "verification_commands": [
-            "uv run --project runtime python runtime/common/ctl.py --repo-root . context show --work-dir work/<work-id>",
+            "uv run --project runtime python runtime/ctl/ctl.py --repo-root . context show --work-dir work/<work-id>",
             "uv run --project runtime python runtime/workflow/workflow_doctor.py --fail-on-warning",
         ],
         "human_check_required_when": [

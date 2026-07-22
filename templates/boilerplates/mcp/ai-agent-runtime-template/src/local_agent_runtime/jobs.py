@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from uuid import uuid4
 
+from .contracts import generate_trace_id
+
 
 class JobState(StrEnum):
     ACCEPTED = "accepted"
@@ -19,6 +21,7 @@ class Job:
     goal: str
     workflow_name: str
     job_id: str = field(default_factory=lambda: f"job-{uuid4().hex[:12]}")
+    trace_id: str = field(default_factory=generate_trace_id)
     state: JobState = JobState.ACCEPTED
     completed_steps: list[str] = field(default_factory=list)
     artifacts: list[str] = field(default_factory=list)

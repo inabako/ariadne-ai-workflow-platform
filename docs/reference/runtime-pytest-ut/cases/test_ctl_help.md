@@ -40,7 +40,7 @@ runtime/tests/test_ctl_help.py::test_windows_script_runtime_contract
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `wrapper_text`
-- 期待結果: `runtime/windows-script/aiwf.cmd`、`runtime/windows-script/aiwf.ps1`、`runtime/posix-bash/aiwf.sh` がOS別shell入口として固定され、通常workflow判断は `aiwfctl` / `runtime/common/ctl.py` へ委譲される。
+- 期待結果: `runtime/windows-script/aiwf.cmd`、`runtime/windows-script/aiwf.ps1`、`runtime/posix-bash/aiwf.sh` がOS別shell入口として固定され、通常workflow判断は `aiwfctl` / `runtime/ctl/ctl.py` へ委譲される。
 
 #### RT-UT-CASE-CTL-RUNTIME-PYTEST
 

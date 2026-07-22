@@ -97,7 +97,7 @@ def missing_required_files(repo_root: Path) -> list[str]:
         "runtime/pytest.ini",
         "runtime/windows-script/aiwfctl.cmd",
         "runtime/windows-script/register-aiwfctl-path.cmd",
-        "runtime/common/ctl.py",
+        "runtime/ctl/ctl.py",
         "runtime/common/registry_store.py",
         "runtime/workflow/close_archive.py",
         "runtime/workflow/noise_reduction.py",

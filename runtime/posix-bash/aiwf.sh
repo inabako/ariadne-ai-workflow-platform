@@ -15,7 +15,7 @@ fi
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 repo_root="$(cd -- "$script_dir/../.." && pwd -P)"
 runtime_root="$repo_root/runtime"
-ctl_path="$runtime_root/common/ctl.py"
+ctl_path="$runtime_root/ctl/ctl.py"
 preflight_path="$runtime_root/environment/preflight.py"
 bom_tool_path="$runtime_root/tools/utf8_bom.py"
 spec_sync_path="$runtime_root/tools/pytest_ut_spec_sync.py"
@@ -23,7 +23,7 @@ spec_path="$repo_root/docs/reference/runtime-pytest-ut/case-specification.md"
 
 assert_aiwf_repo_root() {
   if [[ ! -f "$ctl_path" ]]; then
-    printf 'runtime/common/ctl.py was not found. Run this script from the Ariadne repository checkout.\n' >&2
+    printf 'runtime/ctl/ctl.py was not found. Run this script from the Ariadne repository checkout.\n' >&2
     exit 1
   fi
   if [[ ! -d "$repo_root/.git" ]]; then

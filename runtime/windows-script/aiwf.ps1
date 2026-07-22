@@ -21,7 +21,7 @@ $env:PYTHONIOENCODING = "utf-8"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = (Resolve-Path (Join-Path $ScriptDir "../..")).Path
 $RuntimeRoot = Join-Path $RepoRoot "runtime"
-$CtlPath = Join-Path $RuntimeRoot "common/ctl.py"
+$CtlPath = Join-Path $RuntimeRoot "ctl/ctl.py"
 $PreflightPath = Join-Path $RuntimeRoot "environment/preflight.py"
 $BomToolPath = Join-Path $RuntimeRoot "tools/utf8_bom.py"
 $SpecSyncPath = Join-Path $RuntimeRoot "tools/pytest_ut_spec_sync.py"
@@ -45,7 +45,7 @@ function Test-AiwfWindows11 {
 
 function Assert-AiwfRepoRoot {
     if (-not (Test-Path -LiteralPath $CtlPath -PathType Leaf)) {
-        throw "runtime/common/ctl.py was not found. Run this script from the Ariadne repository checkout."
+        throw "runtime/ctl/ctl.py was not found. Run this script from the Ariadne repository checkout."
     }
     if (-not (Test-Path -LiteralPath (Join-Path $RepoRoot ".git"))) {
         throw ".git was not found under the resolved repository root: $RepoRoot"

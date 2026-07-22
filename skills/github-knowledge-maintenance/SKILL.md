@@ -11,7 +11,7 @@ Respond to the user in Japanese by default. Human-facing reports, docs, reviews,
 
 ## Runtime Entrypoint Rule
 
-Use `aiwfctl` / `runtime/common/ctl.py` as the official runtime entrypoint for this workflow.
+Use `aiwfctl` / `runtime/ctl/ctl.py` as the official runtime entrypoint for this workflow.
 
 - Follow `.github/shared/runtime-entrypoint-policy.md`.
 - On Windows 11, start runtime commands through `runtime/windows-script/aiwf.cmd` first, then delegate to `aiwfctl` from there.
@@ -23,7 +23,7 @@ Use `aiwfctl` / `runtime/common/ctl.py` as the official runtime entrypoint for t
 - Close archive preparation, audit, and prune must go through `aiwfctl close-archive ...`.
 - Self-improvement feedback generated from this workflow must go through `aiwfctl self-improvement ...`.
 
-If a needed operation is not exposed through `aiwfctl`, stop the current operation and create a self-improvement Feedback report first. Do not silently add `runtime/common/ctl.py` commands inside the active workflow; wait for Human Review / accepted self-improvement flow.
+If a needed operation is not exposed through `aiwfctl`, stop the current operation and create a self-improvement Feedback report first. Do not silently add `runtime/ctl/ctl.py` commands inside the active workflow; wait for Human Review / accepted self-improvement flow.
 
 ## Mechanical Artifact Integrity Rule
 
@@ -190,7 +190,7 @@ On Windows 11, prefer:
 ### 1. Initialize Work Area
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge init `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge init `
   --repository "<target-repository>" `
   --scan-mode recent `
   --repair-mode proposal `
@@ -202,7 +202,7 @@ If the work folder already exists, stop and ask whether to reuse it. After confi
 ### 2. Create Analysis Scaffold
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge analysis-template `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge analysis-template `
   --work-id "<work-id>"
 ```
 
@@ -301,7 +301,7 @@ Record findings in `github-knowledge-analysis.json`.
 For 1-3 file commit leakage, run detection before planning:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge detect-rebase `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge detect-rebase `
   --work-id "<work-id>" `
   --base "HEAD~30" `
   --head "HEAD"
@@ -348,14 +348,14 @@ Use:
 Create the human review plan:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge repair-plan `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge repair-plan `
   --work-id "<work-id>"
 ```
 
 Create the high-risk rebase review plan for 1-3 file commit leakage:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-plan `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-plan `
   --work-id "<work-id>"
 ```
 
@@ -374,7 +374,7 @@ Immediately verify the saved artifacts before reporting mojibake, JSON corruptio
 After the single Human Check approval package is recorded in the generated OK / NG checklist, ingest that checklist through the official runtime entrypoint. Do not hand-edit `github-knowledge-analysis.json`:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-review-intake `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-review-intake `
   --work-id "<work-id>" `
   --human-check approved
 ```
@@ -384,13 +384,13 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
 After the single Human Check approval package is ingested, execute only an approved candidate:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-package `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-package `
   --work-id "<work-id>" `
   --candidate-id "<candidate-id>" `
   --target-branch "<branch>" `
   --apply-mode direct
 
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-apply `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-apply `
   --work-id "<work-id>" `
   --human-check approved
 ```
@@ -402,7 +402,7 @@ For approved small-commit rebase packages, prefer the built-in non-interactive r
 Generate the package from approved candidates; do not hand-write the JSON:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-package `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-package `
   --work-id "<work-id>" `
   --target-branch "<branch>" `
   --apply-mode direct
@@ -413,7 +413,7 @@ Use `--candidate-id "<candidate-id>"` to restrict the package to explicit approv
 Then execute the generated package:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-apply `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-apply `
   --work-id "<work-id>" `
   --package-path "work/<work-id>/context/rebase-replay-package.json" `
   --human-check approved
@@ -529,7 +529,7 @@ Use:
 Create the sync plan:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge sync-plan `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge sync-plan `
   --work-id "<work-id>"
 ```
 
@@ -580,14 +580,14 @@ Use:
 Create a candidate note:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rag-candidate `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rag-candidate `
   --work-id "<work-id>"
 ```
 
 Publish to `work/db/ariadne-knowledge-platform/rag/github-knowledge/` only after explicit approval:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rag-candidate `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rag-candidate `
   --work-id "<work-id>" `
   --publish-rag `
   --human-check approved
@@ -608,7 +608,7 @@ Create or update a Feedback report when you observe ambiguity, repeated checks, 
 Use the existing helper when creating a new report:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "<slash-command>" `
   --reporter "AI workflow" `
   --situation "<what was happening>" `

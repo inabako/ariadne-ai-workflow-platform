@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from runtime.common import ctl
+from runtime.ctl import ctl
 from runtime.workflow import sdk_analysis, work_cleanup
 
 

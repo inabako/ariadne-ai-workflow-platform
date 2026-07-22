@@ -49,14 +49,14 @@ work/<work-id>/context/github-knowledge-analysis.json
 Generate candidate:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rag-candidate `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rag-candidate `
   --work-id "<work-id>"
 ```
 
 Publish only after approval:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rag-candidate `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rag-candidate `
   --work-id "<work-id>" `
   --publish-rag `
   --human-check approved

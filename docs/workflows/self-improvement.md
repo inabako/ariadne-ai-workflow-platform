@@ -77,13 +77,13 @@ push / knowledge capture
 Feedback置き場を初期化します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement init-feedback
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement init-feedback
 ```
 
 Feedback reportを作成します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "/docs-sync" `
   --reporter "Human" `
   --situation "docs整備中" `
@@ -97,7 +97,7 @@ Human Review結果を同じFeedback reportへ追記します。
 Runtime event log を根拠にする場合は、trace id を指定すると Feedback report に `Runtime Observation` と `Runtime Log Analysis` が追加されます。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "/self-improvement" `
   --situation "runtime log analysis needs feedback context" `
   --friction "feedback review needs manual log inspection" `
@@ -106,7 +106,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . self-improve
 ```
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement review-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement review-feedback `
   --feedback work/feedback/<feedback>.md `
   --decision accepted `
   --reviewer "Human" `
@@ -117,20 +117,20 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . self-improve
 AcceptedのFeedbackからIssue bodyを生成します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement issue-body `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement issue-body `
   --feedback work/feedback/<feedback>.md
 ```
 
 Issue番号から既存規約のbranch名を確認します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement branch-name --issue-number 42
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement branch-name --issue-number 42
 ```
 
 Evidence保存先を作成し、`artifact-index.json` に登録します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
 ```
 
 ## GitHub / SCM連携

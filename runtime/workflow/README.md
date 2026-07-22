@@ -59,13 +59,13 @@ python runtime/workflow/iac_template.py health --template opentelemetry-collecto
 Self-Improvement Workflow用に、`work/feedback/` の初期化、Feedback report作成、Human Review結果追記、Accepted feedbackからのIssue body生成、標準branch名生成、evidence scaffold作成を行います。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement init-feedback
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback --target-workflow "/docs-sync" --situation "docs整備中" --friction "参照docsが不明"
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement review-feedback --feedback work/feedback/<feedback>.md --decision accepted --reviewer Human --reason "改善価値がある"
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement issue-body --feedback work/feedback/<feedback>.md
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback --target-workflow "/self-improvement" --situation "runtime log analysis needs feedback context" --friction "feedback review needs manual log inspection" --runtime-trace-id "<trace-id>" --runtime-log logs/runtime/runtime-events.log
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement branch-name --issue-number 42
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement init-feedback
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback --target-workflow "/docs-sync" --situation "docs整備中" --friction "参照docsが不明"
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement review-feedback --feedback work/feedback/<feedback>.md --decision accepted --reviewer Human --reason "改善価値がある"
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement issue-body --feedback work/feedback/<feedback>.md
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback --target-workflow "/self-improvement" --situation "runtime log analysis needs feedback context" --friction "feedback review needs manual log inspection" --runtime-trace-id "<trace-id>" --runtime-log logs/runtime/runtime-events.log
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement branch-name --issue-number 42
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
 ```
 
 このCLI単体では、GitHub Issue作成、branch作成、source変更、push、RAG登録、close archive準備は行いません。
@@ -118,15 +118,15 @@ work/<issue-id>/process-report/knowledge-capture-*.json
 `prepare` は既定でRAG sourceを自動検出し、`00-summary.md`、`01-work-report.md`、`03-review-report.md`、`links.md`、`metadata.json` へ具体内容を反映します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare --issue issue-11
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive audit --issue issue-11
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prune --issue issue-11
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare --issue issue-11
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive audit --issue issue-11
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prune --issue issue-11
 ```
 
 新システム開発フロー:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --issue issue-123 `
   --category new-system-dev
 ```
@@ -134,7 +134,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 GitHub knowledge maintenance:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --work-id github/original/recent `
   --category github `
   --require-rag
@@ -143,7 +143,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 VSCode Environment:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --work-id vscode-environment `
   --category vscode `
   --require-rag
@@ -152,7 +152,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 重要なRAG sourceを必ず含めたい場合は `--source-rag` で明示指定します。複数指定できます。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --issue issue-11 `
   --source-rag work/db/ariadne-knowledge-platform/rag/normalized/issue-11.json `
   --require-rag
@@ -165,7 +165,7 @@ RAG sourceが必須のcloseでは `--require-rag` を付けます。自動検出
 `prune` は既定ではdry-runです。実削除には明示承認が必要です。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prune `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prune `
   --issue issue-11 `
   --execute `
   --human-check approved
@@ -229,8 +229,8 @@ python runtime/workflow/workflow_state.py --work-dir work/issue-11 set `
 人間承認が必要な操作を `db/registries/registry.duckdb` で管理します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . human-gate list
-uv run --project runtime python runtime/common/ctl.py --repo-root . human-gate check --gate close-prune --human-check approved
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . human-gate list
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . human-gate check --gate close-prune --human-check approved
 ```
 
 ## `workflow_doctor.py`

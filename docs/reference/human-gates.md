@@ -20,8 +20,8 @@ db/registries/registry.duckdb
 確認CLI:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . human-gate list
-uv run --project runtime python runtime/common/ctl.py --repo-root . human-gate check --gate close-prune --human-check approved
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . human-gate list
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . human-gate check --gate close-prune --human-check approved
 ```
 
 ## 承認が必要な操作

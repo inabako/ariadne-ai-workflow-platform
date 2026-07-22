@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/contracts/agent-runtime/execution-metadata.schema.json",
+  "title": "ExecutionMetadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "trace_id", "operation_id", "attempt", "started_at", "duration_ms"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "trace_id": { "type": "string", "pattern": "^[0-9a-f]{24}$" },
+    "operation_id": { "type": "string", "minLength": 1 },
+    "attempt": { "type": "integer", "minimum": 1 },
+    "started_at": { "type": "string", "format": "date-time" },
+    "duration_ms": { "type": "integer", "minimum": 0 }
+  }
+}

@@ -20,7 +20,7 @@ Workflow Feedback は、各AI workflow実行中に見つかった摩擦、迷い
 新しいFeedback reportを作る場合は、既存helperを使います。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "/docs-sync" `
   --reporter "AI workflow" `
   --situation "docs整備中" `
@@ -34,7 +34,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . self-improve
 Runtime event log を根拠にする場合は、`--runtime-trace-id` を指定します。Feedback report には `Runtime Observation` と `Runtime Log Analysis` が追加され、該当traceのcommand、status、reason、duration、blocked / failed event が要約されます。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "/self-improvement" `
   --situation "runtime log analysis needs feedback context" `
   --friction "feedback review needs manual log inspection" `

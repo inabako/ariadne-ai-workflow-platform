@@ -5,30 +5,30 @@ import json
 from pathlib import Path
 from typing import Any, Callable
 
-from runtime.common.ctl_close_archive_adapter import run_close_archive
-from runtime.common.ctl_context_adapter import run_context
-from runtime.common.ctl_doctor_adapter import run_doctor
-from runtime.common.ctl_flutter_adapter import format_result as format_flutter_result
-from runtime.common.ctl_flutter_adapter import run_flutter
-from runtime.common.ctl_github_knowledge_adapter import run_github_knowledge
-from runtime.common.ctl_human_gate_adapter import run_human_gate
-from runtime.common.ctl_iac_adapter import run_iac_template
-from runtime.common.ctl_integration_adapter import format_result as format_integration_result
-from runtime.common.ctl_integration_adapter import run_integration
-from runtime.common.ctl_knowledge_adapter import run_knowledge
-from runtime.common.ctl_mcp_group_adapter import format_result as format_mcp_group_result
-from runtime.common.ctl_mcp_group_adapter import run_mcp_group
-from runtime.common.ctl_sdk_adapter import format_result as format_sdk_result
-from runtime.common.ctl_sdk_adapter import run_sdk
-from runtime.common.ctl_self_improvement_adapter import run_self_improvement
-from runtime.common.ctl_work_adapter import run_work_cleanup
+from runtime.ctl.ctl_close_archive_adapter import run_close_archive
+from runtime.ctl.ctl_context_adapter import run_context
+from runtime.ctl.ctl_doctor_adapter import run_doctor
+from runtime.ctl.ctl_flutter_adapter import format_result as format_flutter_result
+from runtime.ctl.ctl_flutter_adapter import run_flutter
+from runtime.ctl.ctl_github_knowledge_adapter import run_github_knowledge
+from runtime.ctl.ctl_human_gate_adapter import run_human_gate
+from runtime.ctl.ctl_iac_adapter import run_iac_template
+from runtime.ctl.ctl_integration_adapter import format_result as format_integration_result
+from runtime.ctl.ctl_integration_adapter import run_integration
+from runtime.ctl.ctl_knowledge_adapter import run_knowledge
+from runtime.ctl.ctl_mcp_group_adapter import format_result as format_mcp_group_result
+from runtime.ctl.ctl_mcp_group_adapter import run_mcp_group
+from runtime.ctl.ctl_sdk_adapter import format_result as format_sdk_result
+from runtime.ctl.ctl_sdk_adapter import run_sdk
+from runtime.ctl.ctl_self_improvement_adapter import run_self_improvement
+from runtime.ctl.ctl_work_adapter import run_work_cleanup
 
 
 HelperModule = Any
 CommandHandler = Callable[[argparse.Namespace, Path, dict[str, Any], HelperModule, bool], tuple[int, str]]
 
 
-# These names are supplied from runtime.common.ctl through _bind_helpers().
+# These names are supplied from runtime.ctl.ctl through _bind_helpers().
 # Keeping the annotations here lets static analyzers understand the dispatch module
 # while preserving the current bridge-based split.
 _github_knowledge_metrics_collector: Any

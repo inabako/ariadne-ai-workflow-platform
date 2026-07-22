@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/contracts/agent-runtime/tool-result.schema.json",
+  "title": "ToolResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "tool_id", "trace_id", "status", "outputs", "error", "metadata"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "tool_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "pattern": "^[0-9a-f]{24}$" },
+    "status": { "type": "string", "enum": ["completed", "failed", "blocked"] },
+    "outputs": { "type": "object" },
+    "error": { "type": ["object", "null"] },
+    "metadata": { "type": "object" }
+  }
+}

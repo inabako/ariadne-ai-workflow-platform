@@ -13,7 +13,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import gate_restart, registry_store  # noqa: E402
-from runtime.common.ctl_help import (  # noqa: E402
+from runtime.ctl.ctl_help import (  # noqa: E402
     command_key,
     extension_key,
     explicit_search_terms,
@@ -38,7 +38,7 @@ from runtime.common.ctl_help import (  # noqa: E402
     search_score,
     text_blob,
 )
-from runtime.common.ctl_parser import build_parser  # noqa: E402
+from runtime.ctl.ctl_parser import build_parser  # noqa: E402
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.paths import (  # noqa: E402
     DUCKDB_REFERENCE_CHECK_WORK_DIR,
@@ -70,7 +70,7 @@ from runtime.workflow import workflow_doctor  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 # Compatibility exports kept for older tests and callers that still access
-# help/workflow helpers through runtime.common.ctl after the module split.
+# help/workflow helpers through runtime.ctl.ctl after the module split.
 _COMPATIBILITY_EXPORTS = (
     command_key,
     extension_key,
@@ -962,7 +962,7 @@ def format_knowledge_result(result: dict[str, Any]) -> str:
 
 
 def _run_impl(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
-    from runtime.common import ctl_dispatch
+    from runtime.ctl import ctl_dispatch
 
     return ctl_dispatch.run_impl(args, helpers=sys.modules[__name__], color=color)
 

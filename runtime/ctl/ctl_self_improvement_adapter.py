@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 from typing import Any, Callable
 
-from runtime.common.ctl_adapter_utils import workflow_args
+from runtime.ctl.ctl_adapter_utils import workflow_args
 from runtime.workflow import self_improvement
 
 

@@ -50,7 +50,7 @@ runtime/scm/commit_changes.py
 runtime/scm/push_branch.py
 runtime/github/issue_manager.py
 runtime/github/pull_request_manager.py
-runtime/common/ctl.py
+runtime/ctl/ctl.py
 runtime/observability/metrics.py
 runtime/rag/normalize_documents.py
 runtime/rag/chunk_documents.py
@@ -101,9 +101,9 @@ runtime/posix-bash/aiwf.sh
 
 `pull_request_manager.py` は、Issue branch push後に `develop` へのPull Request draft / createを行います。PR titleはIssue titleを使い、PR bodyにはMermaid sequence diagramを含めます。
 
-`common/ctl.py` は、AI workflow prompt command のターミナルヘルプを提供します。repo root の `runtime/windows-script/aiwfctl.cmd` から呼び出し、command一覧、詳細、検索、Markdown出力を行います。VSCode統合ターミナルでは `.vscode/settings.json` により `runtime/windows-script` が `PATH` に追加されるため、`aiwfctl help` で呼び出せます。
+`ctl/ctl.py` は、AI workflow prompt command のターミナルヘルプを提供します。repo root の `runtime/windows-script/aiwfctl.cmd` から呼び出し、command一覧、詳細、検索、Markdown出力を行います。VSCode統合ターミナルでは `.vscode/settings.json` により `runtime/windows-script` が `PATH` に追加されるため、`aiwfctl help` で呼び出せます。
 
-`windows-script/aiwf.cmd` / `windows-script/aiwf.ps1` と `posix-bash/aiwf.sh` は、OS別shellから `common/ctl.py`、pytest、UT仕様同期、BOM scan / strip へ入るための薄いruntime入口です。
+`windows-script/aiwf.cmd` / `windows-script/aiwf.ps1` と `posix-bash/aiwf.sh` は、OS別shellから `ctl/ctl.py`、pytest、UT仕様同期、BOM scan / strip へ入るための薄いruntime入口です。
 
 `observability/metrics.py` は、workflow / agent / token / context / cost / error の観測値を記録します。Runtime全体の時系列ログは `logs/runtime-metrics-YYYYMM.jsonl` へ月次ローテーションで追記し、workflow単位の要約は `work/<work-id>/test-evidence/runtime-metrics.json` と `work/<work-id>/context/runtime-metrics.json` に保存できます。
 

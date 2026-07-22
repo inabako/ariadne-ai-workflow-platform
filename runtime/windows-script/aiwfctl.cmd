@@ -6,9 +6,9 @@ set "REPO_ROOT=%~dp0..\..\"
 set "AIWFCTL_SCRIPT_DIR=%~dp0"
 if /I "%~1"=="path" goto :path_command
 if exist "%AIWFCTL_SCRIPT_DIR%uv.cmd" (
-  call "%AIWFCTL_SCRIPT_DIR%uv.cmd" run --project "%REPO_ROOT%runtime" python "%REPO_ROOT%runtime\common\ctl.py" %*
+  call "%AIWFCTL_SCRIPT_DIR%uv.cmd" run --project "%REPO_ROOT%runtime" python "%REPO_ROOT%runtime\ctl\ctl.py" %*
 ) else (
-  python "%REPO_ROOT%runtime\common\ctl.py" %*
+  python "%REPO_ROOT%runtime\ctl\ctl.py" %*
 )
 exit /b %ERRORLEVEL%
 

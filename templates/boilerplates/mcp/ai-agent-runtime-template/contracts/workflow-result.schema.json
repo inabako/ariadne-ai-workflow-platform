@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/contracts/agent-runtime/workflow-result.schema.json",
+  "title": "WorkflowResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "workflow_id", "trace_id", "status", "outputs", "evidence", "errors", "next_action", "completed_at"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "workflow_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "pattern": "^[0-9a-f]{24}$" },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "running", "waiting_human", "retrying", "completed", "failed", "cancelled"]
+    },
+    "outputs": { "type": "array", "items": { "type": "object" } },
+    "evidence": { "type": "array", "items": { "type": "object" } },
+    "errors": { "type": "array", "items": { "type": "object" } },
+    "next_action": { "type": ["string", "null"] },
+    "completed_at": { "type": ["string", "null"], "format": "date-time" }
+  }
+}

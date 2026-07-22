@@ -105,14 +105,14 @@ work/close/<category>/<archive-id>/
 改善フローの作成・監査:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare --issue issue-<issue-number>
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive audit --issue issue-<issue-number>
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare --issue issue-<issue-number>
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive audit --issue issue-<issue-number>
 ```
 
 RAG sourceを必ず反映したい場合:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --issue issue-<issue-number> `
   --source-rag work/db/ariadne-knowledge-platform/rag/normalized/<rag-source>.json `
   --require-rag
@@ -123,7 +123,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 新システム開発フロー:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --issue issue-<issue-number> `
   --category new-system-dev
 ```
@@ -131,7 +131,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 GitHub knowledge maintenance:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --work-id github/original/recent `
   --category github
 ```
@@ -139,7 +139,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 VSCode Environment:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --work-id vscode-environment `
   --category vscode
 ```
@@ -162,8 +162,8 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 削除は必ずdry-run確認後、人間承認付きで実行します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prune --issue issue-<issue-number>
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prune `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prune --issue issue-<issue-number>
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prune `
   --issue issue-<issue-number> `
   --execute `
   --human-check approved
@@ -193,8 +193,8 @@ Pull Request bodyには、変更点のMermaid式sequence diagramを含めます�
 `registry.duckdb` の `human_gates` registry payload には `$schema` と `schema_version` を置かず、registry自体の版は `registry_version` で表します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . human-gate list
-uv run --project runtime python runtime/common/ctl.py --repo-root . human-gate check --gate close-prune --human-check approved
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . human-gate list
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . human-gate check --gate close-prune --human-check approved
 ```
 
 詳細は [Human Gate Registry](human-gates.md) を参照します。
