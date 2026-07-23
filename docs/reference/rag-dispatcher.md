@@ -24,11 +24,11 @@ UUIDで記録する
 
 ## Dispatcher の責務
 
-`runtime/rag/rag_dispatcher.py` は、次の責務だけを持ちます。
+`aiwfctl rag load` は、内部実装として `runtime/rag/rag_dispatcher.py` を使い、次の責務だけを持ちます。
 
 - task / context / work-dir から検索計画を作る
 - `rag-dispatch-plan` を保存する
-- queryを複数に分けて `retrieve_context.py` を並列実行する
+- queryを複数に分けて `aiwfctl rag retrieve` を並列実行する
 - 生成された `rag-context-pack` を集約する
 - `rag-load-dispatch` を保存する
 
@@ -54,7 +54,7 @@ Semantic Hint
   ↓
 rag-dispatch-plan
   ↓
-retrieve_context.py をqueryごとに並列実行
+aiwfctl rag retrieve をqueryごとに並列実行
   ↓
 keyword / semantic / hybrid scoring
   ↓
@@ -187,7 +187,7 @@ current repository evidence、human answer、safety gateを上書きしません
 同じIssue内で複数Agentが同じ意図のRAGを読む場合、既存の `rag-dispatch-plan` を再利用できます。
 
 ```powershell
-python runtime/rag/rag_dispatcher.py `
+.\runtime\windows-script\aiwf.cmd ctl rag load `
   --dispatch-plan work/db/ariadne-knowledge-platform/rag/retrieval/<plan-uuid>.json `
   --search-mode hybrid `
   --top-k 5 `
@@ -235,7 +235,7 @@ dispatcherは検索を補助しますが、次の場合は後続flowで止めま
 標準入口:
 
 ```powershell
-python runtime/rag/rag_dispatcher.py `
+.\runtime\windows-script\aiwf.cmd ctl rag load `
   --task "<task summary>" `
   --repository "<target-repository>" `
   --branch "<target-branch>" `
@@ -248,14 +248,14 @@ python runtime/rag/rag_dispatcher.py `
 single query debug:
 
 ```powershell
-python runtime/rag/retrieve_context.py `
+.\runtime\windows-script\aiwf.cmd ctl rag retrieve `
   "<query>" `
   --search-mode hybrid `
   --top-k 5 `
   --max-chars 4000
 ```
 
-`retrieve_context.py` はdebug用の単発検索として使い、通常は dispatcher から呼び出します。
+`aiwfctl rag retrieve` はdebug用の単発検索として使い、通常は `aiwfctl rag load` のdispatcherから呼び出します。
 
 ## 関連ファイル
 

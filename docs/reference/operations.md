@@ -53,7 +53,7 @@ chore: update workflow skill index
 必要tool、Python module、MSYS2 package、support repositoryが不足している場合は、install listを作って止まります。installは人間承認後にだけ行います。
 
 ```powershell
-python runtime/environment/preflight.py `
+.\runtime\windows-script\aiwf.cmd ctl preflight `
   --profile corrective-action-fix `
   --work-id "<work-id>"
 ```
@@ -222,5 +222,5 @@ Temporary workflow workspaces are removed only after long-lived Knowledge absorp
 ```
 
 ```powershell
-python runtime/workflow/workflow_doctor.py
+.\runtime\windows-script\aiwf.cmd ctl doctor
 ```

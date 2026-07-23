@@ -36,7 +36,7 @@
 生成後は、可能な範囲で次の検証を行います。
 
 ```powershell
-uv run --project runtime python runtime/workflow/validate_output_language.py `
+.\runtime\windows-script\aiwf.cmd ctl workflow validate-output-language check `
   --paths work rag docs `
   --fail-on-violation
 ```

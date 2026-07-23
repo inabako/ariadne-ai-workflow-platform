@@ -56,8 +56,7 @@ Terraform の実行ファイルpathはソースへ固定せず、repo `.env` ま
 プロビジョニング / preflight 実行時に次を確認し、`AIWF_TERRAFORM_EXE` が未設定または実ファイルを指していない場合は Human Check に戻します。
 
 ```powershell
-uv run --project runtime python runtime/environment/preflight.py `
-  --repo-root . `
+.\runtime\windows-script\aiwf.cmd ctl preflight `
   --profile docker-compose `
   --work-id <receipt-id>
 ```
@@ -203,9 +202,9 @@ Precreated owner/repository confirmation
 補助CLI:
 
 ```powershell
-uv run --project runtime python runtime/scm/bootstrap_repository.py --work-id <receipt-id> --github-repo <owner>/<repo> --push --human-check approved
-uv run --project runtime python runtime/github/issue_manager.py --work-id <receipt-id> --github-repo <owner>/<repo> --title "<title>" --flow-label iac --create
-uv run --project runtime python runtime/scm/create_issue_branch.py --work-id <receipt-id> --issue-number <number> --github-repo <owner>/<repo> --base-branch main --link-to-issue
+.\runtime\windows-script\aiwf.cmd ctl scm bootstrap --work-id <receipt-id> --github-repo <owner>/<repo> --push --human-check approved
+.\runtime\windows-script\aiwf.cmd ctl github issue --work-id <receipt-id> --github-repo <owner>/<repo> --title "<title>" --flow-label iac --create
+.\runtime\windows-script\aiwf.cmd ctl scm branch --work-id <receipt-id> --issue-number <number> --github-repo <owner>/<repo> --base-branch main --link-to-issue
 ```
 
 ## Main Artifacts

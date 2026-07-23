@@ -922,7 +922,8 @@ def test_review_rag_build_writes_source_markdown_and_manifest(tmp_path: Path) ->
     assert source.exists()
     assert "type: review-council" in source.read_text(encoding="utf-8")
     assert manifest.exists()
-    assert "runtime/rag/rag_build.py" in result["build_command"]
+    assert "runtime/ctl/ctl.py --repo-root . rag build" in result["build_command"]
+    assert "runtime/rag/rag_build.py" not in result["build_command"]
     assert "--source-dir" in result["build_command"]
 
 

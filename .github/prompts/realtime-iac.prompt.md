@@ -289,9 +289,9 @@ precreated-new repository modeの場合だけ実行します。
 
 1. Human approval を得る。
 2. GitHubサイト側で作成済みのrepositoryが指定先と一致することを確認する。
-3. `runtime/scm/bootstrap_repository.py --push --human-check approved` で初回commitとinitial branch pushを行う。
-4. `runtime/github/issue_manager.py --flow-label iac --create` で新repositoryにIssueを作成する。
-5. `runtime/scm/create_issue_branch.py --link-to-issue` でIssue branchを作成する。
+3. `aiwfctl scm bootstrap --push --human-check approved` で初回commitとinitial branch pushを行う。
+4. `aiwfctl github issue --flow-label iac --create` で新repositoryにIssueを作成する。
+5. `aiwfctl scm branch --link-to-issue` でIssue branchを作成する。
 
 Stop conditions:
 

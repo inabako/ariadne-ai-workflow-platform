@@ -43,7 +43,7 @@ Use:
 Run from repository root:
 
 ```powershell
-python runtime/workflow/knowledge_capture.py `
+.\runtime\windows-script\aiwf.cmd ctl workflow knowledge-capture `
   --issue "<issue-id>" `
   --repository "<repository>" `
   --branch "<branch>" `
@@ -123,7 +123,7 @@ If the expected test case files are missing, report which test layer is missing 
 After test cases and evidence are stored under `docs/evidence/<issue-id>/`, push only the issue branch:
 
 ```powershell
-python runtime/scm/push_branch.py `
+.\runtime\windows-script\aiwf.cmd ctl scm push `
   --work-id "<issue-id>" `
   --human-check approved `
   --set-upstream

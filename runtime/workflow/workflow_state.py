@@ -37,8 +37,8 @@ def workflow_state_gate_restart(status: str, workflow: str, work_id: str, phase:
     repair_command = ""
     if status in {"blocked", "failed"}:
         repair_command = (
-            "uv run --project runtime python runtime/workflow/workflow_state.py --repo-root . "
-            f"--work-dir work/{work_id} set --workflow {workflow} --work-id {work_id} --phase {phase} --status in-progress"
+            "uv run --project runtime python runtime/ctl/ctl.py --repo-root . "
+            f"workflow state set --work-dir work/{work_id} --workflow {workflow} --work-id {work_id} --phase {phase} --status in-progress"
         )
     return gate_restart.build_status_gate_restart(
         "workflow-state-gate",

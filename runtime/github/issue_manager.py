@@ -231,7 +231,7 @@ def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
     explicit_github_repo = repository_to_github_slug(args.github_repo, owner) if args.github_repo else None
     github_repo = explicit_github_repo or scm_github_repo
     if not github_repo:
-        raise ValueError("GitHub repository is required. Run runtime/scm/prepare_repository.py first or set --github-repo.")
+        raise ValueError("GitHub repository is required. Run aiwfctl scm prepare first or set --github-repo.")
     if "/" not in github_repo:
         raise ValueError("GitHub repository must be in owner/name format.")
     explicit_prefix = args.title_prefix or ""

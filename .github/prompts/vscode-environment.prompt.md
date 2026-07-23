@@ -61,10 +61,10 @@ Use `work/requirements/devlop-edit-draft/README.md` and `README_*.md` only as op
 2. Resolve the target workspace from the current repository or the provided path.
 3. Read existing `.vscode` files and repository evidence before proposing changes.
 4. For custom-design mode only, read optional draft files under `work/requirements/devlop-edit-draft/`; create `open-questions.md` when design choices cannot be safely inferred.
-5. Initialize a work area with `runtime/workflow/vscode_environment.py init`.
+5. Initialize a work area with `aiwfctl workflow vscode-environment init`.
 6. Create or update `workspace-requirements.md`.
 7. Validate shared artifacts with the Workspace Shared Artifact Validator.
-8. Run `runtime/environment/preflight.py --profile vscode-environment` when applicable.
+8. Run `aiwfctl preflight --profile vscode-environment` when applicable.
 9. Create `vscode-design.md`.
 10. Create `terminal-design.md`.
 11. Implement `.vscode/settings.json`, `tasks.json`, `launch.json`, `extensions.json`, and optional `workspace.code-workspace`.
@@ -105,10 +105,10 @@ Use `work/requirements/devlop-edit-draft/README.md` and `README_*.md` only as op
 For Localty workspace environment knowledge, use:
 
 ```powershell
-uv run --project runtime python runtime/workflow/vscode_environment.py rag-template `
+.\runtime\windows-script\aiwf.cmd ctl workflow vscode-environment rag-template `
   --work-id "vscode-environment" `
   --topic "localty-vscode-environment" `
   --repository "localty"
 ```
 
-Build approved notes with `runtime/rag/normalize_documents.py --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment --document-type workspace-environment-pattern`.
+Build approved notes with `aiwfctl rag normalize --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment --document-type workspace-environment-pattern`.

@@ -40,7 +40,7 @@ work/<issue-id>/source/repository/docs/evidence/<issue-id>/integration/
 work/<issue-id>/source/repository/docs/evidence/<issue-id>/human_check/
 ```
 
-`runtime/workflow/knowledge_capture.py` は、存在しない証跡フォルダとscaffold用 `README.md` を自動生成します。ただし、`README.md` だけでは実エビデンスとはみなしません。
+`aiwfctl workflow knowledge-capture` は、存在しない証跡フォルダとscaffold用 `README.md` を自動生成します。ただし、`README.md` だけでは実エビデンスとはみなしません。
 
 ## Flow
 
@@ -85,7 +85,7 @@ active workでは、manifest上の `scm-state` を必須にします。
 Issue branch push後に、`develop` へPull Requestを送信します。
 
 ```powershell
-python runtime/github/pull_request_manager.py `
+.\runtime\windows-script\aiwf.cmd ctl github pr `
   --work-id "<issue-id>" `
   --base develop `
   --create `

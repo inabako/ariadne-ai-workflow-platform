@@ -297,8 +297,8 @@ def github_env_token_check(repo_root: Path, *, required: bool = False) -> Check:
 
 def github_cli_auth_check(repo_root: Path, *, required: bool, hostname: str = "github.com") -> Check:
     action_command = (
-        "uv run --project runtime python runtime/environment/preflight.py "
-        "--profile github-cli --gh-login-from-env --human-check approved"
+        "uv run --project runtime python runtime/ctl/ctl.py --repo-root . "
+        "preflight --profile github-cli --gh-login-from-env --human-check approved"
     )
     if hostname != "github.com":
         action_command += f" --github-hostname {hostname}"
@@ -469,7 +469,7 @@ def localty_protocol_check(args: argparse.Namespace, protocol_dir: Path | None, 
     if args.work_id:
         branch = args.support_branch or "develop"
         fallback_command = (
-            f"{sys.executable} runtime/scm/prepare_support_repository.py "
+            f"{sys.executable} runtime/ctl/ctl.py --repo-root . scm support "
             f"--work-id \"{args.work_id}\" "
             "--name \"localty-system-protocol\" "
             "--repository \"inabako/localty-system-protocol\" "

@@ -96,6 +96,8 @@ def test_human_gate_policy_check_blocks_pending_human_approval(tmp_path: Path) -
     }
     assert gate_restart["gate"] == "human-gate-check"
     assert gate_restart["repair_available"] is True
+    assert "runtime/ctl/ctl.py --repo-root . human-gate check" in gate_restart["repair_command"]
+    assert "runtime/workflow/human_gate_policy.py" not in gate_restart["repair_command"]
     assert "--human-check approved" in gate_restart["repair_command"]
 
 
@@ -243,7 +245,9 @@ def test_vscode_task_runner_run_open_questions_invokes_helper(monkeypatch: pytes
     assert calls == [
         [
             vscode_task_runner.sys.executable,
-            "runtime/workflow/vscode_environment.py",
+            "runtime/ctl/ctl.py",
+            "workflow",
+            "vscode-environment",
             "open-questions",
             "--work-id",
             "issue-42",
@@ -268,7 +272,8 @@ def test_vscode_task_runner_run_preflight_uses_refreshed_env(monkeypatch: pytest
         (
             [
                 vscode_task_runner.sys.executable,
-                "runtime/environment/preflight.py",
+                "runtime/ctl/ctl.py",
+                "preflight",
                 "--profile",
                 "vscode-environment",
                 "--work-id",
@@ -286,7 +291,7 @@ def test_vscode_task_runner_run_helper_help_invokes_vscode_environment_help(monk
     monkeypatch.setattr(vscode_task_runner, "run_process", lambda command, env=None, cwd=None: calls.append(list(command)) or 0)
 
     assert vscode_task_runner.run_helper_help(argparse.Namespace()) == 0
-    assert calls == [[vscode_task_runner.sys.executable, "runtime/workflow/vscode_environment.py", "--help"]]
+    assert calls == [[vscode_task_runner.sys.executable, "runtime/ctl/ctl.py", "workflow", "vscode-environment", "--help"]]
 
 
 def test_vscode_task_runner_msys2_smoke_reports_missing_bash(

@@ -85,7 +85,7 @@ docs/evidence/issue-XXX/integration
 docs/evidence/issue-XXX/human_check
 ```
 
-`runtime/workflow/knowledge_capture.py` creates missing scaffold directories and `README.md` files.
+`aiwfctl workflow knowledge-capture` creates missing scaffold directories and `README.md` files.
 If required evidence files are missing, or if only scaffold `README.md` files exist, report what is missing.
 If the expected test case files are missing, report the missing test layer or the recorded skip reason.
 Do not run tests by yourself.

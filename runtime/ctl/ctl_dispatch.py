@@ -10,19 +10,29 @@ from runtime.ctl.ctl_context_adapter import run_context
 from runtime.ctl.ctl_doctor_adapter import run_doctor
 from runtime.ctl.ctl_flutter_adapter import format_result as format_flutter_result
 from runtime.ctl.ctl_flutter_adapter import run_flutter
+from runtime.ctl.ctl_gui_adapter import run_gui
+from runtime.ctl.ctl_gui_adapter import run_web_svg
+from runtime.ctl.ctl_github_adapter import run_github
 from runtime.ctl.ctl_github_knowledge_adapter import run_github_knowledge
 from runtime.ctl.ctl_human_gate_adapter import run_human_gate
 from runtime.ctl.ctl_iac_adapter import run_iac_template
+from runtime.ctl.ctl_intake_adapter import run_intake
 from runtime.ctl.ctl_integration_adapter import format_result as format_integration_result
 from runtime.ctl.ctl_integration_adapter import run_integration
 from runtime.ctl.ctl_knowledge_adapter import run_knowledge
 from runtime.ctl.ctl_mcp_group_adapter import format_result as format_mcp_group_result
 from runtime.ctl.ctl_mcp_group_adapter import run_mcp_group
+from runtime.ctl.ctl_preflight_adapter import run_preflight
+from runtime.ctl.ctl_rag_adapter import run_rag
+from runtime.ctl.ctl_retrieval_adapter import run_retrieval
 from runtime.ctl.ctl_review_adapter import run_review
+from runtime.ctl.ctl_scm_adapter import run_scm
 from runtime.ctl.ctl_sdk_adapter import format_result as format_sdk_result
 from runtime.ctl.ctl_sdk_adapter import run_sdk
 from runtime.ctl.ctl_self_improvement_adapter import run_self_improvement
+from runtime.ctl.ctl_tools_adapter import run_tools
 from runtime.ctl.ctl_work_adapter import run_work_cleanup
+from runtime.ctl.ctl_workflow_adapter import run_workflow
 
 
 HelperModule = Any
@@ -192,6 +202,136 @@ def _handle_human_gate(args: argparse.Namespace, repo_root: Path, registry: dict
     return code, "\n".join(lines).rstrip() + "\n"
 
 
+def _handle_intake(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    intake_command = getattr(args, "intake_command", None)
+    if intake_command is None:
+        return 1, (
+            "Requirement Intake\n\n"
+            "Usage:\n"
+            "  aiwfctl intake run\n"
+            "  aiwfctl intake run work/requirements/requirements.md --copy\n"
+            "  aiwfctl intake run --workflow ariadne-feature-maintenance-development --project-name <name>\n\n"
+            "Outputs:\n"
+            f"  {work_path_pattern('design-document', '<requirement-file>')}\n"
+            f"  {context_path_pattern('agent-context.json')}\n"
+            f"  {context_path_pattern('artifact-index.json')}\n"
+            f"  {context_path_pattern('context-manifest.json')}\n"
+        )
+    try:
+        result = run_intake(args, repo_root, intake_command)
+    except KeyError:
+        return 1, f"Unknown intake command: {intake_command}\n"
+    except Exception as exc:
+        return 1, f"Requirement intake failed: {exc}\n"
+    if getattr(args, "json", False):
+        return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    lines = [
+        "Requirement Intake",
+        "",
+        f"Command : {intake_command}",
+        f"Receipt : {result.get('receipt_id', '')}",
+        f"Work Dir: {result.get('work_dir', '')}",
+        f"Repo    : {result.get('repository', '')}",
+        f"Branch  : {result.get('target_branch', '') or ''}",
+        f"Copied  : {str(result.get('copied', False)).lower()}",
+    ]
+    accepted_files = result.get("accepted_files", [])
+    if accepted_files:
+        lines.extend(["", "Accepted Files"])
+        lines.extend(f"  - {item}" for item in accepted_files)
+    requirements_dir = result.get("requirements_dir")
+    if requirements_dir:
+        lines.append(f"Requirements Dir: {requirements_dir}")
+    return 0, "\n".join(lines).rstrip() + "\n"
+
+
+def _handle_scm(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    scm_command = getattr(args, "scm_command", None)
+    if scm_command is None:
+        return 1, (
+            "SCM Runtime\n\n"
+            "Usage:\n"
+            "  aiwfctl scm prepare --work-id <work-id> --repository <owner/repo> --dry-run\n"
+            "  aiwfctl scm compare --work-id <work-id>\n"
+            "  aiwfctl scm branch --work-id <work-id> --issue-number <number> --local-only\n"
+            "  aiwfctl scm commit --work-id <work-id> --message \"feat: add feature\"\n"
+            "  aiwfctl scm push --work-id <work-id> --human-check approved\n"
+            "  aiwfctl scm bootstrap --work-id <work-id> --github-repo <owner/repo> --dry-run\n"
+        )
+    try:
+        result = run_scm(args, repo_root, scm_command)
+    except KeyError:
+        return 1, f"Unknown scm command: {scm_command}\n"
+    except Exception as exc:
+        return 1, f"SCM runtime failed: {exc}\n"
+    if getattr(args, "json", False):
+        return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    lines = ["SCM Runtime", "", f"Command : {scm_command}"]
+    for key, label in [
+        ("work_id", "Work ID "),
+        ("source_dir", "Source  "),
+        ("repository", "Repo    "),
+        ("github_repo", "GitHub  "),
+        ("target_branch", "Target  "),
+        ("base_branch", "Base    "),
+        ("branch", "Branch  "),
+        ("working_branch", "Branch  "),
+        ("current_branch", "Current "),
+        ("commit", "Commit  "),
+        ("current_commit", "Commit  "),
+        ("markdown_report", "Report  "),
+        ("json_report", "JSON    "),
+        ("record_path", "Record  "),
+        ("remote_branch_ref", "Remote  "),
+        ("linked_branch_status", "Linked  "),
+        ("action", "Action  "),
+        ("dry_run", "Dry Run "),
+        ("pushed", "Pushed  "),
+    ]:
+        if key in result:
+            lines.append(f"{label}: {result.get(key, '')}")
+    return 0, "\n".join(lines).rstrip() + "\n"
+
+
+def _handle_github(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    github_command = getattr(args, "github_command", None)
+    if github_command is None:
+        return 1, (
+            "GitHub Runtime\n\n"
+            "Usage:\n"
+            "  aiwfctl github issue --work-id <work-id> --title <title>\n"
+            "  aiwfctl github issue --work-id <work-id> --title <title> --create\n"
+            "  aiwfctl github pr --work-id <work-id> --head feature/issue-1\n"
+            "  aiwfctl github pr --work-id <work-id> --head feature/issue-1 --create --human-check approved\n"
+        )
+    try:
+        result = run_github(args, repo_root, github_command)
+    except KeyError:
+        return 1, f"Unknown github command: {github_command}\n"
+    except Exception as exc:
+        return 1, f"GitHub runtime failed: {exc}\n"
+    if getattr(args, "json", False):
+        return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    lines = ["GitHub Runtime", "", f"Command : {github_command}"]
+    for key, label in [
+        ("work_id", "Work ID "),
+        ("github_repo", "GitHub  "),
+        ("title", "Title   "),
+        ("status", "Status  "),
+        ("issue_number", "Issue # "),
+        ("issue_url", "Issue   "),
+        ("pull_request_number", "PR #    "),
+        ("pull_request_url", "PR      "),
+        ("base", "Base    "),
+        ("head", "Head    "),
+        ("body_path", "Body    "),
+        ("record_path", "Record  "),
+    ]:
+        if key in result:
+            lines.append(f"{label}: {result.get(key, '') or ''}")
+    return 0, "\n".join(lines).rstrip() + "\n"
+
+
 def _handle_knowledge(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
     knowledge_command = getattr(args, "knowledge_command", None)
     if knowledge_command is None:
@@ -203,6 +343,225 @@ def _handle_knowledge(args: argparse.Namespace, repo_root: Path, registry: dict[
     if getattr(args, "json", False):
         return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
     return 0, format_knowledge_result(result)
+
+
+def _handle_rag(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    rag_command = getattr(args, "rag_command", None)
+    if rag_command is None:
+        return 1, (
+            "RAG Runtime\n\n"
+            "Usage:\n"
+            "  aiwfctl rag build --source-dir <rag-source-dir> --skip-optimization\n"
+            "  aiwfctl rag load --query <query> --build-if-missing\n"
+            "  aiwfctl rag retrieve <query> --chunks-index <chunks.jsonl> --embeddings-index <embeddings.jsonl>\n"
+            "  aiwfctl rag normalize --source-dir <source> --output-dir <normalized>\n"
+            "  aiwfctl rag chunk --input-dir <normalized> --output-dir <chunks>\n"
+            "  aiwfctl rag index --normalized-dir <normalized> --chunks-dir <chunks> --output-dir <indexes>\n"
+            "  aiwfctl rag embed --chunks-index <chunks.jsonl> --output <embeddings.jsonl>\n"
+            "  aiwfctl rag jsonize --rag-dir <rag-dir> --output-dir <jsonized-dir>\n"
+            "  aiwfctl rag migrate-legacy-root --legacy-dir <legacy-root-rag-dir>\n"
+        )
+    try:
+        result = run_rag(args, repo_root, rag_command)
+    except KeyError:
+        return 1, f"Unknown rag command: {rag_command}\n"
+    except Exception as exc:
+        return 1, f"RAG runtime failed: {exc}\n"
+    if getattr(args, "json", False):
+        return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    lines = ["RAG Runtime", "", f"Command : {rag_command}"]
+    for key, label in [
+        ("status", "Status  "),
+        ("rag_build_run", "Build   "),
+        ("dispatch_plan", "Plan    "),
+        ("dispatch_result", "Dispatch"),
+        ("retrieval_result", "Retrieval"),
+        ("context_pack", "Context "),
+        ("output_dir", "Output  "),
+        ("documents_index", "DocsIdx "),
+        ("chunks_index", "Chunks  "),
+        ("embedding_count", "Embed   "),
+        ("document_count", "Docs    "),
+        ("chunk_count", "Chunks# "),
+        ("converted_count", "Convert "),
+        ("migrated_count", "Migrate "),
+        ("renamed_count", "Renamed "),
+    ]:
+        if key in result:
+            lines.append(f"{label}: {result.get(key, '')}")
+    return 0, "\n".join(lines).rstrip() + "\n"
+
+
+def _handle_workflow(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    workflow_command = getattr(args, "workflow_command", None)
+    if workflow_command is None:
+        return 1, (
+            "Workflow Support Runtime\n\n"
+            "Usage:\n"
+            "  aiwfctl workflow docs-sync init --repository <repo> --target-branch <branch>\n"
+            "  aiwfctl workflow knowledge-capture --issue <issue-id>\n"
+            "  aiwfctl workflow corrective-action-report register --report-path <path>\n"
+            "  aiwfctl workflow corrective-action-fix init --repository <repo> --target-branch <branch>\n"
+            "  aiwfctl workflow state show --work-dir work/<work-id>\n"
+            "  aiwfctl workflow noise-reduction run --draft <path>\n"
+            "  aiwfctl workflow validate-output-language check --paths work docs\n"
+            "  aiwfctl workflow validate-vscode-workspace check\n"
+        )
+    try:
+        result = run_workflow(args, repo_root, workflow_command)
+    except KeyError:
+        action = getattr(args, "workflow_action", "") or ""
+        return 1, f"Unknown workflow command: {workflow_command} {action}\n"
+    except Exception as exc:
+        return 1, f"Workflow support runtime failed: {exc}\n"
+    code = int(result.get("exit_code", 0) or 0)
+    if getattr(args, "json", False):
+        return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    lines = ["Workflow Support Runtime", "", f"Command : {workflow_command}"]
+    action = getattr(args, "workflow_action", "") or ""
+    if action:
+        lines.append(f"Action  : {action}")
+    for key, label in [
+        ("status", "Status  "),
+        ("work_id", "Work ID "),
+        ("work_dir", "Work Dir"),
+        ("state_path", "State   "),
+        ("analysis_path", "Analysis"),
+        ("issue_body", "Issue   "),
+        ("context_path", "Context "),
+        ("report_path", "Report  "),
+        ("handoff_context", "Handoff "),
+        ("execution_plan", "Plan    "),
+        ("json_path", "JSON    "),
+        ("markdown_path", "Markdown"),
+        ("finding_count", "Findings"),
+    ]:
+        if key in result:
+            lines.append(f"{label}: {result.get(key, '')}")
+    created_files = result.get("created_files", [])
+    if created_files:
+        lines.extend(["", "Created Files"])
+        lines.extend(f"  - {item}" for item in created_files)
+    return code, "\n".join(lines).rstrip() + "\n"
+
+
+def _format_visual_runtime_result(title: str, command: str, result: dict[str, Any]) -> str:
+    lines = [title, "", f"Command : {command}"]
+    for key, label in [
+        ("status", "Status  "),
+        ("mode", "Mode    "),
+        ("issue_id", "Issue   "),
+        ("work_dir", "Work Dir"),
+        ("input_dir", "Input   "),
+        ("readme", "README  "),
+        ("svg_input_dir", "SVG Dir "),
+        ("input_prefix", "Prefix  "),
+        ("reason", "Reason  "),
+        ("file_count", "Files   "),
+    ]:
+        if key in result:
+            lines.append(f"{label}: {result.get(key, '')}")
+    errors = result.get("errors", [])
+    if errors:
+        lines.extend(["", "Errors"])
+        lines.extend(f"  - {item}" for item in errors)
+    warnings = result.get("warnings", [])
+    if warnings:
+        lines.extend(["", "Warnings"])
+        lines.extend(f"  - {item}" for item in warnings)
+    checks = result.get("checks", [])
+    if checks:
+        lines.extend(["", "Checks"])
+        lines.extend(f"  - {item}" for item in checks)
+    artifacts = result.get("artifacts", [])
+    if artifacts:
+        lines.extend(["", "Artifacts"])
+        for artifact in artifacts:
+            if isinstance(artifact, dict):
+                lines.append(f"  - {artifact.get('path', artifact)}")
+            else:
+                lines.append(f"  - {artifact}")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _handle_gui(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    gui_command = getattr(args, "gui_command", None)
+    if gui_command is None:
+        return 1, (
+            "GUI Runtime\n\n"
+            "Usage:\n"
+            "  aiwfctl gui init-input\n"
+            "  aiwfctl gui inspect-input\n"
+            "  aiwfctl gui run --issue-id <issue-id>\n"
+            "  aiwfctl gui validate --issue-id <issue-id>\n"
+            "  aiwfctl gui self-test\n"
+        )
+    try:
+        result = run_gui(args, repo_root, gui_command)
+    except KeyError:
+        return 1, f"Unknown gui command: {gui_command}\n"
+    except Exception as exc:
+        return 1, f"GUI runtime failed: {exc}\n"
+    code = 0 if result.get("status") not in {"fail"} else 1
+    if getattr(args, "json", False):
+        return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    return code, _format_visual_runtime_result("GUI Runtime", gui_command, result)
+
+
+def _handle_web_svg(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    web_svg_command = getattr(args, "web_svg_command", None)
+    if web_svg_command is None:
+        return 1, (
+            "Web SVG Runtime\n\n"
+            "Usage:\n"
+            "  aiwfctl web-svg init-input\n"
+            "  aiwfctl web-svg run --issue-id <issue-id>\n"
+            "  aiwfctl web-svg validate --issue-id <issue-id>\n"
+        )
+    try:
+        result = run_web_svg(args, repo_root, web_svg_command)
+    except KeyError:
+        return 1, f"Unknown web-svg command: {web_svg_command}\n"
+    except Exception as exc:
+        return 1, f"Web SVG runtime failed: {exc}\n"
+    code = 0 if result.get("status") not in {"fail"} else 1
+    if getattr(args, "json", False):
+        return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    return code, _format_visual_runtime_result("Web SVG Runtime", web_svg_command, result)
+
+
+def _handle_retrieval(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    retrieval_command = getattr(args, "retrieval_command", None)
+    if retrieval_command is None:
+        return 1, (
+            "Retrieval Task Runtime\n\n"
+            "Usage:\n"
+            "  aiwfctl retrieval run --work-id <work-id> --task-file work/<work-id>/context/task-plan.json\n"
+        )
+    try:
+        result = run_retrieval(args, repo_root, retrieval_command)
+    except KeyError:
+        return 1, f"Unknown retrieval command: {retrieval_command}\n"
+    except Exception as exc:
+        return 1, f"Retrieval runtime failed: {exc}\n"
+    if getattr(args, "json", False):
+        return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    summary = result.get("summary", {}) if isinstance(result.get("summary"), dict) else {}
+    lines = [
+        "Retrieval Task Runtime",
+        "",
+        f"Command : {retrieval_command}",
+        f"Work ID : {result.get('work_id', '')}",
+        f"Mode    : {result.get('execution_mode', '')}",
+        f"JSON    : {result.get('json_report', '')}",
+        f"Markdown: {result.get('markdown_report', '')}",
+        "",
+        "Summary",
+        f"  total  : {summary.get('total', 0)}",
+        f"  failed : {summary.get('failed', 0)}",
+        f"  blocked: {summary.get('blocked', 0)}",
+    ]
+    return 0, "\n".join(lines).rstrip() + "\n"
 
 
 def _handle_sdk(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
@@ -765,11 +1124,40 @@ def _handle_help(args: argparse.Namespace, repo_root: Path, registry: dict[str, 
     return run_help_command(args, repo_root, registry, color=color)
 
 
+def _handle_preflight(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    return run_preflight(args, repo_root)
+
+
+def _handle_tools(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    tools_command = getattr(args, "tools_command", None)
+    if tools_command is None:
+        return 1, (
+            "Runtime Tools\n\n"
+            "Usage:\n"
+            "  aiwfctl tools coverage-audit --skip-run\n"
+            "  aiwfctl tools spec-check\n"
+            "  aiwfctl tools bom-scan --paths docs\n"
+            "  aiwfctl tools encoding-guard --paths docs\n"
+        )
+    try:
+        return run_tools(args, repo_root, tools_command)
+    except KeyError:
+        return 1, f"Unknown tools command: {tools_command}\n"
+
+
 COMMAND_HANDLERS: dict[str, CommandHandler] = {
     "env": _handle_env,
     "context": _handle_context,
     "human-gate": _handle_human_gate,
+    "intake": _handle_intake,
+    "scm": _handle_scm,
+    "github": _handle_github,
     "knowledge": _handle_knowledge,
+    "rag": _handle_rag,
+    "workflow": _handle_workflow,
+    "gui": _handle_gui,
+    "web-svg": _handle_web_svg,
+    "retrieval": _handle_retrieval,
     "sdk": _handle_sdk,
     "flutter": _handle_flutter,
     "mcp-group": _handle_mcp_group,
@@ -780,6 +1168,8 @@ COMMAND_HANDLERS: dict[str, CommandHandler] = {
     "close-archive": _handle_close_archive,
     "iac": _handle_iac,
     "integration": _handle_integration,
+    "preflight": _handle_preflight,
+    "tools": _handle_tools,
     "doctor": _handle_doctor,
     "help": _handle_help,
 }

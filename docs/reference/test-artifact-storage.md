@@ -35,7 +35,7 @@ work/issue-<issue-number>/source/repository/docs/evidence/issue-<issue-number>/
 
 ## Automatic Scaffold
 
-`runtime/workflow/knowledge_capture.py` は、存在しない場合にtarget repository側の証跡フォルダを自動生成します。
+`aiwfctl workflow knowledge-capture` は、存在しない場合にtarget repository側の証跡フォルダを自動生成します。
 
 ```text
 docs/evidence/issue-<issue-number>/

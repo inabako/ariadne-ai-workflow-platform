@@ -21,11 +21,6 @@ from runtime.constants.paths import (  # noqa: E402
     GENERATED_INDEXES,
     GENERATED_NORMALIZED,
     GENERATED_RETRIEVAL,
-    RAG_BUILD_INDEX_SCRIPT,
-    RAG_CHUNK_SCRIPT,
-    RAG_EMBED_SCRIPT,
-    RAG_NORMALIZE_SCRIPT,
-    RAG_RETRIEVE_CONTEXT_SCRIPT,
     SOURCE_CORRECTIVE_ACTION_REPORTS,
 )
 from runtime.constants.schemas import RAG_DISPATCH_PLAN_SCHEMA, RAG_LOAD_DISPATCH_SCHEMA  # noqa: E402
@@ -519,7 +514,11 @@ def ensure_indexes(args: argparse.Namespace, repo_root: Path) -> None:
     build_commands = [
         [
             args.python,
-            RAG_NORMALIZE_SCRIPT.as_posix(),
+            "runtime/ctl/ctl.py",
+            "--repo-root",
+            ".",
+            "rag",
+            "normalize",
             "--source-dir",
             str(SOURCE_CORRECTIVE_ACTION_REPORTS),
             "--output-dir",
@@ -527,33 +526,49 @@ def ensure_indexes(args: argparse.Namespace, repo_root: Path) -> None:
             "--document-type",
             "corrective-action-report",
             "--clean-output",
+            "--json",
         ],
         [
             args.python,
-            RAG_CHUNK_SCRIPT.as_posix(),
+            "runtime/ctl/ctl.py",
+            "--repo-root",
+            ".",
+            "rag",
+            "chunk",
             "--input-dir",
             str(GENERATED_NORMALIZED),
             "--output-dir",
             str(GENERATED_CHUNKS),
             "--clean-output",
+            "--json",
         ],
         [
             args.python,
-            RAG_BUILD_INDEX_SCRIPT.as_posix(),
+            "runtime/ctl/ctl.py",
+            "--repo-root",
+            ".",
+            "rag",
+            "index",
             "--normalized-dir",
             str(GENERATED_NORMALIZED),
             "--chunks-dir",
             str(GENERATED_CHUNKS),
             "--output-dir",
             str(GENERATED_INDEXES),
+            "--json",
         ],
         [
             args.python,
-            RAG_EMBED_SCRIPT.as_posix(),
+            "runtime/ctl/ctl.py",
+            "--repo-root",
+            ".",
+            "rag",
+            "embed",
             "--chunks-index",
             str(CHUNKS_INDEX),
             "--output",
             str(EMBEDDINGS_INDEX),
+            "--json",
         ],
     ]
     for command in build_commands:
@@ -568,7 +583,11 @@ def retrieval_command(args: argparse.Namespace, query_item: dict[str, Any]) -> l
     search_mode = str(query_item.get("search_mode") or args.search_mode)
     command = [
         args.python,
-        RAG_RETRIEVE_CONTEXT_SCRIPT.as_posix(),
+        "runtime/ctl/ctl.py",
+        "--repo-root",
+        ".",
+        "rag",
+        "retrieve",
         query,
         "--chunks-index",
         args.chunks_index,
@@ -611,6 +630,7 @@ def retrieval_command(args: argparse.Namespace, query_item: dict[str, Any]) -> l
         command.extend(["--tag", tag])
     if args.write_markdown:
         command.append("--write-markdown")
+    command.append("--json")
     return command
 
 

@@ -11,7 +11,7 @@ work/db/ariadne-knowledge-platform/rag/workspace-environment/YYYYMMDDHHMMSS_<ran
 After human approval, normalize approved notes with:
 
 ```powershell
-uv run --project runtime python runtime/rag/normalize_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag normalize `
   --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment `
   --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type workspace-environment-pattern
@@ -36,7 +36,7 @@ work/db/ariadne-knowledge-platform/rag/github-knowledge/YYYYMMDD_HHMMSS_<topic>.
 Normalize approved notes with:
 
 ```powershell
-uv run --project runtime python runtime/rag/normalize_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag normalize `
   --source-dir work/db/ariadne-knowledge-platform/rag/github-knowledge `
   --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type github-repository-knowledge
@@ -209,7 +209,7 @@ front_matter
 外部Webだけを検索する場合は、`--source-type external-web` を使います。
 
 ```powershell
-python runtime/rag/retrieve_context.py `
+.\runtime\windows-script\aiwf.cmd ctl rag retrieve `
   "Go realtime gateway NAT traversal" `
   --source-type external-web `
   --category network
@@ -220,27 +220,27 @@ python runtime/rag/retrieve_context.py `
 ## Build
 
 ```powershell
-python runtime/rag/standardize_corrective_report_names.py `
+.\runtime\windows-script\aiwf.cmd ctl rag standardize `
   --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
   --replace-references
 
-python runtime/rag/normalize_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag normalize `
   --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
   --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type corrective-action-report `
   --clean-output
 
-python runtime/rag/chunk_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag chunk `
   --input-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --output-dir work/db/ariadne-knowledge-platform/rag/chunks `
   --clean-output
 
-python runtime/rag/build_index.py `
+.\runtime\windows-script\aiwf.cmd ctl rag index `
   --normalized-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --chunks-dir work/db/ariadne-knowledge-platform/rag/chunks `
   --output-dir work/db/ariadne-knowledge-platform/rag/indexes
 
-python runtime/rag/embed_chunks.py `
+.\runtime\windows-script\aiwf.cmd ctl rag embed `
   --chunks-index work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl `
   --output work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl
 ```
@@ -248,7 +248,7 @@ python runtime/rag/embed_chunks.py `
 ## Load
 
 ```powershell
-python runtime/rag/rag_dispatcher.py `
+.\runtime\windows-script\aiwf.cmd ctl rag load `
   --task "<task summary>" `
   --repository "<target-repository>" `
   --branch "<target-branch>" `

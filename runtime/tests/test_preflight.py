@@ -337,7 +337,7 @@ def test_localty_protocol_check_uses_fallback_repository(monkeypatch: pytest.Mon
 
     assert check.ok is True
     assert "fallback source repository" in check.detected
-    assert "prepare_support_repository.py" in (check.fallback_command or "")
+    assert "runtime/ctl/ctl.py --repo-root . scm support" in (check.fallback_command or "")
     assert "--branch \"main\"" in (check.fallback_command or "")
 
 
@@ -672,7 +672,7 @@ def test_markdown_report_includes_fallback_command() -> None:
                 detected="missing",
                 install_hint="Install the published package first.",
                 install_command="python -m pip install localty-system-protocol",
-                fallback_command="python runtime/scm/prepare_support_repository.py --work-id issue-1",
+                fallback_command="python runtime/ctl/ctl.py --repo-root . scm support --work-id issue-1",
             ).to_dict()
         ],
     }
@@ -682,7 +682,7 @@ def test_markdown_report_includes_fallback_command() -> None:
     assert "## Missing Required" in markdown
     assert "localty-system-protocol package" in markdown
     assert "fallback:" in markdown
-    assert "prepare_support_repository.py" in markdown
+    assert "scm support" in markdown
 
 
 def test_markdown_report_includes_missing_optional_items() -> None:

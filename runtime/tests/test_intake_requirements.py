@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from runtime.ctl import ctl
 from runtime.intake import intake_requirements
 
 
@@ -261,6 +262,61 @@ def test_run_rejects_missing_explicit_requirement(tmp_path: Path) -> None:
                 receipt_id="SYS-MISSING",
             )
         )
+
+
+def test_ctl_intake_run_accepts_requirement_document(tmp_path: Path) -> None:
+    requirement = write_requirement(tmp_path / "work" / "requirements" / "requirements.md", repository="owner/ctl")
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "intake",
+            "run",
+            "--receipt-id",
+            "SYS-CTL",
+            "--project-name",
+            "Ctl Intake",
+            "--copy",
+        ]
+    )
+
+    code, output = ctl.run(args)
+
+    assert code == 0
+    assert "Requirement Intake" in output
+    assert "Receipt : SYS-CTL" in output
+    assert requirement.exists()
+    assert (tmp_path / "work" / "SYS-CTL" / "design-document" / "requirements.md").exists()
+    assert (tmp_path / "work" / "SYS-CTL" / "context" / "context-manifest.json").exists()
+    log_path = tmp_path / "logs" / "runtime" / "runtime-events.log"
+    completed = json.loads(log_path.read_text(encoding="utf-8").splitlines()[-1].split(" | ", 3)[3])
+    assert completed["command"] == "intake run"
+    assert completed["operation_id"] == "intake:run"
+
+
+def test_ctl_intake_run_outputs_json(tmp_path: Path) -> None:
+    requirement = write_requirement(tmp_path / "incoming" / "requirements.md", repository="owner/json")
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "intake",
+            "run",
+            str(requirement),
+            "--receipt-id",
+            "SYS-JSON",
+            "--copy",
+            "--json",
+        ]
+    )
+
+    code, output = ctl.run(args)
+
+    assert code == 0
+    result = json.loads(output)
+    assert result["receipt_id"] == "SYS-JSON"
+    assert result["repository"] == "owner/json"
+    assert result["accepted_files"] == ["work/SYS-JSON/design-document/requirements.md"]
 
 
 def test_main_outputs_json_and_reports_error(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:

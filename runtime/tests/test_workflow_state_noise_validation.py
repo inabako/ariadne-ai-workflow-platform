@@ -64,6 +64,20 @@ def test_workflow_state_rejects_invalid_status(tmp_path: Path) -> None:
         )
 
 
+def test_workflow_state_gate_restart_uses_ctl_command(tmp_path: Path) -> None:
+    state = workflow_state.update_state(
+        tmp_path / "work" / "issue-ctl",
+        workflow="docs-sync",
+        work_id="issue-ctl",
+        phase="review",
+        status="blocked",
+    )
+
+    repair_command = state["gate_restart"]["repair_command"]
+    assert "runtime/ctl/ctl.py --repo-root . workflow state set" in repair_command
+    assert "runtime/workflow/workflow_state.py" not in repair_command
+
+
 def test_workflow_state_run_show_reports_missing_state(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     work_dir = repo / "work" / "issue-1"

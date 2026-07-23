@@ -81,8 +81,8 @@ def run_check(args: argparse.Namespace) -> dict[str, Any]:
                 status="blocked",
                 restart_reason=args.gate,
                 repair_command=(
-                    "uv run --project runtime python runtime/workflow/human_gate_policy.py --repo-root . "
-                    f"check --gate {args.gate} --human-check {gate.get('approved_value', 'approved')}"
+                    "uv run --project runtime python runtime/ctl/ctl.py --repo-root . "
+                    f"human-gate check --gate {args.gate} --human-check {gate.get('approved_value', 'approved')}"
                 ),
             ),
         }

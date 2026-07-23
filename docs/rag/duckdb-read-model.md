@@ -37,7 +37,7 @@ file-based RAG artifacts
 ### init
 
 ```powershell
-uv run --project runtime python runtime/rag/duckdb_store.py init
+.\runtime\windows-script\aiwf.cmd ctl knowledge init
 ```
 
 作成される主なtableは以下です。
@@ -51,7 +51,7 @@ uv run --project runtime python runtime/rag/duckdb_store.py init
 ### ingest
 
 ```powershell
-uv run --project runtime python runtime/rag/duckdb_store.py ingest --file work/db/ariadne-knowledge-platform/rag/optimized-chunks/<id>.json
+.\runtime\windows-script\aiwf.cmd ctl knowledge ingest --file work/db/ariadne-knowledge-platform/rag/optimized-chunks/<id>.json
 ```
 
 1つのJSON recordをDuckDBへ登録します。
@@ -63,7 +63,7 @@ uv run --project runtime python runtime/rag/duckdb_store.py ingest --file work/d
 ### migrate
 
 ```powershell
-uv run --project runtime python runtime/rag/duckdb_store.py migrate --source work/db/ariadne-knowledge-platform/rag/optimized-chunks
+.\runtime\windows-script\aiwf.cmd ctl knowledge migrate --source work/db/ariadne-knowledge-platform/rag/optimized-chunks
 ```
 
 指定ディレクトリ配下のJSONを再帰的に登録します。
@@ -73,7 +73,7 @@ uv run --project runtime python runtime/rag/duckdb_store.py migrate --source wor
 ### search
 
 ```powershell
-uv run --project runtime python runtime/rag/duckdb_store.py search `
+.\runtime\windows-script\aiwf.cmd ctl knowledge search `
   --query "PyQt GUI smoke test" `
   --tag gui `
   --environment windows-msys2-gui `
@@ -98,7 +98,7 @@ uv run --project runtime python runtime/rag/duckdb_store.py search `
 ### export-context
 
 ```powershell
-uv run --project runtime python runtime/rag/duckdb_store.py export-context `
+.\runtime\windows-script\aiwf.cmd ctl knowledge export-context `
   --query "PyQt GUI smoke test" `
   --output work/issue-123/context/knowledge.json
 ```
@@ -264,10 +264,10 @@ Phase 1では、既存file-based indexとretrievalを壊さないことを優先
 
 Phase 2では、DuckDB read modelに対する検索とAgent向けContext JSON生成を追加しました。
 
-Phase 3では、既存file-based retrievalを維持したまま、`retrieve_context.py` と `rag_dispatcher.py` からDuckDB read modelを任意backendとして利用できるようにしました。
+Phase 3では、既存file-based retrievalを維持したまま、`aiwfctl rag retrieve` と `aiwfctl rag load` からDuckDB read modelを任意backendとして利用できるようにしました。
 
 ```powershell
-uv run --project runtime python runtime/rag/retrieve_context.py `
+.\runtime\windows-script\aiwf.cmd ctl rag retrieve `
   "PyQt GUI smoke test" `
   --backend duckdb `
   --duckdb-path db/rag/ariadne-knowledge.duckdb `
@@ -278,7 +278,7 @@ uv run --project runtime python runtime/rag/retrieve_context.py `
 Dispatcherから利用する場合:
 
 ```powershell
-uv run --project runtime python runtime/rag/rag_dispatcher.py `
+.\runtime\windows-script\aiwf.cmd ctl rag load `
   --task "PyQt GUI smoke test" `
   --retrieval-backend duckdb `
   --duckdb-path db/rag/ariadne-knowledge.duckdb `
@@ -290,7 +290,7 @@ uv run --project runtime python runtime/rag/rag_dispatcher.py `
 Phase 4では、`rag-build` の成果物としてDuckDB migration evidenceを残せるようにしました。
 
 ```powershell
-uv run --project runtime python runtime/rag/rag_build.py `
+.\runtime\windows-script\aiwf.cmd ctl rag build `
   --duckdb-migrate `
   --duckdb-path db/rag/ariadne-knowledge.duckdb
 ```

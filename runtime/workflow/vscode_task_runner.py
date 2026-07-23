@@ -92,7 +92,9 @@ def run_skill_info(args: argparse.Namespace) -> int:
 def run_open_questions(args: argparse.Namespace) -> int:
     return run_process([
         sys.executable,
-        "runtime/workflow/vscode_environment.py",
+        "runtime/ctl/ctl.py",
+        "workflow",
+        "vscode-environment",
         "open-questions",
         "--work-id",
         args.work_id,
@@ -103,7 +105,8 @@ def run_preflight(args: argparse.Namespace) -> int:
     return run_process(
         [
             sys.executable,
-            "runtime/environment/preflight.py",
+            "runtime/ctl/ctl.py",
+            "preflight",
             "--profile",
             "vscode-environment",
             "--work-id",
@@ -116,7 +119,7 @@ def run_preflight(args: argparse.Namespace) -> int:
 
 
 def run_helper_help(_: argparse.Namespace) -> int:
-    return run_process([sys.executable, "runtime/workflow/vscode_environment.py", "--help"])
+    return run_process([sys.executable, "runtime/ctl/ctl.py", "workflow", "vscode-environment", "--help"])
 
 
 def run_msys2_localty_smoke(_: argparse.Namespace) -> int:

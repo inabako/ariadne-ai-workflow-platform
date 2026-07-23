@@ -56,7 +56,7 @@ Use:
 Initialize base work:
 
 ```powershell
-python runtime/workflow/docs_sync.py init `
+.\runtime\windows-script\aiwf.cmd ctl workflow docs-sync init `
   --repository "<target-repository>" `
   --target-branch "<target-branch>"
 ```
@@ -64,7 +64,7 @@ python runtime/workflow/docs_sync.py init `
 Prepare base checkout:
 
 ```powershell
-python runtime/scm/prepare_repository.py `
+.\runtime\windows-script\aiwf.cmd ctl scm prepare `
   --work-id "<target-branch>" `
   --repository "<target-repository>" `
   --target-branch "<target-branch>"
@@ -73,21 +73,21 @@ python runtime/scm/prepare_repository.py `
 Create an empty analysis scaffold when useful:
 
 ```powershell
-python runtime/workflow/docs_sync.py analysis-template `
+.\runtime\windows-script\aiwf.cmd ctl workflow docs-sync analysis-template `
   --work-id "<target-branch>"
 ```
 
 Create Issue body from the JSON:
 
 ```powershell
-python runtime/workflow/docs_sync.py issue-body `
+.\runtime\windows-script\aiwf.cmd ctl workflow docs-sync issue-body `
   --work-id "<target-branch>"
 ```
 
 Create the Issue:
 
 ```powershell
-python runtime/github/issue_manager.py `
+.\runtime\windows-script\aiwf.cmd ctl github issue `
   --work-id "<target-branch>" `
   --title "<issue-title>" `
   --flow-label improvement `
@@ -98,13 +98,13 @@ python runtime/github/issue_manager.py `
 Create and clone the issue branch:
 
 ```powershell
-python runtime/workflow/docs_sync.py init `
+.\runtime\windows-script\aiwf.cmd ctl workflow docs-sync init `
   --repository "<target-repository>" `
   --target-branch "<target-branch>" `
   --work-id "issue-<issue-number>" `
   --base-work-id "<target-branch>"
 
-python runtime/scm/create_issue_branch.py `
+.\runtime\windows-script\aiwf.cmd ctl scm branch `
   --work-id "issue-<issue-number>" `
   --issue-number "<issue-number>" `
   --repository "<target-repository>" `
@@ -115,12 +115,12 @@ python runtime/scm/create_issue_branch.py `
 Commit and push:
 
 ```powershell
-python runtime/scm/commit_changes.py `
+.\runtime\windows-script\aiwf.cmd ctl scm commit `
   --work-id "issue-<issue-number>" `
   --message "docs: sync documentation with implementation" `
   --all
 
-python runtime/scm/push_branch.py `
+.\runtime\windows-script\aiwf.cmd ctl scm push `
   --work-id "issue-<issue-number>" `
   --human-check approved `
   --set-upstream
@@ -129,7 +129,7 @@ python runtime/scm/push_branch.py `
 Create Pull Request to `develop` after push:
 
 ```powershell
-python runtime/github/pull_request_manager.py `
+.\runtime\windows-script\aiwf.cmd ctl github pr `
   --work-id "issue-<issue-number>" `
   --base develop `
   --create `

@@ -118,8 +118,8 @@ GitHub passwordをENVに保存しません。GitHub CLI/API と git remote の�
 ## UTF-8 BOM Tool
 
 ```powershell
-uv run --project runtime python runtime/tools/utf8_bom.py --repo-root . scan --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --fail-on-finding
-uv run --project runtime python runtime/tools/utf8_bom.py --repo-root . strip --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --write
+.\runtime\windows-script\aiwf.cmd ctl tools bom-scan --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --fail-on-finding
+.\runtime\windows-script\aiwf.cmd ctl tools bom-strip --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --write
 ```
 
 ## Environment Files
@@ -146,7 +146,7 @@ ARIADNE_KNOWLEDGE_REPOSITORY=ariadne-knowledge-platform
 
 ## GitHub Issue Body
 
-`runtime/github/issue_manager.py` は、Issue bodyを次の優先順位で選びます。
+`aiwfctl github issue` は、Issue bodyを次の優先順位で選びます。
 
 1. `--body-file` で明示されたMarkdown
 2. target repository の `.github/ISSUE_TEMPLATE.md`
@@ -158,7 +158,7 @@ Issue title は workflow に応じて `[新規機能フロー]`、`[改善フロ
 
 ## Pull Request
 
-Issue branch push後、`runtime/github/pull_request_manager.py` で `develop` へのPull Requestを作成します。
+Issue branch push後、`aiwfctl github pr` で `develop` へのPull Requestを作成します。
 
 Pull Request title はGitHub Issue titleを使用します。
 
@@ -194,7 +194,7 @@ uv run --group dev coverage report -m
 生成物の既定言語を確認する場合:
 
 ```powershell
-uv run --project runtime python runtime/workflow/validate_output_language.py `
+.\runtime\windows-script\aiwf.cmd ctl workflow validate-output-language check `
   --paths work rag docs `
   --fail-on-violation
 ```

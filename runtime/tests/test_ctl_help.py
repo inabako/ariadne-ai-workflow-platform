@@ -39,6 +39,15 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     assert work_args.work_command == "cleanup-check"
     assert work_args.recursive is True
     assert cleanup_args.force is True
+    preflight_args = parser.parse_args(["preflight", "--profile", "github-cli", "--work-id", "w"])
+    assert preflight_args.command == "preflight"
+    assert preflight_args.profile == "github-cli"
+    assert preflight_args.work_id == "w"
+    tools_args = parser.parse_args(["tools", "bom-scan", "--paths", "docs", "--fail-on-finding"])
+    assert tools_args.command == "tools"
+    assert tools_args.tools_command == "bom-scan"
+    assert tools_args.paths == ["docs"]
+    assert tools_args.fail_on_finding is True
     publish_args = parser.parse_args(
         [
             "github-knowledge",
@@ -79,15 +88,17 @@ def test_windows_script_runtime_contract() -> None:
     assert "[Parameter(ValueFromRemainingArguments = $true)]" in text
     assert "Invoke-AiwfNative" in text
     assert '"ctl/ctl.py"' in text
-    assert '"environment/preflight.py"' in text
     assert '"--project", $RuntimeRoot, "python", $CtlPath, "--repo-root", $RepoRoot' in text
     assert "powershell -NoProfile -ExecutionPolicy Bypass -File" in wrapper_text
     assert "%~dp0aiwf.ps1" in wrapper_text
     assert tools_cmd_files == []
-    assert '"--project", $RuntimeRoot, "python", $PreflightPath, "--repo-root", $RepoRoot' in text
+    assert '"--project", $RuntimeRoot, "python", $CtlPath, "--repo-root", $RepoRoot, "preflight"' in text
     assert '"run", "--project", $RuntimeRoot, "pytest", "-c", $PytestConfig' in text
-    assert "pytest_ut_spec_sync.py" in text
-    assert "utf8_bom.py" in text
+    assert '"tools", "spec-check"' in text
+    assert '"tools", "bom-scan"' in text
+    assert '"tools", "bom-strip"' in text
+    assert "pytest_ut_spec_sync.py" not in text
+    assert "utf8_bom.py" not in text
     assert "runtime/workflow" not in text
     assert not bash_raw.startswith(b"\xef\xbb\xbf")
     assert bash_text.startswith("#!/usr/bin/env bash")
@@ -96,12 +107,14 @@ def test_windows_script_runtime_contract() -> None:
     assert "PYTHONUTF8=1" in bash_text
     assert "PYTHONIOENCODING=utf-8" in bash_text
     assert 'ctl_path="$runtime_root/ctl/ctl.py"' in bash_text
-    assert 'preflight_path="$runtime_root/environment/preflight.py"' in bash_text
     assert 'run --project "$runtime_root" python "$ctl_path" --repo-root "$repo_root"' in bash_text
-    assert 'run --project "$runtime_root" python "$preflight_path" --repo-root "$repo_root"' in bash_text
+    assert 'run --project "$runtime_root" python "$ctl_path" --repo-root "$repo_root" preflight "$@"' in bash_text
     assert 'run --project "$runtime_root" pytest -c "$runtime_root/pytest.ini" "$@"' in bash_text
-    assert "pytest_ut_spec_sync.py" in bash_text
-    assert "utf8_bom.py" in bash_text
+    assert 'tools spec-check "$@"' in bash_text
+    assert 'tools bom-scan "$@"' in bash_text
+    assert 'tools bom-strip "$@"' in bash_text
+    assert "pytest_ut_spec_sync.py" not in bash_text
+    assert "utf8_bom.py" not in bash_text
     assert "runtime/workflow" not in bash_text
 
 

@@ -168,7 +168,7 @@ slash command workflow taskは、Codex commandとSkill pathを表示します。
 
 Workflow taskとsmoke-check taskは、`runtime/workflow/vscode_task_runner.py` を通じてVSCode `process` taskとして実行します。これにより、長いinline PowerShell command、nested PowerShell startup、`ExecutionPolicy Bypass` patternを避け、AMSI / security-product heuristicに引っかかりにくくします。
 
-`test:vscode-json` はinline `python -c` ではなく `runtime/workflow/validate_vscode_workspace.py` を呼び出します。PowerShell quotingの崩れを避けるためです。
+`test:vscode-json` はinline `python -c` ではなく `aiwfctl workflow validate-vscode-workspace check` を呼び出します。PowerShell quotingの崩れを避けるためです。
 
 `workflow:vscode-preflight` と `test:go-version` は、Go確認前にPython task runner内でMachine/User PATHを再読込します。VSCode起動後にGoをinstallした場合の古いPATH問題を避けます。
 
@@ -179,7 +179,7 @@ Workflow taskとsmoke-check taskは、`runtime/workflow/vscode_task_runner.py` �
 実行例:
 
 ```powershell
-uv run --project runtime python runtime/environment/preflight.py `
+.\runtime\windows-script\aiwf.cmd ctl preflight `
   --profile vscode-environment `
   --work-id vscode-environment `
   --source-dir C:\github\ariadne-ai-workflow-platform
@@ -214,7 +214,7 @@ work/db/ariadne-knowledge-platform/rag/workspace-environment/YYYYMMDDHHMMSS_<ran
 Human approval後、最終的なUUID名RAG knowledge JSONへnormalizeします。
 
 ```powershell
-uv run --project runtime python runtime/rag/normalize_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag normalize `
   --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment `
   --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type workspace-environment-pattern

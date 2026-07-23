@@ -17,7 +17,7 @@
 標準運用では、完成版の要件定義書を `work/requirements/` に配置してから、引数なしで intake します。
 
 ```powershell
-python runtime/intake/intake_requirements.py `
+.\runtime\windows-script\aiwf.cmd ctl intake run `
   --project-name localty-system-gui `
   --workflow ariadne-new-system-development
 ```
@@ -46,7 +46,7 @@ realtime-iac
 明示的に要件定義書を渡す場合は、以下のように指定できます。
 
 ```powershell
-python runtime/intake/intake_requirements.py `
+.\runtime\windows-script\aiwf.cmd ctl intake run `
   C:\path\to\requirements.md `
   --project-name localty-system-gui `
   --workflow ariadne-new-system-development
@@ -57,7 +57,7 @@ python runtime/intake/intake_requirements.py `
 元ファイルを残したい場合は `--copy` を付けます。
 
 ```powershell
-python runtime/intake/intake_requirements.py C:\path\to\requirements.md --copy
+.\runtime\windows-script\aiwf.cmd ctl intake run C:\path\to\requirements.md --copy
 ```
 
 ## Target Work Structure

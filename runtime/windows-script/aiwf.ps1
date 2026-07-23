@@ -22,10 +22,6 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = (Resolve-Path (Join-Path $ScriptDir "../..")).Path
 $RuntimeRoot = Join-Path $RepoRoot "runtime"
 $CtlPath = Join-Path $RuntimeRoot "ctl/ctl.py"
-$PreflightPath = Join-Path $RuntimeRoot "environment/preflight.py"
-$BomToolPath = Join-Path $RuntimeRoot "tools/utf8_bom.py"
-$SpecSyncPath = Join-Path $RuntimeRoot "tools/pytest_ut_spec_sync.py"
-$SpecPath = Join-Path $RepoRoot "docs/reference/runtime-pytest-ut/case-specification.md"
 
 function Test-AiwfWindowsHost {
     $isWindowsVariable = Get-Variable -Name IsWindows -ErrorAction SilentlyContinue
@@ -155,33 +151,22 @@ switch ($Command) {
         Invoke-AiwfUv -ArgumentList $arguments -WorkingDirectory $RuntimeRoot
     }
     "preflight" {
-        $arguments = @("run", "--project", $RuntimeRoot, "python", $PreflightPath, "--repo-root", $RepoRoot)
+        $arguments = @("run", "--project", $RuntimeRoot, "python", $CtlPath, "--repo-root", $RepoRoot, "preflight")
         $arguments += $RemainingArgs
         Invoke-AiwfUv -ArgumentList $arguments -WorkingDirectory $RepoRoot
     }
     "spec-check" {
-        $arguments = @(
-            "run",
-            "--project",
-            $RuntimeRoot,
-            "python",
-            $SpecSyncPath,
-            "--spec",
-            $SpecPath,
-            "--runtime-root",
-            $RuntimeRoot,
-            "check"
-        )
+        $arguments = @("run", "--project", $RuntimeRoot, "python", $CtlPath, "--repo-root", $RepoRoot, "tools", "spec-check")
         $arguments += $RemainingArgs
         Invoke-AiwfUv -ArgumentList $arguments -WorkingDirectory $RepoRoot
     }
     "bom-scan" {
-        $arguments = @("run", "--project", $RuntimeRoot, "python", $BomToolPath, "--repo-root", $RepoRoot, "scan")
+        $arguments = @("run", "--project", $RuntimeRoot, "python", $CtlPath, "--repo-root", $RepoRoot, "tools", "bom-scan")
         $arguments += $RemainingArgs
         Invoke-AiwfUv -ArgumentList $arguments -WorkingDirectory $RepoRoot
     }
     "bom-strip" {
-        $arguments = @("run", "--project", $RuntimeRoot, "python", $BomToolPath, "--repo-root", $RepoRoot, "strip")
+        $arguments = @("run", "--project", $RuntimeRoot, "python", $CtlPath, "--repo-root", $RepoRoot, "tools", "bom-strip")
         $arguments += $RemainingArgs
         Invoke-AiwfUv -ArgumentList $arguments -WorkingDirectory $RepoRoot
     }

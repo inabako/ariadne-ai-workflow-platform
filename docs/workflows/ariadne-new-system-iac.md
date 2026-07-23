@@ -78,7 +78,7 @@ Validatorは、Shared ArtifactsがIaC workflowへ渡せる品質かを判定し�
 Shared Artifact Validator が `pass` または human-approved `conditional-pass` の場合、Realtime IaCへ進む前に handoff context と execution plan を作成します。
 
 ```powershell
-uv run --project runtime python runtime/workflow/iac_handoff_context.py `
+.\runtime\windows-script\aiwf.cmd ctl workflow iac-handoff create `
   --work-id <receipt-id> `
   --validator-judgment <pass|conditional-pass|fail> `
   --source-artifact work/<receipt-id>/design-document/shared-artifacts-index.md

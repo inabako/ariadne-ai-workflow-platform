@@ -24,7 +24,7 @@ agent: agent
 実行:
 
 ```powershell
-python runtime/workflow/web_svg_layout_mode.py run `
+.\runtime\windows-script\aiwf.cmd ctl web-svg run `
   --issue-id "<issue-id>" `
   --work-dir "<work-dir>"
 ```
@@ -32,7 +32,7 @@ python runtime/workflow/web_svg_layout_mode.py run `
 親workflowが `work/issue-<number>` を使う場合は、モードを明示します。
 
 ```powershell
-python runtime/workflow/web_svg_layout_mode.py run `
+.\runtime\windows-script\aiwf.cmd ctl web-svg run `
   --issue-id "FIX-<number>" `
   --work-dir "work/issue-<number>" `
   --mode corrective-fix

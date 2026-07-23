@@ -13,8 +13,8 @@ agent: agent
 
 Readable workflow additions:
 
-- Before push, generate PR material with `runtime/workflow/knowledge_capture.py`: `pull-request-title.md`, `pull-request-description.md`, `merge-comment.md`, and `knowledge-capture-report.md`.
-- Before push, confirm test specifications and evidence are stored under `work/issue-XXX/source/repository/docs/evidence/issue-XXX/test_specifications/`, `ut/`, `integration/`, and `human_check/` when required. Split test case tables into `unit-test-cases.md`, `integration-test-cases.md`, and `human-check-list.md`. `knowledge_capture.py` creates missing scaffold directories, but scaffold `README.md` files alone are not evidence.
+- Before push, generate PR material with `aiwfctl workflow knowledge-capture`: `pull-request-title.md`, `pull-request-description.md`, `merge-comment.md`, and `knowledge-capture-report.md`.
+- Before push, confirm test specifications and evidence are stored under `work/issue-XXX/source/repository/docs/evidence/issue-XXX/test_specifications/`, `ut/`, `integration/`, and `human_check/` when required. Split test case tables into `unit-test-cases.md`, `integration-test-cases.md`, and `human-check-list.md`. `aiwfctl workflow knowledge-capture` creates missing scaffold directories, but scaffold `README.md` files alone are not evidence.
 - After docs evidence is present and human approval is recorded, push only `feature/issue-XXX`.
 - For final knowledge recovery, extract RAG candidates from `work/issue-XXX/process-report`, `work/issue-XXX/test-specifications`, and `work/issue-XXX/test-evidence`.
 - Before deleting `work/<base-branch>`, summarize and link `work/<base-branch>/process-report` into the report-only close archive under `work/close/improvement/issue-XXX/`.
@@ -69,7 +69,7 @@ Flow:
 GaC / UaC GUI Mode:
 
 ```powershell
-python runtime/workflow/gui_mode.py run `
+.\runtime\windows-script\aiwf.cmd ctl gui run `
   --issue-id "FIX-XXX" `
   --work-dir "work/issue-XXX" `
   --mode corrective-improvement
@@ -90,7 +90,8 @@ Web SVG Layout Mode:
 
 ```text
 .github/prompts/web-svg-layout-mode.prompt.md
-runtime/workflow/web_svg_layout_mode.py
+aiwfctl web-svg run / validate
+runtime/workflow/web_svg_layout_mode.py (internal implementation)
 ```
 
 `work/requirements/svg-input/WEB_FIX_*.svg` がある場合、`work/issue-<number>/web-ui/` を生成します。React / Playwright候補は既存画面への最小修正としてreviewし、無条件コピーしません。

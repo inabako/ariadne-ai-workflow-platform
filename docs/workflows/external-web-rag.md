@@ -140,7 +140,7 @@ work/db/ariadne-knowledge-platform/rag/external-web/<category>/*.md
 Normalize example:
 
 ```powershell
-python runtime/rag/normalize_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag normalize `
   --source-dir work/db/ariadne-knowledge-platform/rag/external-web/network `
   --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type external-web-knowledge
@@ -166,7 +166,7 @@ The normalized JSON keeps external-web provenance under `metadata`:
 External-web only retrieval:
 
 ```powershell
-python runtime/rag/retrieve_context.py `
+.\runtime\windows-script\aiwf.cmd ctl rag retrieve `
   "Go realtime gateway UDP NAT traversal" `
   --source-type external-web `
   --category network `

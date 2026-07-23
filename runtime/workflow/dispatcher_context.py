@@ -713,7 +713,7 @@ def runtime_context(
         ],
         "verification_commands": [
             "uv run --project runtime python runtime/ctl/ctl.py --repo-root . context show --work-dir work/<work-id>",
-            "uv run --project runtime python runtime/workflow/workflow_doctor.py --fail-on-warning",
+            "uv run --project runtime python runtime/ctl/ctl.py --repo-root . doctor --fail-on-warning",
         ],
         "human_check_required_when": [
             "The selected workflow needs external mutation, install, network, device, Docker, or personal environment changes.",

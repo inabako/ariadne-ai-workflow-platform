@@ -58,19 +58,19 @@ aiwfctl env select gui-mode
 入力directoryを準備:
 
 ```powershell
-python runtime/workflow/gui_mode.py init-input
+.\runtime\windows-script\aiwf.cmd ctl gui init-input
 ```
 
 自動判定して生成:
 
 ```powershell
-python runtime/workflow/gui_mode.py run --issue-id SYS-0001
+.\runtime\windows-script\aiwf.cmd ctl gui run --issue-id SYS-0001
 ```
 
 既存Corrective Action work directoryで実行:
 
 ```powershell
-python runtime/workflow/gui_mode.py run `
+.\runtime\windows-script\aiwf.cmd ctl gui run `
   --issue-id FIX-123 `
   --work-dir work/issue-123 `
   --mode corrective-improvement
@@ -79,14 +79,14 @@ python runtime/workflow/gui_mode.py run `
 完了検証:
 
 ```powershell
-python runtime/workflow/gui_mode.py validate `
+.\runtime\windows-script\aiwf.cmd ctl gui validate `
   --issue-id SYS-0001
 ```
 
 ランタイム自己検証:
 
 ```powershell
-python runtime/workflow/gui_mode.py self-test
+.\runtime\windows-script\aiwf.cmd ctl gui self-test
 ```
 
 既存成果物は既定で上書きしません。人間が意図的に再生成する場合だけ`--force`を使います。
@@ -145,7 +145,7 @@ gac-uac/generated/tests/
 prefixで親workflowを判定するため、投入前にinboxを検査できます。
 
 ```powershell
-python runtime/workflow/gui_mode.py inspect-input
+.\runtime\windows-script\aiwf.cmd ctl gui inspect-input
 ```
 
 検査対象prefix:

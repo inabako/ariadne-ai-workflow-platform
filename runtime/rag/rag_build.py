@@ -133,7 +133,7 @@ def build_run_artifact(
             "rag-build-gate",
             status="human-check-required" if human_check_reasons else status,
             restart_reason="rag-build",
-            repair_command="uv run --project runtime python runtime/rag/rag_build.py --repo-root ."
+            repair_command="uv run --project runtime python runtime/ctl/ctl.py --repo-root . rag build"
             if human_check_reasons
             else "",
         ),

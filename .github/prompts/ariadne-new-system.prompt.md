@@ -25,7 +25,7 @@ Then delegate the detailed workflow to:
 Before implementation or design work, run or require:
 
 ```powershell
-python runtime/intake/intake_requirements.py --workflow ariadne-new-system-development
+.\runtime\windows-script\aiwf.cmd ctl intake run --workflow ariadne-new-system-development
 ```
 
 Reject the order when:
@@ -40,7 +40,7 @@ Do not proceed from chat history alone.
 
 After intake succeeds, run `/pre-development-preparation`, then run `/rag-load`, then continue with `/ariadne-new-system-development`.
 
-`/rag-load` must search prior corrective action reports in parallel where possible and use `runtime/rag/retrieve_context.py` to generate compressed context packs before development design starts.
+`/rag-load` must search prior corrective action reports in parallel where possible and use `aiwfctl rag retrieve` through the RAG dispatcher to generate compressed context packs before development design starts.
 
 Before implementation starts, run the Boilerplate Template Selection Gate from `/ariadne-new-system-development`.
 

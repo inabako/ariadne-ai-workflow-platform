@@ -40,7 +40,16 @@ Do not add workflow-specific decision logic to `runtime/posix-bash/*.sh`. If an 
 | --- | --- |
 | Context First manifest and required context checks | `aiwfctl context ...` |
 | Human Check registry inspection and approval guard checks | `aiwfctl human-gate ...` |
+| Requirement intake | `aiwfctl intake ...` |
+| SCM repository preparation, compare, branch, commit, push, bootstrap | `aiwfctl scm ...` |
+| GitHub Issue and Pull Request drafts or approved mutations | `aiwfctl github ...` |
 | GitHub knowledge maintenance analysis, sync, rebase package, replay, and RAG candidates | `aiwfctl github-knowledge ...` |
+| RAG build, load, retrieval, and file-based RAG artifact maintenance | `aiwfctl rag ...` |
+| Workflow support helpers such as docs-sync, knowledge-capture, corrective action context, workflow-state, noise-reduction, output-language, VSCode workspace validation, and IaC handoff | `aiwfctl workflow ...` |
+| SVG-driven GUI and Web SVG layout generation and validation | `aiwfctl gui ...`, `aiwfctl web-svg ...` |
+| Environment tool/package preflight | `aiwfctl preflight ...` |
+| Runtime maintenance tools such as coverage audit, UT spec sync, BOM scan/strip, and encoding guard/convert | `aiwfctl tools ...` |
+| Workflow task plan execution / runtime retrieval task runner | `aiwfctl retrieval ...` |
 | close archive prepare / audit / prune | `aiwfctl close-archive ...` |
 | self-improvement feedback, review, issue body, and evidence scaffold | `aiwfctl self-improvement ...` |
 | DuckDB knowledge read model operations | `aiwfctl knowledge ...` |

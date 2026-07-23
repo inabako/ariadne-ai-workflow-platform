@@ -35,13 +35,13 @@ SCM連携に必要な値は repository root の `.env` から読み込みます�
 
 `create_issue_branch.py` は、既定ではGitHub上にbranchを先に作成してから、`work/<id>/source/repository/` にそのbranchをclone / checkoutします。`--link-to-issue` を指定すると、GitHub GraphQL `createLinkedBranch` でIssueに紐づくbranchとして作成します。`--branch-prefix` が未指定の場合、`DEFAULT_FEATURE_BRANCH_PREFIX` を使います。従来のローカルbranch作成だけを行う場合は `--local-only` を指定します。
 
-`prepare_repository.py` は、`--remote` が未指定の場合、`DEFAULT_GIT_REMOTE_NAME` を使います。
+`aiwfctl scm prepare` は、`--remote` が未指定の場合、`DEFAULT_GIT_REMOTE_NAME` を使います。
 
-`prepare_support_repository.py` は、RAGやpreflightで必要と判明したsupport repositoryを `work/<id>/source/<name>/` にclone / checkoutします。実行結果は `work/<id>/context/support-repositories.json` と `work/<id>/process-report/support-repository-<name>.json` に残します。
+`aiwfctl scm support` は、RAGやpreflightで必要と判明したsupport repositoryを `work/<id>/source/<name>/` にclone / checkoutします。実行結果は `work/<id>/context/support-repositories.json` と `work/<id>/process-report/support-repository-<name>.json` に残します。
 
 ## Requirement Repository Control
 
-`prepare_repository.py` は、`--repository` / `--target-branch` が未指定の場合、受付済み要件定義書の `Repository Control` 欄を読み取ります。
+`aiwfctl scm prepare` は、`--repository` / `--target-branch` が未指定の場合、受付済み要件定義書の `Repository Control` 欄を読み取ります。
 
 Resolution priority:
 
@@ -60,7 +60,9 @@ Supported fields:
 - `Base Branch`
 - `Git Remote`
 
-## CLI
+## Internal Modules
+
+通常実行は `aiwfctl scm ...` または `runtime/windows-script` / `runtime/posix-bash` のwrapper経由で行います。下記はSCM Runtimeを構成する内部moduleです。
 
 ```text
 runtime/scm/prepare_repository.py
@@ -75,31 +77,31 @@ runtime/scm/push_branch.py
 ## Example
 
 ```powershell
-python runtime/scm/create_issue_branch.py `
+.\runtime\windows-script\aiwf.cmd ctl scm branch `
   --work-id issue-123 `
   --issue-number 123 `
   --repository https://github.com/example/robot.git `
   --base-branch main `
   --link-to-issue
 
-python runtime/scm/prepare_support_repository.py `
+.\runtime\windows-script\aiwf.cmd ctl scm support `
   --work-id issue-123 `
   --name localty-system-protocol `
   --repository inabako/localty-system-protocol `
   --branch develop
 
-python runtime/scm/commit_changes.py `
+.\runtime\windows-script\aiwf.cmd ctl scm commit `
   --work-id issue-123 `
   --all `
   --message "feat: add remote gateway skeleton"
 
-python runtime/scm/bootstrap_repository.py `
+.\runtime\windows-script\aiwf.cmd ctl scm bootstrap `
   --work-id WF-20260601-090000 `
   --github-repo owner/new-iac-repository `
   --push `
   --human-check approved
 
-python runtime/scm/push_branch.py `
+.\runtime\windows-script\aiwf.cmd ctl scm push `
   --work-id issue-123 `
   --human-check approved `
   --set-upstream

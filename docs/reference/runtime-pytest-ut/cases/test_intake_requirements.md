@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 8 |
+| cases | 10 |
 
 ## ケース一覧
 
@@ -132,13 +132,47 @@ runtime/tests/test_intake_requirements.py::test_run_rejects_missing_explicit_req
 - pytest node id:
 
 ```text
+runtime/tests/test_intake_requirements.py::test_ctl_intake_run_accepts_requirement_document
+```
+
+- 確認内容: pytest case `ctl intake run accepts requirement document` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_intake_requirements.py:267`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし case=なし
+  - inline input: `aiwfctl intake run` 経由の要件受付、Context First manifest、runtime event log
+- 期待結果: 該当caseがpassし、`aiwfctl intake run` が要件定義書を受け付け、work directoryとcontextを生成し、ログ上のcommand pathを `intake run` として記録する。
+
+#### RT-UT-CASE-201
+
+- pytest node id:
+
+```text
+runtime/tests/test_intake_requirements.py::test_ctl_intake_run_outputs_json
+```
+
+- 確認内容: pytest case `ctl intake run outputs json` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_intake_requirements.py:297`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし case=なし
+  - inline input: `aiwfctl intake run --json` 経由の要件受付
+- 期待結果: 該当caseがpassし、CTL経由でも既存intake runtimeと同じJSON結果を返す。
+
+#### RT-UT-CASE-202
+
+- pytest node id:
+
+```text
 runtime/tests/test_intake_requirements.py::test_main_outputs_json_and_reports_error
 ```
 
 - 確認内容: pytest case `main outputs json and reports error` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_intake_requirements.py:266`
+  - source: `runtime/tests/test_intake_requirements.py:322`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル

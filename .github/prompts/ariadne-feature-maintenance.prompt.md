@@ -25,7 +25,7 @@ Then delegate the detailed workflow to:
 Before implementation or design work, run or require:
 
 ```powershell
-python runtime/intake/intake_requirements.py --workflow ariadne-feature-maintenance-development
+.\runtime\windows-script\aiwf.cmd ctl intake run --workflow ariadne-feature-maintenance-development
 ```
 
 Reject the order when:
@@ -40,4 +40,4 @@ Do not proceed from chat history alone.
 
 After intake succeeds, run `/pre-development-preparation`, then run `/rag-load`, then continue with `/ariadne-feature-maintenance-development`.
 
-`/rag-load` must search prior corrective action reports in parallel where possible and use `runtime/rag/retrieve_context.py` to generate compressed context packs before maintenance design starts.
+`/rag-load` must search prior corrective action reports in parallel where possible and use `aiwfctl rag retrieve` through the RAG dispatcher to generate compressed context packs before maintenance design starts.

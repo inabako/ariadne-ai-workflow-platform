@@ -30,7 +30,7 @@
 Runtime:
 
 ```text
-runtime/intake/intake_requirements.py
+aiwfctl intake run
 ```
 
 出力:
@@ -46,7 +46,7 @@ GitHubから対象repository / target branch を取得します。
 Runtime:
 
 ```text
-runtime/scm/prepare_repository.py
+aiwfctl scm prepare
 ```
 
 出力:
@@ -75,7 +75,7 @@ CLI argument
 Runtime:
 
 ```text
-runtime/scm/compare_requirements.py
+aiwfctl scm compare
 ```
 
 出力:
@@ -95,7 +95,7 @@ runtime/scm/compare_requirements.py
 
 Issue title prefix:
 
-| Flow | Prefix | `issue_manager.py` option |
+| Flow | Prefix | `aiwfctl github issue` option |
 | --- | --- | --- |
 | 新規機能 / 保守開発 | `[新規機能フロー]` | `--flow-label new-feature` |
 | 改善 / docs sync | `[改善フロー]` | `--flow-label improvement` |
@@ -105,7 +105,7 @@ Issue title prefix:
 Runtime:
 
 ```text
-runtime/github/issue_manager.py
+aiwfctl github issue
 ```
 
 出力:
@@ -127,7 +127,7 @@ Issue番号をもとに作業branchを作成します。
 Runtime:
 
 ```text
-runtime/scm/create_issue_branch.py
+aiwfctl scm branch
 ```
 
 branch naming:
@@ -152,9 +152,9 @@ feature/issue-<issue-number>
 - `work/<採番ID>/process-report/requirement-comparison-*.md`
 - `work/<採番ID>/process-report/github-issue-*.md`
 
-`/rag-load` では、`runtime/rag/rag_dispatcher.py` を実行します。dispatcher は対象 repository、branch、要件の intent、影響コンポーネント、安全・STOP・通信断・rollback・test gap などから 3〜5 個の検索クエリを作り、可能なら並列検索します。
+`/rag-load` では、`aiwfctl rag load` を実行します。dispatcher は対象 repository、branch、要件の intent、影響コンポーネント、安全・STOP・通信断・rollback・test gap などから 3〜5 個の検索クエリを作り、可能なら並列検索します。
 
-検索結果は `runtime/rag/retrieve_context.py` の既存圧縮機能で `artifact_type: rag-context-pack` の `work/db/ariadne-knowledge-platform/rag/retrieval/<uuid>.json` として保存します。dispatcher はそれらを集約して `artifact_type: rag-load-dispatch` の `work/db/ariadne-knowledge-platform/rag/retrieval/<uuid>.json` を作り、開発本体flowに入る前に要約します。
+検索結果は `aiwfctl rag retrieve` の既存圧縮機能で `artifact_type: rag-context-pack` の `work/db/ariadne-knowledge-platform/rag/retrieval/<uuid>.json` として保存します。dispatcher はそれらを集約して `artifact_type: rag-load-dispatch` の `work/db/ariadne-knowledge-platform/rag/retrieval/<uuid>.json` を作り、開発本体flowに入る前に要約します。
 
 確認:
 
@@ -183,7 +183,7 @@ feature/issue-<issue-number>
 Runtime:
 
 ```text
-runtime/scm/commit_changes.py
+aiwfctl scm commit
 ```
 
 Commit message rule:

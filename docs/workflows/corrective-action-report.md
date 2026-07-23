@@ -25,7 +25,7 @@ work/db/ariadne-knowledge-platform/rag/corrective-action-report/YYYYMMDDHHmmSS_<
 report作成後は、成果物をContext Firstへ登録します。
 
 ```powershell
-python runtime/workflow/corrective_action_report.py register `
+.\runtime\windows-script\aiwf.cmd ctl workflow corrective-action-report register `
   --repository "<target-repository>" `
   --target-branch "<target-branch>" `
   --report-path "work/db/ariadne-knowledge-platform/rag/corrective-action-report/<report>.md"

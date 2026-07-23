@@ -124,7 +124,7 @@ stdout/stderrは `work/<work-id>/process-report/review-council/` に保存され
 
 `review rag-build` は、`capture-knowledge` の候補を読み取り、既存のfile-based RAG buildが扱えるMarkdown sourceへ変換します。
 sourceは `work/db/<knowledge-repo>/rag/review-council/<work-id>/<review-id>/` に保存されます。
-通常実行ではbridge manifestと再現可能な `runtime/rag/rag_build.py` commandだけを作成し、`--run` を明示した場合だけ既存RAG build pipelineを呼び出します。
+通常実行ではbridge manifestと再現可能な `aiwfctl rag build` commandだけを作成し、`--run` を明示した場合だけ既存RAG build pipelineを呼び出します。
 これにより、Review Councilの判定、Finding、Human Gate、Evidence Gate、再検査結果を、後続Agentが検索可能なKnowledgeへ接続できます。
 
 ## CLI

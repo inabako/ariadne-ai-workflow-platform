@@ -26,9 +26,9 @@ Use `runtime/windows-script/aiwf.cmd` as the normal PATH-friendly Windows entryp
 | `ctl` | `uv run --project runtime python runtime/ctl/ctl.py --repo-root <repo-root> ...` |
 | `doctor` | `aiwfctl doctor ...` |
 | `pytest` | `runtime/` を working directory にして `uv run pytest ...` |
-| `spec-check` | `runtime/tools/pytest_ut_spec_sync.py ... check` |
-| `bom-scan` | `runtime/tools/utf8_bom.py ... scan` |
-| `bom-strip` | `runtime/tools/utf8_bom.py ... strip` |
+| `spec-check` | `aiwfctl tools spec-check` |
+| `bom-scan` | `aiwfctl tools bom-scan` |
+| `bom-strip` | `aiwfctl tools bom-strip` |
 
 ## 運用ルール
 

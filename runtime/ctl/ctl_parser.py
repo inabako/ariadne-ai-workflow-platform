@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from typing import Any
 
 from runtime.constants.paths import GENERATED_JSONIZED
 from runtime.constants.workspace import (
@@ -9,13 +10,126 @@ from runtime.constants.workspace import (
     process_report_path_pattern,
     work_path_pattern,
 )
+from runtime.environment import preflight
 from runtime.rag import duckdb_store
+from runtime.tools import text_encoding_convert
+from runtime.tools import text_encoding_guard
+from runtime.tools import utf8_bom
 from runtime.workflow import close_archive
 from runtime.workflow import context_first
 from runtime.workflow import dispatcher_context
 from runtime.workflow import flutter_multiplatform
 from runtime.workflow import github_knowledge_maintenance
+from runtime.workflow import validate_output_language
+from runtime.workflow import validate_vscode_workspace
 from runtime.workflow import self_improvement
+
+
+def _add_preflight_arguments(sub: Any) -> None:
+    preflight_cmd = sub.add_parser("preflight", help="Run environment tool/package preflight through the official runtime entrypoint.")
+    preflight_cmd.add_argument(
+        "--profile",
+        choices=[
+            "corrective-action-fix",
+            "web-nextjs",
+            "docker-compose",
+            "localty-system",
+            "gui-mode",
+            "runtime-dev",
+            "vscode-environment",
+            "flutter",
+            "github-cli",
+            "github-knowledge-maintenance",
+        ],
+        default="corrective-action-fix",
+    )
+    preflight_cmd.add_argument("--work-id", default="")
+    preflight_cmd.add_argument("--source-dir", default="")
+    preflight_cmd.add_argument("--protocol-dir", default="")
+    preflight_cmd.add_argument("--support-branch", default="develop")
+    preflight_cmd.add_argument("--msys2-root", default=str(preflight.WINDOWS_DEFAULT_MSYS2_ROOT))
+    preflight_cmd.add_argument("--repo-root", dest="preflight_repo_root", default="")
+    preflight_cmd.add_argument("--install", action="store_true")
+    preflight_cmd.add_argument("--gh-login-from-env", action="store_true")
+    preflight_cmd.add_argument("--github-hostname", default="github.com")
+    preflight_cmd.add_argument("--human-check", choices=["approved"], default=None)
+
+
+def _add_tool_path_arguments(command: argparse.ArgumentParser, *, default_paths: list[str], default_extensions: list[str]) -> None:
+    command.add_argument("--paths", nargs="+", default=default_paths)
+    command.add_argument("--extensions", nargs="+", default=default_extensions)
+
+
+def _add_tools_arguments(sub: Any) -> None:
+    tools_cmd = sub.add_parser("tools", help="Run runtime maintenance tools through the official runtime entrypoint.")
+    tools_sub = tools_cmd.add_subparsers(dest="tools_command")
+
+    coverage = tools_sub.add_parser("coverage-audit", help="Audit runtime pytest placement, CLI parser shape, and coverage measurement.")
+    coverage.add_argument("--output-dir", default="work/coverage-audit/process-report")
+    coverage.add_argument("--skip-run", action="store_true")
+    coverage.add_argument("--pytest-args", nargs=argparse.REMAINDER, default=None)
+
+    spec_check = tools_sub.add_parser("spec-check", help="Check runtime pytest UT specification sync.")
+    spec_check.add_argument("--spec", default="")
+    spec_check.add_argument("--runtime-root", default="")
+    spec_check.add_argument("--report", default="")
+    spec_check.add_argument("--markdown", default="")
+    spec_check.add_argument("--work-dir", default="")
+    spec_check.add_argument("--register-context", action="store_true")
+    spec_check.add_argument("--required-context", action="store_true")
+
+    spec_fix = tools_sub.add_parser("spec-fix-inputs", help="Regenerate UT specification input sections.")
+    spec_fix.add_argument("--spec", default="")
+    spec_fix.add_argument("--runtime-root", default="")
+
+    bom_scan = tools_sub.add_parser("bom-scan", help="Scan text files for UTF-8 BOM.")
+    _add_tool_path_arguments(bom_scan, default_paths=["."], default_extensions=sorted(utf8_bom.TEXT_EXTENSIONS))
+    bom_scan.add_argument("--fail-on-finding", action="store_true")
+
+    bom_strip = tools_sub.add_parser("bom-strip", help="Remove UTF-8 BOM from matching text files.")
+    _add_tool_path_arguments(bom_strip, default_paths=["."], default_extensions=sorted(utf8_bom.TEXT_EXTENSIONS))
+    bom_strip.add_argument("--write", action="store_true")
+    bom_strip.add_argument("--backup-suffix", default=".bom-bak")
+    bom_strip.add_argument("--fail-on-finding", action="store_true")
+
+    guard = tools_sub.add_parser("encoding-guard", help="Scan UTF-8 text for decode errors and irreversible loss markers.")
+    _add_tool_path_arguments(guard, default_paths=["docs"], default_extensions=sorted(text_encoding_guard.TEXT_EXTENSIONS))
+    guard.add_argument("--fail-on-finding", action="store_true")
+
+    inspect = tools_sub.add_parser("encoding-inspect", help="Try candidate encodings with strict decoding.")
+    _add_tool_path_arguments(inspect, default_paths=["docs"], default_extensions=sorted(text_encoding_convert.TEXT_EXTENSIONS))
+    inspect.add_argument("--encodings", nargs="+", default=list(text_encoding_convert.DEFAULT_INSPECT_ENCODINGS))
+    inspect.add_argument("--fail-on-warning", action="store_true")
+
+    preview = tools_sub.add_parser("encoding-preview", help="Show hex bytes and short decode previews.")
+    _add_tool_path_arguments(preview, default_paths=["docs"], default_extensions=sorted(text_encoding_convert.TEXT_EXTENSIONS))
+    preview.add_argument("--encodings", nargs="+", default=list(text_encoding_convert.DEFAULT_INSPECT_ENCODINGS))
+    preview.add_argument("--bytes", type=int, default=160)
+    preview.add_argument("--chars", type=int, default=120)
+    preview.add_argument("--fail-on-warning", action="store_true")
+
+    convert = tools_sub.add_parser("encoding-convert", help="Safely convert text files to UTF-8.")
+    _add_tool_path_arguments(convert, default_paths=["docs"], default_extensions=sorted(text_encoding_convert.TEXT_EXTENSIONS))
+    convert.add_argument("--from-encoding", default="cp932")
+    convert.add_argument("--to-encoding", default="utf-8")
+    convert.add_argument("--write", action="store_true")
+    convert.add_argument("--backup-suffix", default=".encoding-bak")
+    convert.add_argument("--force", action="store_true")
+    convert.add_argument("--fail-on-blocked", action="store_true")
+
+
+def _add_retrieval_arguments(sub: Any) -> None:
+    retrieval_cmd = sub.add_parser("retrieval", help="Run workflow task plans through the official runtime entrypoint.")
+    retrieval_sub = retrieval_cmd.add_subparsers(dest="retrieval_command")
+
+    run = retrieval_sub.add_parser("run", help="Run a task plan sequentially or in parallel and write process reports.")
+    run.add_argument("--work-id", required=True)
+    run.add_argument("--task-file", required=True)
+    run.add_argument("--mode", default="auto", choices=["auto", "sequential", "parallel"])
+    run.add_argument("--max-workers", type=int, default=4)
+    run.add_argument("--dry-run", action="store_true")
+    run.add_argument("--stop-on-failure", action="store_true")
+    run.add_argument("--json", action="store_true")
 
 
 def _add_review_packet_arguments(command: argparse.ArgumentParser) -> None:
@@ -38,6 +152,409 @@ def _add_review_lookup_arguments(command: argparse.ArgumentParser) -> None:
     command.add_argument("--review-id", default="")
     command.add_argument("--work-id", default="")
     command.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
+
+
+def _add_rag_build_arguments(command: argparse.ArgumentParser) -> None:
+    command.add_argument("--work-id", default="")
+    command.add_argument("--work-dir", default="")
+    command.add_argument("--source-dir", default="work/db/ariadne-knowledge-platform/rag/corrective-action-report")
+    command.add_argument("--document-type", default="corrective-action-report")
+    command.add_argument("--normalized-dir", default="work/db/ariadne-knowledge-platform/rag/normalized")
+    command.add_argument("--chunks-dir", default="work/db/ariadne-knowledge-platform/rag/chunks")
+    command.add_argument("--optimized-chunks-dir", default="work/db/ariadne-knowledge-platform/rag/optimized-chunks")
+    command.add_argument("--indexes-dir", default="work/db/ariadne-knowledge-platform/rag/indexes")
+    command.add_argument("--embeddings-output", default="work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl")
+    command.add_argument("--output", default="work/db/ariadne-knowledge-platform/rag/retrieval/rag-build-run-latest.json")
+    command.add_argument("--ingestion-evidence-dir", default="db/rag/evidence/ingestion")
+    command.add_argument("--ingestion-policy", default="runtime/rag/policies/knowledge-ingestion-policy.json")
+    command.add_argument("--skip-optimization", action="store_true")
+    command.add_argument("--duckdb-migrate", action="store_true")
+    command.add_argument("--duckdb-path", default=str(duckdb_store.DEFAULT_DB_PATH))
+    command.add_argument("--duckdb-source-dir", default="")
+    command.add_argument("--duckdb-error-log", default=str(duckdb_store.DEFAULT_ERROR_LOG))
+    command.add_argument("--duckdb-evidence-output", default="db/rag/evidence/migration-summary.json")
+    command.add_argument("--duckdb-policy", default="")
+    command.add_argument("--project", default="")
+    command.add_argument("--repository", default="")
+    command.add_argument("--branch", default="")
+    command.add_argument("--commit", default="")
+    command.add_argument("--status", default="draft")
+    command.add_argument("--chunk-size", type=int, default=1800)
+    command.add_argument("--chunk-overlap", type=int, default=180)
+    command.add_argument("--embedding-dimensions", type=int, default=768)
+    command.add_argument("--clean-output", action="store_true")
+    command.add_argument("--standardize-filenames", action="store_true")
+    command.add_argument("--skip-standardize", action="store_true")
+    command.add_argument("--replace-references", action="store_true")
+    command.add_argument("--random-length", type=int, default=8, choices=range(5, 9))
+    command.add_argument("--json", action="store_true")
+
+
+def _add_rag_load_arguments(command: argparse.ArgumentParser) -> None:
+    command.add_argument("--query", action="append", default=[])
+    command.add_argument("--task", default="")
+    command.add_argument("--workflow", default="")
+    command.add_argument("--work-id", default="")
+    command.add_argument("--context-file", action="append", default=[])
+    command.add_argument("--work-dir", default="")
+    command.add_argument("--dispatch-plan", default="")
+    command.add_argument("--repository", default="")
+    command.add_argument("--branch", default="")
+    command.add_argument("--project", default="")
+    command.add_argument("--tag", action="append", default=[])
+    command.add_argument("--source-type", default="")
+    command.add_argument("--category", default="")
+    command.add_argument("--trust-level", default="")
+    command.add_argument("--chunks-index", default="work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl")
+    command.add_argument("--embeddings-index", default="work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl")
+    command.add_argument("--retrieval-backend", choices=["file", "duckdb"], default="file")
+    command.add_argument("--duckdb-path", default=str(duckdb_store.DEFAULT_DB_PATH))
+    command.add_argument("--semantic-hint", default="")
+    command.add_argument("--document-type", default="")
+    command.add_argument("--environment", default="")
+    command.add_argument("--knowledge-workflow", default="")
+    command.add_argument("--min-reliability", type=float, default=None)
+    command.add_argument("--min-freshness", type=float, default=None)
+    command.add_argument("--output-dir", default="work/db/ariadne-knowledge-platform/rag/retrieval")
+    command.add_argument("--search-mode", choices=["keyword", "semantic", "hybrid"], default="hybrid")
+    command.add_argument("--top-k", type=int, default=5)
+    command.add_argument("--max-chars", type=int, default=4000)
+    command.add_argument("--max-queries", type=int, default=5)
+    command.add_argument("--jobs", type=int, default=4)
+    command.add_argument("--aggregate-max-chars", type=int, default=12000)
+    command.add_argument("--build-if-missing", action="store_true")
+    command.add_argument("--write-markdown", action="store_true")
+    command.add_argument("--python", default="python")
+    command.add_argument("--json", action="store_true")
+
+
+def _add_rag_retrieve_arguments(command: argparse.ArgumentParser) -> None:
+    command.add_argument("query")
+    command.add_argument("--chunks-index", default="work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl")
+    command.add_argument("--embeddings-index", default="work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl")
+    command.add_argument("--output-dir", default="work/db/ariadne-knowledge-platform/rag/retrieval")
+    command.add_argument("--top-k", type=int, default=5)
+    command.add_argument("--max-chars", type=int, default=4000)
+    command.add_argument("--search-mode", choices=["keyword", "semantic", "hybrid"], default="hybrid")
+    command.add_argument("--backend", choices=["file", "duckdb"], default="file")
+    command.add_argument("--duckdb-path", default=str(duckdb_store.DEFAULT_DB_PATH))
+    command.add_argument("--semantic-hint", default="")
+    command.add_argument("--document-type", default="")
+    command.add_argument("--environment", default="")
+    command.add_argument("--workflow", default="")
+    command.add_argument("--min-reliability", type=float, default=None)
+    command.add_argument("--min-freshness", type=float, default=None)
+    command.add_argument("--project", default="")
+    command.add_argument("--repository", default="")
+    command.add_argument("--branch", default="")
+    command.add_argument("--tag", action="append", default=[])
+    command.add_argument("--source-type", default="")
+    command.add_argument("--category", default="")
+    command.add_argument("--trust-level", default="")
+    command.add_argument("--write-markdown", action="store_true")
+    command.add_argument("--json", action="store_true")
+
+
+def _add_rag_stage_arguments(rag_sub: Any) -> None:
+    normalize = rag_sub.add_parser("normalize", help="Normalize source RAG markdown documents.")
+    normalize.add_argument("--source-dir", required=True)
+    normalize.add_argument("--output-dir", required=True)
+    normalize.add_argument("--document-type", default="corrective-action-report")
+    normalize.add_argument("--project", default="")
+    normalize.add_argument("--repository", default="")
+    normalize.add_argument("--branch", default="")
+    normalize.add_argument("--commit", default="")
+    normalize.add_argument("--status", default="draft")
+    normalize.add_argument("--clean-output", action="store_true")
+    normalize.add_argument("--json", action="store_true")
+
+    chunk = rag_sub.add_parser("chunk", help="Split normalized RAG documents into chunks.")
+    chunk.add_argument("--input-dir", required=True)
+    chunk.add_argument("--output-dir", required=True)
+    chunk.add_argument("--chunk-size", type=int, default=1800)
+    chunk.add_argument("--chunk-overlap", type=int, default=180)
+    chunk.add_argument("--clean-output", action="store_true")
+    chunk.add_argument("--json", action="store_true")
+
+    index = rag_sub.add_parser("index", help="Build document and chunk JSONL indexes.")
+    index.add_argument("--normalized-dir", required=True)
+    index.add_argument("--chunks-dir", required=True)
+    index.add_argument("--output-dir", required=True)
+    index.add_argument("--json", action="store_true")
+
+    embed = rag_sub.add_parser("embed", help="Create local sparse embeddings for chunk index rows.")
+    embed.add_argument("--chunks-index", required=True)
+    embed.add_argument("--output", required=True)
+    embed.add_argument("--dimensions", type=int, default=768)
+    embed.add_argument("--json", action="store_true")
+
+    optimize = rag_sub.add_parser("optimize", help="Optimize chunk ingestion candidates and write evidence.")
+    optimize.add_argument("--chunks-dir", default="work/db/ariadne-knowledge-platform/rag/chunks")
+    optimize.add_argument("--output-dir", default="work/db/ariadne-knowledge-platform/rag/optimized-chunks")
+    optimize.add_argument("--evidence-dir", default="db/rag/evidence/ingestion")
+    optimize.add_argument("--policy", default="runtime/rag/policies/knowledge-ingestion-policy.json")
+    optimize.add_argument("--clean-output", action="store_true")
+    optimize.add_argument("--json", action="store_true")
+
+    standardize = rag_sub.add_parser("standardize", help="Standardize corrective action report filenames.")
+    standardize.add_argument("--source-dir", default="work/db/ariadne-knowledge-platform/rag/corrective-action-report")
+    standardize.add_argument("--replace-references", action="store_true")
+    standardize.add_argument("--random-length", type=int, default=8, choices=range(5, 9))
+    standardize.add_argument("--json", action="store_true")
+
+    jsonize = rag_sub.add_parser("jsonize", help="Convert a RAG tree into standard JSON source records.")
+    jsonize.add_argument("--rag-dir", default="work/db/ariadne-knowledge-platform/rag")
+    jsonize.add_argument("--output-dir", default=str(GENERATED_JSONIZED))
+    jsonize.add_argument("--include-readme", action="store_true")
+    jsonize.add_argument("--delete-source", action="store_true")
+    jsonize.add_argument("--clean-output", action="store_true")
+    jsonize.add_argument("--json", action="store_true")
+
+    migrate = rag_sub.add_parser("migrate-retrieval", help="Migrate legacy retrieval artifacts into jsonized RAG records.")
+    migrate.add_argument("--retrieval-dir", default="work/db/ariadne-knowledge-platform/rag/retrieval")
+    migrate.add_argument("--jsonized-dir", default=str(GENERATED_JSONIZED))
+    migrate.add_argument("--delete-source", action="store_true")
+    migrate.add_argument("--delete-duplicate-markdown", action="store_true")
+    migrate.add_argument("--repair-from-jsonized", action="store_true")
+    migrate.add_argument("--prune-legacy-migrations", action="store_true")
+    migrate.add_argument("--json", action="store_true")
+
+    legacy = rag_sub.add_parser("migrate-legacy-root", help="Move legacy root RAG backups into the standard RAG tree.")
+    legacy.add_argument("--legacy-dir", default="")
+    legacy.add_argument("--target-rag-dir", default="work/db/ariadne-knowledge-platform/rag")
+    legacy.add_argument("--keep-legacy-dir", action="store_true")
+    legacy.add_argument("--json", action="store_true")
+
+
+def _add_workflow_docs_sync_arguments(workflow_sub: Any) -> None:
+    docs = workflow_sub.add_parser("docs-sync", help="Prepare documentation sync workflow artifacts.")
+    docs_sub = docs.add_subparsers(dest="workflow_action")
+
+    init = docs_sub.add_parser("init", help="Initialize docs-sync work context.")
+    init.add_argument("--repository", required=True)
+    init.add_argument("--target-branch", required=True)
+    init.add_argument("--work-id", default=None)
+    init.add_argument("--base-work-id", default="")
+    init.add_argument("--reuse-existing", action="store_true")
+    init.add_argument("--intent-summary", default="")
+    init.add_argument("--json", action="store_true")
+
+    analysis = docs_sub.add_parser("analysis-template", help="Create docs drift analysis JSON scaffold.")
+    analysis.add_argument("--work-id", required=True)
+    analysis.add_argument("--analysis-path", default="")
+    analysis.add_argument("--allow-missing-scm-state", action="store_true")
+    analysis.add_argument("--json", action="store_true")
+
+    issue = docs_sub.add_parser("issue-body", help="Create a GitHub Issue body from docs drift analysis JSON.")
+    issue.add_argument("--work-id", required=True)
+    issue.add_argument("--analysis-path", default="")
+    issue.add_argument("--output", default="")
+    issue.add_argument("--json", action="store_true")
+
+
+def _add_workflow_corrective_action_arguments(workflow_sub: Any) -> None:
+    fix = workflow_sub.add_parser("corrective-action-fix", help="Initialize corrective action fix work context.")
+    fix_sub = fix.add_subparsers(dest="workflow_action")
+    init = fix_sub.add_parser("init", help="Initialize work/<id> for corrective action fix flow.")
+    init.add_argument("--repository", required=True)
+    init.add_argument("--target-branch", required=True)
+    init.add_argument("--work-id", default=None)
+    init.add_argument("--base-work-id", default="")
+    init.add_argument("--reuse-existing", action="store_true")
+    init.add_argument("--report-path", default="")
+    init.add_argument("--intent-summary", default="")
+    init.add_argument("--json", action="store_true")
+
+    report = workflow_sub.add_parser("corrective-action-report", help="Register or show corrective action report context.")
+    report_sub = report.add_subparsers(dest="workflow_action")
+    register = report_sub.add_parser("register", help="Register a corrective action report artifact.")
+    register.add_argument("--report-path", required=True)
+    register.add_argument("--repository", default="")
+    register.add_argument("--target-branch", default="")
+    register.add_argument("--work-id", default="")
+    register.add_argument("--work-dir", default="")
+    register.add_argument("--json", action="store_true")
+
+    show = report_sub.add_parser("show", help="Show corrective action report context.")
+    show.add_argument("--target-branch", default="")
+    show.add_argument("--work-id", default="")
+    show.add_argument("--work-dir", default="")
+    show.add_argument("--json", action="store_true")
+
+
+def _add_workflow_state_arguments(workflow_sub: Any) -> None:
+    state = workflow_sub.add_parser("state", help="Read or update workflow-state.json.")
+    state.add_argument("--work-dir", required=True)
+    state_sub = state.add_subparsers(dest="workflow_action")
+    state_sub.add_parser("show", help="Show workflow-state.json.").add_argument("--json", action="store_true")
+    set_state = state_sub.add_parser("set", help="Update workflow-state.json.")
+    set_state.add_argument("--workflow", required=True)
+    set_state.add_argument("--work-id", required=True)
+    set_state.add_argument("--phase", required=True)
+    set_state.add_argument("--status", required=True, choices=["blocked", "complete", "failed", "in-progress", "not-started", "review-ready"])
+    set_state.add_argument("--blocking-reason", default="")
+    set_state.add_argument("--next-human-action", default="")
+    set_state.add_argument("--json", action="store_true")
+
+
+def _add_workflow_quality_arguments(workflow_sub: Any) -> None:
+    noise = workflow_sub.add_parser("noise-reduction", help="Generate Noise Reduction artifacts.")
+    noise_sub = noise.add_subparsers(dest="workflow_action")
+    noise_run = noise_sub.add_parser("run", help="Generate Human Interview and readiness artifacts.")
+    noise_run.add_argument("--draft", required=True)
+    noise_run.add_argument("--output-dir", default="")
+    noise_run.add_argument("--json", action="store_true")
+
+    output_language = workflow_sub.add_parser("validate-output-language", help="Detect English-dominant Markdown artifacts.")
+    output_language_sub = output_language.add_subparsers(dest="workflow_action")
+    output_check = output_language_sub.add_parser("check", help="Check output language quality.")
+    output_check.add_argument("--paths", nargs="+", default=validate_output_language.DEFAULT_PATHS)
+    output_check.add_argument("--exclude", nargs="*", default=validate_output_language.DEFAULT_EXCLUDES)
+    output_check.add_argument("--english-ratio-threshold", type=float, default=0.62)
+    output_check.add_argument("--min-english-words", type=int, default=35)
+    output_check.add_argument("--min-japanese-chars", type=int, default=20)
+    output_check.add_argument("--fail-on-violation", action="store_true")
+    output_check.add_argument("--json", action="store_true")
+
+    vscode_check = workflow_sub.add_parser("validate-vscode-workspace", help="Validate VSCode workspace JSON files.")
+    vscode_check_sub = vscode_check.add_subparsers(dest="workflow_action")
+    vscode = vscode_check_sub.add_parser("check", help="Validate VSCode JSON files.")
+    vscode.add_argument("--workspace", default=".")
+    vscode.add_argument("files", nargs="*", default=validate_vscode_workspace.DEFAULT_FILES)
+    vscode.add_argument("--json", action="store_true")
+
+
+def _add_workflow_misc_arguments(workflow_sub: Any) -> None:
+    capture = workflow_sub.add_parser("knowledge-capture", help="Prepare knowledge-capture reports for a completed issue.")
+    capture.add_argument("--issue", required=True)
+    capture.add_argument("--repository", default="")
+    capture.add_argument("--branch", default="")
+    capture.add_argument("--base-work-id", default="")
+    capture.add_argument("--source-dir", default=None)
+    capture.add_argument("--dry-run", action="store_true")
+    capture.add_argument("--allow-legacy-scm-fallback", action="store_true")
+    capture.add_argument("--json", action="store_true")
+
+    handoff = workflow_sub.add_parser("iac-handoff", help="Create realtime IaC handoff and execution-plan context.")
+    handoff_sub = handoff.add_subparsers(dest="workflow_action")
+    create = handoff_sub.add_parser("create", help="Create Context First handoff artifacts.")
+    create.add_argument("--work-id", required=True)
+    create.add_argument("--force", action="store_true")
+    create.add_argument("--target-repository", default="")
+    create.add_argument("--target-branch", default="")
+    create.add_argument("--validator-judgment", default="unknown", choices=["pass", "conditional-pass", "fail", "unknown"])
+    create.add_argument("--source-artifact", action="append", default=[])
+    create.add_argument("--validation-path", default="")
+    create.add_argument("--handoff-path", default="")
+    create.add_argument("--json", action="store_true")
+
+    vscode_env = workflow_sub.add_parser("vscode-environment", help="Prepare VSCode environment workflow artifacts.")
+    vscode_env_sub = vscode_env.add_subparsers(dest="workflow_action")
+    init = vscode_env_sub.add_parser("init", help="Create the VSCode environment workflow work area.")
+    init.add_argument("--work-id", default="vscode-environment")
+    init.add_argument("--target-dir", default="")
+    init.add_argument("--mode", choices=["self-provision", "target-workspace", "custom-design"], default="self-provision")
+    init.add_argument("--reuse-existing", action="store_true")
+    init.add_argument("--json", action="store_true")
+    for name in ["requirements-template", "open-questions"]:
+        command = vscode_env_sub.add_parser(name)
+        command.add_argument("--work-id", default="vscode-environment")
+        command.add_argument("--mode", choices=["self-provision", "target-workspace", "custom-design"], default="self-provision")
+        if name == "open-questions":
+            command.add_argument("--draft-dir", default="work/requirements/devlop-edit-draft")
+        command.add_argument("--json", action="store_true")
+    validation = vscode_env_sub.add_parser("validation-template")
+    validation.add_argument("--work-id", default="vscode-environment")
+    validation.add_argument("--mode", choices=["self-provision", "target-workspace", "custom-design"], default="self-provision")
+    validation.add_argument("--status", choices=["pass", "conditional-pass", "fail"], default="fail")
+    validation.add_argument("--json", action="store_true")
+    draft = vscode_env_sub.add_parser("draft-template")
+    draft.add_argument("--draft-dir", default="work/requirements/devlop-edit-draft")
+    draft.add_argument("--json", action="store_true")
+    rag = vscode_env_sub.add_parser("rag-template")
+    rag.add_argument("--work-id", default="vscode-environment")
+    rag.add_argument("--source-dir", default="work/db/ariadne-knowledge-platform/rag/workspace-environment")
+    rag.add_argument("--topic", default="localty-vscode-environment")
+    rag.add_argument("--repository", default="localty")
+    rag.add_argument("--target-workspace", default="")
+    rag.add_argument("--mode", choices=["self-provision", "target-workspace", "custom-design"], default="self-provision")
+    rag.add_argument("--status", default="draft")
+    rag.add_argument("--json", action="store_true")
+
+
+def _add_visual_work_arguments(command: argparse.ArgumentParser) -> None:
+    command.add_argument("--issue-id", required=True, help="Issue/work ID such as SYS-0001, FEAT-0001, or FIX-0001.")
+    command.add_argument("--work-dir", default=None, help="Explicit work directory. Default: work/<issue-id>.")
+    command.add_argument("--svg-input-dir", default=None, help="Shared SVG inbox. Default: work/requirements/svg-input.")
+
+
+def _add_gui_arguments(sub: Any) -> None:
+    gui_cmd = sub.add_parser("gui", help="Run SVG-based GaC/UaC GUI mode.")
+    gui_sub = gui_cmd.add_subparsers(dest="gui_command")
+
+    init = gui_sub.add_parser("init-input", help="Create work/requirements/svg-input/ and its naming guide.")
+    init.add_argument("--svg-input-dir", default=None)
+    init.add_argument("--force", action="store_true")
+    init.add_argument("--json", action="store_true")
+
+    inspect = gui_sub.add_parser("inspect-input", help="Validate shared SVG inbox prefixes and XML.")
+    inspect.add_argument("--svg-input-dir", default=None)
+    inspect.add_argument("--json", action="store_true")
+
+    run = gui_sub.add_parser("run", help="Generate GUI design, PyQt6, and QTest candidates when SVG exists.")
+    _add_visual_work_arguments(run)
+    run.add_argument(
+        "--mode",
+        default="auto",
+        choices=[
+            "auto",
+            "system-development",
+            "feature-development",
+            "corrective-improvement",
+            "generic-gui",
+        ],
+    )
+    run.add_argument("--force", action="store_true")
+    run.add_argument("--input-prefix", choices=["SYS", "FEAT", "FIX", "GUI"], default=None)
+    run.add_argument("--skip-context-check", action="store_true")
+    run.add_argument("--json", action="store_true")
+
+    validate = gui_sub.add_parser("validate", help="Validate GUI mode completion and generated source policies.")
+    _add_visual_work_arguments(validate)
+    validate.add_argument("--json", action="store_true")
+
+    self_test = gui_sub.add_parser("self-test", help="Run deterministic GUI mode runtime checks.")
+    self_test.add_argument("--json", action="store_true")
+
+
+def _add_web_svg_arguments(sub: Any) -> None:
+    web_cmd = sub.add_parser("web-svg", help="Run SVG-based web layout mode.")
+    web_sub = web_cmd.add_subparsers(dest="web_svg_command")
+
+    init = web_sub.add_parser("init-input", help="Create Web SVG inbox README.")
+    init.add_argument("--svg-input-dir", default=None)
+    init.add_argument("--force", action="store_true")
+    init.add_argument("--json", action="store_true")
+
+    run = web_sub.add_parser("run", help="Generate web layout and browser test candidates when SVG exists.")
+    _add_visual_work_arguments(run)
+    run.add_argument(
+        "--mode",
+        default="auto",
+        choices=["auto", "new-app", "existing-app-feature", "corrective-fix", "generic-web-ui"],
+    )
+    run.add_argument("--force", action="store_true")
+    run.add_argument(
+        "--input-prefix",
+        choices=["WEB_SYS", "WEB_FEAT", "WEB_FIX", "WEB", "NEXT_SYS", "NEXT_FEAT", "NEXT_FIX", "NEXT"],
+        default=None,
+    )
+    run.add_argument("--skip-context-check", action="store_true")
+    run.add_argument("--json", action="store_true")
+
+    validate = web_sub.add_parser("validate", help="Validate Web SVG layout completion and generated source policies.")
+    _add_visual_work_arguments(validate)
+    validate.add_argument("--json", action="store_true")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -113,6 +630,147 @@ def build_parser() -> argparse.ArgumentParser:
     human_gate_check.add_argument("--human-check", default="pending")
     human_gate_check.add_argument("--json", action="store_true")
 
+    intake_cmd = sub.add_parser("intake", help="Accept requirement documents and initialize workflow context.")
+    intake_sub = intake_cmd.add_subparsers(dest="intake_command")
+    intake_run = intake_sub.add_parser("run", help="Move or copy submitted requirement documents into work/<receipt-id>.")
+    intake_run.add_argument(
+        "requirements",
+        nargs="*",
+        help="Requirement definition document paths to intake. When omitted, work/requirements/ is used.",
+    )
+    intake_run.add_argument(
+        "--requirements-dir",
+        default=None,
+        help="Directory used when requirement paths are omitted. Default: work/requirements/",
+    )
+    intake_run.add_argument("--receipt-id", help="Explicit receipt ID. Auto-generated when omitted.")
+    intake_run.add_argument(
+        "--id-prefix",
+        default=None,
+        help="Prefix used for generated receipt IDs. Defaults to SYS for new systems and FEAT for maintenance.",
+    )
+    intake_run.add_argument("--project-name", default="unknown-project")
+    intake_run.add_argument("--project-repository", default="")
+    intake_run.add_argument(
+        "--workflow",
+        default="ariadne-new-system-development",
+        choices=[
+            "ariadne-new-system-development",
+            "ariadne-feature-maintenance-development",
+            "ariadne-new-system-iac",
+            "realtime-iac",
+            "github-knowledge-maintenance",
+            "flutter-multiplatform",
+        ],
+    )
+    intake_run.add_argument("--phase", default="intake")
+    intake_run.add_argument("--intent-summary", default="Requirement document intake")
+    intake_run.add_argument("--risk-level", default="unknown", choices=["low", "medium", "high", "critical", "unknown"])
+    intake_run.add_argument("--copy", action="store_true", help="Copy requirement documents instead of moving them.")
+    intake_run.add_argument("--json", action="store_true", help="Print result as JSON.")
+
+    scm_cmd = sub.add_parser("scm", help="Prepare repositories, compare requirements, branch, commit, and push.")
+    scm_sub = scm_cmd.add_subparsers(dest="scm_command")
+
+    scm_prepare = scm_sub.add_parser("prepare", help="Prepare target repository and branch for workflow execution.")
+    scm_prepare.add_argument("--work-id", required=True)
+    scm_prepare.add_argument("--repository", default=None, help="GitHub URL, git URL, owner/name, or local repository path.")
+    scm_prepare.add_argument("--target-branch", default=None)
+    scm_prepare.add_argument("--remote", default=None)
+    scm_prepare.add_argument("--requirements", nargs="*", help="Requirement files used to resolve repository settings.")
+    scm_prepare.add_argument("--source-dir", default=None, help=DEFAULT_TARGET_REPO_HELP)
+    scm_prepare.add_argument("--no-pull", action="store_true", help="Fetch only; do not pull after checkout.")
+    scm_prepare.add_argument("--dry-run", action="store_true")
+    scm_prepare.add_argument("--json", action="store_true")
+
+    scm_support = scm_sub.add_parser("support", help="Prepare a support repository under work/<work-id>/source/.")
+    scm_support.add_argument("--work-id", required=True)
+    scm_support.add_argument("--name", required=True)
+    scm_support.add_argument("--repository", required=True)
+    scm_support.add_argument("--branch", default=None)
+    scm_support.add_argument("--remote", default=None)
+    scm_support.add_argument("--source-dir", default=None)
+    scm_support.add_argument("--no-pull", action="store_true")
+    scm_support.add_argument("--dry-run", action="store_true")
+    scm_support.add_argument("--json", action="store_true")
+
+    scm_compare = scm_sub.add_parser("compare", help="Create a comparison report between requirements and repository state.")
+    scm_compare.add_argument("--work-id", required=True)
+    scm_compare.add_argument("--source-dir", default=None)
+    scm_compare.add_argument("--requirements", nargs="*", help="Requirement files. Defaults to requirement artifacts.")
+    scm_compare.add_argument("--json", action="store_true")
+
+    scm_branch = scm_sub.add_parser("branch", help="Create or switch to feature/issue-<number> branch.")
+    scm_branch.add_argument("--work-id", required=True)
+    scm_branch.add_argument("--issue-number", required=True)
+    scm_branch.add_argument("--repository", default=None, help="GitHub URL, git URL, owner/name, or local repository path.")
+    scm_branch.add_argument("--github-repo", default=None, help="GitHub repository in owner/name format.")
+    scm_branch.add_argument("--base-branch", default=None, help="Remote base branch used to create the issue branch.")
+    scm_branch.add_argument("--branch-prefix", default=None)
+    scm_branch.add_argument("--remote", default=None)
+    scm_branch.add_argument("--source-dir", default=None)
+    scm_branch.add_argument("--local-only", action="store_true", help="Only create/switch the local branch. Does not create GitHub branch.")
+    scm_branch.add_argument("--link-to-issue", action="store_true", help="Create the remote branch as a GitHub linked branch for the issue.")
+    scm_branch.add_argument("--dry-run", action="store_true")
+    scm_branch.add_argument("--json", action="store_true")
+
+    scm_commit = scm_sub.add_parser("commit", help="Commit workflow changes with semantic commit validation.")
+    scm_commit.add_argument("--work-id", required=True)
+    scm_commit.add_argument("--message", required=True)
+    scm_commit.add_argument("--source-dir", default=None)
+    scm_commit.add_argument("--all", action="store_true", help="Run git add -A before commit.")
+    scm_commit.add_argument("--allow-empty", action="store_true")
+    scm_commit.add_argument("--dry-run", action="store_true")
+    scm_commit.add_argument("--json", action="store_true")
+
+    scm_push = scm_sub.add_parser("push", help="Push the current issue branch after human approval.")
+    scm_push.add_argument("--work-id", required=True)
+    scm_push.add_argument("--source-dir", default=None)
+    scm_push.add_argument("--remote", default=None)
+    scm_push.add_argument("--branch", default=None)
+    scm_push.add_argument("--set-upstream", action="store_true")
+    scm_push.add_argument("--human-check", required=True, choices=["approved"])
+    scm_push.add_argument("--dry-run", action="store_true")
+    scm_push.add_argument("--json", action="store_true")
+
+    scm_bootstrap = scm_sub.add_parser("bootstrap", help="Initialize and push the first commit to a precreated GitHub repository.")
+    scm_bootstrap.add_argument("--work-id", required=True)
+    scm_bootstrap.add_argument("--github-repo", default=None, help="GitHub repository in owner/name format.")
+    scm_bootstrap.add_argument("--initial-branch", default=None)
+    scm_bootstrap.add_argument("--remote", default=None)
+    scm_bootstrap.add_argument("--message", default="chore: bootstrap realtime iac repository")
+    scm_bootstrap.add_argument("--source-dir", default=None)
+    scm_bootstrap.add_argument("--push", action="store_true")
+    scm_bootstrap.add_argument("--human-check", choices=["approved"], default=None)
+    scm_bootstrap.add_argument("--dry-run", action="store_true")
+    scm_bootstrap.add_argument("--json", action="store_true")
+
+    github_cmd = sub.add_parser("github", help="Create GitHub Issue and Pull Request drafts or approved mutations.")
+    github_sub = github_cmd.add_subparsers(dest="github_command")
+
+    github_issue = github_sub.add_parser("issue", help="Create or draft a GitHub Issue for workflow changes.")
+    github_issue.add_argument("--work-id", required=True)
+    github_issue.add_argument("--github-repo", default=None, help="GitHub repository in owner/name format.")
+    github_issue.add_argument("--title", required=True)
+    github_issue.add_argument("--flow-label", choices=["iac", "improvement", "initial-development", "new-feature"], default=None)
+    github_issue.add_argument("--title-prefix", default=None)
+    github_issue.add_argument("--body-file", default=None)
+    github_issue.add_argument("--label", action="append", default=[])
+    github_issue.add_argument("--assignee", action="append", default=[])
+    github_issue.add_argument("--create", action="store_true", help="Actually create the issue using GitHub REST API.")
+    github_issue.add_argument("--json", action="store_true")
+
+    github_pr = github_sub.add_parser("pr", help="Create or draft a GitHub Pull Request for an issue branch.")
+    github_pr.add_argument("--work-id", required=True)
+    github_pr.add_argument("--github-repo", default=None, help="GitHub repository in owner/name format.")
+    github_pr.add_argument("--base", default="develop")
+    github_pr.add_argument("--head", default=None)
+    github_pr.add_argument("--title-file", default=None)
+    github_pr.add_argument("--body-file", default=None)
+    github_pr.add_argument("--create", action="store_true")
+    github_pr.add_argument("--human-check", choices=["approved"], default=None)
+    github_pr.add_argument("--json", action="store_true")
+
     knowledge_cmd = sub.add_parser("knowledge", help="Manage generated DuckDB RAG read model.")
     knowledge_cmd.add_argument("--db", default=str(duckdb_store.DEFAULT_DB_PATH), help="Generated DuckDB file path.")
     knowledge_sub = knowledge_cmd.add_subparsers(dest="knowledge_command")
@@ -171,6 +829,31 @@ def build_parser() -> argparse.ArgumentParser:
     knowledge_verify.add_argument("--work-dir", default="")
     knowledge_verify.add_argument("--source-repo", default="")
     knowledge_verify.add_argument("--json", action="store_true")
+
+    rag_cmd = sub.add_parser("rag", help="Build, load, retrieve, and maintain file-based RAG artifacts.")
+    rag_sub = rag_cmd.add_subparsers(dest="rag_command")
+
+    rag_build_cmd = rag_sub.add_parser("build", help="Run the RAG build pipeline.")
+    _add_rag_build_arguments(rag_build_cmd)
+
+    rag_load = rag_sub.add_parser("load", help="Build a RAG dispatch plan and retrieve context packs.")
+    _add_rag_load_arguments(rag_load)
+
+    rag_retrieve = rag_sub.add_parser("retrieve", help="Retrieve one RAG context pack for a query.")
+    _add_rag_retrieve_arguments(rag_retrieve)
+
+    _add_rag_stage_arguments(rag_sub)
+
+    workflow_cmd = sub.add_parser("workflow", help="Run workflow support helpers through the official runtime entrypoint.")
+    workflow_sub = workflow_cmd.add_subparsers(dest="workflow_command")
+    _add_workflow_docs_sync_arguments(workflow_sub)
+    _add_workflow_corrective_action_arguments(workflow_sub)
+    _add_workflow_state_arguments(workflow_sub)
+    _add_workflow_quality_arguments(workflow_sub)
+    _add_workflow_misc_arguments(workflow_sub)
+
+    _add_gui_arguments(sub)
+    _add_web_svg_arguments(sub)
 
     sdk_cmd = sub.add_parser("sdk", help="Analyze SDK input before requirement discovery review drafting.")
     sdk_sub = sdk_cmd.add_subparsers(dest="sdk_command")
@@ -741,6 +1424,10 @@ def build_parser() -> argparse.ArgumentParser:
     integration_emulator_health.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
     integration_emulator_health.add_argument("--probe-docker", action="store_true", help="Run non-mutating docker version checks.")
     integration_emulator_health.add_argument("--json", action="store_true")
+
+    _add_preflight_arguments(sub)
+    _add_tools_arguments(sub)
+    _add_retrieval_arguments(sub)
 
     doctor_cmd = sub.add_parser("doctor", help="Run workflow repository health checks.")
     doctor_cmd.add_argument("--json", action="store_true", help="Print doctor result as JSON.")

@@ -21,7 +21,7 @@ agent: agent
 実行:
 
 ```powershell
-python runtime/workflow/gui_mode.py run `
+.\runtime\windows-script\aiwf.cmd ctl gui run `
   --issue-id "<issue-id>" `
   --work-dir "<work-dir>"
 ```
@@ -29,7 +29,7 @@ python runtime/workflow/gui_mode.py run `
 親workflowが`work/issue-<number>`などの既存IDを使う場合は、モードを明示します。
 
 ```powershell
-python runtime/workflow/gui_mode.py run `
+.\runtime\windows-script\aiwf.cmd ctl gui run `
   --issue-id "FIX-<number>" `
   --work-dir "work/issue-<number>" `
   --mode corrective-improvement
@@ -77,7 +77,7 @@ work/<issue-id>/gac-uac/
 検証:
 
 ```powershell
-python runtime/workflow/gui_mode.py validate `
+.\runtime\windows-script\aiwf.cmd ctl gui validate `
   --issue-id "<issue-id>" `
   --work-dir "<work-dir>"
 ```
@@ -85,7 +85,7 @@ python runtime/workflow/gui_mode.py validate `
 ランタイム自体のスモーク確認:
 
 ```powershell
-python runtime/workflow/gui_mode.py self-test
+.\runtime\windows-script\aiwf.cmd ctl gui self-test
 ```
 
 ## Parent Workflow Return Gate

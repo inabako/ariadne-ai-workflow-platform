@@ -56,6 +56,11 @@ def test_vscode_environment_init_work_writes_state_and_runtime_context(tmp_path:
     assert runtime_context["knowledge_source_backup"]["mode"] == "local-backup"
     assert runtime_context["knowledge_source_backup"]["push_to_git"] is False
     assert runtime_context["knowledge_source_backup"]["source_repo"] == vscode_environment.KNOWLEDGE_SOURCE_REPO.as_posix()
+    verification_commands = "\n".join(runtime_context["verification_commands"])
+    assert "runtime/ctl/ctl.py --repo-root . workflow validate-vscode-workspace check" in verification_commands
+    assert "runtime/ctl/ctl.py --repo-root . doctor --fail-on-warning" in verification_commands
+    assert "runtime/workflow/validate_vscode_workspace.py" not in verification_commands
+    assert "runtime/workflow/workflow_doctor.py" not in verification_commands
     assert result["knowledge_source_backup"]["push_to_git"] is False
     for relative_dir in vscode_environment.KNOWLEDGE_SOURCE_LOCAL_BACKUP_DIRS:
         assert (tmp_path / relative_dir).is_dir()
@@ -106,6 +111,8 @@ def test_vscode_environment_open_questions_records_drafts(tmp_path: Path) -> Non
     state = json.loads((tmp_path / result["state_path"]).read_text(encoding="utf-8-sig"))
 
     assert "VSCODE-Q001" in open_questions
+    assert "runtime/ctl/ctl.py --repo-root . workflow vscode-environment init" in open_questions
+    assert "runtime/workflow/vscode_environment.py init" not in open_questions
     assert result["draft_files"] == ["drafts/legacy.txt", "drafts/README_terminal.md"]
     assert state["status"] == "blocked"
     assert state["draft_files"] == result["draft_files"]
@@ -129,6 +136,10 @@ def test_vscode_environment_rag_filename_and_template(monkeypatch: pytest.Monkey
     assert filename.endswith("_ABC123_local-env.md")
     assert "repository: owner/repo" in text
     assert "target_workspace: `C:/repo`" in text
+    assert "runtime/ctl/ctl.py --repo-root . rag standardize" in text
+    assert "runtime/ctl/ctl.py --repo-root . rag normalize" in text
+    assert "runtime/rag/standardize_corrective_report_names.py" not in text
+    assert "runtime/rag/normalize_documents.py" not in text
 
 
 def test_vscode_environment_write_rag_template_requires_repo_local_source_dir(tmp_path: Path) -> None:

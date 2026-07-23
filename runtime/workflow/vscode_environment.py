@@ -17,7 +17,6 @@ from runtime.constants.paths import (  # noqa: E402
     GENERATED_NORMALIZED,
     KNOWLEDGE_SOURCE_LOCAL_BACKUP_DIRS,
     KNOWLEDGE_SOURCE_REPO,
-    RAG_NORMALIZE_SCRIPT,
     SOURCE_WORKSPACE_ENVIRONMENT,
 )
 from runtime.constants.schemas import RUNTIME_CONTEXT_SCHEMA, VSCODE_ENVIRONMENT_STATE_SCHEMA  # noqa: E402
@@ -212,8 +211,8 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
         "verification_commands": [
             "aiwfctl path check",
             "aiwfctl help list",
-            "uv run --project runtime python runtime/workflow/validate_vscode_workspace.py --workspace .",
-            "uv run --project runtime python runtime/workflow/workflow_doctor.py --fail-on-warning",
+            "uv run --project runtime python runtime/ctl/ctl.py --repo-root . workflow validate-vscode-workspace check --workspace .",
+            "uv run --project runtime python runtime/ctl/ctl.py --repo-root . doctor --fail-on-warning",
         ],
         "human_check_required_when": [
             "User Path, default terminal, extensions, Docker Desktop, or local tool installation changes affect the human environment.",
@@ -460,7 +459,7 @@ VSCode environment が機能することを証明する trial run は何です�
 人間の回答を追記し、承認後、確定した target で work area を初期化します。
 
 ```powershell
-uv run --project runtime python runtime/workflow/vscode_environment.py init `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . workflow vscode-environment init `
   --work-id "{work_id}" `
   --target-dir "<answered-target-workspace>" `
   --reuse-existing
@@ -623,11 +622,11 @@ Localty VSCode 環境パターンが再利用可能になった場合、Markdown
 その後、次の順序で RAG artifact を生成します。
 
 ```powershell
-uv run --project runtime python runtime/rag/standardize_corrective_report_names.py `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . rag standardize `
   --source-dir {DEFAULT_RAG_SOURCE_DIR} `
   --replace-references
 
-uv run --project runtime python {RAG_NORMALIZE_SCRIPT.as_posix()} `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . rag normalize `
   --source-dir {DEFAULT_RAG_SOURCE_DIR} `
   --output-dir {GENERATED_NORMALIZED.as_posix()} `
   --document-type workspace-environment-pattern

@@ -110,6 +110,40 @@ runtime/tests/test_review_council_runtime.py::test_run_specialist_review_writes_
   - inline input: security reviewer prompt file and frozen session
 - Expected: Specialist run status is `ready`, security reviewer agent is selected, prompt exists, handoff is prepared, artifacts exist, and session status becomes `specialist-ready`.
 
+#### RT-UT-CASE-REVIEW-026
+
+- pytest node id:
+
+```text
+runtime/tests/test_review_council_runtime.py::test_execute_specialist_review_requires_human_check
+```
+
+- Confirm: Specialist Agent execution is blocked until explicit Human Check approval is supplied.
+- Input:
+  - pytest node: runtime/tests/test_review_council_runtime.py::test_execute_specialist_review_requires_human_check
+  - source: `runtime/tests/test_review_council_runtime.py:196`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=None case=None
+  - inline input: Review Council session, existing specialist prompt, `execute-specialist` with `human_check=pending`
+- Expected: The execution artifact type is `review-council-specialist-execution`, status is `human-check-required`, and execution evidence JSON is written without invoking a local Agent command.
+
+#### RT-UT-CASE-REVIEW-027
+
+- pytest node id:
+
+```text
+runtime/tests/test_review_council_runtime.py::test_execute_specialist_review_runs_command_and_drafts_findings
+```
+
+- Confirm: Approved Specialist Agent execution captures stdout/stderr, materializes the review report, and creates draft findings from the report.
+- Input:
+  - pytest node: runtime/tests/test_review_council_runtime.py::test_execute_specialist_review_runs_command_and_drafts_findings
+  - source: `runtime/tests/test_review_council_runtime.py:223`
+  - fixture/arg: `tmp_path` (temporary filesystem), monkeypatched `subprocess.run`
+  - parameter: names=None case=None
+  - inline input: approved local agent command template, specialist packet stdin, stdout review report with one finding
+- Expected: The execution status is `completed`, stdout evidence and output report exist, one finding draft is generated, and the session records the completed specialist execution.
+
 #### RT-UT-CASE-REVIEW-007
 
 - pytest node id:
@@ -280,6 +314,40 @@ runtime/tests/test_review_council_runtime.py::test_review_knowledge_capture_writ
   - inline input: approved review flow and capture-knowledge command
 - Expected: Knowledge capture status is `captured`, RAG candidates are present, artifacts exist, and orchestration reports knowledge captured.
 
+#### RT-UT-CASE-REVIEW-024
+
+- pytest node id:
+
+```text
+runtime/tests/test_review_council_runtime.py::test_review_rag_build_writes_source_markdown_and_manifest
+```
+
+- Confirm: Review Council RAG build bridge exports a RAG source Markdown document and a manifest without running the full RAG pipeline.
+- Input:
+  - pytest node: runtime/tests/test_review_council_runtime.py::test_review_rag_build_writes_source_markdown_and_manifest
+  - source: `runtime/tests/test_review_council_runtime.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=None case=None
+  - inline input: Review Council session, summary export, `review rag-build` with `run=False`
+- Expected: The bridge artifact type is `review-council-rag-build`, source Markdown exists under `work/db/.../rag/review-council/...`, and the manifest contains an `aiwfctl rag build` command.
+
+#### RT-UT-CASE-REVIEW-025
+
+- pytest node id:
+
+```text
+runtime/tests/test_review_council_runtime.py::test_review_rag_build_can_run_existing_pipeline
+```
+
+- Confirm: Review Council RAG build bridge can call the existing file-based RAG build pipeline when explicitly requested.
+- Input:
+  - pytest node: runtime/tests/test_review_council_runtime.py::test_review_rag_build_can_run_existing_pipeline
+  - source: `runtime/tests/test_review_council_runtime.py`
+  - fixture/arg: `tmp_path` (temporary filesystem), monkeypatched `rag_build.run`
+  - parameter: names=None case=None
+  - inline input: Review Council session, `review rag-build` with `run=True`, `duckdb_migrate=True`, `skip_optimization=True`
+- Expected: The bridge returns the RAG build result and passes `document_type=review-council`, generated `source_dir`, DuckDB migration flag, and optimization flag to the existing RAG pipeline.
+
 #### RT-UT-CASE-REVIEW-017
 
 - pytest node id:
@@ -398,74 +466,6 @@ runtime/tests/test_review_council_runtime.py::test_langgraph_adapter_returns_dep
   - parameter: names=None case=None
   - inline input: Review Council session and adapter plan builder
 - Expected: The plan identifies LangGraph as the adapter, includes reviewer nodes and reinspection, and contains challenge-to-evidence orchestration edges.
-
-#### RT-UT-CASE-REVIEW-024
-
-- pytest node id:
-
-```text
-runtime/tests/test_review_council_runtime.py::test_review_rag_build_writes_source_markdown_and_manifest
-```
-
-- Confirm: Review Council RAG build bridge exports a RAG source Markdown document and a manifest without running the full RAG pipeline.
-- Input:
-  - pytest node: runtime/tests/test_review_council_runtime.py::test_review_rag_build_writes_source_markdown_and_manifest
-  - source: `runtime/tests/test_review_council_runtime.py`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
-  - inline input: Review Council session, summary export, `review rag-build` with `run=False`
-- Expected: The bridge artifact type is `review-council-rag-build`, source Markdown exists under `work/db/.../rag/review-council/...`, and the manifest contains a `runtime/rag/rag_build.py` build command.
-
-#### RT-UT-CASE-REVIEW-025
-
-- pytest node id:
-
-```text
-runtime/tests/test_review_council_runtime.py::test_review_rag_build_can_run_existing_pipeline
-```
-
-- Confirm: Review Council RAG build bridge can call the existing file-based RAG build pipeline when explicitly requested.
-- Input:
-  - pytest node: runtime/tests/test_review_council_runtime.py::test_review_rag_build_can_run_existing_pipeline
-  - source: `runtime/tests/test_review_council_runtime.py`
-  - fixture/arg: `tmp_path` (temporary filesystem), monkeypatched `rag_build.run`
-  - parameter: names=None case=None
-  - inline input: Review Council session, `review rag-build` with `run=True`, `duckdb_migrate=True`, `skip_optimization=True`
-- Expected: The bridge returns the RAG build result and passes `document_type=review-council`, generated `source_dir`, DuckDB migration flag, and optimization flag to the existing RAG pipeline.
-
-#### RT-UT-CASE-REVIEW-026
-
-- pytest node id:
-
-```text
-runtime/tests/test_review_council_runtime.py::test_execute_specialist_review_requires_human_check
-```
-
-- Confirm: Specialist Agent execution is blocked until explicit Human Check approval is supplied.
-- Input:
-  - pytest node: runtime/tests/test_review_council_runtime.py::test_execute_specialist_review_requires_human_check
-  - source: `runtime/tests/test_review_council_runtime.py:196`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
-  - inline input: Review Council session, existing specialist prompt, `execute-specialist` with `human_check=pending`
-- Expected: The execution artifact type is `review-council-specialist-execution`, status is `human-check-required`, and execution evidence JSON is written without invoking a local Agent command.
-
-#### RT-UT-CASE-REVIEW-027
-
-- pytest node id:
-
-```text
-runtime/tests/test_review_council_runtime.py::test_execute_specialist_review_runs_command_and_drafts_findings
-```
-
-- Confirm: Approved Specialist Agent execution captures stdout/stderr, materializes the review report, and creates draft findings from the report.
-- Input:
-  - pytest node: runtime/tests/test_review_council_runtime.py::test_execute_specialist_review_runs_command_and_drafts_findings
-  - source: `runtime/tests/test_review_council_runtime.py:223`
-  - fixture/arg: `tmp_path` (temporary filesystem), monkeypatched `subprocess.run`
-  - parameter: names=None case=None
-  - inline input: approved local agent command template, specialist packet stdin, stdout review report with one finding
-- Expected: The execution status is `completed`, stdout evidence and output report exist, one finding draft is generated, and the session records the completed specialist execution.
 
 #### RT-UT-CASE-REVIEW-028
 

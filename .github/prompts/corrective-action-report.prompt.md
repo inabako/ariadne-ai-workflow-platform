@@ -43,7 +43,7 @@ C:\github\ariadne-ai-workflow-platform\work\db\ariadne-knowledge-platform\rag\co
 After writing the report, register it as Context First artifact:
 
 ```powershell
-python runtime/workflow/corrective_action_report.py register `
+.\runtime\windows-script\aiwf.cmd ctl workflow corrective-action-report register `
   --repository "<target repository>" `
   --target-branch "<target branch>" `
   --report-path "work/db/ariadne-knowledge-platform/rag/corrective-action-report/<report>.md"

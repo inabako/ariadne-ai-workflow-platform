@@ -146,6 +146,9 @@ def test_rag_build_artifact_defaults_and_human_check_reasons(tmp_path: Path) -> 
     assert artifact["human_check_required"] is True
     assert "clean-output was used" in artifact["human_check_reasons"][0]
     assert "source report filenames" in artifact["human_check_reasons"][1]
+    repair_command = artifact["gate_restart"]["repair_command"]
+    assert "runtime/ctl/ctl.py --repo-root . rag build" in repair_command
+    assert "runtime/rag/rag_build.py --repo-root" not in repair_command
 
     minimal = rag_build.build_run_artifact(
         tmp_path,

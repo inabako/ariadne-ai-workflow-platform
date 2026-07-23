@@ -223,13 +223,13 @@ target別build環境:
 
 ## Preflightとの関係
 
-`aiwfctl env select` は、どの環境で実行すべきかを選ぶ前段です。repo-local初期化状態、PATH状態、`aiwfctl.cmd`、workflow doctor scriptの有無を軽量確認します。必要toolの詳細確認は `runtime/environment/preflight.py` で確認します。
+`aiwfctl env select` は、どの環境で実行すべきかを選ぶ前段です。repo-local初期化状態、PATH状態、`aiwfctl.cmd`、workflow doctor scriptの有無を軽量確認します。必要toolの詳細確認は `aiwfctl preflight ...` で確認します。
 
 例:
 
 ```powershell
-uv run --project runtime python runtime/environment/preflight.py `
-  --profile gui-pyqt `
+.\runtime\windows-script\aiwf.cmd ctl preflight `
+  --profile gui-mode `
   --work-id issue-123 `
   --source-dir C:\github\localty-system-gui
 ```
@@ -237,7 +237,7 @@ uv run --project runtime python runtime/environment/preflight.py `
 Webの場合:
 
 ```powershell
-uv run --project runtime python runtime/environment/preflight.py `
+.\runtime\windows-script\aiwf.cmd ctl preflight `
   --profile web-nextjs `
   --work-id issue-123 `
   --source-dir C:\github\some-next-app
@@ -246,7 +246,7 @@ uv run --project runtime python runtime/environment/preflight.py `
 Dockerの場合:
 
 ```powershell
-uv run --project runtime python runtime/environment/preflight.py `
+.\runtime\windows-script\aiwf.cmd ctl preflight `
   --profile docker-compose `
   --work-id issue-123
 ```
@@ -254,7 +254,7 @@ uv run --project runtime python runtime/environment/preflight.py `
 Flutterの場合:
 
 ```powershell
-uv run --project runtime python runtime/environment/preflight.py `
+.\runtime\windows-script\aiwf.cmd ctl preflight `
   --profile flutter `
   --work-id issue-123 `
   --source-dir C:\github\some-flutter-app

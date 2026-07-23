@@ -49,19 +49,19 @@ aiwfctl env select web-svg
 入力directoryのWeb画面向けREADMEを作成します。
 
 ```powershell
-python runtime/workflow/web_svg_layout_mode.py init-input
+.\runtime\windows-script\aiwf.cmd ctl web-svg init-input
 ```
 
 自動判定して生成します。
 
 ```powershell
-python runtime/workflow/web_svg_layout_mode.py run --issue-id SYS-0001
+.\runtime\windows-script\aiwf.cmd ctl web-svg run --issue-id SYS-0001
 ```
 
 既存Corrective Action work directoryで実行します。
 
 ```powershell
-python runtime/workflow/web_svg_layout_mode.py run `
+.\runtime\windows-script\aiwf.cmd ctl web-svg run `
   --issue-id FIX-123 `
   --work-dir work/issue-123 `
   --mode corrective-fix
@@ -70,7 +70,7 @@ python runtime/workflow/web_svg_layout_mode.py run `
 完了検証:
 
 ```powershell
-python runtime/workflow/web_svg_layout_mode.py validate `
+.\runtime\windows-script\aiwf.cmd ctl web-svg validate `
   --issue-id SYS-0001
 ```
 

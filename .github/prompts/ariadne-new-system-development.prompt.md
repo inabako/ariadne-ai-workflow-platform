@@ -37,7 +37,7 @@
 RAG loading rule:
 
 - RAG index / embedding が無い場合は `/rag-build` を先に実行する
-- `/rag-load` では 3〜5 個の検索クエリを並列実行し、`runtime/rag/retrieve_context.py` の既存圧縮機能を使う
+- `/rag-load` では 3〜5 個の検索クエリを並列実行し、RAG dispatcher 経由で `aiwfctl rag retrieve` の既存圧縮機能を使う
 - safety-critical な未解決指摘が見つかった場合は、Phase 1 以降へ進む前に blocker として扱う
 
 Specialist review rule:
@@ -52,12 +52,12 @@ Specialist review rule:
 Issue作業領域作成後、`work/requirements/svg-input/SYS_*.svg`を確認し、対象SVGを`work/<採番ID>/input/gui/`へ取り込みます。
 
 ```powershell
-python runtime/workflow/gui_mode.py run --issue-id "<SYS-採番ID>"
+.\runtime\windows-script\aiwf.cmd ctl gui run --issue-id "<SYS-採番ID>"
 ```
 
 - SVGが無い場合は`skipped`としてPhase 1へ進む。
 - SVGがある場合は`.github/prompts/gac-uac-gui-mode.prompt.md`に従い、`gac-uac/`の設計・PyQt6・QTest候補を生成する。
-- `runtime/workflow/gui_mode.py validate`が`pass`になるまで通常実装へ進まない。
+- `aiwfctl gui validate`が`pass`になるまで通常実装へ進まない。
 - generated配下は初期GUI architecture候補としてreviewし、MainWindow、主要Panel、責務分離、QTest初期構成の必要部分だけを取り込む。
 - Web画面向けSVGは`WEB_SYS_*.svg`として配置し、Next.js Webapp Implementation Prep後に`.github/prompts/web-svg-layout-mode.prompt.md`を確認して`web-ui/`のlayout、React候補、Playwright候補を生成する。
 
@@ -227,7 +227,7 @@ docs/evidence/issue-<issue-number>/integration/startup/
 docs/evidence/issue-<issue-number>/human_check/
 ```
 
-`knowledge_capture.py` はscaffold用 `README.md` を自動生成しますが、READMEだけではテストケース表または証跡とはみなしません。
+`aiwfctl workflow knowledge-capture` はscaffold用 `README.md` を自動生成しますが、READMEだけではテストケース表または証跡とはみなしません。
 
 PyQt / Qt GUIを含む場合:
 

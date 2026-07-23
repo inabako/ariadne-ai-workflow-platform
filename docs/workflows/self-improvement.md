@@ -138,26 +138,26 @@ uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvemen
 GitHub Issue作成、branch作成、commit、push、Pull Request作成は、既存runtime helperを使います。
 
 ```powershell
-python runtime/github/issue_manager.py `
+.\runtime\windows-script\aiwf.cmd ctl github issue `
   --work-id "<work-id>" `
   --title "[改善フロー] <issue-title>" `
   --flow-label improvement `
   --body-file "<issue-body.md>" `
   --create
 
-python runtime/scm/create_issue_branch.py `
+.\runtime\windows-script\aiwf.cmd ctl scm branch `
   --work-id "issue-<issue-number>" `
   --issue-number "<issue-number>" `
   --repository "<target-repository>" `
   --base-branch "<target-branch>" `
   --link-to-issue
 
-python runtime/scm/commit_changes.py `
+.\runtime\windows-script\aiwf.cmd ctl scm commit `
   --work-id "issue-<issue-number>" `
   --message "fix: improve workflow feedback handling" `
   --all
 
-python runtime/scm/push_branch.py `
+.\runtime\windows-script\aiwf.cmd ctl scm push `
   --work-id "issue-<issue-number>" `
   --human-check approved `
   --set-upstream
