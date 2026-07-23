@@ -1,0 +1,264 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ariadne Review Council Session",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "review_id",
+    "work_id",
+    "status",
+    "packet",
+    "packet_hash",
+    "findings",
+    "issues"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "const": "review-council-session" },
+    "review_id": { "type": "string" },
+    "work_id": { "type": "string" },
+    "status": { "type": "string" },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" },
+    "packet": {
+      "type": "object",
+      "required": ["work_id", "target_revision", "intent"],
+      "properties": {
+        "work_id": { "type": "string" },
+        "target": { "type": "string" },
+        "target_revision": { "type": "string" },
+        "intent": { "type": "string" },
+        "requirements": { "type": "array", "items": { "type": "string" } },
+        "changed_files": { "type": "array", "items": { "type": "string" } },
+        "guardrails": { "type": "array", "items": { "type": "string" } },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "scope": { "type": "array", "items": { "type": "string" } },
+        "known_constraints": { "type": "array", "items": { "type": "string" } },
+        "required_reviewers": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "packet_hash": { "type": "string" },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "challenge_rounds": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/challenge_round" }
+    },
+    "reinspections": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/reinspection" }
+    },
+    "evidence_gate": {
+      "anyOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/evidence_gate" }
+      ]
+    },
+    "challenge_completed": { "type": "boolean" },
+    "evidence_verified": { "type": "boolean" },
+    "reviewer_handoffs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "issues": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/review_issue" }
+    },
+    "verdict": {
+      "anyOf": [
+        { "type": "null" },
+        { "$ref": "review-council-verdict.schema.json" }
+      ]
+    },
+    "orchestration": {
+      "type": "object"
+    },
+    "orchestration_runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["run_id", "status"],
+        "properties": {
+          "run_id": { "type": "string" },
+          "status": { "type": "string" },
+          "created_at": { "type": "string" },
+          "artifacts": { "type": "object" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "specialist_runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["reviewer", "agent_id", "status"],
+        "properties": {
+          "reviewer": { "type": "string" },
+          "agent_id": { "type": "string" },
+          "status": { "type": "string" },
+          "prompt_path": { "type": "string" },
+          "artifacts": { "type": "object" },
+          "updated_at": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "finding_drafts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["reviewer", "source_report", "draft_count", "artifacts"],
+        "properties": {
+          "reviewer": { "type": "string" },
+          "source_report": { "type": "string" },
+          "draft_count": { "type": "integer" },
+          "artifacts": { "type": "object" },
+          "updated_at": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "review_summaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["summary_id", "status", "artifacts"],
+        "properties": {
+          "summary_id": { "type": "string" },
+          "status": { "type": "string" },
+          "artifacts": { "type": "object" },
+          "updated_at": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "human_gates": {
+      "type": "array",
+      "items": {
+        "$ref": "review-council-human-gate.schema.json"
+      }
+    },
+    "human_check": { "type": "string" },
+    "review_knowledge_capture": {
+      "type": "object",
+      "properties": {
+        "status": { "type": "string" },
+        "captured_at": { "type": "string" },
+        "artifacts": { "type": "object" },
+        "rag_candidate_count": { "type": "integer" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": ["finding_id", "reviewer", "category", "severity", "claim", "verdict", "blocking", "status"],
+      "properties": {
+        "finding_id": { "type": "string" },
+        "reviewer": { "type": "string" },
+        "category": { "type": "string" },
+        "severity": { "enum": ["critical", "high", "medium", "low", "info"] },
+        "claim": { "type": "string" },
+        "verdict": { "enum": ["pass", "warn", "fail", "unsupported", "needs-qa", "changes-required"] },
+        "evidence_refs": { "type": "array", "items": { "type": "string" } },
+        "counterexample": { "type": "string" },
+        "reasoning_summary": { "type": "string" },
+        "requested_action": { "type": "string" },
+        "confidence": { "type": "number" },
+        "required_tests": { "type": "array", "items": { "type": "string" } },
+        "blocking": { "type": "boolean" },
+        "status": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "challenge_round": {
+      "type": "object",
+      "required": ["challenge_id", "status", "challenger", "mode", "issue_ids", "counterexample_found", "summary"],
+      "properties": {
+        "challenge_id": { "type": "string" },
+        "status": { "type": "string" },
+        "challenger": { "type": "string" },
+        "mode": { "type": "string" },
+        "issue_ids": { "type": "array", "items": { "type": "string" } },
+        "counterexample_found": { "type": "boolean" },
+        "summary": { "type": "string" },
+        "evidence_refs": { "type": "array", "items": { "type": "string" } },
+        "target_issue_ids": { "type": "array", "items": { "type": "string" } },
+        "finding_ids": { "type": "array", "items": { "type": "string" } },
+        "challenge_plan": { "type": "object" },
+        "created_at": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "reinspection": {
+      "type": "object",
+      "required": ["reinspection_id", "reviewer", "finding_ids", "status", "summary"],
+      "properties": {
+        "reinspection_id": { "type": "string" },
+        "reviewer": { "type": "string" },
+        "finding_ids": { "type": "array", "items": { "type": "string" } },
+        "issue_ids": { "type": "array", "items": { "type": "string" } },
+        "previous_statuses": { "type": "object" },
+        "status": { "type": "string" },
+        "summary": { "type": "string" },
+        "evidence_refs": { "type": "array", "items": { "type": "string" } },
+        "evidence_results": { "type": "array", "items": { "type": "object" } },
+        "created_at": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "evidence_gate": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "artifact_type",
+        "status",
+        "review_id",
+        "work_id",
+        "evidence",
+        "missing_evidence",
+        "required_tests",
+        "missing_required_tests"
+      ],
+      "properties": {
+        "schema_version": { "type": "string" },
+        "artifact_type": { "const": "review-council-evidence-gate" },
+        "status": { "enum": ["verified", "blocked"] },
+        "review_id": { "type": "string" },
+        "work_id": { "type": "string" },
+        "checked_at": { "type": "string" },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "evidence_results": { "type": "array", "items": { "type": "object" } },
+        "missing_evidence": { "type": "array", "items": { "type": "string" } },
+        "required_tests": { "type": "array", "items": { "type": "string" } },
+        "missing_required_tests": { "type": "array", "items": { "type": "string" } },
+        "artifact_checks": { "type": "array", "items": { "type": "object" } },
+        "missing_artifacts": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "review_issue": {
+      "type": "object",
+      "required": ["issue_id", "category", "claim", "severity", "blocking", "status", "finding_ids"],
+      "properties": {
+        "issue_id": { "type": "string" },
+        "category": { "type": "string" },
+        "claim": { "type": "string" },
+        "severity": { "enum": ["critical", "high", "medium", "low", "info"] },
+        "blocking": { "type": "boolean" },
+        "status": { "type": "string" },
+        "finding_ids": { "type": "array", "items": { "type": "string" } },
+        "reviewer_positions": { "type": "array", "items": { "type": "object" } },
+        "required_evidence": { "type": "array", "items": { "type": "string" } },
+        "required_tests": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ariadne Review Council Plan",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "status",
+    "review_id",
+    "work_id",
+    "packet",
+    "packet_hash",
+    "required_reviewers",
+    "reviewer_selection",
+    "start_command"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "const": "review-council-plan" },
+    "status": { "const": "planned" },
+    "created_at": { "type": "string" },
+    "review_id": { "type": "string" },
+    "work_id": { "type": "string" },
+    "packet": { "type": "object" },
+    "packet_hash": { "type": "string" },
+    "required_reviewers": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "reviewer_selection": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["reviewer", "reason", "matched_terms", "source"],
+        "properties": {
+          "reviewer": { "type": "string" },
+          "reason": { "type": "string" },
+          "matched_terms": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "source": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "source_terms": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "start_command": { "type": "string" },
+    "artifacts": { "type": "object" }
+  },
+  "additionalProperties": true
+}

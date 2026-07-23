@@ -7,6 +7,7 @@ requires-python = ">=3.11"
 license = "MIT"
 dependencies = [
     "duckdb>=1.1",
+    "langgraph>=1.2.9",
 ]
 
 [dependency-groups]

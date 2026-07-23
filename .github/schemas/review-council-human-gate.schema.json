@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ariadne Review Council Human Gate",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "status",
+    "review_id",
+    "work_id",
+    "gate",
+    "required",
+    "actual",
+    "reason",
+    "gate_restart"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "const": "review-council-human-gate" },
+    "status": { "enum": ["blocked", "approved"] },
+    "review_id": { "type": "string" },
+    "work_id": { "type": "string" },
+    "gate": { "type": "string" },
+    "label": { "type": "string" },
+    "required": { "type": "string" },
+    "actual": { "type": "string" },
+    "reason": { "type": "string" },
+    "reviewer": { "type": "string" },
+    "decision_reason": { "type": "string" },
+    "summary_artifacts": { "type": "object" },
+    "created_at": { "type": "string" },
+    "repair_command": { "type": "string" },
+    "gate_restart": { "$ref": "gate-restart.schema.json" },
+    "artifacts": { "type": "object" }
+  },
+  "additionalProperties": true
+}

@@ -18,6 +18,7 @@ from runtime.ctl.ctl_integration_adapter import run_integration
 from runtime.ctl.ctl_knowledge_adapter import run_knowledge
 from runtime.ctl.ctl_mcp_group_adapter import format_result as format_mcp_group_result
 from runtime.ctl.ctl_mcp_group_adapter import run_mcp_group
+from runtime.ctl.ctl_review_adapter import run_review
 from runtime.ctl.ctl_sdk_adapter import format_result as format_sdk_result
 from runtime.ctl.ctl_sdk_adapter import run_sdk
 from runtime.ctl.ctl_self_improvement_adapter import run_self_improvement
@@ -497,6 +498,127 @@ def _handle_self_improvement(args: argparse.Namespace, repo_root: Path, registry
     return 0, "\n".join(lines).rstrip() + "\n"
 
 
+def _handle_review(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    review_command = getattr(args, "review_command", None)
+    if review_command is None:
+        return 1, (
+            "Ariadne Review Council\n\n"
+            "Usage:\n"
+            "  aiwfctl review plan --work-id <work-id> --intent <text> --changed-file runtime/review/council.py\n"
+            "  aiwfctl review start --work-id <work-id> --intent <text> --reviewer security\n"
+            "  aiwfctl review handoff --review-id <review-id>\n"
+            "  aiwfctl review orchestrate --review-id <review-id>\n"
+            "  aiwfctl review next-action --review-id <review-id>\n"
+            "  aiwfctl review summary --review-id <review-id>\n"
+            "  aiwfctl review human-gate --review-id <review-id> --gate review-council-final-verdict --human-check approved\n"
+            "  aiwfctl review run-specialist --review-id <review-id> --reviewer security\n"
+            "  aiwfctl review execute-specialist --review-id <review-id> --reviewer security --human-check approved --agent-command <command>\n"
+            "  aiwfctl review draft-findings --review-id <review-id> --reviewer security --report <path>\n"
+            "  aiwfctl review capture-knowledge --review-id <review-id>\n"
+            "  aiwfctl review rag-build --review-id <review-id>\n"
+            "  aiwfctl review add-finding --review-id <review-id> --reviewer security --category security --severity high --claim <text> --verdict fail\n"
+            "  aiwfctl review challenge --review-id <review-id> --challenger runtime-quality --summary <text>\n"
+            "  aiwfctl review evidence-gate --review-id <review-id>\n"
+            "  aiwfctl review reinspect --review-id <review-id> --finding-id FND-001 --status verified --reviewer security --summary <text>\n"
+            "  aiwfctl review status --review-id <review-id>\n"
+            "  aiwfctl review issues --review-id <review-id>\n"
+            "  aiwfctl review verdict --review-id <review-id>\n"
+        )
+    try:
+        result = run_review(args, repo_root, review_command)
+    except KeyError:
+        return 1, f"Unknown review command: {review_command}\n"
+    except Exception as exc:
+        return 1, f"Review council failed: {exc}\n"
+    code = 0
+    verdict_value = result.get("verdict")
+    verdict_status = verdict_value.get("verdict") if isinstance(verdict_value, dict) else verdict_value
+    if (
+        result.get("artifact_type") == "review-council-human-gate"
+        and result.get("status") == "blocked"
+    ) or (
+        result.get("artifact_type") == "review-council-specialist-execution"
+        and result.get("status") in {"human-check-required", "blocked", "failed"}
+    ) or verdict_status in {"CHANGES_REQUIRED", "HUMAN_DECISION_REQUIRED", "REJECTED"}:
+        code = 2
+    if getattr(args, "json", False):
+        return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    lines = ["Ariadne Review Council", "", f"Command : {review_command}"]
+    for key, label in [
+        ("review_id", "Review ID"),
+        ("run_id", "Run ID   "),
+        ("challenge_id", "Challenge"),
+        ("reinspection_id", "Reinspect"),
+        ("summary_id", "Summary  "),
+        ("gate", "Gate     "),
+        ("work_id", "Work ID  "),
+        ("reviewer", "Reviewer "),
+        ("agent_id", "Agent    "),
+        ("status", "Status   "),
+        ("verdict", "Verdict  "),
+        ("draft_count", "Drafts   "),
+        ("finding_count", "Findings "),
+        ("issue_count", "Issues   "),
+        ("rag_candidate_count", "RAG Candidates"),
+    ]:
+        if key in result:
+            value = result.get(key, "")
+            if key == "verdict" and isinstance(value, dict):
+                value = value.get("verdict", "")
+            lines.append(f"{label}: {value}")
+    if "reason" in result:
+        lines.append(f"Reason   : {result.get('reason', '')}")
+    if "prompt_path" in result:
+        lines.append(f"Prompt   : {result.get('prompt_path', '')}")
+    if "output_path" in result:
+        lines.append(f"Output   : {result.get('output_path', '')}")
+    if "source_document" in result:
+        lines.append(f"RAG Doc  : {result.get('source_document', '')}")
+    if "source_dir" in result:
+        lines.append(f"RAG Src  : {result.get('source_dir', '')}")
+    if "missing_evidence" in result:
+        lines.append(f"Missing Evidence: {len(result.get('missing_evidence', []))}")
+    if "missing_required_tests" in result:
+        lines.append(f"Missing Tests   : {len(result.get('missing_required_tests', []))}")
+    required_reviewers = result.get("required_reviewers")
+    if isinstance(required_reviewers, list):
+        lines.append(f"Reviewers       : {', '.join(required_reviewers)}")
+    reviewer_handoffs = result.get("reviewer_handoffs")
+    if isinstance(reviewer_handoffs, list):
+        lines.append(f"Handoffs        : {len(reviewer_handoffs)}")
+    if "start_command" in result:
+        lines.extend(["", "Start Command", f"  {result.get('start_command', '')}"])
+    if "build_command" in result:
+        lines.extend(["", "Build Command", f"  {result.get('build_command', '')}"])
+    if "command" in result and result.get("artifact_type") == "review-council-specialist-execution":
+        lines.extend(["", "Execution Command", f"  {result.get('command', '')}"])
+    draft_findings = result.get("draft_findings")
+    if isinstance(draft_findings, dict):
+        lines.append(f"Draft Findings  : {draft_findings.get('draft_count', 0)}")
+    next_actions = result.get("next_actions", [])
+    if next_actions:
+        lines.extend(["", "Next Actions"])
+        for item in next_actions:
+            command = item.get("agent_command") or item.get("command", "")
+            lines.append(f"  - {item.get('action', '')}: {command}")
+    selected_action = result.get("selected_action")
+    if isinstance(selected_action, dict):
+        command = selected_action.get("agent_command") or selected_action.get("command", "")
+        lines.extend(["", "Selected Action", f"  {selected_action.get('action', '')}: {command}"])
+    artifacts = result.get("artifacts", {})
+    if isinstance(artifacts, dict) and artifacts:
+        lines.extend(["", "Artifacts"])
+        lines.extend(f"  - {key}: {value}" for key, value in artifacts.items())
+    issues = result.get("issues", [])
+    if issues:
+        lines.extend(["", "Issues"])
+        for item in issues:
+            lines.append(
+                f"  - {item.get('issue_id', '')}: {item.get('severity', '')} blocking={str(item.get('blocking', False)).lower()} {item.get('claim', '')}"
+            )
+    return code, "\n".join(lines).rstrip() + "\n"
+
+
 def _handle_close_archive(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
     close_command = getattr(args, "close_archive_command", None)
     if close_command is None:
@@ -654,6 +776,7 @@ COMMAND_HANDLERS: dict[str, CommandHandler] = {
     "github-knowledge": _handle_github_knowledge,
     "work": _handle_work,
     "self-improvement": _handle_self_improvement,
+    "review": _handle_review,
     "close-archive": _handle_close_archive,
     "iac": _handle_iac,
     "integration": _handle_integration,

@@ -17,6 +17,16 @@
 | `runtime/rag/` | report / artifact を file-based RAG 用 document、chunk、index に変換する機能 |
 | `runtime/observability/` | Runtime のログ、メトリクス、月次ローテーション、workflow単位の観測証跡 |
 
+## Review Council Runtime
+
+`aiwfctl review rag-build` exports Review Council knowledge capture into file-based RAG source Markdown under `work/db/<knowledge-repo>/rag/review-council/`. It prepares a reproducible `runtime/rag/rag_build.py` command and runs the existing RAG build pipeline only when `--run` is explicitly specified.
+
+`aiwfctl review execute-specialist` runs an approved local Specialist Agent command after `run-specialist` prepares the packet. Execution requires `--human-check approved`, captures stdout/stderr under `work/<work-id>/process-report/review-council/`, and can draft findings from the generated specialist report.
+
+`runtime/review/` は Specialist Review の Review Packet 固定、Reviewer計画、handoff、LangGraph orchestration状態評価、finding 正規化、Review Issue 集約、Verdict Policy を扱う共通Runtimeです。
+
+主な入口は `aiwfctl review plan`、`aiwfctl review start`、`aiwfctl review handoff`、`aiwfctl review orchestrate`、`aiwfctl review next-action`、`aiwfctl review summary`、`aiwfctl review human-gate`、`aiwfctl review run-specialist`、`aiwfctl review draft-findings`、`aiwfctl review add-finding`、`aiwfctl review challenge`、`aiwfctl review evidence-gate`、`aiwfctl review reinspect`、`aiwfctl review verdict`、`aiwfctl review capture-knowledge` です。
+
 ## Environment Files
 
 GitHub / SCM 連携情報は repository root の環境ファイルで管理します。

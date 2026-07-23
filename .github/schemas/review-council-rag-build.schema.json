@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ariadne Review Council RAG Build Bridge",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "status",
+    "review_id",
+    "work_id",
+    "created_at",
+    "source_dir",
+    "source_document",
+    "document_type",
+    "rag_candidate_count",
+    "candidate_checks",
+    "run_requested",
+    "build_command",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "const": "review-council-rag-build" },
+    "status": { "type": "string" },
+    "review_id": { "type": "string" },
+    "work_id": { "type": "string" },
+    "created_at": { "type": "string" },
+    "source_dir": { "type": "string" },
+    "source_document": { "type": "string" },
+    "document_type": { "const": "review-council" },
+    "knowledge_capture": { "type": "object" },
+    "rag_candidate_count": { "type": "integer" },
+    "candidate_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "kind", "exists", "is_file", "size"],
+        "properties": {
+          "path": { "type": "string" },
+          "kind": { "type": "string" },
+          "exists": { "type": "boolean" },
+          "is_file": { "type": "boolean" },
+          "size": { "type": "integer" },
+          "reason": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "missing_candidate_count": { "type": "integer" },
+    "run_requested": { "type": "boolean" },
+    "clean_output": { "type": "boolean" },
+    "skip_optimization": { "type": "boolean" },
+    "duckdb_migrate": { "type": "boolean" },
+    "rag_build_output": { "type": "string" },
+    "build_command": { "type": "string" },
+    "rag_build_run": { "type": "object" },
+    "artifacts": { "type": "object" }
+  },
+  "additionalProperties": true
+}

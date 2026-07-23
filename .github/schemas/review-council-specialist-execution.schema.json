@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ariadne Review Council Specialist Execution",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "status",
+    "review_id",
+    "work_id",
+    "reviewer",
+    "agent_id",
+    "prompt_path",
+    "handoff_path",
+    "packet_path",
+    "output_path",
+    "command",
+    "created_at",
+    "human_check_required",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "const": "review-council-specialist-execution" },
+    "schema": { "type": "string" },
+    "status": {
+      "enum": ["completed", "failed", "blocked", "human-check-required"]
+    },
+    "reason": { "type": "string" },
+    "review_id": { "type": "string" },
+    "work_id": { "type": "string" },
+    "reviewer": { "type": "string" },
+    "agent_id": { "type": "string" },
+    "prompt_path": { "type": "string" },
+    "handoff_path": { "type": "string" },
+    "packet_path": { "type": "string" },
+    "output_path": { "type": "string" },
+    "command": { "type": "string" },
+    "exit_code": { "type": ["integer", "null"] },
+    "duration_ms": { "type": "integer" },
+    "stdout_bytes": { "type": "integer" },
+    "stderr_bytes": { "type": "integer" },
+    "report_exists": { "type": "boolean" },
+    "created_at": { "type": "string" },
+    "human_check_required": { "type": "boolean" },
+    "human_check_reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "draft_findings": { "type": "object" },
+    "artifacts": { "type": "object" }
+  },
+  "additionalProperties": true
+}

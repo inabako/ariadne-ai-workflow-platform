@@ -1,5 +1,11 @@
 # Shared Schemas
 
+## Review Council Runtime Additions
+
+`review-council-rag-build.schema.json` records the bridge from Review Council knowledge capture to file-based RAG build. It keeps the generated RAG source Markdown path, candidate checks, the reproducible build command, and the optional RAG build result.
+
+`review-council-specialist-execution.schema.json` records approved local Specialist Agent execution. It keeps the command, prompt/handoff packet, stdout/stderr evidence, output report path, exit code, duration, Human Check state, and optional draft finding result.
+
 ## Added Shared Schema
 
 | File | Purpose |
@@ -18,6 +24,17 @@
 | `artifact-index.schema.json` | 生成物の場所、状態、所有Agent、依存関係 |
 | `decision-record.schema.json` | 設計判断と理由、代替案、影響範囲 |
 | `finding-record.schema.json` | review finding、risk、severity、required action |
+| `review-council-session.schema.json` | Review Packet、Finding、Review Issue、VerdictをまとめるReview Council Runtime session |
+| `review-council-plan.schema.json` | Review Council Runtimeの実行前計画。Review Packet、必要Reviewer、選定理由、開始コマンドを記録 |
+| `review-council-handoff.schema.json` | Review Council RuntimeのReviewer別handoff成果物一覧を記録 |
+| `review-council-orchestration.schema.json` | Review Council RuntimeのLangGraph orchestration状態、node結果、次アクションを記録 |
+| `review-council-next-action.schema.json` | Review Council Runtimeの次に実行する運用アクションを記録 |
+| `review-council-summary.schema.json` | Review Council sessionの要約、reviewer進捗、issue/gate/verdict、次アクションをexportする記録 |
+| `review-council-human-gate.schema.json` | Review CouncilのHuman Gate承認/blocked結果、判断理由、再開情報を記録 |
+| `review-council-specialist-run.schema.json` | Specialist Reviewer Agentに渡すprompt、入力、期待成果物、finding登録commandを記録 |
+| `review-council-finding-draft.schema.json` | Specialist review reportから正式登録前のFinding候補と登録commandを記録 |
+| `review-council-knowledge-capture.schema.json` | Review Council artifactをRAG/Knowledge候補として整理した記録 |
+| `review-council-verdict.schema.json` | Review Council Runtimeの最終判定、approval checks、Human Check状態 |
 | `qa-record.schema.json` | 未解決QA、回答、blocking status |
 | `test-evidence.schema.json` | test 実行結果、環境、証跡、残リスク |
 | `pytest-ut-spec-sync-report.schema.json` | pytest実体とUT仕様書の同期チェック結果、Context異音検知の証跡 |

@@ -18,6 +18,28 @@ from runtime.workflow import github_knowledge_maintenance
 from runtime.workflow import self_improvement
 
 
+def _add_review_packet_arguments(command: argparse.ArgumentParser) -> None:
+    command.add_argument("--work-id", required=True)
+    command.add_argument("--review-id", default="")
+    command.add_argument("--target", default="")
+    command.add_argument("--target-revision", default="")
+    command.add_argument("--intent", required=True)
+    command.add_argument("--requirement", action="append", default=[])
+    command.add_argument("--changed-file", action="append", default=[])
+    command.add_argument("--guardrail", action="append", default=[])
+    command.add_argument("--evidence", action="append", default=[])
+    command.add_argument("--scope", action="append", default=[])
+    command.add_argument("--known-constraint", action="append", default=[])
+    command.add_argument("--reviewer", action="append", default=[])
+    command.add_argument("--json", action="store_true")
+
+
+def _add_review_lookup_arguments(command: argparse.ArgumentParser) -> None:
+    command.add_argument("--review-id", default="")
+    command.add_argument("--work-id", default="")
+    command.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="aiwfctl", description="Ariadne AI Workflow control helper.")
     parser.add_argument("--repo-root", default="")
@@ -482,6 +504,167 @@ def build_parser() -> argparse.ArgumentParser:
     self_improvement_evidence = self_improvement_sub.add_parser("evidence-scaffold", help="Create self-improvement evidence directories.")
     self_improvement_evidence.add_argument("--work-id", required=True)
     self_improvement_evidence.add_argument("--json", action="store_true")
+
+    review_cmd = sub.add_parser("review", help="Run Ariadne Review Council packet, finding, issue, and verdict checks.")
+    review_sub = review_cmd.add_subparsers(dest="review_command")
+    review_plan = review_sub.add_parser("plan", help="Plan required specialist reviewers before opening a session.")
+    _add_review_packet_arguments(review_plan)
+
+    review_start = review_sub.add_parser("start", help="Freeze a Review Packet and open a Review Council session.")
+    _add_review_packet_arguments(review_start)
+
+    review_handoff = review_sub.add_parser("handoff", help="Write per-reviewer Review Council handoff packets.")
+    _add_review_lookup_arguments(review_handoff)
+    review_handoff.add_argument("--reviewer", action="append", default=[])
+    review_handoff.add_argument("--json", action="store_true")
+
+    review_orchestrate = review_sub.add_parser("orchestrate", help="Evaluate LangGraph Review Council orchestration state.")
+    _add_review_lookup_arguments(review_orchestrate)
+    review_orchestrate.add_argument("--run-id", default="")
+    review_orchestrate.add_argument("--json", action="store_true")
+
+    review_next = review_sub.add_parser("next-action", help="Show the next operational Review Council action.")
+    _add_review_lookup_arguments(review_next)
+    review_next.add_argument("--json", action="store_true")
+
+    review_summary = review_sub.add_parser("summary", help="Export a Review Council summary snapshot.")
+    _add_review_lookup_arguments(review_summary)
+    review_summary.add_argument("--summary-id", default="")
+    review_summary.add_argument("--json", action="store_true")
+
+    review_human_gate = review_sub.add_parser("human-gate", help="Check and record a Review Council Human Gate.")
+    _add_review_lookup_arguments(review_human_gate)
+    review_human_gate.add_argument("--gate", default="review-council-final-verdict")
+    review_human_gate.add_argument("--human-check", default="pending")
+    review_human_gate.add_argument("--reviewer", default="Human")
+    review_human_gate.add_argument("--reason", default="")
+    review_human_gate.add_argument("--json", action="store_true")
+
+    review_specialist = review_sub.add_parser("run-specialist", help="Prepare a specialist reviewer execution packet.")
+    _add_review_lookup_arguments(review_specialist)
+    review_specialist.add_argument("--reviewer", required=True)
+    review_specialist.add_argument("--json", action="store_true")
+
+    review_execute_specialist = review_sub.add_parser(
+        "execute-specialist",
+        help="Execute an approved local specialist agent command and capture review evidence.",
+    )
+    _add_review_lookup_arguments(review_execute_specialist)
+    review_execute_specialist.add_argument("--reviewer", required=True)
+    review_execute_specialist.add_argument("--agent-command", default="")
+    review_execute_specialist.add_argument("--timeout-seconds", type=int, default=1800)
+    review_execute_specialist.add_argument("--human-check", choices=["pending", "approved"], default="pending")
+    review_execute_specialist.add_argument("--skip-draft-findings", action="store_true")
+    review_execute_specialist.add_argument("--json", action="store_true")
+
+    review_draft = review_sub.add_parser("draft-findings", help="Extract draft findings from a specialist review report.")
+    _add_review_lookup_arguments(review_draft)
+    review_draft.add_argument("--reviewer", required=True)
+    review_draft.add_argument("--report", required=True)
+    review_draft.add_argument("--category", default="other")
+    review_draft.add_argument("--severity", default="medium", choices=["critical", "high", "medium", "low", "info"])
+    review_draft.add_argument(
+        "--verdict",
+        default="needs-qa",
+        choices=["pass", "warn", "fail", "unsupported", "needs-qa", "changes-required"],
+    )
+    review_draft.add_argument("--json", action="store_true")
+
+    review_capture = review_sub.add_parser("capture-knowledge", help="Capture Review Council artifacts for Knowledge/RAG reuse.")
+    _add_review_lookup_arguments(review_capture)
+    review_capture.add_argument("--json", action="store_true")
+
+    review_rag_build = review_sub.add_parser("rag-build", help="Export Review Council knowledge and optionally run RAG build.")
+    _add_review_lookup_arguments(review_rag_build)
+    review_rag_build.add_argument("--refresh-capture", action="store_true")
+    review_rag_build.add_argument("--run", action="store_true")
+    review_rag_build.add_argument("--output", default="")
+    review_rag_build.add_argument("--normalized-dir", default="")
+    review_rag_build.add_argument("--chunks-dir", default="")
+    review_rag_build.add_argument("--optimized-chunks-dir", default="")
+    review_rag_build.add_argument("--indexes-dir", default="")
+    review_rag_build.add_argument("--embeddings-output", default="")
+    review_rag_build.add_argument("--ingestion-evidence-dir", default="")
+    review_rag_build.add_argument("--ingestion-policy", default="")
+    review_rag_build.add_argument("--skip-optimization", action="store_true")
+    review_rag_build.add_argument("--duckdb-migrate", action="store_true")
+    review_rag_build.add_argument("--duckdb-path", default="")
+    review_rag_build.add_argument("--duckdb-source-dir", default="")
+    review_rag_build.add_argument("--duckdb-error-log", default="")
+    review_rag_build.add_argument("--duckdb-evidence-output", default="")
+    review_rag_build.add_argument("--duckdb-policy", default="")
+    review_rag_build.add_argument("--project", default="")
+    review_rag_build.add_argument("--repository", default="")
+    review_rag_build.add_argument("--branch", default="")
+    review_rag_build.add_argument("--commit", default="")
+    review_rag_build.add_argument("--status", default="")
+    review_rag_build.add_argument("--chunk-size", type=int, default=1800)
+    review_rag_build.add_argument("--chunk-overlap", type=int, default=180)
+    review_rag_build.add_argument("--embedding-dimensions", type=int, default=768)
+    review_rag_build.add_argument("--clean-output", action="store_true")
+    review_rag_build.add_argument("--json", action="store_true")
+
+    review_finding = review_sub.add_parser("add-finding", help="Register one structured specialist review finding.")
+    _add_review_lookup_arguments(review_finding)
+    review_finding.add_argument("--finding-id", default="")
+    review_finding.add_argument("--reviewer", required=True)
+    review_finding.add_argument("--category", default="other")
+    review_finding.add_argument("--severity", required=True, choices=["critical", "high", "medium", "low", "info"])
+    review_finding.add_argument("--claim", required=True)
+    review_finding.add_argument(
+        "--verdict",
+        required=True,
+        choices=["pass", "warn", "fail", "unsupported", "needs-qa", "changes-required"],
+    )
+    review_finding.add_argument("--evidence-ref", action="append", default=[])
+    review_finding.add_argument("--counterexample", default="")
+    review_finding.add_argument("--reasoning-summary", default="")
+    review_finding.add_argument("--requested-action", default="")
+    review_finding.add_argument("--confidence", type=float, default=0.8)
+    review_finding.add_argument("--required-test", action="append", default=[])
+    review_finding.add_argument("--blocking", action="store_true")
+    review_finding.add_argument("--non-blocking", action="store_true")
+    review_finding.add_argument("--json", action="store_true")
+
+    review_challenge = review_sub.add_parser("challenge", help="Record a Review Council challenge round.")
+    _add_review_lookup_arguments(review_challenge)
+    review_challenge.add_argument("--challenge-id", default="")
+    review_challenge.add_argument("--challenger", required=True)
+    review_challenge.add_argument("--mode", default="counterexample-check")
+    review_challenge.add_argument("--issue-id", action="append", default=[])
+    review_challenge.add_argument("--counterexample-found", action="store_true")
+    review_challenge.add_argument("--summary", required=True)
+    review_challenge.add_argument("--evidence-ref", action="append", default=[])
+    review_challenge.add_argument("--json", action="store_true")
+
+    review_evidence = review_sub.add_parser("evidence-gate", help="Verify Review Council evidence and required test references.")
+    _add_review_lookup_arguments(review_evidence)
+    review_evidence.add_argument("--evidence", action="append", default=[])
+    review_evidence.add_argument("--required-test", action="append", default=[])
+    review_evidence.add_argument("--test-spec", action="append", default=[])
+    review_evidence.add_argument("--json", action="store_true")
+
+    review_reinspect = review_sub.add_parser("reinspect", help="Update finding status after fixes, evidence, or risk acceptance.")
+    _add_review_lookup_arguments(review_reinspect)
+    review_reinspect.add_argument("--finding-id", action="append", default=[])
+    review_reinspect.add_argument("--status", required=True, choices=["open", "accepted-risk", "fixed", "verified", "closed"])
+    review_reinspect.add_argument("--reviewer", required=True)
+    review_reinspect.add_argument("--summary", required=True)
+    review_reinspect.add_argument("--evidence-ref", action="append", default=[])
+    review_reinspect.add_argument("--json", action="store_true")
+
+    for review_name in ["status", "issues", "inspect"]:
+        review_item = review_sub.add_parser(review_name)
+        _add_review_lookup_arguments(review_item)
+        review_item.add_argument("--json", action="store_true")
+
+    review_verdict = review_sub.add_parser("verdict", help="Evaluate Review Council verdict policy.")
+    _add_review_lookup_arguments(review_verdict)
+    review_verdict.add_argument("--evidence-verified", action="store_true")
+    review_verdict.add_argument("--challenge-completed", action="store_true")
+    review_verdict.add_argument("--target-revision-consistent", action="store_true")
+    review_verdict.add_argument("--human-check", choices=["pending", "approved"], default="pending")
+    review_verdict.add_argument("--json", action="store_true")
 
     close_archive_cmd = sub.add_parser("close-archive", help="Prepare, audit, and prune report-only close archives.")
     close_archive_sub = close_archive_cmd.add_subparsers(dest="close_archive_command")

@@ -76,6 +76,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_rag_retrieve_context.py](cases/test_rag_retrieve_context.md) | 17 |
 | [test_remaining_policy_vscode_runtime.py](cases/test_remaining_policy_vscode_runtime.md) | 26 |
 | [test_remaining_rag_scm_runtime.py](cases/test_remaining_rag_scm_runtime.md) | 11 |
+| [test_review_council_runtime.py](cases/test_review_council_runtime.md) | 28 |
 | [test_retrieval_runtime.py](cases/test_retrieval_runtime.md) | 23 |
 | [test_scm_runtime.py](cases/test_scm_runtime.md) | 53 |
 | [test_sdk_analysis.py](cases/test_sdk_analysis.md) | 11 |

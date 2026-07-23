@@ -20,6 +20,7 @@ SUBCOMMAND_ATTRIBUTES = (
     "github_knowledge_command",
     "work_command",
     "self_improvement_command",
+    "review_command",
     "close_archive_command",
     "iac_command",
     "iac_template_command",

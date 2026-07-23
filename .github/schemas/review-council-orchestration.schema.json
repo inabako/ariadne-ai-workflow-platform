@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ariadne Review Council Orchestration",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "adapter",
+    "run_id",
+    "review_id",
+    "work_id",
+    "status",
+    "plan",
+    "node_results",
+    "next_actions",
+    "checks"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "const": "review-council-orchestration" },
+    "adapter": { "const": "langgraph" },
+    "available": { "type": "boolean" },
+    "execution_mode": {
+      "enum": ["langgraph", "runtime-runbook"]
+    },
+    "graph_execution": {
+      "type": "object",
+      "properties": {
+        "engine": { "type": "string" },
+        "compiled": { "type": "boolean" },
+        "trace": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "fallback_reason": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "run_id": { "type": "string" },
+    "review_id": { "type": "string" },
+    "work_id": { "type": "string" },
+    "status": {
+      "enum": [
+        "orchestration-ready",
+        "orchestration-waiting",
+        "orchestration-blocked",
+        "orchestration-completed"
+      ]
+    },
+    "plan": { "type": "object" },
+    "node_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["node", "status"],
+        "properties": {
+          "node": { "type": "string" },
+          "status": {
+            "enum": ["completed", "ready", "waiting", "blocked"]
+          },
+          "reason": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "next_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["action", "reason", "command"],
+        "properties": {
+          "action": { "type": "string" },
+          "reviewer": { "type": "string" },
+          "issue_id": { "type": "string" },
+          "reason": { "type": "string" },
+          "command": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "checks": { "type": "object" },
+    "artifacts": { "type": "object" }
+  },
+  "additionalProperties": true
+}

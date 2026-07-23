@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ariadne Review Council Verdict",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "verdict",
+    "checks",
+    "reason",
+    "human_check"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "const": "review-council-verdict" },
+    "verdict": {
+      "enum": [
+        "APPROVED",
+        "APPROVED_WITH_RISK",
+        "CHANGES_REQUIRED",
+        "HUMAN_DECISION_REQUIRED",
+        "REJECTED"
+      ]
+    },
+    "checks": {
+      "type": "object",
+      "required": [
+        "blocking_issues",
+        "unresolved_high_issues",
+        "unsupported_required_claims",
+        "missing_required_reviewers",
+        "evidence_verified",
+        "challenge_completed",
+        "target_revision_consistent",
+        "challenge_blockers"
+      ],
+      "properties": {
+        "blocking_issues": { "type": "integer" },
+        "unresolved_high_issues": { "type": "integer" },
+        "unsupported_required_claims": { "type": "integer" },
+        "missing_required_reviewers": { "type": "integer" },
+        "evidence_verified": { "type": "boolean" },
+        "challenge_completed": { "type": "boolean" },
+        "target_revision_consistent": { "type": "boolean" },
+        "challenge_blockers": { "type": "integer" }
+      },
+      "additionalProperties": false
+    },
+    "missing_required_reviewers": { "type": "array", "items": { "type": "string" } },
+    "blocking_issue_ids": { "type": "array", "items": { "type": "string" } },
+    "unresolved_high_issue_ids": { "type": "array", "items": { "type": "string" } },
+    "reason": { "type": "string" },
+    "human_check": { "enum": ["pending", "approved"] }
+  },
+  "additionalProperties": true
+}

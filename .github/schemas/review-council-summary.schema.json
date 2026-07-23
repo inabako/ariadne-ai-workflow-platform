@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ariadne Review Council Summary",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "status",
+    "review_id",
+    "work_id",
+    "summary_id",
+    "snapshot",
+    "reviewers",
+    "findings",
+    "issues",
+    "gates",
+    "next_actions"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "const": "review-council-summary" },
+    "status": { "const": "summarized" },
+    "review_id": { "type": "string" },
+    "work_id": { "type": "string" },
+    "summary_id": { "type": "string" },
+    "created_at": { "type": "string" },
+    "snapshot": {
+      "type": "object",
+      "required": [
+        "session_status",
+        "required_reviewers",
+        "completed_reviewers",
+        "missing_reviewers",
+        "finding_count",
+        "issue_count",
+        "open_issue_count",
+        "blocking_issue_count",
+        "challenge_completed",
+        "evidence_verified"
+      ],
+      "properties": {
+        "session_status": { "type": "string" },
+        "target": { "type": "string" },
+        "target_revision": { "type": "string" },
+        "packet_hash": { "type": "string" },
+        "required_reviewers": { "type": "array", "items": { "type": "string" } },
+        "completed_reviewers": { "type": "array", "items": { "type": "string" } },
+        "missing_reviewers": { "type": "array", "items": { "type": "string" } },
+        "finding_draft_count": { "type": "integer" },
+        "finding_count": { "type": "integer" },
+        "issue_count": { "type": "integer" },
+        "open_issue_count": { "type": "integer" },
+        "blocking_issue_count": { "type": "integer" },
+        "challenge_count": { "type": "integer" },
+        "reinspection_count": { "type": "integer" },
+        "human_gate_count": { "type": "integer" },
+        "human_check": { "type": "string" },
+        "challenge_completed": { "type": "boolean" },
+        "evidence_verified": { "type": "boolean" },
+        "evidence_gate_status": { "type": "string" },
+        "verdict": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "reviewers": { "type": "array", "items": { "type": "object" } },
+    "findings": { "type": "array", "items": { "type": "object" } },
+    "issues": { "type": "array", "items": { "type": "object" } },
+    "gates": { "type": "object" },
+    "verdict": { "type": "object" },
+    "next_actions": { "type": "array", "items": { "type": "object" } },
+    "selected_action": {
+      "anyOf": [
+        { "type": "null" },
+        { "type": "object" }
+      ]
+    },
+    "artifacts": { "type": "object" }
+  },
+  "additionalProperties": true
+}
