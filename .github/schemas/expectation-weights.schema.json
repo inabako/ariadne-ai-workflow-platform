@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Expectation Weights",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "weights"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "schema": { "type": "string" },
+    "artifact_type": { "type": "string", "const": "expectation-weights" },
+    "weights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["expectation_id", "weight"],
+        "properties": {
+          "expectation_id": { "type": "string", "minLength": 1 },
+          "weight": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "rationale": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "decided_by": {
+            "oneOf": [
+              { "type": "string", "minLength": 1 },
+              {
+                "type": "object",
+                "required": ["type"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["ariadne-initial", "human-approved", "human-review", "user-research", "system"]
+                  },
+                  "reviewer": { "type": "string" },
+                  "approved_at": { "type": "string" }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "normalization": {
+      "type": "object",
+      "properties": {
+        "expected_total": { "type": "number" },
+        "normalized": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
+

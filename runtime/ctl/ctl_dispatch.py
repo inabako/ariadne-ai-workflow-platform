@@ -7,6 +7,7 @@ from typing import Any, Callable
 
 from runtime.ctl.ctl_close_archive_adapter import run_close_archive
 from runtime.ctl.ctl_context_adapter import run_context
+from runtime.ctl.ctl_design_adapter import run_design
 from runtime.ctl.ctl_doctor_adapter import run_doctor
 from runtime.ctl.ctl_flutter_adapter import format_result as format_flutter_result
 from runtime.ctl.ctl_flutter_adapter import run_flutter
@@ -199,6 +200,70 @@ def _handle_human_gate(args: argparse.Namespace, repo_root: Path, registry: dict
         lines.append(f"Registry: {result.get('registry', '')}")
     if "reason" in result:
         lines.append(f"Reason  : {result.get('reason', '')}")
+    return code, "\n".join(lines).rstrip() + "\n"
+
+
+def _handle_design(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    design_area = getattr(args, "design_area", None)
+    if design_area is None:
+        return 1, (
+            "Expectation-Driven Design\n\n"
+            "Usage:\n"
+            "  aiwfctl design expectation init --work-id <work-id>\n"
+            "  aiwfctl design expectation evaluate --work-id <work-id>\n"
+            "  aiwfctl design expectation compare --work-id <work-id>\n"
+            "  aiwfctl design expectation gate --work-id <work-id> --human-check approved --selected-candidate DESIGN-B\n"
+        )
+    try:
+        result = run_design(args, repo_root, design_area)
+    except KeyError:
+        return 1, f"Unknown design command: {design_area}\n"
+    except Exception as exc:
+        return 1, f"Expectation design failed: {exc}\n"
+    code = 0 if result.get("status") not in {"human-check-required", "ready-for-human-check", "review-blocked", "failed", "blocked"} else 2
+    if getattr(args, "json", False):
+        return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    lines = [
+        "Expectation-Driven Design",
+        "",
+        f"Area    : {design_area}",
+        f"Command : {getattr(args, 'expectation_command', '')}",
+        f"Status  : {result.get('status', '')}",
+        f"Work ID : {result.get('work_id', '')}",
+    ]
+    for key, label in [
+        ("base_dir", "Base   "),
+        ("artifact_index", "Index  "),
+        ("candidates", "Cand.  "),
+        ("review_report", "Review "),
+        ("output", "Output "),
+        ("violations_output", "Viol.  "),
+        ("tradeoffs_output", "Trade  "),
+        ("report", "Report "),
+        ("comparison_json", "Packet "),
+        ("tradeoff_report", "T.Report"),
+        ("human_decision", "Decision"),
+        ("human_gate_summary", "H.Gate "),
+        ("refinement_plan", "Refine "),
+        ("selected_spec", "Spec   "),
+        ("contracts", "Contracts"),
+        ("verification", "Verify "),
+        ("feedback", "Feedback"),
+        ("dispatch", "Dispatch"),
+        ("review_council_feedback", "R.Council"),
+        ("review_council_feedback_report", "R.Report"),
+        ("events", "Events "),
+        ("selected_candidate", "Selected"),
+        ("repair_command", "Repair "),
+        ("review_start_command", "R.Start"),
+    ]:
+        if key in result:
+            lines.append(f"{label}: {result.get(key, '')}")
+    if "candidate_count" in result:
+        lines.append(f"Candidates: {result.get('candidate_count', 0)}")
+    if "decision_required" in result:
+        lines.extend(["", "Decision Required"])
+        lines.extend(f"  - {item}" for item in result.get("decision_required", []))
     return code, "\n".join(lines).rstrip() + "\n"
 
 
@@ -1149,6 +1214,7 @@ COMMAND_HANDLERS: dict[str, CommandHandler] = {
     "env": _handle_env,
     "context": _handle_context,
     "human-gate": _handle_human_gate,
+    "design": _handle_design,
     "intake": _handle_intake,
     "scm": _handle_scm,
     "github": _handle_github,

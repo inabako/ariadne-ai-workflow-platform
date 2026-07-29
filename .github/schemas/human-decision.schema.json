@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Expectation Design Human Decision",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "status"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "schema": { "type": "string" },
+    "artifact_type": { "type": "string", "const": "human-decision" },
+    "status": { "type": "string", "enum": ["pending", "approved", "blocked", "deferred"] },
+    "decided_at": { "type": "string" },
+    "decision_action": {
+      "type": "string",
+      "enum": ["select", "combine", "regenerate", "change-weights", "revise-expectations", "investigate", "defer"]
+    },
+    "selected_candidate": { "type": "string" },
+    "combine_with": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["candidate_id", "elements"],
+        "properties": {
+          "candidate_id": { "type": "string", "minLength": 1 },
+          "elements": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "weight_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["expectation_id", "before", "after"],
+        "properties": {
+          "expectation_id": { "type": "string", "minLength": 1 },
+          "before": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "after": { "type": "number", "minimum": 0.0, "maximum": 1.0 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "decision_items": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "comment": { "type": "string" },
+    "source_report": { "type": "string" },
+    "source_comparison_packet": { "type": "string" }
+  },
+  "additionalProperties": false
+}

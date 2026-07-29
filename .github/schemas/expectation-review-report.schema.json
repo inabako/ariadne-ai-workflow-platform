@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Expectation Review Report",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "status", "findings"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "schema": { "type": "string" },
+    "artifact_type": { "type": "string", "const": "expectation-review-report" },
+    "status": { "type": "string" },
+    "work_id": { "type": "string" },
+    "human_gate_required": { "type": "boolean" },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["severity", "check", "message"],
+        "properties": {
+          "severity": { "type": "string" },
+          "expectation_id": { "type": "string" },
+          "check": { "type": "string" },
+          "message": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
