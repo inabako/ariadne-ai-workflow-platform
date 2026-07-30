@@ -1,4 +1,4 @@
-# Agent Inventory
+﻿# Agent Inventory
 
 このページは、既存Agentの責務、RAG利用、外部Web RAG利用、専門性の不足を棚卸しするための一覧です。
 
@@ -14,7 +14,7 @@
 
 | Column | Meaning |
 | --- | --- |
-| Agent | `.github/agents/` 配下のprompt file |
+| Agent | `.ariadne/agents/` 配下のprompt file |
 | Type | `full-stack`, `reviewer`, `implementer`, `knowledge`, `external-web` |
 | Workflow Phase | 主に使う工程 |
 | Responsibility | 主な責務 |
@@ -85,7 +85,7 @@
 
 ## Specialist Agent Candidates
 
-初期セットとして、下記のspecialist reviewer promptを `.github/agents/` に追加済みです。今後は運用頻度とreview結果を見て、追加・統合・分割します。
+初期セットとして、下記のspecialist reviewer promptを `.ariadne/agents/` に追加済みです。今後は運用頻度とreview結果を見て、追加・統合・分割します。
 
 専門Agentは2種類に分けます。
 

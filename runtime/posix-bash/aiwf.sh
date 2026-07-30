@@ -15,15 +15,11 @@ fi
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 repo_root="$(cd -- "$script_dir/../.." && pwd -P)"
 runtime_root="$repo_root/runtime"
-ctl_path="$runtime_root/common/ctl.py"
-preflight_path="$runtime_root/environment/preflight.py"
-bom_tool_path="$runtime_root/tools/utf8_bom.py"
-spec_sync_path="$runtime_root/tools/pytest_ut_spec_sync.py"
-spec_path="$repo_root/docs/reference/runtime-pytest-ut/case-specification.md"
+ctl_path="$runtime_root/ctl/ctl.py"
 
 assert_aiwf_repo_root() {
   if [[ ! -f "$ctl_path" ]]; then
-    printf 'runtime/common/ctl.py was not found. Run this script from the Ariadne repository checkout.\n' >&2
+    printf 'runtime/ctl/ctl.py was not found. Run this script from the Ariadne repository checkout.\n' >&2
     exit 1
   fi
   if [[ ! -d "$repo_root/.git" ]]; then
@@ -90,16 +86,16 @@ case "$command_name" in
     invoke_uv "$runtime_root" run --project "$runtime_root" pytest -c "$runtime_root/pytest.ini" "$@"
     ;;
   preflight)
-    invoke_uv "$repo_root" run --project "$runtime_root" python "$preflight_path" --repo-root "$repo_root" "$@"
+    invoke_uv "$repo_root" run --project "$runtime_root" python "$ctl_path" --repo-root "$repo_root" preflight "$@"
     ;;
   spec-check)
-    invoke_uv "$repo_root" run --project "$runtime_root" python "$spec_sync_path" --spec "$spec_path" --runtime-root "$runtime_root" check "$@"
+    invoke_uv "$repo_root" run --project "$runtime_root" python "$ctl_path" --repo-root "$repo_root" tools spec-check "$@"
     ;;
   bom-scan)
-    invoke_uv "$repo_root" run --project "$runtime_root" python "$bom_tool_path" --repo-root "$repo_root" scan "$@"
+    invoke_uv "$repo_root" run --project "$runtime_root" python "$ctl_path" --repo-root "$repo_root" tools bom-scan "$@"
     ;;
   bom-strip)
-    invoke_uv "$repo_root" run --project "$runtime_root" python "$bom_tool_path" --repo-root "$repo_root" strip "$@"
+    invoke_uv "$repo_root" run --project "$runtime_root" python "$ctl_path" --repo-root "$repo_root" tools bom-strip "$@"
     ;;
   *)
     printf 'Unknown command: %s\n\n' "$command_name" >&2

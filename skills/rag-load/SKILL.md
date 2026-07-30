@@ -1,4 +1,4 @@
----
+﻿---
 name: rag-load
 description: Load prior knowledge from the Ariadne AI Workflow file-based RAG before development work. Use when the user selects /rag-load, asks to read RAG, search RAG, load RAG context, retrieve prior corrective action reports, prepare context before development flow, or run parallel RAG retrieval and compression.
 ---
@@ -15,7 +15,7 @@ Use this skill when the user specifies:
 
 ## Default Language
 
-Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.ariadne/shared/output-language-policy.md`.
 
 ## Purpose
 
@@ -111,6 +111,21 @@ Do not reimplement compression. Use the existing compression output from `retrie
 
 Markdown dispatch or context-pack files are optional debug artifacts and are written only when `--write-markdown` is explicitly used.
 
+## Cleanup Classification
+
+RAG load / retrieval outputs are session artifacts, not Knowledge absorption evidence.
+
+Do not use these as the only evidence for `aiwfctl work cleanup-check`:
+
+- `work/db/ariadne-knowledge-platform/rag/retrieval/*.json`
+- `work/db/ariadne-knowledge-platform/rag/external-web/retrieval/*.md`
+- dispatch plans
+- retrieval results
+- context packs
+- aggregate Markdown written for debugging or handoff
+
+These files may be referenced by a development workflow, but they are derived from existing indexes and source Knowledge. They can be regenerated and must not justify deleting temporary work by themselves. Cleanup evidence must come from approved long-lived Knowledge source files or durable normalized/jsonized Knowledge records registered in `artifact-index.json`.
+
 ## Direct Retrieval Template
 
 Use direct `retrieve_context.py` only for debugging a single query.
@@ -185,7 +200,7 @@ Create or update a Feedback report when you observe ambiguity, repeated checks, 
 Use the existing helper when creating a new report:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "<slash-command>" `
   --reporter "AI workflow" `
   --situation "<what was happening>" `

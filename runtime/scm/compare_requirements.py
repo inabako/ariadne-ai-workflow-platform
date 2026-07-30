@@ -9,6 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import (  # noqa: E402
     find_repo_root,
     load_artifact_index,
@@ -26,6 +27,7 @@ from runtime.constants.workspace import (  # noqa: E402
     target_repository_dir_for_work_dir,
     work_dir_for_id,
 )
+from runtime.constants.workflow_limits import REQUIREMENTS_COMPARISON_PREVIEW_LINES  # noqa: E402
 from runtime.scm.scm_utils import current_branch, current_commit, run_git  # noqa: E402
 
 
@@ -45,7 +47,7 @@ def safe_git(args: list[str], cwd: Path) -> str:
     return result.stdout.strip()
 
 
-def first_lines(path: Path, max_lines: int = 40) -> str:
+def first_lines(path: Path, max_lines: int = REQUIREMENTS_COMPARISON_PREVIEW_LINES) -> str:
     try:
         lines = path.read_text(encoding="utf-8-sig", errors="replace").splitlines()
     except Exception as exc:
@@ -86,7 +88,7 @@ def compare_requirements(args: argparse.Namespace) -> dict[str, Any]:
     json_path = report_dir / f"{report_name}.json"
 
     comparison = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "work_id": args.work_id,
         "source_dir": relative_to_repo(repo_root, source_dir),
         "branch": branch,
@@ -207,4 +209,3 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

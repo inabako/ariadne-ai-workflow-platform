@@ -23,7 +23,7 @@
 - target: current repository / workspace root
 - 目的: このAI workflow repository自身を、AIさんが実行しやすいVSCode環境にする
 - 記入済み草案: 不要
-- 判断材料: `.vscode/`, `runtime/tools/`, `runtime/workflow/`, `db/registries/`, docs, prompts, tests
+- 判断材料: `.vscode/`, `runtime/windows-script/`, `runtime/tools/`, `runtime/workflow/`, `db/registries/`, docs, prompts, tests
 
 ### 2. target-workspace mode
 
@@ -74,6 +74,16 @@ work/<work-id>/context/context-manifest.json
 work/<work-id>/process-report/
 work/<work-id>/test-evidence/
 ```
+
+Local RAG backup artifacts:
+
+```text
+work/db/<ARIADNE_KNOWLEDGE_REPOSITORY>/
+work/db/<ARIADNE_KNOWLEDGE_REPOSITORY>/rag/
+work/db/<ARIADNE_KNOWLEDGE_REPOSITORY>/rag/{corrective-action-report,github-knowledge,workspace-environment,normalized,chunks,optimized-chunks,jsonized,indexes,embeddings,retrieval}/
+```
+
+Provisioning creates these directories when missing. This is a local backup area only; the workflow does not clone, create `.git`, commit, or push.
 
 Target workspace artifacts:
 
@@ -132,14 +142,14 @@ Reference: [VSCode Environment](../reference/vscode-environment.md)
 
 ## Repo-local Tools PATH
 
-target workspace に `runtime/tools/*.cmd` などのrepo-local command toolがある場合、`.vscode/settings.json` の `terminal.integrated.env.windows.Path` にtools directoryを追加します。
+target workspace に `runtime/windows-script/*.cmd` などのrepo-local command scriptがある場合、`.vscode/settings.json` の `terminal.integrated.env.windows.Path` にwindows-script directoryを追加します。
 
 このworkflow repositoryでは次を設定します。
 
 ```json
 {
   "terminal.integrated.env.windows": {
-    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}",
+    "Path": "${workspaceFolder}\\runtime\\windows-script;${env:Path}",
     "PYTHONUTF8": "1",
     "PYTHONIOENCODING": "utf-8",
     "AIWF_TEXT_ENCODING": "utf-8"
@@ -153,7 +163,7 @@ target workspace に `runtime/tools/*.cmd` などのrepo-local command toolが�
 
 Windows上の日本語Markdown、prompt、JSON、workflow docsを扱うworkspaceでは、VSCode provisioningの最初に「このworkspaceはUTF-8で扱う」と宣言します。
 
-`runtime/workflow/vscode_environment.py init` は `runtime-context.json` に `encoding_contract` を出力します。後続Agentはこのcontractを読み、`.vscode/settings.json`、`.editorconfig`、PowerShell terminal profileのUTF-8設定を初期構築に含めます。
+`aiwfctl workflow vscode-environment init` は `runtime-context.json` に `encoding_contract` を出力します。後続Agentはこのcontractを読み、`.vscode/settings.json`、`.editorconfig`、PowerShell terminal profileのUTF-8設定を初期構築に含めます。
 
 Codexの `~/.codex/config.toml` / `.codex/config.toml` はCodexが認識する設定のためのファイルです。UTF-8を強制する標準の `[encoding]` tableとして扱わず、Codex向けの方針共有は `AGENTS.md` やworkflow docsに書きます。機械チェックは `aiwfctl doctor --fail-on-warning` で行います。
 
@@ -186,17 +196,17 @@ chcp 65001 > $null
 文字化けの疑いがある場合は、PowerShell表示だけで判断せず、repo-local toolで実ファイルを検査します。
 
 ```powershell
-uv run --project runtime python runtime/tools/text_encoding_convert.py --repo-root . preview --paths docs --extensions .md --bytes 160 --chars 120
-uv run --project runtime python runtime/tools/text_encoding_convert.py --repo-root . inspect --paths docs --extensions .md
-uv run --project runtime python runtime/tools/text_encoding_guard.py --repo-root . scan --paths docs --extensions .md --fail-on-finding
-uv run --project runtime python runtime/tools/utf8_bom.py --repo-root . scan --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --fail-on-finding
+.\runtime\windows-script\aiwf.cmd ctl tools encoding-preview --paths docs --extensions .md --bytes 160 --chars 120
+.\runtime\windows-script\aiwf.cmd ctl tools encoding-inspect --paths docs --extensions .md
+.\runtime\windows-script\aiwf.cmd ctl tools encoding-guard --paths docs --extensions .md --fail-on-finding
+.\runtime\windows-script\aiwf.cmd ctl tools bom-scan --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --fail-on-finding
 ```
 
 PowerShell由来のShift_JIS / CP932文書をUTF-8へ寄せる場合は、`inspect` の推奨encodingを確認してから変換します。
 
 ```powershell
-uv run --project runtime python runtime/tools/text_encoding_convert.py --repo-root . convert --paths docs --extensions .md --from-encoding cp932 --write
-uv run --project runtime python runtime/tools/utf8_bom.py --repo-root . strip --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --write
+.\runtime\windows-script\aiwf.cmd ctl tools encoding-convert --paths docs --extensions .md --from-encoding cp932 --write
+.\runtime\windows-script\aiwf.cmd ctl tools bom-strip --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --write
 ```
 
 保存済み文字化け候補は、固定markerでは断定せず、`preview` のhex bytesとencoding別previewで確認します。連続した疑問符のように情報が失われた箇所は自動復元対象にしません。
@@ -212,19 +222,19 @@ workflow:aiwfctl-path-shell
 このtaskは次を実行します。
 
 ```powershell
-.\runtime\tools\register-aiwfctl-path.cmd --shell
+.\runtime\windows-script\register-aiwfctl-path.cmd --shell
 ```
 
 同じ処理は `aiwfctl.cmd` からも呼び出せます。
 
 ```powershell
-.\runtime\tools\aiwfctl.cmd path shell
+.\runtime\windows-script\aiwfctl.cmd path shell
 ```
 
 既に開いているterminalにはPATH変更が反映されません。terminalを閉じて開き直すか、現在のPowerShellで次を実行します。
 
 ```powershell
-$env:Path = "$PWD\runtime\tools;$env:Path"
+$env:Path = "$PWD\runtime\windows-script;$env:Path"
 ```
 
 ## RAG Capture
@@ -238,7 +248,7 @@ work/db/ariadne-knowledge-platform/rag/workspace-environment/YYYYMMDDHHMMSS_<ran
 正しい名前のnoteを作る例:
 
 ```powershell
-uv run --project runtime python runtime/workflow/vscode_environment.py rag-template `
+.\runtime\windows-script\aiwf.cmd ctl workflow vscode-environment rag-template `
   --work-id "vscode-environment" `
   --topic "localty-vscode-environment" `
   --repository "localty"
@@ -249,7 +259,17 @@ Markdown noteはreview sourceです。最終knowledge artifactはUUID名JSONで�
 Human approval後、`workspace-environment-pattern` としてnormalizeします。
 
 ```powershell
-uv run --project runtime python runtime/rag/normalize_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl workflow vscode-environment rag-template `
+  --work-id "vscode-environment" `
+  --topic "localty-vscode-environment" `
+  --repository "localty" `
+  --status approved
+```
+
+Draft RAG source notes are not cleanup evidence. After approval, refresh the source with `--status approved`, then normalize it:
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl rag normalize `
   --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment `
   --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type workspace-environment-pattern
@@ -264,16 +284,23 @@ work/db/ariadne-knowledge-platform/rag/normalized/<uuid>.json
 normalize後、必要に応じて派生RAG artifactを生成します。
 
 ```powershell
-uv run --project runtime python runtime/rag/chunk_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-check --work-id vscode-environment
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-apply --work-id vscode-environment --human-check approved
+```
+
+After long-lived Knowledge absorption is confirmed, verify temporary work cleanup through the generic ctl. Then continue derived RAG artifact generation as needed:
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl rag chunk `
   --input-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --output-dir work/db/ariadne-knowledge-platform/rag/chunks
 
-uv run --project runtime python runtime/rag/build_index.py `
+.\runtime\windows-script\aiwf.cmd ctl rag index `
   --normalized-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --chunks-dir work/db/ariadne-knowledge-platform/rag/chunks `
   --output-dir work/db/ariadne-knowledge-platform/rag/indexes
 
-uv run --project runtime python runtime/rag/embed_chunks.py `
+.\runtime\windows-script\aiwf.cmd ctl rag embed `
   --chunks-index work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl `
   --output work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl
 ```

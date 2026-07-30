@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
@@ -14,27 +14,33 @@ def jsonl_rows(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
 
 
+def runtime_event_payload(line: str) -> dict:
+    parts = line.split(" | ", 3)
+    assert len(parts) == 4
+    return json.loads(parts[3])
+
+
 def test_monthly_log_path_uses_year_month_suffix() -> None:
     now = datetime(2026, 7, 9, tzinfo=timezone.utc)
 
-    path = logger.monthly_log_path(Path("runtime/logs"), now=now)
+    path = logger.monthly_log_path(Path("logs"), now=now)
 
-    assert path.as_posix() == "runtime/logs/runtime-metrics-202607.jsonl"
+    assert path.as_posix() == "logs/runtime-metrics-202607.jsonl"
 
 
 def test_resolve_log_path_rotates_base_runtime_metrics_file() -> None:
     now = datetime(2026, 8, 1, tzinfo=timezone.utc)
 
-    path = logger.resolve_log_path(base_path=Path("runtime/logs/runtime-metrics.jsonl"), now=now)
+    path = logger.resolve_log_path(base_path=Path("logs/runtime-metrics.jsonl"), now=now)
 
-    assert path.as_posix() == "runtime/logs/runtime-metrics-202608.jsonl"
+    assert path.as_posix() == "logs/runtime-metrics-202608.jsonl"
 
 
 def test_resolve_log_path_can_disable_rotation_for_base_or_directory() -> None:
-    base_path = Path("runtime/logs/runtime-metrics.jsonl")
+    base_path = Path("logs/runtime-metrics.jsonl")
 
     assert logger.resolve_log_path(base_path=base_path, rotate_monthly=False) == base_path
-    assert logger.resolve_log_path(log_dir=Path("runtime/logs"), rotate_monthly=False).as_posix() == "runtime/logs/runtime-metrics.jsonl"
+    assert logger.resolve_log_path(log_dir=Path("logs"), rotate_monthly=False).as_posix() == "logs/runtime-metrics.jsonl"
 
 
 def test_append_jsonl_appends_one_record_per_line(tmp_path: Path) -> None:
@@ -56,6 +62,67 @@ def test_append_jsonl_returns_warning_without_raising_when_parent_is_file(tmp_pa
 
     assert result["status"] == "warning"
     assert "runtime metrics write failed" in result["warning"]
+
+
+def test_generate_trace_id_returns_24_hex_characters() -> None:
+    trace_id = logger.generate_trace_id()
+
+    assert len(trace_id) == 24
+    int(trace_id, 16)
+
+
+def test_runtime_event_logger_writes_pipe_prefixed_json_line(tmp_path: Path) -> None:
+    event_logger = logger.RuntimeEventLogger(repo_root=tmp_path, component="dispatcher", trace_id="8b8d3b4c")
+
+    first = event_logger.emit(
+        "dispatcher_selected",
+        dispatcher="rag",
+        input={"query": "runtime", "api_token": "hidden"},
+        output={"route": "rag"},
+    )
+    second = event_logger.emit("dispatcher_completed")
+
+    log_path = tmp_path / "logs" / "runtime" / "runtime-events.log"
+    lines = log_path.read_text(encoding="utf-8").splitlines()
+    assert first["status"] == "ok"
+    assert second["sequence"] == 2
+    assert len(lines) == 2
+    assert " | 8b8d3b4c | 00001 | " in lines[0]
+    payload = runtime_event_payload(lines[0])
+    assert payload == {
+        "schema_version": "1.0",
+        "level": "info",
+        "component": "dispatcher",
+        "dispatcher": "rag",
+        "event": "dispatcher_selected",
+        "workflow": "",
+        "phase": "",
+        "operation_id": "",
+        "attempt": 1,
+        "diagnostics": {},
+        "input": {"api_token": "***", "query": "runtime"},
+        "output": {"route": "rag"},
+    }
+
+
+def test_runtime_event_logger_rotates_when_max_bytes_is_exceeded(tmp_path: Path) -> None:
+    event_logger = logger.RuntimeEventLogger(
+        repo_root=tmp_path,
+        component="ctl",
+        trace_id="trace123",
+        max_bytes=120,
+        backup_count=2,
+    )
+
+    event_logger.emit("first", output={"text": "x" * 80})
+    event_logger.emit("second", output={"text": "y" * 80})
+
+    log_path = tmp_path / "logs" / "runtime" / "runtime-events.log"
+    rotated_path = tmp_path / "logs" / "runtime" / "runtime-events.log.1"
+    assert log_path.exists()
+    assert rotated_path.exists()
+    assert '"event":"second"' in log_path.read_text(encoding="utf-8")
+    assert '"event":"first"' in rotated_path.read_text(encoding="utf-8")
 
 
 def test_schema_helpers_sanitize_negative_and_invalid_values() -> None:
@@ -84,10 +151,10 @@ def test_duration_timer_records_elapsed_duration() -> None:
     assert timer["duration_ms"] >= 0
 
 
-def test_collector_defaults_log_dir_under_runtime_logs(tmp_path: Path) -> None:
+def test_collector_defaults_log_dir_under_repo_logs(tmp_path: Path) -> None:
     collector = RuntimeMetricsCollector(repo_root=tmp_path)
 
-    assert collector.log_path().parent == tmp_path / "runtime" / "logs"
+    assert collector.log_path().parent == tmp_path / "logs"
 
 
 def test_collector_records_non_fatal_log_write_warning(tmp_path: Path) -> None:
@@ -106,7 +173,7 @@ def test_collector_records_workflow_agent_token_context_and_monthly_jsonl(tmp_pa
         repo_root=tmp_path,
         workflow_id="runtime-health-check",
         workflow_name="/runtime-health-check",
-        log_dir=tmp_path / "runtime" / "logs",
+        log_dir=tmp_path / "logs",
     )
 
     collector.workflow_started()
@@ -138,7 +205,7 @@ def test_collector_records_workflow_agent_token_context_and_monthly_jsonl(tmp_pa
 
 
 def test_collector_records_human_check_evidence_and_runtime_error(tmp_path: Path) -> None:
-    collector = RuntimeMetricsCollector(repo_root=tmp_path, workflow_name="/demo", log_dir=tmp_path / "runtime" / "logs")
+    collector = RuntimeMetricsCollector(repo_root=tmp_path, workflow_name="/demo", log_dir=tmp_path / "logs")
 
     collector.workflow_started()
     collector.human_check_required(reason="needs approval")
@@ -154,7 +221,7 @@ def test_collector_records_human_check_evidence_and_runtime_error(tmp_path: Path
 
 def test_collector_failed_workflow_saves_human_check_required_evidence(tmp_path: Path) -> None:
     work_dir = tmp_path / "work" / "issue-1"
-    collector = RuntimeMetricsCollector(repo_root=tmp_path, work_dir=work_dir, log_dir=tmp_path / "runtime" / "logs")
+    collector = RuntimeMetricsCollector(repo_root=tmp_path, work_dir=work_dir, log_dir=tmp_path / "logs")
 
     collector.workflow_started()
     result = collector.workflow_failed(error="boom")
@@ -172,7 +239,7 @@ def test_collector_saves_workflow_evidence_and_registers_context(tmp_path: Path)
         repo_root=repo_root,
         work_dir=work_dir,
         workflow_name="/runtime-health-check",
-        log_dir=repo_root / "runtime" / "logs",
+        log_dir=repo_root / "logs",
     )
 
     collector.workflow_started()
@@ -186,15 +253,15 @@ def test_collector_saves_workflow_evidence_and_registers_context(tmp_path: Path)
     assert context_path.exists()
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert manifest["contexts"][0]["type"] == "runtime-metrics"
-    assert manifest["contexts"][0]["schema"] == ".github/schemas/runtime-metrics.schema.json"
+    assert manifest["contexts"][0]["schema"] == ".ariadne/schemas/runtime-metrics.schema.json"
 
 
 def test_collector_evidence_summary_can_skip_work_dir_or_manifest_registration(tmp_path: Path) -> None:
-    no_work = RuntimeMetricsCollector(repo_root=tmp_path, log_dir=tmp_path / "runtime" / "logs")
+    no_work = RuntimeMetricsCollector(repo_root=tmp_path, log_dir=tmp_path / "logs")
     assert no_work.save_evidence_summary()["status"] == "skipped"
 
     work_dir = tmp_path / "work" / "issue-1"
-    collector = RuntimeMetricsCollector(repo_root=tmp_path, work_dir=work_dir, log_dir=tmp_path / "runtime" / "logs")
+    collector = RuntimeMetricsCollector(repo_root=tmp_path, work_dir=work_dir, log_dir=tmp_path / "logs")
     collector.workflow_started()
     result = collector.save_evidence_summary(register_context=False)
 
@@ -207,7 +274,7 @@ def test_collector_evidence_summary_returns_warning_without_raising(tmp_path: Pa
     work_dir = tmp_path / "work" / "issue-1"
     work_dir.mkdir(parents=True)
     (work_dir / "test-evidence").write_text("occupied", encoding="utf-8")
-    collector = RuntimeMetricsCollector(repo_root=tmp_path, work_dir=work_dir, log_dir=tmp_path / "runtime" / "logs")
+    collector = RuntimeMetricsCollector(repo_root=tmp_path, work_dir=work_dir, log_dir=tmp_path / "logs")
 
     result = collector.save_evidence_summary()
 

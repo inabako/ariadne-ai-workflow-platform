@@ -9,6 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import gate_restart, find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.schemas import EXECUTION_PLAN_SCHEMA, REALTIME_IAC_HANDOFF_SCHEMA  # noqa: E402
 from runtime.constants.workspace import context_dir_for_work_dir, work_dir_for_id  # noqa: E402
@@ -82,7 +83,7 @@ def create_handoff(
     if isinstance(validation, dict):
         validation_judgment = str(validation.get("judgment") or validation.get("status") or validator_judgment)
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "realtime-iac-handoff",
         "source_workflow": "ariadne-new-system-iac",
         "target_workflow": "realtime-iac",
@@ -105,7 +106,7 @@ def create_handoff(
         "required_environment": "docker",
         "recommended_next_commands": [
             f"aiwfctl env select docker --work-id {work_id}",
-            "uv run --project runtime python runtime/common/ctl.py --repo-root . context require-environment "
+            "uv run --project runtime python runtime/ctl/ctl.py --repo-root . context require-environment "
             f"--work-dir work/{work_id} --environment docker",
             "/realtime-iac",
         ],
@@ -122,7 +123,7 @@ def create_execution_plan(
     source_artifacts: list[str],
 ) -> dict[str, Any]:
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "execution-plan",
         "architecture": "context-first",
         "work_id": work_id,
@@ -144,7 +145,7 @@ def create_execution_plan(
         ],
         "next_commands": [
             f"aiwfctl env select docker --work-id {work_id}",
-            "uv run --project runtime python runtime/common/ctl.py --repo-root . context require-environment "
+            "uv run --project runtime python runtime/ctl/ctl.py --repo-root . context require-environment "
             f"--work-dir work/{work_id} --environment docker",
             "/realtime-iac",
         ],

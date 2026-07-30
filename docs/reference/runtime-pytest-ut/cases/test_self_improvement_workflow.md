@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 14 |
+| cases | 15 |
 
 ## ケース一覧
 
@@ -41,6 +41,23 @@ runtime/tests/test_self_improvement_workflow.py::test_init_and_create_feedback
   - parameter: names=なし, case=なし
   - inline input: `args`, `text`
 - 期待結果: feedback用README、report、Context First artifactが生成される。
+
+#### RT-UT-CASE-SELF-002A
+
+- pytest node id:
+
+```text
+runtime/tests/test_self_improvement_workflow.py::test_create_feedback_includes_runtime_log_analysis_for_trace
+```
+
+- Confirm: create-feedback can include Runtime Observation and Runtime Log Analysis from runtime-events.log for a requested trace id.
+- Input:
+  - pytest node: runtime/tests/test_self_improvement_workflow.py::test_create_feedback_includes_runtime_log_analysis_for_trace
+  - source: `runtime/tests/test_self_improvement_workflow.py:53`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=None case=None
+  - inline input: `RuntimeEventLogger`, `args`, `runtime_trace_id`, `runtime_log`
+- Expected: Feedback report includes the selected trace id, event count, command, blocked status, required_argument_missing reason, and blocked event summary.
 
 #### RT-UT-CASE-SELF-003
 

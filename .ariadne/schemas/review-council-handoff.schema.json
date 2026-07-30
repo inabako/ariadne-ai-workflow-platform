@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ariadne Review Council Handoff",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "status",
+    "review_id",
+    "work_id",
+    "reviewers",
+    "reviewer_handoffs"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "const": "review-council-handoff" },
+    "status": { "const": "handoff-ready" },
+    "review_id": { "type": "string" },
+    "work_id": { "type": "string" },
+    "reviewers": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "reviewer_handoffs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "artifacts": { "type": "object" }
+  },
+  "additionalProperties": true
+}

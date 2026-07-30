@@ -11,6 +11,7 @@ from urllib.parse import quote
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import (  # noqa: E402
     default_github_owner,
     find_repo_root,
@@ -231,7 +232,7 @@ def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
     explicit_github_repo = repository_to_github_slug(args.github_repo, owner) if args.github_repo else None
     github_repo = explicit_github_repo or scm_github_repo
     if not github_repo:
-        raise ValueError("GitHub repository is required. Run runtime/scm/prepare_repository.py first or set --github-repo.")
+        raise ValueError("GitHub repository is required. Run aiwfctl scm prepare first or set --github-repo.")
     if "/" not in github_repo:
         raise ValueError("GitHub repository must be in owner/name format.")
     explicit_prefix = args.title_prefix or ""
@@ -272,7 +273,7 @@ def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
         status = "created"
 
     issue_record = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "work_id": args.work_id,
         "github_repo": github_repo,
         "title": issue_title,

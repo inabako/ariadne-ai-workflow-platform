@@ -1,4 +1,4 @@
-# Runtime Health Check
+﻿# Runtime Health Check
 
 `/runtime-health-check` は、Ariadne AI Workflow Platform 自身の健全性を確認する自己診断workflowです。
 
@@ -16,7 +16,7 @@
 
 主担当Agent:
 
-- `.github/agents/runtime-quality-gate-agent.prompt.md`
+- `.ariadne/agents/runtime-quality-gate-agent.prompt.md`
 
 このworkflowはGitHub Actionsではなく、Agentが明示的に実行します。
 
@@ -54,9 +54,9 @@ pass / fail 報告
 ```powershell
 cd C:\github\ariadne-ai-workflow-platform\runtime
 
-.\tools\uv.cmd run --project . --group dev pytest tests -q
+.\windows-script\uv.cmd run --project . --group dev pytest tests -q
 
-.\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py `
+.\windows-script\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py `
   --spec ..\docs\reference\runtime-pytest-ut\case-specification.md `
   --runtime-root . `
   check `
@@ -67,18 +67,18 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
   --register-context `
   --required-context
 
-.\tools\uv.cmd run --project . --group dev python workflow\workflow_doctor.py `
+.\windows-script\uv.cmd run --project . --group dev python workflow\workflow_doctor.py `
   --repo-root .. `
   --fail-on-warning
 
-.\tools\uv.cmd run --project . --group dev python ctl.py `
+.\windows-script\uv.cmd run --project . --group dev python ctl.py `
   --repo-root .. `
   doctor `
   --json `
   --fail-on-warning
 
-.\tools\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
-  --paths ..\docs\reference\runtime-pytest-ut\test-items.md ..\docs\reference\runtime-pytest-ut\case-specification.md ..\.github\schemas\README.md ..\.github\agents\runtime-quality-gate-agent.prompt.md `
+.\windows-script\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
+  --paths ..\docs\reference\runtime-pytest-ut\test-items.md ..\docs\reference\runtime-pytest-ut\case-specification.md ..\.ariadne\schemas\README.md ..\.ariadne\agents\runtime-quality-gate-agent.prompt.md `
   --fail-on-violation
 ```
 

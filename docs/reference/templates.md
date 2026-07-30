@@ -46,7 +46,7 @@ templates/
 | `templates/boilerplates/services/` | `go-microservice-template/` | 新規Go gateway serviceをtemplateから生成するためのboilerplate置き場 |
 | `templates/boilerplates/infrastructure/` | `microservice-infra-template/`, `platform-infra-template/`, `database-infra-template/`, `middleware-infra-template/`, `identity-infra-template/`, `opentelemetry-collector-template/` | realtime gateway IaC / platform infrastructure / database infrastructure / middleware infrastructure / identity infrastructure / OpenTelemetry Collector infrastructureをtemplateから生成するためのboilerplate置き場 |
 | `templates/boilerplates/integration/` | `cloud-emulators/` | cloud emulator / external service emulator環境をtemplateから生成するためのboilerplate置き場 |
-| `templates/boilerplates/mcp/` | `local-model-mcp-server-template/`, `mcp-client-template/`, `local-ai-agent-runtime-template/`, `discord-gateway-template/` | MCP server / MCP client / local agent runtime / Discord gateway環境をtemplateから生成するためのboilerplate置き場 |
+| `templates/boilerplates/mcp/` | `mcp-server-template/`, `mcp-client-template/`, `ai-agent-runtime-template/`, `discord-gateway-template/` | MCP server / MCP client / local agent runtime / Discord gateway環境をtemplateから生成するためのboilerplate置き場 |
 | `templates/workflows/gui-mode/` | `README.md` | SVG入力、GaC / UaC生成、親workflowへの安全な返却方法 |
 | `templates/workflows/web-svg-layout/` | `README.md` | Web画面向けSVG入力、layout / React / Playwright候補、親workflowへの安全な返却方法 |
 | `templates/workflows/self-improvement/` | `workflow-feedback-template.md`, `self-improvement-issue-template.md`, `self-improvement-checklist.md` | workflow摩擦のFeedback report、Issue body、採用判断checklist |
@@ -75,14 +75,14 @@ templates/
 - IaC工程でOpenTelemetry Collector、OTLP、Receiver、Processor、Exporter、Connector、Extension、telemetry pipelineが対象に含まれる場合 `templates/boilerplates/infrastructure/opentelemetry-collector-template/` を候補にし、component selection、Distribution互換性、Custom Distribution Human Check、health endpoint、telemetry smoke evidenceを確認してからコピーする。
 - System Integration Quality workflowでクラウドまたは外部サービスSDKが検出された場合、`templates/boilerplates/integration/cloud-emulators/` を候補にし、`work/<work-id>/test-environment/emulator/` へコピーしてから起動する。本番credentialは使わない。
 - Flutter Multi-platform workflowでは、`templates/boilerplates/apps/flutter-app-template/` を候補にし、`work/<work-id>/implementation/flutter-project/` へコピーする。対象platform未指定時は全platform対応と推測しない。
-- Local Model MCP Serverを扱う場合は、`templates/boilerplates/mcp/local-model-mcp-server-template/` を候補にし、MCP ServerがAgent Runtime、Job Queue、Completion判定を持たないことを確認する。
+- MCP Serverを扱う場合は、`templates/boilerplates/mcp/mcp-server-template/` を候補にし、FastMCPがInbound Adapter配下に分離され、MCP ServerがAgent Runtime、Job Queue、Completion判定を持たないことを確認する。
 - Reusable MCP Clientを扱う場合は、`templates/boilerplates/mcp/mcp-client-template/` を候補にし、ClientがTool選択、Prompt選択、Agent Loopを持たないことを確認する。
-- Local AI Agent Runtimeを扱う場合は、`templates/boilerplates/mcp/local-ai-agent-runtime-template/` を候補にし、MCP Server / MCP Client / Discord Gatewayとの責務境界を分離したまま実装する。
+- AI Agent Runtimeを扱う場合は、`templates/boilerplates/mcp/ai-agent-runtime-template/` を候補にし、MCP Server / MCP Client / Discord Gatewayとの責務境界を分離したまま実装する。
 - Discord Gatewayを扱う場合は、`templates/boilerplates/mcp/discord-gateway-template/` を候補にし、Discord固有型、Bot Token、Slash Command、Human Check UI、Runtime Command DTOの境界を分離したまま実装する。
 - テスト成果物の保存先は [Test Artifact Storage](test-artifact-storage.md) に従う。
 - 出力先は `work/<work-id>/` 配下の対応directoryにする。
 - 生成後は可能な限り `work/<work-id>/context/artifact-index.json` に登録する。
-- 生成後は必要に応じて `uv run --project runtime python runtime/workflow/validate_output_language.py --paths work rag docs --fail-on-violation` で英語主体の成果物を検出する。
+- 生成後は必要に応じて `.\runtime\windows-script\aiwf.cmd ctl workflow validate-output-language check --paths work rag docs --fail-on-violation` で英語主体の成果物を検出する。
 
 ## Requirements
 

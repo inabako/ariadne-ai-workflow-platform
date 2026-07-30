@@ -11,7 +11,10 @@ from typing import Any
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, load_env, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.cli_defaults import PROCESS_SMOKE_TIMEOUT_SECONDS  # noqa: E402
+from runtime.constants.workflow_limits import INTEGRATION_PROBE_OUTPUT_MAX_CHARS  # noqa: E402
 from runtime.constants.schemas import IAC_TEMPLATE_HEALTH_CONTEXT_SCHEMA, IAC_TEMPLATE_SETUP_CONTEXT_SCHEMA  # noqa: E402
 from runtime.constants.workspace import (  # noqa: E402
     context_file,
@@ -21,7 +24,7 @@ from runtime.constants.workspace import (  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
-SCHEMA_VERSION = "1.0"
+
 SETUP_ARTIFACT_TYPE = "iac-template-setup-context"
 HEALTH_ARTIFACT_TYPE = "iac-template-health-context"
 DEFAULT_SETUP_SCHEMA = IAC_TEMPLATE_SETUP_CONTEXT_SCHEMA
@@ -221,13 +224,13 @@ def tool_preflight(*, repo_root: Path | None = None, probe: bool = False) -> dic
         if path and probe:
             command = [path, "--version"] if name != "docker" else [path, "version", "--format", "{{.Client.Version}}"]
             try:
-                completed = subprocess.run(command, capture_output=True, text=True, timeout=10, check=False)
+                completed = subprocess.run(command, capture_output=True, text=True, timeout=PROCESS_SMOKE_TIMEOUT_SECONDS, check=False)
             except (OSError, subprocess.TimeoutExpired) as exc:
                 item["version_status"] = "error"
                 item["error"] = str(exc)
             else:
                 item["version_status"] = "pass" if completed.returncode == 0 else "fail"
-                item["output"] = (completed.stdout or completed.stderr).strip()[:500]
+                item["output"] = (completed.stdout or completed.stderr).strip()[:INTEGRATION_PROBE_OUTPUT_MAX_CHARS]
         tools[name] = item
     return tools
 

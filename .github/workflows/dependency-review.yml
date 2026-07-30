@@ -1,0 +1,211 @@
+---
+# yamllint disable rule:line-length
+name: Dependency Review
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      base_ref:
+        description: Base ref for manual dependency diff
+        required: false
+        default: main
+      head_ref:
+        description: Head ref for manual dependency diff
+        required: false
+
+permissions:
+  contents: read
+
+env:
+  DEPENDENCY_REVIEW_OUTPUT_DIR: dependency-review-output
+
+jobs:
+  dependency-review:
+    name: Review dependency licenses and vulnerabilities
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout ARIADNE
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Prepare output directory
+        run: |
+          rm -rf "${DEPENDENCY_REVIEW_OUTPUT_DIR}"
+          mkdir -p "${DEPENDENCY_REVIEW_OUTPUT_DIR}"
+
+      - name: Run Dependency Review for pull request
+        id: review_pr
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/dependency-review-action@v5
+        with:
+          config-file: ./.github/config/dependency-review.yml
+
+      - name: Run Dependency Review manually
+        id: review_manual
+        if: github.event_name == 'workflow_dispatch'
+        continue-on-error: true
+        uses: actions/dependency-review-action@v5
+        with:
+          config-file: ./.github/config/dependency-review.yml
+          base-ref: ${{ inputs.base_ref || github.event.repository.default_branch }}
+          head-ref: ${{ inputs.head_ref || github.sha }}
+
+      - name: Write Dependency Review outputs for pull request
+        if: always() && github.event_name == 'pull_request'
+        env:
+          REVIEW_OUTCOME: ${{ steps.review_pr.outcome }}
+          REVIEW_CONCLUSION: ${{ steps.review_pr.conclusion }}
+          COMMENT_CONTENT: ${{ steps.review_pr.outputs.comment-content }}
+          DEPENDENCY_CHANGES: ${{ steps.review_pr.outputs.dependency-changes }}
+          VULNERABLE_CHANGES: ${{ steps.review_pr.outputs.vulnerable-changes }}
+          INVALID_LICENSE_CHANGES: ${{ steps.review_pr.outputs.invalid-license-changes }}
+          DENIED_CHANGES: ${{ steps.review_pr.outputs.denied-changes }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          output_dir = Path(os.environ.get("DEPENDENCY_REVIEW_OUTPUT_DIR", "dependency-review-output"))
+          output_dir.mkdir(exist_ok=True)
+
+          outputs = {
+              "dependencyChanges": os.environ.get("DEPENDENCY_CHANGES", ""),
+              "vulnerableChanges": os.environ.get("VULNERABLE_CHANGES", ""),
+              "invalidLicenseChanges": os.environ.get("INVALID_LICENSE_CHANGES", ""),
+              "deniedChanges": os.environ.get("DENIED_CHANGES", ""),
+              "commentContent": os.environ.get("COMMENT_CONTENT", ""),
+          }
+          for name, value in outputs.items():
+              suffix = ".json" if name != "commentContent" else ".md"
+              (output_dir / f"{name}{suffix}").write_text(value or "", encoding="utf-8")
+
+          metadata = {
+              "repository": "ARIADNE",
+              "scanner": "GitHub Dependency Review",
+              "workflow": ".github/workflows/dependency-review.yml",
+              "configuration": ".github/config/dependency-review.yml",
+              "job": "dependency-review",
+              "event": os.environ.get("GITHUB_EVENT_NAME", ""),
+              "baseRef": os.environ.get("GITHUB_BASE_REF", ""),
+              "headRef": os.environ.get("GITHUB_HEAD_REF", ""),
+              "outcome": os.environ.get("REVIEW_OUTCOME", ""),
+              "conclusion": os.environ.get("REVIEW_CONCLUSION", ""),
+              "generatedAtUtc": datetime.now(timezone.utc).isoformat(),
+          }
+          (output_dir / "execution-metadata.json").write_text(
+              json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          (output_dir / "dependency-review.status").write_text(
+              metadata["outcome"] or "failure",
+              encoding="utf-8",
+          )
+
+          summary = [
+              "# Dependency Review Summary",
+              "",
+              "- scanner: GitHub Dependency Review",
+              "- target: pull request dependency changes",
+              f"- event: `{metadata['event']}`",
+              f"- base ref: `{metadata['baseRef']}`",
+              f"- head ref: `{metadata['headRef']}`",
+              f"- outcome: `{metadata['outcome']}`",
+              "",
+              "Dependency Review checks dependency license policy and vulnerability changes in pull requests.",
+          ]
+          (output_dir / "dependency-review-summary.md").write_text("\n".join(summary) + "\n", encoding="utf-8")
+          PY
+
+      - name: Write Dependency Review outputs for manual run
+        if: always() && github.event_name == 'workflow_dispatch'
+        env:
+          REVIEW_OUTCOME: ${{ steps.review_manual.outcome }}
+          REVIEW_CONCLUSION: ${{ steps.review_manual.conclusion }}
+          COMMENT_CONTENT: ${{ steps.review_manual.outputs.comment-content }}
+          DEPENDENCY_CHANGES: ${{ steps.review_manual.outputs.dependency-changes }}
+          VULNERABLE_CHANGES: ${{ steps.review_manual.outputs.vulnerable-changes }}
+          INVALID_LICENSE_CHANGES: ${{ steps.review_manual.outputs.invalid-license-changes }}
+          DENIED_CHANGES: ${{ steps.review_manual.outputs.denied-changes }}
+          MANUAL_BASE_REF: ${{ inputs.base_ref || github.event.repository.default_branch }}
+          MANUAL_HEAD_REF: ${{ inputs.head_ref || github.sha }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          output_dir = Path(os.environ.get("DEPENDENCY_REVIEW_OUTPUT_DIR", "dependency-review-output"))
+          output_dir.mkdir(exist_ok=True)
+
+          outputs = {
+              "dependencyChanges": os.environ.get("DEPENDENCY_CHANGES", ""),
+              "vulnerableChanges": os.environ.get("VULNERABLE_CHANGES", ""),
+              "invalidLicenseChanges": os.environ.get("INVALID_LICENSE_CHANGES", ""),
+              "deniedChanges": os.environ.get("DENIED_CHANGES", ""),
+              "commentContent": os.environ.get("COMMENT_CONTENT", ""),
+          }
+          for name, value in outputs.items():
+              suffix = ".json" if name != "commentContent" else ".md"
+              (output_dir / f"{name}{suffix}").write_text(value or "", encoding="utf-8")
+
+          metadata = {
+              "repository": "ARIADNE",
+              "scanner": "GitHub Dependency Review",
+              "workflow": ".github/workflows/dependency-review.yml",
+              "configuration": ".github/config/dependency-review.yml",
+              "job": "dependency-review",
+              "event": os.environ.get("GITHUB_EVENT_NAME", ""),
+              "baseRef": os.environ.get("MANUAL_BASE_REF", ""),
+              "headRef": os.environ.get("MANUAL_HEAD_REF", ""),
+              "outcome": os.environ.get("REVIEW_OUTCOME", ""),
+              "conclusion": os.environ.get("REVIEW_CONCLUSION", ""),
+              "generatedAtUtc": datetime.now(timezone.utc).isoformat(),
+          }
+          (output_dir / "execution-metadata.json").write_text(
+              json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          (output_dir / "dependency-review.status").write_text(
+              metadata["outcome"] or "failure",
+              encoding="utf-8",
+          )
+
+          summary = [
+              "# Dependency Review Summary",
+              "",
+              "- scanner: GitHub Dependency Review",
+              "- target: manual dependency diff",
+              f"- event: `{metadata['event']}`",
+              f"- base ref: `{metadata['baseRef']}`",
+              f"- head ref: `{metadata['headRef']}`",
+              f"- outcome: `{metadata['outcome']}`",
+              "",
+              "Dependency Review checks dependency license policy and vulnerability changes between the selected refs.",
+          ]
+          (output_dir / "dependency-review-summary.md").write_text("\n".join(summary) + "\n", encoding="utf-8")
+          PY
+
+      - name: Upload Dependency Review results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ariadne-dependency-review-results
+          path: dependency-review-output/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail on Dependency Review findings
+        if: always()
+        run: |
+          status="$(cat "${DEPENDENCY_REVIEW_OUTPUT_DIR}/dependency-review.status")"
+          if [ "${status}" != "success" ]; then
+            echo "Dependency Review failed with outcome ${status}."
+            exit 1
+          fi

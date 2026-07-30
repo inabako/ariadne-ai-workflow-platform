@@ -5,13 +5,18 @@ from pathlib import Path
 from time import perf_counter
 from typing import Any
 
+from runtime.constants.runtime_values import (
+    COST_AMOUNT_DEFAULT,
+    MILLISECONDS_PER_SECOND,
+    NON_NEGATIVE_INT_DEFAULT,
+    SCHEMA_VERSION,
+)
 from runtime.common import relative_to_repo, write_json
 from runtime.constants.schemas import RUNTIME_METRICS_SCHEMA
 from runtime.constants.workspace import context_file, manifest_path_for_work_dir, test_evidence_dir_for_work_dir
 from runtime.observability.logger import append_jsonl, resolve_log_path
 from runtime.observability.schema import (
     ARTIFACT_TYPE,
-    SCHEMA_VERSION,
     context_usage,
     cost_usage,
     runtime_metric_record,
@@ -20,14 +25,15 @@ from runtime.observability.schema import (
     utc_now_iso,
 )
 
+
 def _duration_ms(started: float | None) -> int:
     if started is None:
-        return 0
-    return max(int((perf_counter() - started) * 1000), 0)
+        return NON_NEGATIVE_INT_DEFAULT
+    return max(int((perf_counter() - started) * MILLISECONDS_PER_SECOND), NON_NEGATIVE_INT_DEFAULT)
 
 
 def _default_log_dir(repo_root: Path) -> Path:
-    return repo_root / "runtime" / "logs"
+    return repo_root / "logs"
 
 
 def register_runtime_metrics_context(
@@ -132,7 +138,7 @@ class RuntimeMetricsCollector:
 
     def workflow_failed(self, *, error: str = "", save_evidence: bool = True) -> dict[str, Any]:
         self.ended_at = utc_now_iso()
-        self._runtime_status["error_count"] = int(self._runtime_status.get("error_count", 0)) + 1
+        self._runtime_status["error_count"] = int(self._runtime_status.get("error_count", NON_NEGATIVE_INT_DEFAULT)) + 1
         result = self.record_event("workflow_failed", metadata={"error": error} if error else {})
         if save_evidence and self.work_dir is not None:
             self.save_evidence_summary(status="human-check-required")
@@ -153,12 +159,12 @@ class RuntimeMetricsCollector:
     def record_token_usage(
         self,
         *,
-        input_tokens: Any = 0,
-        output_tokens: Any = 0,
+        input_tokens: Any = NON_NEGATIVE_INT_DEFAULT,
+        output_tokens: Any = NON_NEGATIVE_INT_DEFAULT,
         total_tokens: Any | None = None,
         estimated: bool = True,
-        input_cost: Any = 0.0,
-        output_cost: Any = 0.0,
+        input_cost: Any = COST_AMOUNT_DEFAULT,
+        output_cost: Any = COST_AMOUNT_DEFAULT,
         total_cost: Any | None = None,
         currency: str = "USD",
     ) -> dict[str, Any]:
@@ -180,9 +186,9 @@ class RuntimeMetricsCollector:
     def record_context_usage(
         self,
         *,
-        selected_context_count: Any = 0,
-        estimated_context_tokens: Any = 0,
-        rag_reference_count: Any = 0,
+        selected_context_count: Any = NON_NEGATIVE_INT_DEFAULT,
+        estimated_context_tokens: Any = NON_NEGATIVE_INT_DEFAULT,
+        rag_reference_count: Any = NON_NEGATIVE_INT_DEFAULT,
         dispatcher_route: str = "",
     ) -> dict[str, Any]:
         self._context_usage = context_usage(
@@ -202,7 +208,7 @@ class RuntimeMetricsCollector:
         return self.record_event("evidence_generated", metadata={"path": path} if path else {})
 
     def runtime_error(self, *, error: str = "") -> dict[str, Any]:
-        self._runtime_status["error_count"] = int(self._runtime_status.get("error_count", 0)) + 1
+        self._runtime_status["error_count"] = int(self._runtime_status.get("error_count", NON_NEGATIVE_INT_DEFAULT)) + 1
         return self.record_event("runtime_error", metadata={"error": error} if error else {})
 
     def summary(self, *, status: str = "available") -> dict[str, Any]:

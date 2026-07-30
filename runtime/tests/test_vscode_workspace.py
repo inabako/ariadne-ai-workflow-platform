@@ -20,12 +20,12 @@ def test_aiwfctl_path_shell_task_is_provisioned() -> None:
     task = tasks["workflow:aiwfctl-path-shell"]
 
     assert task["type"] == "process"
-    assert task["command"] == "${workspaceFolder}\\runtime\\tools\\register-aiwfctl-path.cmd"
+    assert task["command"] == "${workspaceFolder}\\runtime\\windows-script\\register-aiwfctl-path.cmd"
     assert task["args"] == ["--shell"]
 
 
 def test_aiwfctl_cmd_exposes_path_usage() -> None:
-    command = repo_root() / "runtime" / "tools" / "aiwfctl.cmd"
+    command = repo_root() / "runtime" / "windows-script" / "aiwfctl.cmd"
 
     result = subprocess.run(
         [str(command), "path"],

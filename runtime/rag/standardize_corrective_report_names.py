@@ -13,6 +13,11 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
+from runtime.constants.cli_defaults import (  # noqa: E402
+    RAG_STANDARDIZE_RANDOM_LENGTH_DEFAULT,
+    RAG_STANDARDIZE_RANDOM_LENGTH_MAX_EXCLUSIVE,
+    RAG_STANDARDIZE_RANDOM_LENGTH_MIN,
+)
 from runtime.constants.paths import KNOWLEDGE_SOURCE_RAG, SOURCE_CORRECTIVE_ACTION_REPORTS  # noqa: E402
 
 
@@ -33,7 +38,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--source-dir", default=str(SOURCE_CORRECTIVE_ACTION_REPORTS))
     parser.add_argument("--repo-root", default=None)
     parser.add_argument("--replace-references", action="store_true")
-    parser.add_argument("--random-length", type=int, default=8, choices=range(5, 9))
+    parser.add_argument(
+        "--random-length",
+        type=int,
+        default=RAG_STANDARDIZE_RANDOM_LENGTH_DEFAULT,
+        choices=range(RAG_STANDARDIZE_RANDOM_LENGTH_MIN, RAG_STANDARDIZE_RANDOM_LENGTH_MAX_EXCLUSIVE),
+    )
     return parser
 
 
@@ -98,9 +108,9 @@ def replace_text_references(repo_root: Path, path_map: dict[str, str]) -> list[s
         *knowledge_rag_dir.glob("**/*.jsonl"),
         *knowledge_rag_dir.glob("**/*.md"),
         repo_root / "README.md",
-        repo_root / "AGENT.md",
+        repo_root / "AGENTS.md",
         *repo_root.glob("skills/**/*.md"),
-        *repo_root.glob(".github/prompts/**/*.md"),
+        *repo_root.glob(".ariadne/prompts/**/*.md"),
         *repo_root.glob("runtime/**/*.md"),
     ]
     for path in sorted(set(targets)):

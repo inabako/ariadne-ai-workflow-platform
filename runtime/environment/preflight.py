@@ -14,6 +14,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import gate_restart  # noqa: E402
 from runtime.common import env_value, find_repo_root, load_env, local_timestamp, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.paths import (  # noqa: E402
@@ -116,6 +117,45 @@ def which_check(
     )
 
 
+def runtime_tool_path(repo_root: Path, name: str) -> Path:
+    return repo_root / "runtime" / "tools" / name
+
+
+def windows_script_path(repo_root: Path, name: str) -> Path:
+    return repo_root / "runtime" / "windows-script" / name
+
+
+def uv_executable_for_repo(repo_root: Path) -> str:
+    path = shutil.which("uv")
+    if path:
+        return path
+    for candidate in [
+        windows_script_path(repo_root, "uv.cmd"),
+        runtime_tool_path(repo_root, "uv"),
+    ]:
+        if candidate.exists():
+            return str(candidate)
+    return ""
+
+
+def uv_runtime_check(repo_root: Path, *, required: bool = True) -> Check:
+    uv_path = uv_executable_for_repo(repo_root)
+    return Check(
+        id="exe:uv",
+        label="uv",
+        kind="executable",
+        required=required,
+        ok=bool(uv_path),
+        detected=uv_path,
+        install_hint=(
+            "Install uv or use the repository-local wrapper. "
+            "Run .\\runtime\\windows-script\\register-uv-path.cmd --check or --shell to refresh PATH."
+        ),
+        install_command=".\\runtime\\windows-script\\register-uv-path.cmd",
+        fallback_command=".\\runtime\\windows-script\\register-uv-path.cmd --shell",
+    )
+
+
 def path_check(path: Path, *, check_id: str, label: str, required: bool, install_hint: str, install_command: str | None = None) -> Check:
     return Check(
         id=check_id,
@@ -159,6 +199,36 @@ def python_module_check(module: str, *, required: bool, install_hint: str, insta
     )
 
 
+def runtime_pytest_check(repo_root: Path, *, required: bool) -> Check:
+    uv_path = uv_executable_for_repo(repo_root)
+    if not uv_path:
+        return Check(
+            id="runtime:pytest",
+            label="runtime pytest",
+            kind="runtime-command",
+            required=required,
+            ok=False,
+            detected="",
+            install_hint="uv is required before runtime pytest can be checked.",
+            install_command=".\\runtime\\windows-script\\register-uv-path.cmd",
+            fallback_command=".\\runtime\\windows-script\\register-uv-path.cmd --shell",
+        )
+    command = [uv_path, "run", "--project", "runtime", "--group", "dev", "pytest", "--version"]
+    completed = run_command(command, cwd=repo_root)
+    detected = completed.stdout.strip() if completed.returncode == 0 else (completed.stderr or "").strip()
+    return Check(
+        id="runtime:pytest",
+        label="runtime pytest",
+        kind="runtime-command",
+        required=required,
+        ok=completed.returncode == 0,
+        detected=detected,
+        install_hint="Runtime dev tests must run through uv project dependencies.",
+        install_command=".\\runtime\\windows-script\\uv.cmd run --project runtime --group dev pytest --version",
+        fallback_command=".\\runtime\\windows-script\\register-uv-path.cmd --shell",
+    )
+
+
 def docker_compose_check(*, required: bool) -> Check:
     if shutil.which("docker") is None:
         return Check(
@@ -181,6 +251,70 @@ def docker_compose_check(*, required: bool) -> Check:
         detected=completed.stdout.strip() if completed.returncode == 0 else completed.stderr.strip(),
         install_hint="Install Docker Desktop with Compose support, then verify: docker compose version.",
         install_command="winget install --id Docker.DockerDesktop -e",
+    )
+
+
+def docker_daemon_check(*, required: bool) -> Check:
+    if shutil.which("docker") is None:
+        return Check(
+            id="docker:daemon",
+            label="Docker daemon",
+            kind="docker-daemon",
+            required=required,
+            ok=False,
+            detected="",
+            install_hint=(
+                "Docker Desktop is required for local act rehearsal of GitHub Actions. "
+                "Install and start Docker Desktop, then verify: docker info."
+            ),
+            install_command="winget install --id Docker.DockerDesktop -e",
+        )
+    completed = run_command([
+        "docker",
+        "info",
+        "--format",
+        "DockerServer={{.ServerVersion}} OS={{.OperatingSystem}} Architecture={{.Architecture}}",
+    ])
+    return Check(
+        id="docker:daemon",
+        label="Docker daemon",
+        kind="docker-daemon",
+        required=required,
+        ok=completed.returncode == 0,
+        detected=completed.stdout.strip() if completed.returncode == 0 else (completed.stderr or "").strip(),
+        install_hint=(
+            "Docker Desktop must be running for local act rehearsal. "
+            "GitHub Actions hosted runners do not require local Docker Desktop."
+        ),
+        install_command="winget install --id Docker.DockerDesktop -e",
+    )
+
+
+def act_cli_check(*, required: bool) -> Check:
+    if shutil.which("act") is None:
+        return Check(
+            id="act:version",
+            label="act",
+            kind="github-actions-local-runner",
+            required=required,
+            ok=False,
+            detected="",
+            install_hint=(
+                "Install act to rehearse .github/workflows/scancode.yml locally. "
+                "GitHub Actions hosted execution does not require act."
+            ),
+            install_command="winget install --id nektos.act -e",
+        )
+    completed = run_command(["act", "--version"])
+    return Check(
+        id="act:version",
+        label="act",
+        kind="github-actions-local-runner",
+        required=required,
+        ok=completed.returncode == 0,
+        detected=completed.stdout.strip() if completed.returncode == 0 else (completed.stderr or "").strip(),
+        install_hint="act must be callable before local GitHub Actions rehearsal can run.",
+        install_command="winget install --id nektos.act -e",
     )
 
 
@@ -228,8 +362,8 @@ def github_env_token_check(repo_root: Path, *, required: bool = False) -> Check:
 
 def github_cli_auth_check(repo_root: Path, *, required: bool, hostname: str = "github.com") -> Check:
     action_command = (
-        "uv run --project runtime python runtime/environment/preflight.py "
-        "--profile github-cli --gh-login-from-env --human-check approved"
+        "uv run --project runtime python runtime/ctl/ctl.py --repo-root . "
+        "preflight --profile github-cli --gh-login-from-env --human-check approved"
     )
     if hostname != "github.com":
         action_command += f" --github-hostname {hostname}"
@@ -299,13 +433,13 @@ def preflight_gate_restart(status: str, profile: str) -> dict[str, Any]:
         repair_available = True
         reason = "github-auth-required"
         command = (
-            f".\\runtime\\windows-ps1\\aiwf.ps1 preflight --profile {profile} "
+            f".\\runtime\\windows-script\\aiwf.cmd preflight --profile {profile} "
             "--gh-login-from-env --human-check approved"
         )
     elif status == "install-list-required":
         repair_available = True
         reason = "required-tool-install-list"
-        command = f".\\runtime\\windows-ps1\\aiwf.ps1 preflight --profile {profile} --install --human-check approved"
+        command = f".\\runtime\\windows-script\\aiwf.cmd preflight --profile {profile} --install --human-check approved"
     return gate_restart.build_gate_restart(
         "environment-preflight-gate",
         restart_reason=reason,
@@ -400,7 +534,7 @@ def localty_protocol_check(args: argparse.Namespace, protocol_dir: Path | None, 
     if args.work_id:
         branch = args.support_branch or "develop"
         fallback_command = (
-            f"{sys.executable} runtime/scm/prepare_support_repository.py "
+            f"{sys.executable} runtime/ctl/ctl.py --repo-root . scm support "
             f"--work-id \"{args.work_id}\" "
             "--name \"localty-system-protocol\" "
             "--repository \"inabako/localty-system-protocol\" "
@@ -482,13 +616,47 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
             install_hint="Install Git for Windows and ensure git is on PATH.",
             install_command="winget install --id Git.Git -e",
         ),
-        which_check(
-            "uv",
-            required=True,
-            install_hint="Install uv with an approved installer or package manager and ensure uv is on PATH.",
-        ),
+        uv_runtime_check(repo_root, required=True),
         which_check("python", required=False, install_hint="Optional when uv provides Python. Install Python or use uv run --project runtime python."),
     ]
+
+    if args.profile == "runtime-dev":
+        checks.extend([
+            which_check(
+                "py",
+                required=False,
+                install_hint="Optional Windows launcher. Prefer uv run --project runtime python when py is unavailable.",
+            ),
+            path_check(
+                windows_script_path(repo_root, "uv.cmd"),
+                check_id="path:runtime-windows-script-uv",
+                label="runtime/windows-script/uv.cmd",
+                required=True,
+                install_hint="Restore runtime/windows-script/uv.cmd or run from a complete Ariadne workflow repository checkout.",
+            ),
+            path_check(
+                windows_script_path(repo_root, "aiwfctl.cmd"),
+                check_id="path:runtime-windows-script-aiwfctl",
+                label="runtime/windows-script/aiwfctl.cmd",
+                required=True,
+                install_hint="Restore runtime/windows-script/aiwfctl.cmd or run from a complete Ariadne workflow repository checkout.",
+            ),
+            path_check(
+                windows_script_path(repo_root, "aiwf.cmd"),
+                check_id="path:runtime-windows-script-aiwf-cmd",
+                label="runtime/windows-script/aiwf.cmd",
+                required=True,
+                install_hint="Restore runtime/windows-script/aiwf.cmd or run from a complete Ariadne workflow repository checkout.",
+            ),
+            path_check(
+                windows_script_path(repo_root, "aiwf.ps1"),
+                check_id="path:runtime-windows-script-aiwf-ps1",
+                label="runtime/windows-script/aiwf.ps1",
+                required=True,
+                install_hint="Restore runtime/windows-script/aiwf.ps1 or run from a complete Ariadne workflow repository checkout.",
+            ),
+            runtime_pytest_check(repo_root, required=True),
+        ])
 
     if args.profile in {"corrective-action-fix", "localty-msys2", "gui-pyqt"}:
         checks.append(path_check(
@@ -592,6 +760,26 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
                 required=True,
                 install_hint="Pass --source-dir pointing at the target workspace root.",
             ))
+        checks.append(act_cli_check(required=False))
+        checks.append(docker_daemon_check(required=False))
+
+    if args.profile == "scancode-audit":
+        checks.append(path_check(
+            repo_root / ".github" / "workflows" / "scancode.yml",
+            check_id="path:scancode-workflow",
+            label=".github/workflows/scancode.yml",
+            required=True,
+            install_hint="Add the ScanCode GitHub Actions workflow before local rehearsal.",
+        ))
+        checks.append(path_check(
+            repo_root / "docs" / "security" / "scancode-github-actions.md",
+            check_id="path:scancode-doc",
+            label="docs/security/scancode-github-actions.md",
+            required=True,
+            install_hint="Document ScanCode workflow operation and local rehearsal steps.",
+        ))
+        checks.append(act_cli_check(required=False))
+        checks.append(docker_daemon_check(required=False))
 
     if args.profile == "web-nextjs":
         checks.append(which_check(
@@ -795,7 +983,9 @@ def build_parser() -> argparse.ArgumentParser:
             "gui-pyqt",
             "web-nextjs",
             "docker-compose",
+            "runtime-dev",
             "vscode-environment",
+            "scancode-audit",
             "flutter",
             "github-cli",
             "github-knowledge-maintenance",
@@ -855,7 +1045,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     status = github_auth_status(checks)
     result = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "environment-preflight",
         "profile": args.profile,
         "created_at": utc_now_iso(),

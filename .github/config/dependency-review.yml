@@ -1,0 +1,35 @@
+---
+# Dependency Review policy for ARIADNE OSS preparation.
+#
+# This policy intentionally uses an allow list instead of deny-licenses.
+# Any dependency license outside this baseline should be reviewed before merge.
+
+fail-on-severity: high
+fail-on-scopes:
+  - runtime
+  - development
+  - unknown
+
+license-check: true
+vulnerability-check: true
+comment-summary-in-pr: never
+warn-only: false
+
+show-openssf-scorecard: true
+warn-on-openssf-scorecard-level: 3
+
+allow-licenses:
+  - 0BSD
+  - Apache-2.0
+  - BSD-2-Clause
+  - BSD-3-Clause
+  - CC0-1.0
+  - ISC
+  - MIT
+  - MPL-2.0
+  - PostgreSQL
+  - PSF-2.0
+  - Python-2.0
+  - Unicode-3.0
+  - Unlicense
+  - Zlib

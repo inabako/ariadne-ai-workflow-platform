@@ -9,6 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import gate_restart, find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.workspace import context_file  # noqa: E402
 
@@ -19,7 +20,7 @@ VALID_STATUS = {"not-started", "in-progress", "blocked", "review-ready", "comple
 
 def default_state(workflow: str, work_id: str, phase: str, status: str) -> dict[str, Any]:
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "workflow": workflow,
         "work_id": work_id,
         "phase": phase,
@@ -37,8 +38,8 @@ def workflow_state_gate_restart(status: str, workflow: str, work_id: str, phase:
     repair_command = ""
     if status in {"blocked", "failed"}:
         repair_command = (
-            "uv run --project runtime python runtime/workflow/workflow_state.py --repo-root . "
-            f"--work-dir work/{work_id} set --workflow {workflow} --work-id {work_id} --phase {phase} --status in-progress"
+            "uv run --project runtime python runtime/ctl/ctl.py --repo-root . "
+            f"workflow state set --work-dir work/{work_id} --workflow {workflow} --work-id {work_id} --phase {phase} --status in-progress"
         )
     return gate_restart.build_status_gate_restart(
         "workflow-state-gate",
@@ -56,7 +57,7 @@ def load_state(work_dir: Path, workflow: str = "", work_id: str = "", phase: str
     path = state_path_for_work_dir(work_dir)
     data = read_json(path, default=None)
     if isinstance(data, dict):
-        data.setdefault("schema_version", "1.0")
+        data.setdefault("schema_version", SCHEMA_VERSION)
         data.setdefault("workflow", workflow)
         data.setdefault("work_id", work_id)
         data.setdefault("phase", phase)

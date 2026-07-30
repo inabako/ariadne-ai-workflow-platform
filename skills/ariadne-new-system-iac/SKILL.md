@@ -1,4 +1,4 @@
----
+﻿---
 name: ariadne-new-system-iac
 description: Run the integrated Ariadne New System plus realtime IaC workflow. Use when the user selects /ariadne-new-system-iac or asks to create a new target system and then generate validated Shared Artifacts for the realtime IaC workflow.
 ---
@@ -7,7 +7,7 @@ description: Run the integrated Ariadne New System plus realtime IaC workflow. U
 
 ## Default Language
 
-Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.ariadne/shared/output-language-policy.md`.
 
 ## Slash Command
 
@@ -20,7 +20,7 @@ Use this skill when the user specifies:
 This skill delegates the detailed workflow to:
 
 ```text
-.github/prompts/ariadne-new-system-iac.prompt.md
+.ariadne/prompts/ariadne-new-system-iac.prompt.md
 ```
 
 ## Purpose
@@ -154,7 +154,7 @@ Before actually starting `/realtime-iac`, verify the Docker environment context:
 
 ```powershell
 aiwfctl env select docker --work-id <receipt-id>
-uv run --project runtime python runtime/common/ctl.py --repo-root . context require-environment `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . context require-environment `
   --work-dir work/<receipt-id> `
   --environment docker
 ```
@@ -210,7 +210,7 @@ Create or update a Feedback report when you observe ambiguity, repeated checks, 
 Use the existing helper when creating a new report:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "<slash-command>" `
   --reporter "AI workflow" `
   --situation "<what was happening>" `

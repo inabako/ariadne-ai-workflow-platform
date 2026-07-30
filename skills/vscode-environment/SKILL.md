@@ -1,4 +1,4 @@
----
+﻿---
 name: vscode-environment
 description: Build or maintain reproducible VSCode Workspace-as-Code environments for AI workflows. Use when the user selects /vscode-environment or asks to standardize .vscode/settings.json, tasks.json, launch.json, extensions.json, workspace.code-workspace, terminal profiles, AI extension setup, Docker/Git/Python/Node/Java tooling, or evidence-backed VSCode environment setup.
 ---
@@ -7,7 +7,7 @@ description: Build or maintain reproducible VSCode Workspace-as-Code environment
 
 ## Default Language
 
-Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.ariadne/shared/output-language-policy.md`.
 
 ## Purpose
 
@@ -15,7 +15,7 @@ Manage a VSCode development environment as Workspace as Code so AI agents and hu
 
 ## 日本語運用要約
 
-このworkflowの中心目的は、AIさんが迷わずAI workflow repositoryを実行できるVSCode環境を整えることです。したがって、記入済み草案は入口の必須条件ではありません。引数なしで `/vscode-environment` が選ばれた場合は、self-provision modeとしてcurrent repositoryを対象にし、既存の `.vscode`、`runtime/tools`、`runtime/workflow`、`runtime/registries`、docs、prompts、testsを読みます。そのうえで、repo-local command toolをVSCode統合ターミナルのPATHへ通し、`aiwfctl`、workspace validator、workflow doctor、pytestなどの実行経路を整えます。
+このworkflowの中心目的は、AIさんが迷わずAI workflow repositoryを実行できるVSCode環境を整えることです。したがって、記入済み草案は入口の必須条件ではありません。引数なしで `/vscode-environment` が選ばれた場合は、self-provision modeとしてcurrent repositoryを対象にし、既存の `.vscode`、`runtime/windows-script`、`runtime/workflow`、`runtime/registries`、docs、prompts、testsを読みます。そのうえで、repo-local command toolをVSCode統合ターミナルのPATHへ通し、`aiwfctl`、workspace validator、workflow doctor、pytestなどの実行経路を整えます。
 
 target workspace pathが指定された場合は、target-workspace modeとして対象repoを読みます。この場合も、草案は任意です。AIは対象repoの既存設定、README、tooling、test、workflow entrypointを確認し、安全に推定できる既定値だけを使います。既存 `.vscode` filesは必ず読んでから変更し、無条件に置き換えてはいけません。
 
@@ -40,7 +40,7 @@ Use this mode when `/vscode-environment` has no argument.
 - Target: the current repository / workspace root.
 - Purpose: make this AI workflow repository executable by AI agents and humans.
 - Filled draft: not required.
-- Evidence source: existing repository assets such as `.vscode/`, `runtime/tools/`, `runtime/workflow/`, `runtime/registries/`, docs, prompts, and tests.
+- Evidence source: existing repository assets such as `.vscode/`, `runtime/windows-script/`, `runtime/tools/`, `runtime/workflow/`, `runtime/registries/`, docs, prompts, and tests.
 - Required behavior: inspect current files, preserve existing settings, add missing repo-local tooling and validation support, then run workspace validators.
 
 ### 2. target-workspace mode
@@ -178,14 +178,14 @@ uv run --project runtime python runtime/environment/preflight.py `
 
 For VSCode tasks, prefer `type: "process"` plus a repo-local helper script over long inline PowerShell command strings. Do not put `ExecutionPolicy Bypass`, nested PowerShell launchers, or complex `python -c` snippets in `.vscode/tasks.json`.
 
-If the target workspace has repository-local command tools under `runtime/tools/` or another approved tools directory, add that directory to the VSCode integrated terminal PATH in `.vscode/settings.json`.
+If the target workspace has repository-local command scripts under `runtime/windows-script/` or another approved scripts directory, add that directory to the VSCode integrated terminal PATH in `.vscode/settings.json`.
 
 Example for this workflow repository:
 
 ```json
 {
   "terminal.integrated.env.windows": {
-    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}",
+    "Path": "${workspaceFolder}\\runtime\\windows-script;${env:Path}",
     "PYTHONUTF8": "1",
     "PYTHONIOENCODING": "utf-8",
     "AIWF_TEXT_ENCODING": "utf-8"
@@ -232,15 +232,15 @@ Keep `.bat` and `.cmd` encoding boundaries intact. If a repository intentionally
 For this workflow repository, include an explicit provisioning task or step that runs:
 
 ```powershell
-.\runtime\tools\register-aiwfctl-path.cmd --shell
+.\runtime\windows-script\register-aiwfctl-path.cmd --shell
 ```
 
-This registers `runtime\tools` in User Path and opens a refreshed PowerShell session where `aiwfctl help list` is immediately available.
+This registers `runtime\windows-script` in User Path and opens a refreshed PowerShell session where `aiwfctl help list` is immediately available.
 
 The same behavior can be invoked through the aiwfctl wrapper:
 
 ```powershell
-.\runtime\tools\aiwfctl.cmd path shell
+.\runtime\windows-script\aiwfctl.cmd path shell
 ```
 
 ## Workflow
@@ -270,7 +270,7 @@ Stop until the human answers and approves.
 
 ### 2. Requirements Analysis
 
-Use `.github/agents/workspace-requirements-analyst-agent.prompt.md`.
+Use `.ariadne/agents/workspace-requirements-analyst-agent.prompt.md`.
 
 Create:
 
@@ -280,11 +280,11 @@ work/<work-id>/design-document/workspace-requirements.md
 
 The requirements must list the selected mode, target workspace, required tools, extensions, terminal profiles, default shell, tasks, debug targets, AI workflow entry tasks, Docker usage, Git expectations, language runtimes, evidence outputs, and placeholders for personal paths or secrets.
 
-In self-provision mode, derive these from the current repository. For this workflow repository, include `runtime/tools`, `aiwfctl`, `workflow:aiwfctl-path-shell`, `validate_vscode_workspace.py`, and `workflow_doctor.py` when applicable.
+In self-provision mode, derive these from the current repository. For this workflow repository, include `runtime/windows-script`, `aiwfctl`, `workflow:aiwfctl-path-shell`, `validate_vscode_workspace.py`, and `workflow_doctor.py` when applicable.
 
 ### 3. Shared Artifact Validation
 
-Use `.github/agents/workspace-shared-artifact-validator-agent.prompt.md`.
+Use `.ariadne/agents/workspace-shared-artifact-validator-agent.prompt.md`.
 
 Validate that the requirements include:
 
@@ -304,7 +304,7 @@ Do not implement `.vscode` files until validation is `pass` or human-approved `c
 
 ### 4. VSCode Design
 
-Use `.github/agents/vscode-architect-agent.prompt.md`.
+Use `.ariadne/agents/vscode-architect-agent.prompt.md`.
 
 Create:
 
@@ -316,7 +316,7 @@ Design `settings.json`, `tasks.json`, `launch.json`, `extensions.json`, and `wor
 
 ### 5. Terminal Design
 
-Use `.github/agents/terminal-architect-agent.prompt.md`.
+Use `.ariadne/agents/terminal-architect-agent.prompt.md`.
 
 Create:
 
@@ -328,13 +328,13 @@ Define terminal roles such as Dispatcher, Software Workflow, IaC Workflow, Docke
 
 ### 6. Implementation
 
-Use `.github/agents/workspace-implementer-agent.prompt.md`.
+Use `.ariadne/agents/workspace-implementer-agent.prompt.md`.
 
 Implement only after requirements, validation, and design artifacts exist. Preserve existing user settings unless the workflow explicitly replaces them. Prefer additive `.vscode` changes and document any migration.
 
 ### 7. Test And Evidence
 
-Use `.github/agents/workspace-test-agent.prompt.md`.
+Use `.ariadne/agents/workspace-test-agent.prompt.md`.
 
 Create:
 
@@ -347,7 +347,7 @@ Test JSON validity, task labels, terminal profile names, debug configs, Docker i
 
 ### 8. Documentation
 
-Use `.github/agents/workspace-documentation-writer-agent.prompt.md`.
+Use `.ariadne/agents/workspace-documentation-writer-agent.prompt.md`.
 
 Update the target workspace README or setup docs with setup steps, recommended extensions, tasks, troubleshooting, and evidence capture instructions.
 
@@ -373,6 +373,16 @@ The Markdown file is the human-reviewable source note. It is not the final machi
 After human approval, normalize the approved source through the file-based RAG pipeline with `--source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment` and `--document-type workspace-environment-pattern`.
 
 ```powershell
+uv run --project runtime python runtime/workflow/vscode_environment.py rag-template `
+  --work-id "<work-id>" `
+  --topic "localty-vscode-environment" `
+  --repository "localty" `
+  --status approved
+```
+
+Draft RAG source notes are not cleanup evidence. After approval, refresh the source with `--status approved`, then normalize it:
+
+```powershell
 uv run --project runtime python runtime/rag/normalize_documents.py `
   --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment `
   --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
@@ -386,6 +396,13 @@ work/db/ariadne-knowledge-platform/rag/normalized/<uuid>.json
 ```
 
 Chunk JSON, indexes, embeddings, and retrieval context packs are derived artifacts from that UUID-named normalized JSON. Use `work/db/ariadne-knowledge-platform/rag/jsonized/<uuid>.json` only as a wrapper for existing non-UUID artifacts; it does not replace the normalized RAG document.
+
+After long-lived Knowledge absorption is confirmed, use the generic cleanup ctl returned by the workflow before removing temporary VSCode environment work:
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-check --work-id "<work-id>"
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-apply --work-id "<work-id>" --human-check approved
+```
 
 ## Human Gates
 
@@ -406,7 +423,7 @@ Create or update a Feedback report when you observe ambiguity, repeated checks, 
 Use the existing helper when creating a new report:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "<slash-command>" `
   --reporter "AI workflow" `
   --situation "<what was happening>" `
@@ -425,7 +442,7 @@ Keep the initial `Review Status` as `Proposed`. Do not run `/self-improvement` a
 - Do not overwrite existing workspace files without reading and preserving useful content.
 - Keep machine-specific values as placeholders when the workflow output is meant for a repository.
 - If repo-local `.cmd`, `.bat`, or executable helper tools are part of the workflow entrypoint, expose their directory through `terminal.integrated.env.windows.Path` instead of requiring each user to edit their personal Windows Path.
-- If the workflow needs a command available outside VSCode integrated terminals, include a provisioning task that runs the repo-local PATH registration helper, such as `runtime/tools/register-aiwfctl-path.cmd --shell`.
+- If the workflow needs a command available outside VSCode integrated terminals, include a provisioning task that runs the repo-local PATH registration helper, such as `runtime/windows-script/register-aiwfctl-path.cmd --shell`.
 - Declare UTF-8 early for VSCode files, Python process I/O, and PowerShell terminal I/O when the workspace contains Japanese docs or prompts.
 - Do not enable encoding auto-guessing for AI workflow repositories unless the repository explicitly documents mixed encodings.
 - Keep generated evidence under `work/<work-id>/test-evidence/`; put durable target-repository docs in the target workspace only when approved.

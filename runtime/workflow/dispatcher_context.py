@@ -11,8 +11,10 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import gate_restart, registry_store  # noqa: E402
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.cli_defaults import DISPATCHER_CANDIDATE_LIMIT_DEFAULT  # noqa: E402
 from runtime.constants.schemas import (  # noqa: E402
     EXECUTION_PLAN_SCHEMA,
     RUNTIME_CONTEXT_SCHEMA,
@@ -20,6 +22,24 @@ from runtime.constants.schemas import (  # noqa: E402
     WORKFLOW_SELECTION_SCHEMA,
 )
 from runtime.constants.workspace import context_dir_for_work_dir, work_dir_for_id  # noqa: E402
+from runtime.workflow.dispatcher_constants import (  # noqa: E402
+    EXACT_MATCH_SCORE,
+    MAX_NON_EXACT_SCORE,
+    MIN_POSITIVE_SCORE,
+    REASON_TOKEN_PREVIEW_LIMIT,
+    TOOL_AUTO_SELECT_MIN_SCORE,
+    TOOL_BODY_TOKEN_MATCH_SCORE,
+    TOOL_NAME_TOKEN_MATCH_SCORE,
+    TOOL_QUERY_PHRASE_SCORE,
+    TOOL_WORKFLOW_MATCH_SCORE,
+    WORKFLOW_AUTO_SELECT_MARGIN,
+    WORKFLOW_AUTO_SELECT_MIN_SCORE,
+    WORKFLOW_BODY_TOKEN_MATCH_SCORE,
+    WORKFLOW_COMMAND_TOKEN_MATCH_SCORE,
+    WORKFLOW_HIGH_CONFIDENCE_MIN_SCORE,
+    WORKFLOW_NAME_TOKEN_MATCH_SCORE,
+    WORKFLOW_QUERY_PHRASE_SCORE,
+)
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
@@ -126,7 +146,7 @@ def workflow_search_text(item: dict[str, Any]) -> str:
 def candidate_score(item: dict[str, Any], query: str, intent_summary: str) -> tuple[int, list[str]]:
     reasons: list[str] = []
     if exact_workflow_match(item, query):
-        return 100, ["exact command / alias / workflow match"]
+        return EXACT_MATCH_SCORE, ["exact command / alias / workflow match"]
 
     query_text = " ".join(part for part in [query, intent_summary] if part.strip())
     query_tokens = tokenize(query_text)
@@ -137,26 +157,26 @@ def candidate_score(item: dict[str, Any], query: str, intent_summary: str) -> tu
     name_overlap = sorted(query_tokens & name_tokens)
     body_overlap = sorted(query_tokens & body_tokens)
     if name_overlap:
-        score += 18 * len(name_overlap)
-        reasons.append(f"name token match: {', '.join(name_overlap[:5])}")
+        score += WORKFLOW_NAME_TOKEN_MATCH_SCORE * len(name_overlap)
+        reasons.append(f"name token match: {', '.join(name_overlap[:REASON_TOKEN_PREVIEW_LIMIT])}")
     if body_overlap:
-        score += 4 * len(body_overlap)
-        reasons.append(f"registry text match: {', '.join(body_overlap[:5])}")
+        score += WORKFLOW_BODY_TOKEN_MATCH_SCORE * len(body_overlap)
+        reasons.append(f"registry text match: {', '.join(body_overlap[:REASON_TOKEN_PREVIEW_LIMIT])}")
 
     compact_query = query.strip().lower().lstrip("/")
     search_text = workflow_search_text(item).lower()
     if compact_query and compact_query in search_text:
-        score += 25
+        score += WORKFLOW_QUERY_PHRASE_SCORE
         reasons.append("query phrase appears in registry text")
 
     command = str(item.get("command", ""))
     if command:
         command_tokens = tokenize(command)
         if command_tokens and command_tokens <= query_tokens:
-            score += 30
+            score += WORKFLOW_COMMAND_TOKEN_MATCH_SCORE
             reasons.append("all command tokens appear in query")
 
-    return min(score, 99), reasons or ["no strong registry evidence"]
+    return min(score, MAX_NON_EXACT_SCORE), reasons or ["no strong registry evidence"]
 
 
 def workflow_candidates(
@@ -169,7 +189,7 @@ def workflow_candidates(
     candidates: list[dict[str, Any]] = []
     for item in registry.get("commands", []):
         score, reasons = candidate_score(item, query, intent_summary)
-        if score <= 0:
+        if score <= MIN_POSITIVE_SCORE:
             continue
         candidates.append(
             {
@@ -222,12 +242,12 @@ def _select_workflow_record_without_gate(
             selected = item
             break
 
-    can_auto_select = bool(selected) and top_score >= 50 and margin >= 10
+    can_auto_select = bool(selected) and top_score >= WORKFLOW_AUTO_SELECT_MIN_SCORE and margin >= WORKFLOW_AUTO_SELECT_MARGIN
     if can_auto_select:
         for candidate in candidates:
             if candidate.get("command") == top.get("command"):
                 candidate["selected"] = True
-        confidence = "medium" if top_score < 80 else "high"
+        confidence = "medium" if top_score < WORKFLOW_HIGH_CONFIDENCE_MIN_SCORE else "high"
         return {
             "record": selected,
             "selection_mode": "auto",
@@ -320,7 +340,7 @@ def tool_candidate_score(item: dict[str, Any], query: str, workflow_name: str, i
     raw_query = query.strip()
     tool_query = raw_query.split(":", 1)[0].strip()
     if tool_query and exact_tool_match(item, tool_query):
-        return 100, ["exact tool name / alias match"]
+        return EXACT_MATCH_SCORE, ["exact tool name / alias match"]
 
     score = 0
     workflow_key = normalize_command(workflow_name).lower()
@@ -328,7 +348,7 @@ def tool_candidate_score(item: dict[str, Any], query: str, workflow_name: str, i
     workflows = {str(value).lower() for value in item.get("workflows", [])}
     workflows_plain = {value.lstrip("/") for value in workflows}
     if workflow_key in workflows or workflow_plain in workflows_plain:
-        score += 55
+        score += TOOL_WORKFLOW_MATCH_SCORE
         reasons.append(f"workflow match: {workflow_name}")
 
     query_text = " ".join(part for part in [raw_query, workflow_name, intent_summary] if part.strip())
@@ -336,18 +356,18 @@ def tool_candidate_score(item: dict[str, Any], query: str, workflow_name: str, i
     name_overlap = sorted(query_tokens & tokenize(" ".join(tool_names(item))))
     body_overlap = sorted(query_tokens & tokenize(tool_search_text(item)))
     if name_overlap:
-        score += 20 * len(name_overlap)
-        reasons.append(f"name token match: {', '.join(name_overlap[:5])}")
+        score += TOOL_NAME_TOKEN_MATCH_SCORE * len(name_overlap)
+        reasons.append(f"name token match: {', '.join(name_overlap[:REASON_TOKEN_PREVIEW_LIMIT])}")
     if body_overlap:
-        score += 4 * len(body_overlap)
-        reasons.append(f"registry text match: {', '.join(body_overlap[:5])}")
+        score += TOOL_BODY_TOKEN_MATCH_SCORE * len(body_overlap)
+        reasons.append(f"registry text match: {', '.join(body_overlap[:REASON_TOKEN_PREVIEW_LIMIT])}")
 
     compact_query = raw_query.lower()
     search_text = tool_search_text(item).lower()
     if compact_query and compact_query in search_text:
-        score += 20
+        score += TOOL_QUERY_PHRASE_SCORE
         reasons.append("query phrase appears in tool registry text")
-    return min(score, 99), reasons or ["no strong tool registry evidence"]
+    return min(score, MAX_NON_EXACT_SCORE), reasons or ["no strong tool registry evidence"]
 
 
 def tool_candidates(
@@ -361,7 +381,7 @@ def tool_candidates(
     candidates: list[dict[str, Any]] = []
     for item in registry.get("tools", []):
         score, reasons = tool_candidate_score(item, query, workflow_name, intent_summary)
-        if score <= 0:
+        if score <= MIN_POSITIVE_SCORE:
             continue
         candidates.append(
             {
@@ -489,8 +509,8 @@ def _select_tool_records_without_gate(
     top_score = int(candidates[0].get("score", 0))
     second_score = int(candidates[1].get("score", 0)) if len(candidates) >= 2 else 0
     margin = top_score - second_score
-    selected_candidates = [item for item in candidates if int(item.get("score", 0)) >= 55]
-    if top_score < 55:
+    selected_candidates = [item for item in candidates if int(item.get("score", 0)) >= TOOL_AUTO_SELECT_MIN_SCORE]
+    if top_score < TOOL_AUTO_SELECT_MIN_SCORE:
         return {
             "selection_mode": "human-check",
             "status": "human-check-required",
@@ -585,7 +605,7 @@ def workflow_selection_context(
     command = str(workflow_record.get("command") or normalize_command(workflow))
     workflow_name = str(workflow_record.get("workflow") or workflow.strip().lstrip("/"))
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "workflow-selection",
         "architecture": "context-first",
         "selected_at": utc_now_iso(),
@@ -658,7 +678,7 @@ def tool_selection_context(
         human_check_reasons
     )
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "tool-selection",
         "architecture": "context-first",
         "selected_at": utc_now_iso(),
@@ -695,7 +715,7 @@ def runtime_context(
     target_dir: str,
 ) -> dict[str, Any]:
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "runtime-context",
         "architecture": "context-first",
         "workflow": workflow_name,
@@ -709,11 +729,11 @@ def runtime_context(
             "terminal_scope": "current workspace terminal",
         },
         "tool_paths": [
-            "runtime/tools",
+            "runtime/windows-script",
         ],
         "verification_commands": [
-            "uv run --project runtime python runtime/common/ctl.py --repo-root . context show --work-dir work/<work-id>",
-            "uv run --project runtime python runtime/workflow/workflow_doctor.py --fail-on-warning",
+            "uv run --project runtime python runtime/ctl/ctl.py --repo-root . context show --work-dir work/<work-id>",
+            "uv run --project runtime python runtime/ctl/ctl.py --repo-root . doctor --fail-on-warning",
         ],
         "human_check_required_when": [
             "The selected workflow needs external mutation, install, network, device, Docker, or personal environment changes.",
@@ -735,7 +755,7 @@ def execution_plan_context(
     if required_environment and "environment-selection" not in contexts:
         contexts.append("environment-selection")
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "execution-plan",
         "architecture": "context-first",
         "work_id": work_id,
@@ -791,7 +811,7 @@ def run_init(args: argparse.Namespace) -> dict[str, Any]:
         registry,
         args.workflow,
         args.intent_summary,
-        candidate_limit=getattr(args, "candidate_limit", 5),
+        candidate_limit=getattr(args, "candidate_limit", DISPATCHER_CANDIDATE_LIMIT_DEFAULT),
     )
     work_dir = work_dir_for_id(repo_root, args.work_id)
     context_dir = context_dir_for_work_dir(work_dir)
@@ -813,7 +833,7 @@ def run_init(args: argparse.Namespace) -> dict[str, Any]:
         intent_summary=args.intent_summary,
         default_mode=default_tool_mode,
         default_purpose=args.tool_purpose,
-        candidate_limit=getattr(args, "candidate_limit", 5),
+        candidate_limit=getattr(args, "candidate_limit", DISPATCHER_CANDIDATE_LIMIT_DEFAULT),
     )
     runtime = runtime_context(
         args.work_id,
@@ -915,7 +935,7 @@ def add_init_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--required-environment", default="")
     parser.add_argument("--next-command", action="append", default=[])
     parser.add_argument("--stop-condition", action="append", default=[])
-    parser.add_argument("--candidate-limit", type=int, default=5)
+    parser.add_argument("--candidate-limit", type=int, default=DISPATCHER_CANDIDATE_LIMIT_DEFAULT)
     parser.add_argument("--force", action="store_true")
 
 

@@ -394,10 +394,10 @@ def test_dispatcher_command_index_build_and_aggregation_helpers(monkeypatch: pyt
 
     command = rag_dispatcher.retrieval_command(args, query_item)
 
-    assert command[:3] == ["py", "runtime/rag/retrieve_context.py", "safety query"]
+    assert command[:7] == ["py", "runtime/ctl/ctl.py", "--repo-root", ".", "rag", "retrieve", "safety query"]
     assert ["--project", "override-project"] == command[command.index("--project") : command.index("--project") + 2]
     assert ["--source-type", "external-web"] == command[command.index("--source-type") : command.index("--source-type") + 2]
-    assert command[-3:] == ["--tag", "urgent", "--write-markdown"]
+    assert command[-4:] == ["--tag", "urgent", "--write-markdown", "--json"]
 
     with pytest.raises(FileNotFoundError, match="RAG index files are missing"):
         rag_dispatcher.ensure_indexes(args, repo)
@@ -410,12 +410,13 @@ def test_dispatcher_command_index_build_and_aggregation_helpers(monkeypatch: pyt
 
     monkeypatch.setattr(rag_dispatcher, "run_command", fake_run_command)
     rag_dispatcher.ensure_indexes(make_args(build_if_missing=True, python="py"), repo)
-    assert [call[1] for call in calls] == [
-        "runtime/rag/normalize_documents.py",
-        "runtime/rag/chunk_documents.py",
-        "runtime/rag/build_index.py",
-        "runtime/rag/embed_chunks.py",
+    assert [call[1:6] for call in calls] == [
+        ["runtime/ctl/ctl.py", "--repo-root", ".", "rag", "normalize"],
+        ["runtime/ctl/ctl.py", "--repo-root", ".", "rag", "chunk"],
+        ["runtime/ctl/ctl.py", "--repo-root", ".", "rag", "index"],
+        ["runtime/ctl/ctl.py", "--repo-root", ".", "rag", "embed"],
     ]
+    assert all(call[-1] == "--json" for call in calls)
 
     def fake_failed_command(command: list[str], cwd: Path) -> dict:
         return {"returncode": 1, "stderr": "failed"}

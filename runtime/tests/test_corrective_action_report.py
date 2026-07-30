@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from runtime.workflow import corrective_action_report
+from runtime.workflow import corrective_action_report, work_cleanup
 
 
 def make_repo(tmp_path: Path) -> Path:
@@ -176,6 +176,37 @@ def test_corrective_action_report_register_with_explicit_work_dir_and_show(tmp_p
     assert shown["status"] == "ok"
     assert shown["work_id"] == "custom-work"
     assert shown["context"]["artifact_type"] == "corrective-action-report"
+
+    draft = corrective_action_report.run_register(
+        make_args(repo, report_path="rag/corrective-action-report/report.md", work_id="car-draft", target_branch="")
+    )
+    assert draft["work_cleanup"]["ready_for_check"] is False
+    blocked = work_cleanup.cleanup_check(
+        argparse.Namespace(work_id="car-draft", repo_root=str(repo), recursive=False, required_artifact=[])
+    )
+    assert blocked["status"] == "blocked"
+    assert "long-lived knowledge artifact is not confirmed" in blocked["blockers"]
+
+
+def test_corrective_action_report_registers_approved_work_db_report_for_cleanup(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    report = repo / "work" / "db" / "ariadne-knowledge-platform" / "rag" / "corrective-action-report" / "report.md"
+    report.parent.mkdir(parents=True)
+    report.write_text(
+        "---\nrepository: owner/repo\nbranch: develop\nstatus: approved\n---\n\n## Findings\n- one\n",
+        encoding="utf-8",
+    )
+
+    result = corrective_action_report.run_register(
+        make_args(repo, report_path=str(report), work_id="car-approved", target_branch="")
+    )
+
+    assert result["work_cleanup"]["ready_for_check"] is True
+    assert result["next_action"]["action"] == "check-work-cleanup"
+    check = work_cleanup.cleanup_check(
+        argparse.Namespace(work_id="car-approved", repo_root=str(repo), recursive=False, required_artifact=[])
+    )
+    assert check["status"] == "ready"
 
 
 def test_corrective_action_report_register_missing_report_and_show_missing(tmp_path: Path) -> None:

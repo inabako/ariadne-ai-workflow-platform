@@ -317,7 +317,7 @@
     {
       "label": "workflow:aiwfctl-path-shell",
       "type": "process",
-      "command": "${workspaceFolder}\\runtime\\tools\\register-aiwfctl-path.cmd",
+      "command": "${workspaceFolder}\\runtime\\windows-script\\register-aiwfctl-path.cmd",
       "args": [
         "--shell"
       ],
@@ -462,6 +462,80 @@
         "python",
         "runtime/workflow/vscode_task_runner.py",
         "go-version"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "ARIADNE: List ScanCode GitHub Actions Jobs",
+      "type": "shell",
+      "command": "act",
+      "args": [
+        "workflow_dispatch",
+        "--list",
+        "-W",
+        "${workspaceFolder}/.github/workflows/scancode.yml",
+        "-P",
+        "ubuntu-latest=catthehacker/ubuntu:act-22.04"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "ARIADNE: Rehearse ScanCode Workflow",
+      "type": "shell",
+      "command": "act",
+      "args": [
+        "workflow_dispatch",
+        "-W",
+        "${workspaceFolder}/.github/workflows/scancode.yml",
+        "-j",
+        "scancode",
+        "-P",
+        "ubuntu-latest=catthehacker/ubuntu:act-22.04",
+        "--artifact-server-path",
+        "${workspaceFolder}/.act-artifacts"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "ARIADNE: List REUSE Lint GitHub Actions Jobs",
+      "type": "shell",
+      "command": "act",
+      "args": [
+        "workflow_dispatch",
+        "--list",
+        "-W",
+        "${workspaceFolder}/.github/workflows/reuse-lint.yml",
+        "-P",
+        "ubuntu-latest=catthehacker/ubuntu:act-22.04"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "ARIADNE: Rehearse REUSE Lint Workflow",
+      "type": "shell",
+      "command": "act",
+      "args": [
+        "workflow_dispatch",
+        "-W",
+        "${workspaceFolder}/.github/workflows/reuse-lint.yml",
+        "-j",
+        "reuse-lint",
+        "-P",
+        "ubuntu-latest=catthehacker/ubuntu:act-22.04",
+        "--artifact-server-path",
+        "${workspaceFolder}/.act-artifacts"
       ],
       "options": {
         "cwd": "${workspaceFolder}"

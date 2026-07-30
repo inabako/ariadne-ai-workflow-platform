@@ -17,6 +17,34 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
+from runtime.constants.cli_defaults import (  # noqa: E402
+    GITHUB_DETECT_REBASE_MAX_COMMITS_DEFAULT,
+    GITHUB_DETECT_REBASE_MAX_FILES_DEFAULT,
+    GITHUB_MESSAGE_PLAN_MAX_COMMITS_DEFAULT,
+)
+from runtime.constants.workflow_limits import (  # noqa: E402
+    GITHUB_KNOWLEDGE_CHECKLIST_PATH_LIMIT,
+    GITHUB_KNOWLEDGE_COMMAND_OUTPUT_MAX_CHARS,
+    GITHUB_KNOWLEDGE_COMMIT_REF_CHARS,
+    GITHUB_KNOWLEDGE_DOMAIN_SUMMARY_LIMIT,
+    GITHUB_KNOWLEDGE_FINDING_PREVIEW_LIMIT,
+    GITHUB_KNOWLEDGE_GIT_LOG_SAMPLE_COMMAND,
+    GITHUB_KNOWLEDGE_HISTORY_FILE_PATH_MAX,
+    GITHUB_KNOWLEDGE_HISTORY_FILE_PATH_MIN,
+    GITHUB_KNOWLEDGE_MIN_POSITIVE_RELATED_SCORE,
+    GITHUB_KNOWLEDGE_ORDER_FALLBACK,
+    GITHUB_KNOWLEDGE_PATH_AFFINITY_DIRECTORY_SCORE,
+    GITHUB_KNOWLEDGE_PATH_AFFINITY_DOMAIN_SCORE,
+    GITHUB_KNOWLEDGE_PATH_AFFINITY_EXACT_PATH_SCORE,
+    GITHUB_KNOWLEDGE_PATH_AFFINITY_ROOT_SCORE,
+    GITHUB_KNOWLEDGE_PATH_SUMMARY_LIMIT,
+    GITHUB_KNOWLEDGE_RAG_SOURCE_ID_RANDOM_LENGTH,
+    GITHUB_KNOWLEDGE_RELATED_SCORE_DEFAULT,
+    GITHUB_KNOWLEDGE_SEMANTIC_SUBJECT_BONUS,
+    GITHUB_KNOWLEDGE_SHORT_COMMIT_CHARS,
+    GITHUB_KNOWLEDGE_SUBJECT_MAX_CHARS,
+)
 from runtime.common import (  # noqa: E402
     default_github_owner,
     ensure_work_tree,
@@ -36,6 +64,7 @@ from runtime.common import (  # noqa: E402
     write_markdown,
 )
 from runtime.constants.paths import REGISTRY_DB_PATH, SOURCE_GITHUB_KNOWLEDGE  # noqa: E402
+from runtime.constants.encoding import MOJIBAKE_MARKERS  # noqa: E402
 from runtime.constants.schemas import (  # noqa: E402
     AGENT_CONTEXT_SCHEMA,
     ARTIFACT_INDEX_SCHEMA,
@@ -64,6 +93,7 @@ from runtime.workflow.context_first import (  # noqa: E402
     manifest_path_for_work_dir,
     register_context,
 )
+from runtime.workflow import work_cleanup_hint  # noqa: E402
 
 
 SCAN_MODES = ["repository", "issue", "pull-request", "recent", "full"]
@@ -203,6 +233,44 @@ def build_parser() -> argparse.ArgumentParser:
     integrity_parser.add_argument("--fail-on-finding", action="store_true")
     integrity_parser.add_argument("--repo-root", default=None)
 
+    status_parser = subparsers.add_parser("status", help="Summarize current workflow state for safe restart.")
+    status_parser.add_argument("--work-id", required=True)
+    status_parser.add_argument("--analysis-path", default="")
+    status_parser.add_argument("--repo-root", default=None)
+
+    next_action_parser = subparsers.add_parser("next-action", help="Show the next safe action for this work-id.")
+    next_action_parser.add_argument("--work-id", required=True)
+    next_action_parser.add_argument("--analysis-path", default="")
+    next_action_parser.add_argument("--repo-root", default=None)
+
+    resume_parser = subparsers.add_parser("resume", help="Alias for next-action; does not mutate by default.")
+    resume_parser.add_argument("--work-id", required=True)
+    resume_parser.add_argument("--analysis-path", default="")
+    resume_parser.add_argument("--repo-root", default=None)
+
+    verify_remote_parser = subparsers.add_parser(
+        "verify-remote",
+        help="Verify a replay package expected remote SHA against the remote branch.",
+    )
+    verify_remote_parser.add_argument("--work-id", required=True)
+    verify_remote_parser.add_argument("--analysis-path", default="")
+    verify_remote_parser.add_argument("--package-path", default="")
+    verify_remote_parser.add_argument("--target-branch", default="")
+    verify_remote_parser.add_argument("--remote", default="")
+    verify_remote_parser.add_argument("--expected-remote-sha", default="")
+    verify_remote_parser.add_argument("--repo-root", default=None)
+
+    cleanup_worktree_parser = subparsers.add_parser(
+        "cleanup-worktree",
+        help="Inspect or remove a replay worktree for this work-id.",
+    )
+    cleanup_worktree_parser.add_argument("--work-id", required=True)
+    cleanup_worktree_parser.add_argument("--analysis-path", default="")
+    cleanup_worktree_parser.add_argument("--target-branch", default="")
+    cleanup_worktree_parser.add_argument("--force", action="store_true")
+    cleanup_worktree_parser.add_argument("--prune", action="store_true")
+    cleanup_worktree_parser.add_argument("--repo-root", default=None)
+
     repair_parser = subparsers.add_parser("repair-plan", help="Create a human review repair plan from analysis JSON.")
     repair_parser.add_argument("--work-id", required=True)
     repair_parser.add_argument("--analysis-path", default="")
@@ -218,8 +286,8 @@ def build_parser() -> argparse.ArgumentParser:
     detect_rebase_parser.add_argument("--git-repo", default="")
     detect_rebase_parser.add_argument("--base", default="HEAD~30")
     detect_rebase_parser.add_argument("--head", default="HEAD")
-    detect_rebase_parser.add_argument("--max-commits", type=int, default=80)
-    detect_rebase_parser.add_argument("--max-files", type=int, default=3)
+    detect_rebase_parser.add_argument("--max-commits", type=int, default=GITHUB_DETECT_REBASE_MAX_COMMITS_DEFAULT)
+    detect_rebase_parser.add_argument("--max-files", type=int, default=GITHUB_DETECT_REBASE_MAX_FILES_DEFAULT)
     detect_rebase_parser.add_argument("--all-history", action="store_true", help="Scan the full reachable history from --head.")
     detect_rebase_parser.add_argument("--append", action="store_true")
     detect_rebase_parser.add_argument("--repo-root", default=None)
@@ -264,7 +332,7 @@ def build_parser() -> argparse.ArgumentParser:
     message_plan_parser.add_argument("--analysis-path", default="")
     message_plan_parser.add_argument("--git-repo", default="")
     message_plan_parser.add_argument("--source-ref", default="")
-    message_plan_parser.add_argument("--max-commits", type=int, default=200)
+    message_plan_parser.add_argument("--max-commits", type=int, default=GITHUB_MESSAGE_PLAN_MAX_COMMITS_DEFAULT)
     message_plan_parser.add_argument("--output", default="")
     message_plan_parser.add_argument("--repo-root", default=None)
 
@@ -304,6 +372,7 @@ def build_parser() -> argparse.ArgumentParser:
     rebase_package_parser.add_argument("--remote", default="origin")
     rebase_package_parser.add_argument("--expected-remote-sha", default="")
     rebase_package_parser.add_argument("--allow-push", action="store_true")
+    rebase_package_parser.add_argument("--push-allowed", dest="allow_push", action="store_true")
     rebase_package_parser.add_argument("--apply-mode", choices=["direct", "git-3way", "auto-3way"], default="direct")
     rebase_package_parser.add_argument("--repo-root", default=None)
 
@@ -320,6 +389,7 @@ def build_parser() -> argparse.ArgumentParser:
     message_package_parser.add_argument("--remote", default="origin")
     message_package_parser.add_argument("--expected-remote-sha", default="")
     message_package_parser.add_argument("--allow-push", action="store_true")
+    message_package_parser.add_argument("--push-allowed", dest="allow_push", action="store_true")
     message_package_parser.add_argument("--apply-mode", choices=["direct", "git-3way", "auto-3way"], default="auto-3way")
     message_package_parser.add_argument("--repo-root", default=None)
 
@@ -429,9 +499,17 @@ def default_work_id(
     return f"github/{default_work_scope(target_branch)}/{mode}"
 
 
+def work_id_from_work_dir(work_dir: Path) -> str:
+    parts = list(work_dir.parts)
+    work_indexes = [index for index, part in enumerate(parts) if part == "work"]
+    if work_indexes and work_indexes[-1] + 1 < len(parts):
+        return Path(*parts[work_indexes[-1] + 1 :]).as_posix()
+    return work_dir.name
+
+
 def rag_source_report_name(topic: str) -> str:
     timestamp = local_timestamp().replace("_", "")
-    random_id = "".join(secrets.choice(RAG_SOURCE_ID_ALPHABET) for _ in range(6))
+    random_id = "".join(secrets.choice(RAG_SOURCE_ID_ALPHABET) for _ in range(GITHUB_KNOWLEDGE_RAG_SOURCE_ID_RANDOM_LENGTH))
     return f"{timestamp}_{random_id}_{slugify(topic)}.md"
 
 
@@ -449,7 +527,7 @@ def github_operation_gate(
     if rag_output:
         reasons.append("RAG publication requires human approval before publication.")
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "github-operation-gate",
         "workflow": "github-knowledge-maintenance",
         "work_id": work_id,
@@ -546,7 +624,7 @@ def github_tool_selection(
             }
         )
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "tool-selection",
         "architecture": "context-first",
         "selected_at": utc_now_iso(),
@@ -631,7 +709,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
     scan_modes = sorted(set(args.scan_mode), key=args.scan_mode.index)
 
     agent_context = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "project": {
             "name": repo_name,
             "repository": repository,
@@ -701,7 +779,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
     write_json(
         context_dir / "handoff-package.json",
         {
-            "schema_version": "1.0",
+            "schema_version": SCHEMA_VERSION,
             "from_agent": "runtime-workflow",
             "to_agent": "repository-discovery-agent",
             "workflow": "github-knowledge-maintenance",
@@ -782,9 +860,9 @@ def default_analysis(work_dir: Path) -> dict[str, Any]:
             key, value = item.split("=", 1)
             assumption_map[key] = value
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "workflow": "github-knowledge-maintenance",
-        "work_id": assumption_map.get("work_id", work_dir.name),
+        "work_id": assumption_map.get("work_id", work_id_from_work_dir(work_dir)),
         "repository": context.get("project", {}).get("repository", ""),
         "target_branch": assumption_map.get("target_branch", ""),
         "scan_mode": [mode for mode in assumption_map.get("scan_mode", "recent").split(",") if mode],
@@ -848,7 +926,7 @@ def analysis_path_for(work_dir: Path, raw_path: str) -> Path:
 def register_artifact(repo_root: Path, work_dir: Path, artifact_id: str, title: str, path: Path, artifact_type: str) -> None:
     context = read_json(context_file(work_dir, "agent-context.json"), default={}) or {}
     project_name = context.get("project", {}).get("name", work_dir.name)
-    work_id = default_analysis(work_dir).get("work_id", work_dir.name)
+    work_id = default_analysis(work_dir).get("work_id", work_id_from_work_dir(work_dir))
     index = load_artifact_index(work_dir, project_name, "github-knowledge-maintenance")
     now = utc_now_iso()
     upsert_artifact(
@@ -883,6 +961,10 @@ def register_artifact(repo_root: Path, work_dir: Path, artifact_id: str, title: 
         )
 
 
+def work_cleanup_record(repo_root: Path, work_dir: Path, work_id: str) -> dict[str, Any]:
+    return work_cleanup_hint.record(repo_root, work_dir, work_id)
+
+
 def create_analysis_template(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     work_dir = work_dir_for_id(repo_root, args.work_id)
@@ -899,7 +981,13 @@ def create_analysis_template(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
-MOJIBAKE_MARKERS = ("\u7e67", "\u7e3a", "\u8b41", "\u9015", "\u8373", "\u90b1", "\ufffd")
+JSON_ARTIFACT_KINDS = {"analysis-json", "rebase-replay-package", "message-repair-package"}
+REPLAY_PACKAGE_ARTIFACT_KINDS = {"rebase-replay-package", "message-repair-package"}
+RESUME_CHECKLIST_PATTERNS = (
+    "github-history-rebase-plan-*.md",
+    "github-history-message-repair-plan-*.md",
+    "github-documentation-sync-review-plan-*.md",
+)
 INTEGRITY_MARKDOWN_PATTERNS = (
     "github-knowledge-repair-plan-*.md",
     "github-history-rebase-plan-*.md",
@@ -940,7 +1028,7 @@ def inspect_utf8_text_artifact(repo_root: Path, path: Path, *, artifact_kind: st
     if markers:
         record["mojibake_markers"] = markers
         record["findings"].append("mojibake-marker-present")
-    if artifact_kind == "analysis-json":
+    if artifact_kind in JSON_ARTIFACT_KINDS:
         try:
             payload = json.loads(text)
         except json.JSONDecodeError as exc:
@@ -948,12 +1036,24 @@ def inspect_utf8_text_artifact(repo_root: Path, path: Path, *, artifact_kind: st
             record["findings"].append(f"json-parse-failed: {exc}")
         else:
             record["json_parse"] = "pass"
-            if isinstance(payload, dict):
+            if not isinstance(payload, dict):
+                record["findings"].append(f"{artifact_kind}-not-object")
+            elif artifact_kind == "analysis-json":
                 candidates = payload.get("history_rewrite_candidates", [])
                 count = len(candidates) if isinstance(candidates, list) else "invalid"
                 record["content_signals"].append(f"history_rewrite_candidates:{count}")
-            else:
-                record["findings"].append("analysis-json-not-object")
+            elif artifact_kind in REPLAY_PACKAGE_ARTIFACT_KINDS:
+                candidate_ids = package_list(payload.get("candidate_ids"))
+                record["content_signals"].append(f"candidate_ids:{len(candidate_ids)}")
+                record["content_signals"].append(f"allow_push:{str(bool(payload.get('allow_push', False))).lower()}")
+                if not str(payload.get("target_branch", "")).strip():
+                    record["findings"].append("package-target-branch-missing")
+                if not str(payload.get("source_ref", "")).strip():
+                    record["findings"].append("package-source-ref-missing")
+                if not str(payload.get("apply_mode", "")).strip():
+                    record["findings"].append("package-apply-mode-missing")
+                if bool(payload.get("allow_push", False)) and not str(payload.get("expected_remote_sha", "")).strip():
+                    record["findings"].append("package-expected-remote-sha-missing")
     elif artifact_kind == "rebase-plan":
         if "候補別 OK / NG チェックリスト" in text:
             record["content_signals"].append("ok-ng-checklist-present")
@@ -965,12 +1065,208 @@ def inspect_utf8_text_artifact(repo_root: Path, path: Path, *, artifact_kind: st
 def github_knowledge_artifact_paths(work_dir: Path, analysis_path: Path) -> list[tuple[str, Path]]:
     process_dir = process_report_dir_for_work_dir(work_dir)
     artifacts: list[tuple[str, Path]] = [("analysis-json", analysis_path)]
+    for path in existing_replay_package_paths(work_dir):
+        artifacts.append((replay_package_artifact_kind(path), path))
     if process_dir.exists():
         for pattern in INTEGRITY_MARKDOWN_PATTERNS:
             kind = "rebase-plan" if pattern == "github-history-rebase-plan-*.md" else "markdown-report"
             for path in sorted(process_dir.glob(pattern)):
                 artifacts.append((kind, path))
     return artifacts
+
+
+def replay_package_artifact_kind(path: Path) -> str:
+    return "message-repair-package" if path.name == "message-repair-package.json" else "rebase-replay-package"
+
+
+def github_knowledge_resume_artifact_paths(work_dir: Path, analysis_path: Path) -> list[tuple[str, Path]]:
+    process_dir = process_report_dir_for_work_dir(work_dir)
+    artifacts: list[tuple[str, Path]] = [("analysis-json", analysis_path)]
+    for path in existing_replay_package_paths(work_dir):
+        artifacts.append((replay_package_artifact_kind(path), path))
+    if process_dir.exists():
+        for pattern in RESUME_CHECKLIST_PATTERNS:
+            kind = "rebase-plan" if pattern == "github-history-rebase-plan-*.md" else "markdown-report"
+            paths = sorted(process_dir.glob(pattern), key=lambda path: (path.stat().st_mtime, path.name))
+            if paths:
+                artifacts.append((kind, paths[-1]))
+    return artifacts
+
+
+def json_payload_from_artifact(path: Path, artifact: dict[str, Any]) -> dict[str, Any] | None:
+    if artifact.get("json_parse") != "pass":
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def artifact_gate_findings(artifact: dict[str, Any]) -> list[dict[str, Any]]:
+    path = str(artifact.get("path", ""))
+    kind = str(artifact.get("artifact_kind", "artifact"))
+    return [
+        {
+            "severity": "block",
+            "path": path,
+            "kind": kind,
+            "message": str(finding),
+        }
+        for finding in artifact.get("findings", [])
+    ]
+
+
+def candidate_state_gate_findings(analysis: dict[str, Any]) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    approval_values = {"pending", "approved", "rejected"}
+    execution_values = {"pending", "dry-run", "verified", "pushed", "failed", "verification-failed", "applied"}
+    history_goals = {
+        "absorb-into-existing-commit",
+        "drop-empty-or-noise-commit",
+        "split-into-independent-commit",
+        "manual-review-required",
+    }
+    collections = [
+        ("history_rewrite_candidates", history_rewrite_candidates(analysis), True),
+        ("message_repair_candidates", message_repair_candidates(analysis), False),
+    ]
+    for collection_name, candidates, is_history in collections:
+        for index, candidate in enumerate(candidates):
+            candidate_id = str(candidate.get("id", f"{collection_name}[{index}]")).strip()
+            path = f"github-knowledge-analysis.json:{collection_name}:{candidate_id}"
+            approval_status = str(candidate.get("approval_status", "pending") or "pending")
+            execution_status = str(candidate.get("execution_status", "pending") or "pending")
+            if approval_status not in approval_values:
+                findings.append(
+                    {
+                        "severity": "block",
+                        "path": path,
+                        "kind": "invalid-approval-status",
+                        "message": f"approval_status must be one of {sorted(approval_values)}: {approval_status}",
+                    }
+                )
+            if execution_status not in execution_values:
+                findings.append(
+                    {
+                        "severity": "block",
+                        "path": path,
+                        "kind": "invalid-execution-status",
+                        "message": f"execution_status must be one of {sorted(execution_values)}: {execution_status}",
+                    }
+                )
+            if approval_status == "approved" and is_history:
+                repair_goal = str(candidate.get("repair_goal", "")).strip()
+                if repair_goal not in history_goals:
+                    findings.append(
+                        {
+                            "severity": "block",
+                            "path": path,
+                            "kind": "invalid-repair-goal",
+                            "message": f"approved history candidate requires a known repair_goal: {repair_goal or '<missing>'}",
+                        }
+                    )
+            if execution_status in {"verified", "pushed"} and not package_list(candidate.get("before_after_sha_mapping")):
+                findings.append(
+                    {
+                        "severity": "block",
+                        "path": path,
+                        "kind": "missing-before-after-sha-mapping",
+                        "message": "verified or pushed replay candidates require before_after_sha_mapping.",
+                    }
+                )
+    return findings
+
+
+def package_state_gate_findings(package: dict[str, Any], analysis: dict[str, Any], *, path: str) -> list[dict[str, Any]]:
+    try:
+        normalized = normalize_rebase_replay_package(package)
+        validate_rebase_replay_package(normalized, analysis, push=bool(normalized.get("allow_push", False)))
+    except Exception as exc:
+        return [
+            {
+                "severity": "block",
+                "path": path,
+                "kind": "package-validation-failed",
+                "message": str(exc),
+            }
+        ]
+    return []
+
+
+def inspect_github_knowledge_encoding(
+    repo_root: Path,
+    work_dir: Path,
+    analysis_path: Path,
+    artifact_paths: list[tuple[str, Path]],
+) -> dict[str, Any]:
+    inspected: list[tuple[str, Path, dict[str, Any]]] = [
+        (kind, path, inspect_utf8_text_artifact(repo_root, path, artifact_kind=kind))
+        for kind, path in artifact_paths
+    ]
+    artifacts = [artifact for _kind, _path, artifact in inspected]
+    findings: list[dict[str, Any]] = []
+    warnings: list[dict[str, Any]] = []
+    for _kind, _path, artifact in inspected:
+        findings.extend(artifact_gate_findings(artifact))
+        if artifact.get("bom") and not artifact.get("findings"):
+            warnings.append(
+                {
+                    "severity": "warning",
+                    "path": str(artifact.get("path", "")),
+                    "kind": str(artifact.get("artifact_kind", "artifact")),
+                    "message": "utf8-bom-present",
+                }
+            )
+
+    analysis = next(
+        (
+            json_payload_from_artifact(path, artifact)
+            for kind, path, artifact in inspected
+            if kind == "analysis-json"
+        ),
+        None,
+    )
+    packages: list[tuple[Path, dict[str, Any]]] = []
+    for kind, path, artifact in inspected:
+        if kind not in REPLAY_PACKAGE_ARTIFACT_KINDS:
+            continue
+        payload = json_payload_from_artifact(path, artifact)
+        if payload is not None:
+            packages.append((path, payload))
+
+    if analysis is not None:
+        findings.extend(candidate_state_gate_findings(analysis))
+        for package_path, package in packages:
+            findings.extend(
+                package_state_gate_findings(
+                    package,
+                    analysis,
+                    path=relative_to_repo(repo_root, package_path),
+                )
+            )
+
+    status = "block" if findings else "warning" if warnings else "pass"
+    repair_command = (
+        f"aiwfctl github-knowledge artifact-integrity --work-id {shlex.quote(work_id_from_work_dir(work_dir))} --fail-on-finding"
+        if findings
+        else ""
+    )
+    return {
+        "encoding_gate": {
+            "status": status,
+            "checked_artifacts": len(artifacts),
+            "findings": findings,
+            "warnings": warnings,
+            "repair_available": bool(findings),
+            "repair_command": repair_command,
+            "rule": "saved-file-bytes-strict-utf8-json-and-resume-state-validation",
+        },
+        "artifacts": artifacts,
+        "analysis": analysis if isinstance(analysis, dict) else {},
+        "packages": packages,
+        "analysis_path": analysis_path,
+    }
 
 
 def build_artifact_integrity_markdown(report: dict[str, Any]) -> str:
@@ -1022,15 +1318,15 @@ def create_artifact_integrity_report(args: argparse.Namespace) -> dict[str, Any]
     if not work_dir.exists():
         raise FileNotFoundError(f"Work directory does not exist: {work_dir}")
     analysis_path = analysis_path_for(work_dir, args.analysis_path)
-    artifacts = [
-        inspect_utf8_text_artifact(repo_root, path, artifact_kind=kind)
-        for kind, path in github_knowledge_artifact_paths(work_dir, analysis_path)
-    ]
-    findings = [
-        f"{artifact['path']}: {finding}"
-        for artifact in artifacts
-        for finding in artifact.get("findings", [])
-    ]
+    inspection = inspect_github_knowledge_encoding(
+        repo_root,
+        work_dir,
+        analysis_path,
+        github_knowledge_artifact_paths(work_dir, analysis_path),
+    )
+    artifacts = inspection["artifacts"]
+    gate_findings = inspection["encoding_gate"]["findings"]
+    findings = [f"{finding['path']}: {finding['message']}" for finding in gate_findings]
     status = "pass" if not findings else "fail"
     report = {
         "artifact_type": "github-knowledge-artifact-integrity",
@@ -1040,6 +1336,7 @@ def create_artifact_integrity_report(args: argparse.Namespace) -> dict[str, Any]
         "analysis_path": relative_to_repo(repo_root, analysis_path),
         "artifacts": artifacts,
         "findings": findings,
+        "encoding_gate": inspection["encoding_gate"],
         "generated_at": utc_now_iso(),
         "gate_restart": github_knowledge_gate_restart(
             "github-knowledge-artifact-integrity-gate",
@@ -1279,10 +1576,10 @@ def path_affinity_score(left_files: list[str], right_files: list[str]) -> int:
     left_suffixes = {Path(path).suffix for path in left_normalized if Path(path).suffix}
     right_suffixes = {Path(path).suffix for path in right_normalized if Path(path).suffix}
     return (
-        len(left_normalized & right_normalized) * 6
-        + len(left_dirs & right_dirs) * 4
-        + len(path_domains(list(left_normalized)) & path_domains(list(right_normalized))) * 3
-        + len(left_roots & right_roots) * 2
+        len(left_normalized & right_normalized) * GITHUB_KNOWLEDGE_PATH_AFFINITY_EXACT_PATH_SCORE
+        + len(left_dirs & right_dirs) * GITHUB_KNOWLEDGE_PATH_AFFINITY_DIRECTORY_SCORE
+        + len(path_domains(list(left_normalized)) & path_domains(list(right_normalized))) * GITHUB_KNOWLEDGE_PATH_AFFINITY_DOMAIN_SCORE
+        + len(left_roots & right_roots) * GITHUB_KNOWLEDGE_PATH_AFFINITY_ROOT_SCORE
         + len(left_suffixes & right_suffixes)
     )
 
@@ -1293,10 +1590,10 @@ def nearest_related_commit(commits: list[dict[str, Any]], index: int, candidate_
         if other_index == index:
             continue
         score = path_affinity_score(candidate_files, commit.get("files", []) or [])
-        if score <= 0:
+        if score <= GITHUB_KNOWLEDGE_MIN_POSITIVE_RELATED_SCORE:
             continue
         distance = abs(other_index - index)
-        semantic_bonus = 2 if not commit_subject_is_weak(str(commit.get("subject", ""))) else 0
+        semantic_bonus = GITHUB_KNOWLEDGE_SEMANTIC_SUBJECT_BONUS if not commit_subject_is_weak(str(commit.get("subject", ""))) else 0
         current = (score, semantic_bonus, -distance, -other_index, commit)
         if best is None or current > best:
             best = current
@@ -1316,7 +1613,7 @@ def nearest_semantic_commit(
 def short_commit(commit: dict[str, Any]) -> str:
     commit_hash = str(commit.get("hash", ""))
     subject = str(commit.get("subject", ""))
-    return f"{commit_hash[:7]} {subject}".strip()
+    return f"{commit_hash[:GITHUB_KNOWLEDGE_SHORT_COMMIT_CHARS]} {subject}".strip()
 
 
 def build_detected_history_candidate(
@@ -1324,7 +1621,7 @@ def build_detected_history_candidate(
     expected_commit: dict[str, Any] | None,
     index: int,
     *,
-    related_score: int = 0,
+    related_score: int = GITHUB_KNOWLEDGE_RELATED_SCORE_DEFAULT,
 ) -> dict[str, Any]:
     commit_hash = str(commit.get("hash", ""))
     expected = short_commit(expected_commit) if expected_commit else ""
@@ -1345,7 +1642,7 @@ def build_detected_history_candidate(
     if commit_hash:
         draft_commands.extend(
             [
-                f"git switch -c rewrite/{candidate_id.lower()} {commit_hash[:12]}^",
+                f"git switch -c rewrite/{candidate_id.lower()} {commit_hash[:GITHUB_KNOWLEDGE_COMMIT_REF_CHARS]}^",
                 f"# replay approved commits with git cherry-pick --no-commit and git commit -F <message-file>",
                 "git diff --quiet <old-head>..<new-head>",
             ]
@@ -1383,7 +1680,7 @@ def build_detected_history_candidate(
         "rollback_plan": f"git reset --hard {commit_hash}" if commit_hash else "",
         "draft_commands": draft_commands,
         "verification_commands": [
-            "git log --format=\"%H %s\" --max-count=20",
+            GITHUB_KNOWLEDGE_GIT_LOG_SAMPLE_COMMAND,
             "git diff --stat",
         ],
     }
@@ -1469,8 +1766,14 @@ def validate_history_rewrite_candidates(candidates: list[dict[str, Any]]) -> lis
     for candidate in candidates:
         candidate_id = str(candidate.get("id", "HISTORY-XXX"))
         file_paths = candidate.get("file_paths", []) or []
-        if not isinstance(file_paths, list) or not 1 <= len(file_paths) <= 3:
-            errors.append(f"{candidate_id}: file_paths must contain 1 to 3 files.")
+        if (
+            not isinstance(file_paths, list)
+            or not GITHUB_KNOWLEDGE_HISTORY_FILE_PATH_MIN <= len(file_paths) <= GITHUB_KNOWLEDGE_HISTORY_FILE_PATH_MAX
+        ):
+            errors.append(
+                f"{candidate_id}: file_paths must contain "
+                f"{GITHUB_KNOWLEDGE_HISTORY_FILE_PATH_MIN} to {GITHUB_KNOWLEDGE_HISTORY_FILE_PATH_MAX} files."
+            )
         repair_goal = str(candidate.get("repair_goal", ""))
         if repair_goal and repair_goal not in REBASE_REPAIR_GOALS:
             errors.append(f"{candidate_id}: repair_goal is not supported.")
@@ -1559,6 +1862,336 @@ def load_analysis(repo_root: Path, work_id: str, raw_path: str) -> tuple[Path, P
     if not isinstance(analysis, dict):
         raise ValueError(f"GitHub knowledge analysis must be a JSON object: {path}")
     return work_dir, path, analysis
+
+
+def count_by_status(items: list[dict[str, Any]], key: str, default: str = "pending") -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for item in items:
+        status = str(item.get(key, default) or default)
+        counts[status] = counts.get(status, 0) + 1
+    return counts
+
+
+def existing_replay_package_paths(work_dir: Path) -> list[Path]:
+    candidates = [
+        context_file(work_dir, "rebase-replay-package.json"),
+        context_file(work_dir, "message-repair-package.json"),
+    ]
+    return [path for path in candidates if path.exists()]
+
+
+def latest_replay_package_path(work_dir: Path, raw_path: str = "") -> Path | None:
+    if raw_path:
+        path = Path(raw_path).resolve()
+        return path if path.exists() else path
+    paths = existing_replay_package_paths(work_dir)
+    if not paths:
+        return None
+    return max(paths, key=lambda path: (path.stat().st_mtime, path.name))
+
+
+def read_replay_package_for_status(work_dir: Path, raw_path: str = "") -> tuple[Path | None, dict[str, Any]]:
+    package_path = latest_replay_package_path(work_dir, raw_path)
+    if package_path is None or not package_path.exists():
+        return package_path, {}
+    package = read_json(package_path, default={}) or {}
+    if not isinstance(package, dict):
+        raise ValueError(f"Replay package must be a JSON object: {package_path}")
+    return package_path, package
+
+
+def target_branch_for_resume(analysis: dict[str, Any], package: dict[str, Any], explicit: str = "") -> str:
+    return (
+        str(explicit or "").strip()
+        or str(package.get("target_branch", "")).strip()
+        or str(analysis.get("target_branch", "")).strip()
+    )
+
+
+def replay_worktree_record(repo_root: Path, work_dir: Path, target_branch: str) -> dict[str, Any]:
+    if not target_branch:
+        return {"target_branch": "", "path": "", "exists": False, "git_status": "unknown"}
+    worktree_path = replay_worktree_path(work_dir, target_branch)
+    record: dict[str, Any] = {
+        "target_branch": target_branch,
+        "path": relative_to_repo(repo_root, worktree_path),
+        "exists": worktree_path.exists(),
+        "git_status": "missing",
+        "reuse_hint": "",
+    }
+    if worktree_path.exists():
+        try:
+            status = git_text(worktree_path, ["status", "--short", "--branch"]).strip()
+        except Exception as exc:  # pragma: no cover - defensive status only
+            status = f"unreadable: {exc}"
+        record["git_status"] = status
+        record["reuse_hint"] = "Add --reuse-worktree to rebase-apply, or run cleanup-worktree --force."
+    return record
+
+
+def package_status_record(repo_root: Path, package_path: Path | None, package: dict[str, Any]) -> dict[str, Any]:
+    if package_path is None:
+        return {"exists": False, "path": "", "allow_push": False, "expected_remote_sha": ""}
+    return {
+        "exists": package_path.exists(),
+        "path": relative_to_repo(repo_root, package_path),
+        "target_branch": str(package.get("target_branch", "")).strip(),
+        "source_ref": str(package.get("source_ref", "")).strip(),
+        "remote": str(package.get("remote", "origin")).strip() or "origin",
+        "apply_mode": str(package.get("apply_mode", "")).strip(),
+        "allow_push": bool(package.get("allow_push", False)),
+        "expected_remote_sha": str(package.get("expected_remote_sha", "")).strip(),
+        "candidate_count": len(package_list(package.get("candidate_ids"))),
+    }
+
+
+def latest_execution(analysis: dict[str, Any]) -> dict[str, Any]:
+    executions = [item for item in analysis.get("rebase_replay_executions", []) or [] if isinstance(item, dict)]
+    return executions[-1] if executions else {}
+
+
+def build_github_knowledge_status(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    work_dir = work_dir_for_id(repo_root, args.work_id)
+    if not work_dir.exists():
+        raise FileNotFoundError(f"Work directory does not exist: {work_dir}")
+    analysis_path = analysis_path_for(work_dir, args.analysis_path)
+    inspection = inspect_github_knowledge_encoding(
+        repo_root,
+        work_dir,
+        analysis_path,
+        github_knowledge_resume_artifact_paths(work_dir, analysis_path),
+    )
+    analysis = inspection["analysis"]
+    package_path = latest_replay_package_path(work_dir)
+    package = {}
+    for candidate_path, candidate_package in inspection["packages"]:
+        if package_path is not None and candidate_path.resolve() == package_path.resolve():
+            package = candidate_package
+            break
+    target_branch = target_branch_for_resume(analysis, package)
+    history_candidates = history_rewrite_candidates(analysis)
+    message_candidates = message_repair_candidates(analysis)
+    history_unresolved = unresolved_history_rewrite_candidates(analysis)
+    message_unresolved = unresolved_message_repair_candidates(analysis)
+    execution = latest_execution(analysis)
+    return {
+        "workflow": "github-knowledge-maintenance",
+        "work_id": args.work_id,
+        "work_dir": relative_to_repo(repo_root, work_dir),
+        "analysis_path": relative_to_repo(repo_root, analysis_path),
+        "repository": analysis.get("repository", ""),
+        "target_branch": target_branch,
+        "encoding_gate": inspection["encoding_gate"],
+        "history_rewrite_candidates": {
+            "total": len(history_candidates),
+            "approval_status": count_by_status(history_candidates, "approval_status"),
+            "execution_status": count_by_status(history_candidates, "execution_status"),
+            "unresolved": len(history_unresolved),
+        },
+        "message_repair_candidates": {
+            "total": len(message_candidates),
+            "approval_status": count_by_status(message_candidates, "approval_status"),
+            "execution_status": count_by_status(message_candidates, "execution_status"),
+            "unresolved": len(message_unresolved),
+        },
+        "latest_package": package_status_record(repo_root, package_path, package),
+        "latest_execution": {
+            "exists": bool(execution),
+            "new_tip": str(execution.get("new_tip", "")).strip(),
+            "tree_equal": bool(execution.get("tree_equal", False)),
+            "pushed": bool(execution.get("pushed", False)),
+            "report_path": str(execution.get("report_path", "")).strip(),
+        },
+        "worktree": replay_worktree_record(repo_root, work_dir, target_branch),
+        "work_cleanup": work_cleanup_record(repo_root, work_dir, args.work_id),
+    }
+
+
+def next_action_from_status(status: dict[str, Any]) -> dict[str, Any]:
+    work_id = status["work_id"]
+    encoding_gate = status.get("encoding_gate", {}) or {}
+    if encoding_gate.get("status") == "block":
+        findings = encoding_gate.get("findings", []) or []
+        return {
+            "state": "encoding-gate-blocked",
+            "action": "repair-artifact-integrity-before-resume",
+            "reason": "Resume is blocked because saved workflow artifacts are unreadable, corrupted, or inconsistent.",
+            "command": encoding_gate.get("repair_command", ""),
+            "blocked_operations": [
+                "rebase-apply",
+                "rebase-replay-apply",
+                "publish-verified-replay",
+                "github-sync-apply",
+            ],
+            "finding_count": len(findings),
+            "findings": findings[:GITHUB_KNOWLEDGE_FINDING_PREVIEW_LIMIT],
+        }
+    latest_package = status.get("latest_package", {}) or {}
+    latest_execution_record = status.get("latest_execution", {}) or {}
+    worktree = status.get("worktree", {}) or {}
+    target_branch = str(status.get("target_branch", "")).strip()
+    package_path = str(latest_package.get("path", "")).strip()
+    expected_remote_sha = str(latest_package.get("expected_remote_sha", "")).strip()
+    base_rebase_apply = (
+        f"aiwfctl github-knowledge rebase-apply --work-id {shlex.quote(work_id)} "
+        f"--package-path {shlex.quote(package_path)} --human-check approved"
+    )
+    if worktree.get("exists") and latest_package.get("exists"):
+        return {
+            "state": "worktree-present",
+            "action": "resume-rebase-apply-with-reuse-worktree",
+            "reason": "A replay worktree already exists for the target branch.",
+            "command": base_rebase_apply + " --reuse-worktree",
+            "cleanup_command": f"aiwfctl github-knowledge cleanup-worktree --work-id {shlex.quote(work_id)} --force",
+        }
+    if latest_execution_record.get("exists") and latest_execution_record.get("tree_equal") and not latest_execution_record.get("pushed"):
+        return {
+            "state": "verified-unpushed-replay",
+            "action": "publish-verified-replay",
+            "reason": "A tree-equal replay execution exists but has not been pushed.",
+            "command": (
+                f"aiwfctl github-knowledge publish-verified-replay --work-id {shlex.quote(work_id)} "
+                f"--target-branch {shlex.quote(target_branch)} --expected-remote-sha {shlex.quote(expected_remote_sha)} "
+                "--human-check approved"
+            ),
+        }
+    if latest_package.get("exists"):
+        if not latest_package.get("allow_push"):
+            return {
+                "state": "package-ready-local-only",
+                "action": "run-rebase-apply-without-push-or-regenerate-package",
+                "reason": "The latest package is valid for local verification, but allow_push is false.",
+                "command": base_rebase_apply,
+                "push_allowed_hint": "Regenerate the package with --push-allowed when the review package approves remote reflection.",
+            }
+        if not expected_remote_sha:
+            return {
+                "state": "package-missing-expected-remote-sha",
+                "action": "regenerate-package-with-expected-remote-sha",
+                "reason": "Push-enabled packages require expected_remote_sha for force-with-lease.",
+                "command": (
+                    f"aiwfctl github-knowledge verify-remote --work-id {shlex.quote(work_id)} "
+                    f"--target-branch {shlex.quote(target_branch)}"
+                ),
+            }
+        return {
+            "state": "package-ready",
+            "action": "verify-remote-then-rebase-apply",
+            "reason": "A push-enabled package exists with expected_remote_sha.",
+            "verify_command": f"aiwfctl github-knowledge verify-remote --work-id {shlex.quote(work_id)}",
+            "command": base_rebase_apply + " --push",
+        }
+    history = status.get("history_rewrite_candidates", {}) or {}
+    message = status.get("message_repair_candidates", {}) or {}
+    if history.get("unresolved", 0):
+        return {
+            "state": "history-review-or-package-needed",
+            "action": "review-history-candidates",
+            "reason": "History rewrite candidates remain unresolved.",
+            "command": f"aiwfctl github-knowledge rebase-plan --work-id {shlex.quote(work_id)}",
+        }
+    if message.get("unresolved", 0):
+        return {
+            "state": "message-review-or-package-needed",
+            "action": "review-message-candidates",
+            "reason": "Commit message repair candidates remain unresolved.",
+            "command": f"aiwfctl github-knowledge message-repair-plan --work-id {shlex.quote(work_id)}",
+        }
+    work_cleanup = status.get("work_cleanup", {}) or {}
+    if work_cleanup.get("ready_for_check"):
+        return work_cleanup_hint.next_action(
+            work_cleanup,
+            reason="Long-lived RAG/Knowledge artifact evidence exists; verify the temporary work scope before removal.",
+        )
+    return {
+        "state": "complete-or-sync-ready",
+        "action": "continue-github-sync-or-rag-candidate",
+        "reason": "No unresolved history or message repair candidates were found.",
+        "command": f"aiwfctl github-knowledge sync-plan --work-id {shlex.quote(work_id)}",
+    }
+
+
+def create_status(args: argparse.Namespace) -> dict[str, Any]:
+    status = build_github_knowledge_status(args)
+    status["next_action"] = next_action_from_status(status)
+    return status
+
+
+def create_next_action(args: argparse.Namespace) -> dict[str, Any]:
+    status = build_github_knowledge_status(args)
+    return {
+        "work_id": args.work_id,
+        "target_branch": status.get("target_branch", ""),
+        "encoding_gate": status.get("encoding_gate", {}),
+        "next_action": next_action_from_status(status),
+        "status_summary": {
+            "encoding_gate": status.get("encoding_gate", {}),
+            "latest_package": status.get("latest_package", {}),
+            "latest_execution": status.get("latest_execution", {}),
+            "worktree": status.get("worktree", {}),
+            "work_cleanup": status.get("work_cleanup", {}),
+        },
+    }
+
+
+def create_verify_remote(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    work_dir, analysis_path, analysis = load_analysis(repo_root, args.work_id, args.analysis_path)
+    package_path, package = read_replay_package_for_status(work_dir, args.package_path)
+    target_branch = target_branch_for_resume(analysis, package, args.target_branch)
+    remote = str(args.remote or package.get("remote", "origin") or "origin").strip() or "origin"
+    expected_remote_sha = str(args.expected_remote_sha or package.get("expected_remote_sha", "")).strip()
+    if not target_branch:
+        raise ValueError("verify-remote requires --target-branch or a package/analysis target_branch.")
+    if not expected_remote_sha:
+        raise ValueError("verify-remote requires --expected-remote-sha or a package expected_remote_sha.")
+    output = git_text(repo_root, ["ls-remote", "--heads", remote, target_branch])
+    actual_remote_sha = output.split()[0] if output.strip() else ""
+    return {
+        "work_id": args.work_id,
+        "analysis_path": relative_to_repo(repo_root, analysis_path),
+        "package_path": relative_to_repo(repo_root, package_path) if package_path else "",
+        "target_branch": target_branch,
+        "remote": remote,
+        "expected_remote_sha": expected_remote_sha,
+        "actual_remote_sha": actual_remote_sha,
+        "matches": actual_remote_sha == expected_remote_sha,
+        "next_action": "safe-to-push" if actual_remote_sha == expected_remote_sha else "refresh-package-or-rebase-from-new-remote",
+    }
+
+
+def create_cleanup_worktree(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    work_dir, analysis_path, analysis = load_analysis(repo_root, args.work_id, args.analysis_path)
+    _package_path, package = read_replay_package_for_status(work_dir)
+    target_branch = target_branch_for_resume(analysis, package, args.target_branch)
+    if not target_branch:
+        raise ValueError("cleanup-worktree requires --target-branch or a package/analysis target_branch.")
+    worktree_root = git_worktree_dir_for_work_dir(work_dir)
+    worktree_path = ensure_child_path(worktree_root, replay_worktree_path(work_dir, target_branch), "replay worktree")
+    existed_before = worktree_path.exists()
+    removed = False
+    remove_error = ""
+    if args.force and existed_before:
+        try:
+            git_text(repo_root, ["worktree", "remove", "--force", str(worktree_path)])
+            removed = True
+        except Exception as exc:
+            remove_error = str(exc)
+    if args.prune:
+        git_text(repo_root, ["worktree", "prune"])
+    return {
+        "work_id": args.work_id,
+        "analysis_path": relative_to_repo(repo_root, analysis_path),
+        "target_branch": target_branch,
+        "worktree_path": relative_to_repo(repo_root, worktree_path),
+        "existed_before": existed_before,
+        "removed": removed,
+        "exists_after": worktree_path.exists(),
+        "force_required": bool(existed_before and not args.force),
+        "remove_error": remove_error,
+    }
 
 
 def latest_rebase_review_plan(work_dir: Path) -> Path:
@@ -1856,10 +2489,10 @@ def infer_commit_type_scope(paths: list[str], subject: str) -> tuple[str, str]:
 def summarize_commit_responsibility(paths: list[str], subject: str) -> str:
     clean_subject = re.sub(r"^(update|fix|docs|chore|feat|test)(\([^)]*\))?:\s*", "", subject, flags=re.IGNORECASE).strip()
     if clean_subject and not contains_mojibake(clean_subject) and clean_subject.lower() not in {"update", "fix", "修正", "対応", "変更"}:
-        return clean_subject[:80]
+        return clean_subject[:GITHUB_KNOWLEDGE_SUBJECT_MAX_CHARS]
     domains = sorted({path.replace("\\", "/").split("/", 1)[0] for path in paths if path})
     if domains:
-        return f"{', '.join(domains[:3])} の責務を明確化"
+        return f"{', '.join(domains[:GITHUB_KNOWLEDGE_DOMAIN_SUMMARY_LIMIT])} の責務を明確化"
     return "履歴上の責務を明確化"
 
 
@@ -1867,7 +2500,7 @@ def proposed_commit_message_for_repair(commit: str, subject: str, paths: list[st
     commit_type, scope = infer_commit_type_scope(paths, subject)
     responsibility = summarize_commit_responsibility(paths, subject)
     proposed_subject = f"{commit_type}({scope}): {responsibility}"
-    path_summary = ", ".join(paths[:8]) if paths else "(no changed paths)"
+    path_summary = ", ".join(paths[:GITHUB_KNOWLEDGE_PATH_SUMMARY_LIMIT]) if paths else "(no changed paths)"
     body = "\n".join(
         [
             "Intent: GitHub commit listで変更責務を読み取れるようにする。",
@@ -1906,7 +2539,7 @@ def detect_message_repair_candidates(
                 "approval_status": "pending",
                 "execution_status": "pending",
                 "verification_commands": [
-                    "git log --format=\"%H %s\" --max-count=20",
+                    GITHUB_KNOWLEDGE_GIT_LOG_SAMPLE_COMMAND,
                     f"git diff --quiet {source_ref}..HEAD",
                 ],
             }
@@ -1924,11 +2557,11 @@ def message_repair_checklist(candidates: list[dict[str, Any]]) -> str:
         "| --- | --- | --- | --- | --- | --- | --- |",
     ]
     for candidate in candidates:
-        paths = ", ".join(candidate.get("file_paths", [])[:4])
+        paths = ", ".join(candidate.get("file_paths", [])[:GITHUB_KNOWLEDGE_CHECKLIST_PATH_LIMIT])
         lines.append(
             "| {id} | [ ] OK | [ ] NG | {commit} | {current} | {proposed} | {paths} |".format(
                 id=candidate.get("id", ""),
-                commit=str(candidate.get("commit", ""))[:12],
+                commit=str(candidate.get("commit", ""))[:GITHUB_KNOWLEDGE_COMMIT_REF_CHARS],
                 current=str(candidate.get("current_subject", "")).replace("|", "\\|"),
                 proposed=str(candidate.get("proposed_subject", "")).replace("|", "\\|"),
                 paths=paths.replace("|", "\\|"),
@@ -1958,7 +2591,7 @@ def build_message_repair_plan(analysis: dict[str, Any], candidates: list[dict[st
             "",
             "- before/after SHA mappingを出力する",
             "- final treeがsource refと一致することを確認する",
-            "- `git log --format=\"%H %s\" --max-count=20` を実行する",
+            f"- `{GITHUB_KNOWLEDGE_GIT_LOG_SAMPLE_COMMAND}` を実行する",
             "- remote反映は `force-with-lease` で expected remote SHA と一致する場合だけ行う",
         ]
     )
@@ -2343,7 +2976,7 @@ def build_rebase_replay_package_from_candidates(
         raise ValueError("rebase-replay-package requires --target-branch or analysis.target_branch.")
     source_ref = source_ref or target_branch
     package: dict[str, Any] = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "target_branch": target_branch,
         "source_ref": source_ref,
         "remote": remote or "origin",
@@ -2415,7 +3048,7 @@ def build_message_repair_package_from_candidates(
         raise ValueError("message-repair-package requires --target-branch or analysis.target_branch.")
     source_ref = source_ref or f"origin/{target_branch}"
     package: dict[str, Any] = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "target_branch": target_branch,
         "source_ref": source_ref,
         "remote": remote or "origin",
@@ -2744,12 +3377,12 @@ def select_absorb_anchor(
 ) -> tuple[str, str]:
     sinks = sorted(
         [commit for commit in component if not outgoing.get(commit)],
-        key=lambda commit: order.get(commit, 10**9),
+        key=lambda commit: order.get(commit, GITHUB_KNOWLEDGE_ORDER_FALLBACK),
     )
     if sinks:
         return sinks[0], "component sink target"
     return (
-        min(component, key=lambda commit: order.get(commit, 10**9)),
+        min(component, key=lambda commit: order.get(commit, GITHUB_KNOWLEDGE_ORDER_FALLBACK)),
         "cycle resolved to earliest responsibility anchor",
     )
 
@@ -2774,7 +3407,7 @@ def resolve_absorb_anchor_graph(
         anchor, reason = select_absorb_anchor(component, outgoing, order)
         component_sources = sorted(
             (component & originally_absorbed) - {anchor},
-            key=lambda commit: order.get(commit, 10**9),
+            key=lambda commit: order.get(commit, GITHUB_KNOWLEDGE_ORDER_FALLBACK),
         )
         if component_sources:
             resolved_absorb.setdefault(anchor, set()).update(component_sources)
@@ -2801,8 +3434,11 @@ def resolve_absorb_anchor_graph(
 
     package = dict(package)
     package["absorb"] = {
-        target: sorted(sources, key=lambda commit: order.get(commit, 10**9))
-        for target, sources in sorted(resolved_absorb.items(), key=lambda item: order.get(item[0], 10**9))
+        target: sorted(sources, key=lambda commit: order.get(commit, GITHUB_KNOWLEDGE_ORDER_FALLBACK))
+        for target, sources in sorted(
+            resolved_absorb.items(),
+            key=lambda item: order.get(item[0], GITHUB_KNOWLEDGE_ORDER_FALLBACK),
+        )
     }
     if resolutions:
         package["semantic_anchor_resolution"] = resolutions
@@ -3125,8 +3761,8 @@ def run_approved_verification_command(repo_path: Path, command: str) -> dict[str
     return {
         "command": stripped,
         "returncode": result.returncode,
-        "stdout": result.stdout[:4000],
-        "stderr": result.stderr[:4000],
+        "stdout": result.stdout[:GITHUB_KNOWLEDGE_COMMAND_OUTPUT_MAX_CHARS],
+        "stderr": result.stderr[:GITHUB_KNOWLEDGE_COMMAND_OUTPUT_MAX_CHARS],
     }
 
 
@@ -3144,7 +3780,11 @@ def prepare_replay_worktree(
     worktree_root = git_worktree_dir_for_work_dir(work_dir)
     worktree_path = ensure_child_path(worktree_root, replay_worktree_path(work_dir, package["target_branch"]), "replay worktree")
     if worktree_path.exists() and not reuse_worktree:
-        raise FileExistsError(f"Replay worktree already exists: {worktree_path}")
+        raise FileExistsError(
+            f"Replay worktree already exists: {worktree_path}. "
+            "Run `github-knowledge status` for the resume command, add `--reuse-worktree`, "
+            "or run `github-knowledge cleanup-worktree --force`."
+        )
     if worktree_path.exists():
         git_text(repo_root, ["worktree", "remove", "--force", str(worktree_path)])
     worktree_path.parent.mkdir(parents=True, exist_ok=True)
@@ -3256,7 +3896,7 @@ def execute_rebase_replay_package(
     package = resolve_absorb_anchor_graph(package, original_commits)
     validate_rebase_replay_actions(package, original_commits)
     source_tip = git_text(worktree_path, ["rev-parse", package["source_ref"]]).strip()
-    build_branch = f"github-knowledge-replay/{safe_branch_segment(work_dir.name)}/{safe_branch_segment(package['target_branch'])}"
+    build_branch = f"github-knowledge-replay/{safe_branch_segment(work_id_from_work_dir(work_dir))}/{safe_branch_segment(package['target_branch'])}"
 
     absorbed_sources = {source for sources in package["absorb"].values() for source in sources}
     skipped_commits = absorbed_sources | package["drop"]
@@ -4254,8 +4894,8 @@ def run_github_sync_command(command_parts: list[str], *, dry_run: bool) -> dict[
         "command": " ".join(command_parts),
         "skipped": False,
         "returncode": result.returncode,
-        "stdout": result.stdout[:4000],
-        "stderr": result.stderr[:4000],
+        "stdout": result.stdout[:GITHUB_KNOWLEDGE_COMMAND_OUTPUT_MAX_CHARS],
+        "stderr": result.stderr[:GITHUB_KNOWLEDGE_COMMAND_OUTPUT_MAX_CHARS],
     }
 
 
@@ -4463,7 +5103,7 @@ def build_rag_candidate(analysis: dict[str, Any], topic: str) -> str:
     return "\n".join(
         [
             "---",
-            "schema_version: '1.0'",
+            f"schema_version: '{SCHEMA_VERSION}'",
             "document_type: github-repository-knowledge",
             f"repository: {analysis.get('repository', '')}",
             f"branch: {analysis.get('target_branch', '')}",
@@ -4520,11 +5160,18 @@ def create_rag_candidate(args: argparse.Namespace) -> dict[str, Any]:
         output_path = process_report_dir_for_work_dir(work_dir) / f"github-knowledge-rag-candidate-{local_timestamp()}.md"
     write_markdown(output_path, build_rag_candidate(analysis, topic))
     register_artifact(repo_root, work_dir, "GITHUB-KNOWLEDGE-RAG-CANDIDATE", "GitHub Knowledge RAG Candidate", output_path, "report")
+    work_cleanup = work_cleanup_record(repo_root, work_dir, args.work_id)
     return {
+        "work_id": args.work_id,
         "rag_candidate": relative_to_repo(repo_root, output_path),
         "analysis_path": relative_to_repo(repo_root, analysis_path),
         "published": bool(args.publish_rag),
         "context_gate": context_gate,
+        "work_cleanup": work_cleanup,
+        "next_action": work_cleanup_hint.next_action(
+            work_cleanup,
+            reason="Published RAG/Knowledge output is available in the long-lived knowledge area.",
+        ),
         "gate_restart": github_knowledge_gate_restart(
             "github-knowledge-rag-candidate-gate",
             status="ready",
@@ -4540,6 +5187,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         return create_analysis_template(args)
     if args.command == "artifact-integrity":
         return create_artifact_integrity_report(args)
+    if args.command == "status":
+        return create_status(args)
+    if args.command in {"next-action", "resume"}:
+        return create_next_action(args)
+    if args.command == "verify-remote":
+        return create_verify_remote(args)
+    if args.command == "cleanup-worktree":
+        return create_cleanup_worktree(args)
     if args.command == "repair-plan":
         return create_repair_plan(args)
     if args.command == "detect-rebase-candidates":

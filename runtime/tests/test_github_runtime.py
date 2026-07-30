@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from runtime.ctl import ctl
 from runtime.github import api, issue_manager, pull_request_manager
 
 
@@ -325,6 +326,72 @@ def test_issue_body_from_args_reads_body_file(tmp_path: Path) -> None:
     assert body == "# Custom body\n"
     assert source == "body-file"
     assert template_path == str(body_file.resolve())
+
+
+def test_ctl_github_issue_draft_writes_record(tmp_path: Path) -> None:
+    repo, work_dir = make_work_repo(tmp_path)
+    (work_dir / "context" / "scm-state.json").write_text(
+        json.dumps({"repository": "https://github.com/inabako/example.git"}),
+        encoding="utf-8",
+    )
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(repo),
+            "github",
+            "issue",
+            "--work-id",
+            "issue-1",
+            "--title",
+            "ログ整備",
+            "--json",
+        ]
+    )
+
+    code, output = ctl.run(args)
+
+    assert code == 0
+    result = json.loads(output)
+    assert result["github_repo"] == "inabako/example"
+    assert result["status"] == "draft"
+    assert result["body_path"].startswith("work/issue-1/process-report/github-issue-")
+    completed = json.loads((repo / "logs" / "runtime" / "runtime-events.log").read_text(encoding="utf-8").splitlines()[-1].split(" | ", 3)[3])
+    assert completed["command"] == "github issue"
+    assert completed["operation_id"] == "github:issue"
+
+
+def test_ctl_github_pr_draft_uses_scm_branch(tmp_path: Path) -> None:
+    repo, work_dir = make_work_repo(tmp_path)
+    (work_dir / "context" / "scm-state.json").write_text(
+        json.dumps(
+            {
+                "repository": "https://github.com/inabako/example.git",
+                "working_branch": "feature/issue-1",
+            }
+        ),
+        encoding="utf-8",
+    )
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(repo),
+            "github",
+            "pr",
+            "--work-id",
+            "issue-1",
+            "--base",
+            "develop",
+            "--json",
+        ]
+    )
+
+    code, output = ctl.run(args)
+
+    assert code == 0
+    result = json.loads(output)
+    assert result["github_repo"] == "inabako/example"
+    assert result["head"] == "feature/issue-1"
+    assert result["status"] == "draft"
 
 
 def test_issue_manager_template_default_and_package_guard_edges(tmp_path: Path) -> None:

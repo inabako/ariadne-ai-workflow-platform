@@ -1,4 +1,4 @@
-# Human Gate Registry
+﻿# Human Gate Registry
 
 この文書は、人間承認なしで進めない操作をまとめます。
 
@@ -12,16 +12,16 @@ db/registries/registry.duckdb
 `$schema` や `schema_version` は置かず、registry自体の版は `registry_version` で表します。
 
 ```text
-.github/schemas/human-gates.schema.json
+.ariadne/schemas/human-gates.schema.json
 ```
 
-上記はregistry実体を検査するためのJSON Schemaです。schema責務は `.github/schemas/` に閉じ込めます。
+上記はregistry実体を検査するためのJSON Schemaです。schema責務は `.ariadne/schemas/` に閉じ込めます。
 
 確認CLI:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . human-gate list
-uv run --project runtime python runtime/common/ctl.py --repo-root . human-gate check --gate close-prune --human-check approved
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . human-gate list
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . human-gate check --gate close-prune --human-check approved
 ```
 
 ## 承認が必要な操作
@@ -42,6 +42,6 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . human-gate c
 
 - 承認値は原則 `approved` とします。
 - `削除承認` などの会話上の承認は、実行CLIでは `--human-check approved` として記録します。
-- 承認が必要な操作をruntimeへ追加した場合は、この文書、`db/registries/registry.duckdb`、必要に応じて `.github/schemas/human-gates.schema.json` を同時に更新します。
+- 承認が必要な操作をruntimeへ追加した場合は、この文書、`db/registries/registry.duckdb`、必要に応じて `.ariadne/schemas/human-gates.schema.json` を同時に更新します。
 - schema責務の混在を避けるため、`registry.duckdb` の `human_gates` registry payload には `$schema` と `schema_version` を置きません。
 - `workflow_doctor.py` はこの責任境界を検査します。

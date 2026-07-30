@@ -127,6 +127,26 @@ runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fi
   - inline input: `agent`, `artifact_index`, `report_context`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
+#### RT-UT-CASE-190A
+
+- pytest node id:
+
+```text
+runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fix_uses_work_db_report_as_cleanup_evidence
+```
+
+- Confirm: corrective-action-fix initialization uses an existing `work/db/...` corrective action report as long-lived Knowledge cleanup evidence.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_init_corrective_action_fix.py:280`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- Expected:
+  - `work_cleanup.ready_for_check` is true
+  - `next_action.action == "check-work-cleanup"`
+  - generic `work cleanup-check` returns `status == "ready"`
+
 #### RT-UT-CASE-191
 
 - pytest node id:
@@ -138,7 +158,7 @@ runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fi
 - 確認内容: pytest case `init corrective action fix run missing report has no report artifact` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_init_corrective_action_fix.py:280`
+  - source: `runtime/tests/test_init_corrective_action_fix.py:298`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `artifact_index`
@@ -155,7 +175,7 @@ runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fi
 - 確認内容: pytest case `init corrective action fix parser and main paths` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_init_corrective_action_fix.py:293`
+  - source: `runtime/tests/test_init_corrective_action_fix.py:311`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: `args`

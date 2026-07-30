@@ -14,7 +14,7 @@
 ## CLI
 
 ```powershell
-python runtime/retrieval/task_runner.py `
+.\runtime\windows-script\aiwf.cmd ctl retrieval run `
   --work-id WF-20260531-233000 `
   --task-file work/WF-20260531-233000/context/task-plan.json `
   --mode parallel `

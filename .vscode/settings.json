@@ -7,13 +7,20 @@
   "editor.detectIndentation": true,
   "python.terminal.activateEnvironment": false,
   "terminal.integrated.env.windows": {
-    "Path": "${workspaceFolder}\\runtime\\tools;${env:Path}",
+    "Path": "${workspaceFolder}\\runtime\\windows-script;${env:Path}",
     "PYTHONUTF8": "1",
     "PYTHONIOENCODING": "utf-8",
     "AIWF_TEXT_ENCODING": "utf-8"
   },
   "terminal.integrated.defaultProfile.windows": "Dispatcher PowerShell",
   "terminal.integrated.cwd": "${workspaceFolder}",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/runtime",
+    "${workspaceFolder}/templates/boilerplates/mcp/ai-agent-runtime-template/src",
+    "${workspaceFolder}/templates/boilerplates/mcp/discord-gateway-template/src",
+    "${workspaceFolder}/templates/boilerplates/mcp/mcp-client-template/src",
+    "${workspaceFolder}/templates/boilerplates/mcp/mcp-server-template/src"
+  ],
   "terminal.integrated.profiles.windows": {
     "Dispatcher PowerShell": {
       "source": "PowerShell",

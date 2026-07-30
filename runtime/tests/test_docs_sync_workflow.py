@@ -43,7 +43,7 @@ def sample_analysis() -> dict[str, object]:
                 "status": "open",
                 "area": "runtime",
                 "implementation_evidence": [
-                    {"path": "runtime/common/ctl.py", "symbol": "main", "reason": "CLI behavior changed."}
+                    {"path": "runtime/ctl/ctl.py", "symbol": "main", "reason": "CLI behavior changed."}
                 ],
                 "docs_evidence": [
                     {"path": "docs/reference/runtime.md", "reason": "Old command remains."}
@@ -217,7 +217,7 @@ def test_markdown_helpers_and_issue_body_render_full_and_empty_sections() -> Non
 
     assert docs_sync.markdown_list([]) == "- None"
     assert docs_sync.evidence_lines([]) == "- None"
-    assert "runtime/common/ctl.py" in docs_sync.evidence_lines(sample_analysis()["drift_items"][0]["implementation_evidence"])
+    assert "runtime/ctl/ctl.py" in docs_sync.evidence_lines(sample_analysis()["drift_items"][0]["implementation_evidence"])
     assert "DOCS-1" in full
     assert "Keep this docs-only." in full
     assert "Keep this docs-only." not in no_note_body

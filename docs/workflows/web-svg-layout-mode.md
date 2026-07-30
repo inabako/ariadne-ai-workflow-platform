@@ -1,4 +1,4 @@
-# Web SVG Layout Mode
+﻿# Web SVG Layout Mode
 
 SVGで表現された画面レイアウト案を、Web画面向けのroute、section、component責務、responsive layout、React候補、Playwright候補へ変換する共通サブフローです。Next.jsは、このフローが扱うWeb framework profileの1つです。
 
@@ -49,19 +49,19 @@ aiwfctl env select web-svg
 入力directoryのWeb画面向けREADMEを作成します。
 
 ```powershell
-python runtime/workflow/web_svg_layout_mode.py init-input
+.\runtime\windows-script\aiwf.cmd ctl web-svg init-input
 ```
 
 自動判定して生成します。
 
 ```powershell
-python runtime/workflow/web_svg_layout_mode.py run --issue-id SYS-0001
+.\runtime\windows-script\aiwf.cmd ctl web-svg run --issue-id SYS-0001
 ```
 
 既存Corrective Action work directoryで実行します。
 
 ```powershell
-python runtime/workflow/web_svg_layout_mode.py run `
+.\runtime\windows-script\aiwf.cmd ctl web-svg run `
   --issue-id FIX-123 `
   --work-dir work/issue-123 `
   --mode corrective-fix
@@ -70,7 +70,7 @@ python runtime/workflow/web_svg_layout_mode.py run `
 完了検証:
 
 ```powershell
-python runtime/workflow/web_svg_layout_mode.py validate `
+.\runtime\windows-script\aiwf.cmd ctl web-svg validate `
   --issue-id SYS-0001
 ```
 
@@ -96,7 +96,7 @@ work/<issue-id>/
     review/web-svg-layout-review.md
 ```
 
-`web-svg-layout-state.json` は `.github/schemas/web-svg-layout-state.schema.json` に従い、親workflowへの返却可否と成果物pathを記録します。成果物は `context/artifact-index.json` にも登録されます。
+`web-svg-layout-state.json` は `.ariadne/schemas/web-svg-layout-state.schema.json` に従い、親workflowへの返却可否と成果物pathを記録します。成果物は `context/artifact-index.json` にも登録されます。
 
 SVGが無い場合も `work/<issue-id>/context/web-svg-layout-state.json` へ `status: skipped` を残します。
 

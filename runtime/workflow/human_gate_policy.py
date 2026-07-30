@@ -11,6 +11,7 @@ if __package__ in {None, ""}:
 
 from runtime.common import gate_restart, registry_store  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
+from runtime.constants.runtime_values import REGISTRY_VERSION  # noqa: E402
 
 
 def registry_path(repo_root: Path) -> Path:
@@ -19,7 +20,7 @@ def registry_path(repo_root: Path) -> Path:
 
 def load_registry(repo_root: Path) -> dict[str, Any]:
     data = registry_store.load_human_gates(repo_root)
-    data.setdefault("registry_version", "1.0")
+    data.setdefault("registry_version", REGISTRY_VERSION)
     data.setdefault("gates", [])
     return data
 
@@ -81,8 +82,8 @@ def run_check(args: argparse.Namespace) -> dict[str, Any]:
                 status="blocked",
                 restart_reason=args.gate,
                 repair_command=(
-                    "uv run --project runtime python runtime/workflow/human_gate_policy.py --repo-root . "
-                    f"check --gate {args.gate} --human-check {gate.get('approved_value', 'approved')}"
+                    "uv run --project runtime python runtime/ctl/ctl.py --repo-root . "
+                    f"human-gate check --gate {args.gate} --human-check {gate.get('approved_value', 'approved')}"
                 ),
             ),
         }

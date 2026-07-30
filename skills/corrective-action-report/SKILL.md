@@ -1,4 +1,4 @@
----
+﻿---
 name: corrective-action-report
 description: Analyze the current state of a user-specified repository and branch, identify improvement points, risks, missing documentation, test gaps, architecture concerns, and workflow opportunities, then write a corrective action report for RAG accumulation. Use when the user selects /corrective-action-report or asks for a current improvement report, corrective action report, repository health review, or cross-project improvement findings.
 ---
@@ -26,7 +26,7 @@ Do not infer the branch from the current shell state unless the user explicitly 
 
 ## Output Language
 
-Write the report in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+Write the report in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.ariadne/shared/output-language-policy.md`.
 
 If the user explicitly requests another language, use the requested language.
 
@@ -120,8 +120,8 @@ python runtime/rag/rag_dispatcher.py `
 If saved external-web RAG is not enough, use:
 
 ```text
-.github/agents/external-web-source-reviewer-agent.prompt.md
-.github/agents/external-web-rag-dispatcher-agent.prompt.md
+.ariadne/agents/external-web-source-reviewer-agent.prompt.md
+.ariadne/agents/external-web-rag-dispatcher-agent.prompt.md
 ```
 
 External-web RAG must be recorded as `supporting_reference`, not as primary evidence.
@@ -224,7 +224,7 @@ Create or update a Feedback report when you observe ambiguity, repeated checks, 
 Use the existing helper when creating a new report:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "<slash-command>" `
   --reporter "AI workflow" `
   --situation "<what was happening>" `

@@ -77,13 +77,13 @@ push / knowledge capture
 Feedback置き場を初期化します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement init-feedback
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement init-feedback
 ```
 
 Feedback reportを作成します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "/docs-sync" `
   --reporter "Human" `
   --situation "docs整備中" `
@@ -94,8 +94,19 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . self-improve
 
 Human Review結果を同じFeedback reportへ追記します。
 
+Runtime event log を根拠にする場合は、trace id を指定すると Feedback report に `Runtime Observation` と `Runtime Log Analysis` が追加されます。
+
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement review-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
+  --target-workflow "/self-improvement" `
+  --situation "runtime log analysis needs feedback context" `
+  --friction "feedback review needs manual log inspection" `
+  --runtime-trace-id "<trace-id>" `
+  --runtime-log logs/runtime/runtime-events.log
+```
+
+```powershell
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement review-feedback `
   --feedback work/feedback/<feedback>.md `
   --decision accepted `
   --reviewer "Human" `
@@ -106,20 +117,20 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . self-improve
 AcceptedのFeedbackからIssue bodyを生成します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement issue-body `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement issue-body `
   --feedback work/feedback/<feedback>.md
 ```
 
 Issue番号から既存規約のbranch名を確認します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement branch-name --issue-number 42
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement branch-name --issue-number 42
 ```
 
 Evidence保存先を作成し、`artifact-index.json` に登録します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
 ```
 
 ## GitHub / SCM連携
@@ -127,26 +138,26 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . self-improve
 GitHub Issue作成、branch作成、commit、push、Pull Request作成は、既存runtime helperを使います。
 
 ```powershell
-python runtime/github/issue_manager.py `
+.\runtime\windows-script\aiwf.cmd ctl github issue `
   --work-id "<work-id>" `
   --title "[改善フロー] <issue-title>" `
   --flow-label improvement `
   --body-file "<issue-body.md>" `
   --create
 
-python runtime/scm/create_issue_branch.py `
+.\runtime\windows-script\aiwf.cmd ctl scm branch `
   --work-id "issue-<issue-number>" `
   --issue-number "<issue-number>" `
   --repository "<target-repository>" `
   --base-branch "<target-branch>" `
   --link-to-issue
 
-python runtime/scm/commit_changes.py `
+.\runtime\windows-script\aiwf.cmd ctl scm commit `
   --work-id "issue-<issue-number>" `
   --message "fix: improve workflow feedback handling" `
   --all
 
-python runtime/scm/push_branch.py `
+.\runtime\windows-script\aiwf.cmd ctl scm push `
   --work-id "issue-<issue-number>" `
   --human-check approved `
   --set-upstream
@@ -182,7 +193,7 @@ work/issue-<issue-number>/
 
 ## Platform Governance
 
-Issue化前に [Platform Fit Check](../governance/platform-fit-check.md) を確認します。
+Issue化前に [Platform Fit Check](../governance/ariadne/platform-fit-check.md) を確認します。
 
 通過できない改善案はIssue化せず、Feedback report上でRejectedまたはDeferredにします。
 

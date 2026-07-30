@@ -17,6 +17,16 @@
 | `runtime/rag/` | report / artifact を file-based RAG 用 document、chunk、index に変換する機能 |
 | `runtime/observability/` | Runtime のログ、メトリクス、月次ローテーション、workflow単位の観測証跡 |
 
+## Review Council Runtime
+
+`aiwfctl review rag-build` exports Review Council knowledge capture into file-based RAG source Markdown under `work/db/<knowledge-repo>/rag/review-council/`. It prepares a reproducible `aiwfctl rag build` command and runs the existing RAG build pipeline only when `--run` is explicitly specified.
+
+`aiwfctl review execute-specialist` runs an approved local Specialist Agent command after `run-specialist` prepares the packet. Execution requires `--human-check approved`, captures stdout/stderr under `work/<work-id>/process-report/review-council/`, and can draft findings from the generated specialist report.
+
+`runtime/review/` は Specialist Review の Review Packet 固定、Reviewer計画、handoff、LangGraph orchestration状態評価、finding 正規化、Review Issue 集約、Verdict Policy を扱う共通Runtimeです。
+
+主な入口は `aiwfctl review plan`、`aiwfctl review start`、`aiwfctl review handoff`、`aiwfctl review orchestrate`、`aiwfctl review next-action`、`aiwfctl review summary`、`aiwfctl review human-gate`、`aiwfctl review run-specialist`、`aiwfctl review draft-findings`、`aiwfctl review add-finding`、`aiwfctl review challenge`、`aiwfctl review evidence-gate`、`aiwfctl review reinspect`、`aiwfctl review verdict`、`aiwfctl review capture-knowledge` です。
+
 ## Environment Files
 
 GitHub / SCM 連携情報は repository root の環境ファイルで管理します。
@@ -29,7 +39,13 @@ GitHub / SCM 連携情報は repository root の環境ファイルで管理し�
 
 Runtime は `runtime/common/env.py` を通じて `.env` を読み込みます。
 
-## Implemented CLI
+`ARIADNE_KNOWLEDGE_REPOSITORY` stores the repository name used for file-based RAG source backup. The runtime resolves it to `work/db/<repository-name>`, defaulting to `work/db/ariadne-knowledge-platform`.
+
+The VSCode environment provisioning workflow creates the local backup directory tree when it is missing. This is a local source/backup area only; provisioning does not clone, commit, or push the knowledge repository.
+
+## Internal Modules And Entrypoints
+
+通常実行は `aiwfctl` または `runtime/windows-script` / `runtime/posix-bash` のwrapper経由で行います。下記はRuntimeを構成する内部moduleと公開entrypointの一覧です。
 
 ```text
 runtime/intake/intake_requirements.py
@@ -46,7 +62,7 @@ runtime/scm/commit_changes.py
 runtime/scm/push_branch.py
 runtime/github/issue_manager.py
 runtime/github/pull_request_manager.py
-runtime/common/ctl.py
+runtime/ctl/ctl.py
 runtime/observability/metrics.py
 runtime/rag/normalize_documents.py
 runtime/rag/chunk_documents.py
@@ -58,13 +74,16 @@ runtime/rag/jsonize_rag_tree.py
 runtime/rag/standardize_corrective_report_names.py
 runtime/tools/text_encoding_convert.py
 runtime/tools/text_encoding_guard.py
-runtime/windows-ps1/aiwf.ps1
+runtime/windows-script/aiwf.cmd
+runtime/windows-script/aiwf.ps1
 runtime/posix-bash/aiwf.sh
 ```
 
 `intake_requirements.py` は、要件定義書を `work/<採番ID>/design-document/` へ移動し、`context/*.json` を初期化します。
 
 `preflight.py` は、workflow や target repository の作業前に必要な executable / Python module / Python package / MSYS2 package / fallback support repository を確認し、不足時は install list を `work/<id>/process-report/` に出力します。`--install --human-check approved` が指定された場合のみ install を実行します。Localty の MSYS2 profile では公開済み `localty-system-protocol>=0.1.0` を優先し、取得できない場合だけ `localty-system-protocol` repository を support repository として準備します。
+
+通常入口は `aiwfctl preflight ...` です。Windows / POSIX wrapper の `preflight` 互換コマンドも内部では `runtime/ctl/ctl.py preflight` へ委譲します。
 
 `aiwfctl env` は、preflight の前段で実行環境を選択する Environment Dispatcher です。source of truth は `db/registries/registry.duckdb` です。利用者は `gui-mode`、`web-svg`、`docker` などの目的ベースEnvironment名を指定し、`windows-msys2-gui`、`wsl-ubuntu-web`、`docker-compose` などの内部Backend名は表示情報として扱います。判断不能時はHuman Checkへ戻し、`--work-id` 指定時は `work/<work-id>/context/environment-selection.json` と `work/<work-id>/context/context-manifest.json` を後続Workflow用contextとして書き込みます。
 
@@ -82,25 +101,25 @@ runtime/posix-bash/aiwf.sh
 
 `task_runner.py` は、`task-plan.schema.json` に沿ったtask planを読み込み、sequential / parallel に処理して `process-report/` へ実行レポートを出力します。
 
-`prepare_repository.py` は、target repository / branch を `work/<採番ID>/source/repository/` に準備します。
+`aiwfctl scm prepare` は、target repository / branch を `work/<採番ID>/source/repository/` に準備します。
 
-`compare_requirements.py` は、要件定義書と repository state の比較レポートを作成します。
+`aiwfctl scm compare` は、要件定義書と repository state の比較レポートを作成します。
 
-`issue_manager.py` は、GitHub Issue draftを作成し、`--create` 指定時のみ GitHub REST API でIssueを作成します。Issue body は `--body-file`、target repository の `.github/ISSUE_TEMPLATE.md`、runtime fallback の順に選択します。Issue titleはworkflowに応じて `[新規機能フロー]`、`[改善フロー]`、`[初期開発]` のprefixを付けます。
+`aiwfctl github issue` は、GitHub Issue draftを作成し、`--create` 指定時のみ GitHub REST API でIssueを作成します。Issue body は `--body-file`、target repository の `.github/ISSUE_TEMPLATE.md`、runtime fallback の順に選択します。Issue titleはworkflowに応じて `[新規機能フロー]`、`[改善フロー]`、`[初期開発]` のprefixを付けます。
 
-`create_issue_branch.py` は、Issue番号からGitHub上に `feature/issue-<issue-number>` branchを作成し、work配下へclone / checkoutします。
+`aiwfctl scm branch` は、Issue番号からGitHub上に `feature/issue-<issue-number>` branchを作成し、work配下へclone / checkoutします。
 
-`commit_changes.py` は、semantic commit message を検証してcommitします。
+`aiwfctl scm commit` は、semantic commit message を検証してcommitします。
 
-`push_branch.py` は、人間チェック承認後に `feature/issue-<issue-number>` branch をpushし、push recordを保存します。
+`aiwfctl scm push` は、人間チェック承認後に `feature/issue-<issue-number>` branch をpushし、push recordを保存します。
 
-`pull_request_manager.py` は、Issue branch push後に `develop` へのPull Request draft / createを行います。PR titleはIssue titleを使い、PR bodyにはMermaid sequence diagramを含めます。
+`aiwfctl github pr` は、Issue branch push後に `develop` へのPull Request draft / createを行います。PR titleはIssue titleを使い、PR bodyにはMermaid sequence diagramを含めます。
 
-`common/ctl.py` は、AI workflow prompt command のターミナルヘルプを提供します。repo root の `runtime/tools/aiwfctl.cmd` から呼び出し、command一覧、詳細、検索、Markdown出力を行います。VSCode統合ターミナルでは `.vscode/settings.json` により `runtime/tools` が `PATH` に追加されるため、`aiwfctl help` で呼び出せます。
+`ctl/ctl.py` は、AI workflow prompt command のターミナルヘルプを提供します。repo root の `runtime/windows-script/aiwfctl.cmd` から呼び出し、command一覧、詳細、検索、Markdown出力を行います。VSCode統合ターミナルでは `.vscode/settings.json` により `runtime/windows-script` が `PATH` に追加されるため、`aiwfctl help` で呼び出せます。
 
-`windows-ps1/aiwf.ps1` と `posix-bash/aiwf.sh` は、OS別shellから `common/ctl.py`、pytest、UT仕様同期、BOM scan / strip へ入るための薄いruntime入口です。
+`windows-script/aiwf.cmd` / `windows-script/aiwf.ps1` と `posix-bash/aiwf.sh` は、OS別shellから `ctl/ctl.py`、pytest、UT仕様同期、BOM scan / strip へ入るための薄いruntime入口です。
 
-`observability/metrics.py` は、workflow / agent / token / context / cost / error の観測値を記録します。Runtime全体の時系列ログは `runtime/logs/runtime-metrics-YYYYMM.jsonl` へ月次ローテーションで追記し、workflow単位の要約は `work/<work-id>/test-evidence/runtime-metrics.json` と `work/<work-id>/context/runtime-metrics.json` に保存できます。
+`observability/metrics.py` は、workflow / agent / token / context / cost / error の観測値を記録します。Runtime全体の時系列ログは `logs/runtime-metrics-YYYYMM.jsonl` へ月次ローテーションで追記し、workflow単位の要約は `work/<work-id>/test-evidence/runtime-metrics.json` と `work/<work-id>/context/runtime-metrics.json` に保存できます。
 
 `normalize_documents.py` は、Markdown report を metadata 付きの RAG document JSON に変換します。
 
@@ -110,9 +129,9 @@ runtime/posix-bash/aiwf.sh
 
 `embed_chunks.py` は、chunk index から deterministic sparse embedding を生成し、`work/db/ariadne-knowledge-platform/rag/embeddings/` に出力します。
 
-`retrieve_context.py` は、JSONL chunk index と local embeddings から query に合うchunkを選び、Agent投入用の圧縮済みcontext packを `work/db/ariadne-knowledge-platform/rag/retrieval/` に出力します。
+`aiwfctl rag retrieve` は、JSONL chunk index と local embeddings から query に合うchunkを選び、Agent投入用の圧縮済みcontext packを `work/db/ariadne-knowledge-platform/rag/retrieval/` に出力します。
 
-`rag_dispatcher.py` は、開発前RAG読み込み用に複数queryを計画し、`retrieve_context.py` を並列実行して、圧縮済みcontext packを集約します。
+`aiwfctl rag load` は、開発前RAG読み込み用に複数queryを計画し、`aiwfctl rag retrieve` を並列実行して、圧縮済みcontext packを集約します。
 
 `jsonize_rag_tree.py` は、`work/db/ariadne-knowledge-platform/rag/` 配下の非UUID JSON、JSONL、Markdown、text artifact を UUID名の JSON wrapper に変換します。
 `standardize_corrective_report_names.py` は、`work/db/ariadne-knowledge-platform/rag/corrective-action-report/` 配下のMarkdown reportを `YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md` に統一します。
@@ -123,13 +142,13 @@ runtime/posix-bash/aiwf.sh
 
 ## GitHub CLI Preflight
 
-`preflight.py` の `github-cli` profile は、`gh --version`、`gh auth status`、GitHub token ENV availabilityを別checkとして扱います。
+`aiwfctl preflight --profile github-cli` は、`gh --version`、`gh auth status`、GitHub token ENV availabilityを別checkとして扱います。
 
 Windows 11:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 preflight --profile github-cli --work-id "<work-id>"
-.\runtime\windows-ps1\aiwf.ps1 preflight --profile github-cli --gh-login-from-env --human-check approved
+.\runtime\windows-script\aiwf.cmd preflight --profile github-cli --work-id "<work-id>"
+.\runtime\windows-script\aiwf.cmd preflight --profile github-cli --gh-login-from-env --human-check approved
 ```
 
 POSIX:

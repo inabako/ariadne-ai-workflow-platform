@@ -1,0 +1,195 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/inabako/ariadne-ai-workflow-platform/.ariadne/schemas/emulator-health-context.schema.json",
+  "title": "Emulator Health Context",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "status",
+    "work_id",
+    "workflow",
+    "source_context",
+    "checks",
+    "docker",
+    "human_checks",
+    "rules"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "artifact_type": {
+      "const": "emulator-health-context"
+    },
+    "status": {
+      "enum": [
+        "ready",
+        "warning",
+        "human-check-required"
+      ]
+    },
+    "work_id": {
+      "type": "string"
+    },
+    "workflow": {
+      "const": "system-integration-quality"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "source_context": {
+      "type": "string"
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "provider",
+          "status",
+          "destination",
+          "evidence_dir",
+          "destination_exists",
+          "evidence_dir_exists",
+          "files",
+          "missing"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ready",
+              "warning",
+              "human-check-required"
+            ]
+          },
+          "destination": {
+            "type": "string"
+          },
+          "evidence_dir": {
+            "type": "string"
+          },
+          "destination_exists": {
+            "type": "boolean"
+          },
+          "evidence_dir_exists": {
+            "type": "boolean"
+          },
+          "files": {
+            "type": "object",
+            "properties": {
+              "compose_file": {
+                "type": "boolean"
+              },
+              "env_example": {
+                "type": "boolean"
+              },
+              "readme": {
+                "type": "boolean"
+              },
+              "health_doc": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          },
+          "missing": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "docker": {
+      "type": "object",
+      "required": [
+        "docker_path",
+        "docker_available",
+        "probe_requested",
+        "docker_version_status",
+        "compose_version_status",
+        "notes"
+      ],
+      "properties": {
+        "docker_path": {
+          "type": "string"
+        },
+        "docker_available": {
+          "type": "boolean"
+        },
+        "probe_requested": {
+          "type": "boolean"
+        },
+        "docker_version_status": {
+          "type": "string"
+        },
+        "compose_version_status": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "human_checks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rules": {
+      "type": "object",
+      "required": [
+        "do_not_start_emulator_in_health",
+        "health_check_is_non_mutating",
+        "do_not_use_production_credentials"
+      ],
+      "properties": {
+        "do_not_start_emulator_in_health": {
+          "const": true
+        },
+        "health_check_is_non_mutating": {
+          "const": true
+        },
+        "do_not_use_production_credentials": {
+          "const": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "artifacts": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "manifest_path": {
+      "type": "string"
+    },
+    "manifest_contexts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

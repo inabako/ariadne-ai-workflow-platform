@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Expectation Verification",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "expectation_verification"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "schema": { "type": "string" },
+    "artifact_type": { "type": "string", "const": "expectation-verification" },
+    "expectation_verification": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["expectation_id", "design_probability", "verification_method"],
+        "properties": {
+          "expectation_id": { "type": "string" },
+          "candidate_id": { "type": "string" },
+          "design_probability": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "verified_result": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1.0 },
+          "verification_method": { "type": "array", "items": { "type": "string" } },
+          "test_evidence": { "type": "array", "items": { "type": "string" } },
+          "review_evidence": { "type": "array", "items": { "type": "string" } },
+          "human_review": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,167 @@
+---
+# yamllint disable rule:line-length
+name: ScanCode License Audit
+
+on:  # yamllint disable-line rule:truthy
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SCANCODE_VERSION: "32.5.0"
+  PYTHON_VERSION: "3.12"
+  SCANCODE_OUTPUT_DIR: scancode-output
+
+jobs:
+  scancode:
+    name: Scan ARIADNE repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout ARIADNE
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install ScanCode Toolkit
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "scancode-toolkit==${SCANCODE_VERSION}"
+          scancode --version
+
+      - name: Prepare output directory
+        run: |
+          rm -rf "${SCANCODE_OUTPUT_DIR}"
+          mkdir -p "${SCANCODE_OUTPUT_DIR}"
+
+      - name: Run ScanCode
+        run: |
+          scancode \
+            --license \
+            --copyright \
+            --package \
+            --system-package \
+            --strip-root \
+            --ignore ".git/**" \
+            --ignore "work/**" \
+            --ignore "tmp/**" \
+            --ignore "temp/**" \
+            --ignore "logs/**" \
+            --ignore "reports/**" \
+            --ignore "artifacts/**" \
+            --ignore "coverage/**" \
+            --ignore "dist/**" \
+            --ignore "build/**" \
+            --ignore "__pycache__/**" \
+            --ignore ".pytest_cache/**" \
+            --ignore ".venv/**" \
+            --ignore "venv/**" \
+            --ignore "runtime/.venv/**" \
+            --ignore "node_modules/**" \
+            --ignore "db/**/*.duckdb" \
+            --ignore "scancode-output/**" \
+            --json-pp "${SCANCODE_OUTPUT_DIR}/scancode-results.json" \
+            --html "${SCANCODE_OUTPUT_DIR}/scancode-results.html" \
+            .
+
+      - name: Validate ScanCode JSON
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("scancode-output/scancode-results.json")
+          if not path.is_file():
+              raise SystemExit("ScanCode JSON was not generated.")
+          data = json.loads(path.read_text(encoding="utf-8"))
+          if not isinstance(data, dict):
+              raise SystemExit("ScanCode JSON root is not an object.")
+          resources = data.get("files") or data.get("resources") or []
+          if not resources:
+              raise SystemExit("ScanCode JSON contains no scanned resources.")
+          print(f"ScanCode JSON resources: {len(resources)}")
+          PY
+
+      - name: Write ScanCode summary and metadata
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          output_dir = Path("scancode-output")
+          output_dir.mkdir(exist_ok=True)
+          result_path = output_dir / "scancode-results.json"
+          data = {}
+          resources = []
+          if result_path.is_file():
+              data = json.loads(result_path.read_text(encoding="utf-8"))
+              resources = data.get("files") or data.get("resources") or []
+
+          license_detections = 0
+          copyright_detections = 0
+          package_detections = len(data.get("packages", [])) if isinstance(data.get("packages"), list) else 0
+          for resource in resources:
+              if not isinstance(resource, dict):
+                  continue
+              license_detections += len(resource.get("licenses", []) or resource.get("license_detections", []) or [])
+              copyright_detections += len(resource.get("copyrights", []) or [])
+              package_detections += len(resource.get("packages", []) or [])
+
+          scanner_version = os.environ.get("SCANCODE_VERSION", "")
+          scanner_version_output = []
+          try:
+              scanner_version_output = subprocess.check_output(["scancode", "--version"], text=True).strip().splitlines()
+          except Exception:
+              pass
+
+          metadata = {
+              "repository": "ARIADNE",
+              "scanner": "ScanCode Toolkit",
+              "scannerVersion": scanner_version,
+              "scannerVersionOutput": scanner_version_output,
+              "workflow": ".github/workflows/scancode.yml",
+              "job": "scancode",
+              "target": ".",
+              "localSimulation": os.environ.get("ACT", "").lower() == "true",
+              "generatedAtUtc": datetime.now(timezone.utc).isoformat(),
+          }
+          (output_dir / "execution-metadata.json").write_text(
+              json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          summary = [
+              "# ScanCode License Audit Summary",
+              "",
+              f"- scanner: ScanCode Toolkit",
+              f"- scanner version: `{metadata['scannerVersion']}`",
+              f"- target: `{metadata['target']}`",
+              f"- local simulation: `{str(metadata['localSimulation']).lower()}`",
+              f"- scanned resources: `{len(resources)}`",
+              f"- license detections: `{license_detections}`",
+              f"- copyright detections: `{copyright_detections}`",
+              f"- package detections: `{package_detections}`",
+              "",
+              "ScanCode results are audit evidence for human review and are not an automatic legal decision.",
+          ]
+          (output_dir / "scancode-summary.md").write_text("\n".join(summary) + "\n", encoding="utf-8")
+          PY
+
+      - name: Upload ScanCode results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ariadne-scancode-results
+          path: scancode-output/
+          if-no-files-found: error
+          retention-days: 30

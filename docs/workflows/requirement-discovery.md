@@ -53,6 +53,13 @@ work/<work-id>/context/sdk-external-discovery.json
 work/<work-id>/requirements/sdk-external-requirements.md
 ```
 
+When `sdk analyze` writes Knowledge JSON under `work/db/.../rag/jsonized`, it also records cleanup evidence in `artifact-index.json`. After the Knowledge source is absorbed, confirm temporary work cleanup through the generic ctl:
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-check --work-id <work-id>
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-apply --work-id <work-id> --human-check approved
+```
+
 `sdk-analysis-context.json` は Context First manifest に `sdk-analysis` として登録されます。`sdk-integration-requirements.md` は要件review draftへ取り込むための追記候補です。
 
 AWS / GCP SDKの場合は、cloud provider、言語、package manager、SDK世代、候補サービス、credential model、region / project要件、local test候補、cloud固有のHuman Checkも整理します。

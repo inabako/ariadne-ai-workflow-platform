@@ -348,6 +348,40 @@ runtime/tests/test_github_runtime.py::test_issue_body_from_args_reads_body_file
   - inline input: `args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
+#### RT-UT-CASE-184
+
+- pytest node id:
+
+```text
+runtime/tests/test_github_runtime.py::test_ctl_github_issue_draft_writes_record
+```
+
+- Confirm: `aiwfctl github issue` creates a local draft Issue record without calling GitHub API.
+- Input:
+  - pytest node: runtime/tests/test_github_runtime.py::test_ctl_github_issue_draft_writes_record
+  - source: `runtime/tests/test_github_runtime.py:331`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=None case=None
+  - inline input: work directory with `scm-state.json`, `github issue --json`
+- Expected: CTL returns draft Issue JSON, writes process-report files, and records runtime event command path `github issue`.
+
+#### RT-UT-CASE-185
+
+- pytest node id:
+
+```text
+runtime/tests/test_github_runtime.py::test_ctl_github_pr_draft_uses_scm_branch
+```
+
+- Confirm: `aiwfctl github pr` creates a local draft Pull Request record from persisted SCM branch state.
+- Input:
+  - pytest node: runtime/tests/test_github_runtime.py::test_ctl_github_pr_draft_uses_scm_branch
+  - source: `runtime/tests/test_github_runtime.py:363`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=None case=None
+  - inline input: work directory with `working_branch`, `github pr --json`
+- Expected: CTL returns draft PR JSON with `head=feature/issue-1` and no GitHub API mutation.
+
 #### RT-UT-CASE-168
 
 - pytest node id:

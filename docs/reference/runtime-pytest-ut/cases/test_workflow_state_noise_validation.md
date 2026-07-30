@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 21 |
+| cases | 22 |
 
 ## ケース一覧
 
@@ -58,6 +58,23 @@ runtime/tests/test_workflow_state_noise_validation.py::test_workflow_state_rejec
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
+
+#### RT-UT-CASE-544A
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_state_noise_validation.py::test_workflow_state_gate_restart_uses_ctl_command
+```
+
+- 確認内容: blocked workflow state の gate_restart が旧 workflow module 直呼びではなく、CTL entrypoint 経由の復帰コマンドを生成することを確認する。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_workflow_state_noise_validation.py:67`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: blocked workflow state
+- 期待結果: `runtime/ctl/ctl.py --repo-root . workflow state set` を含み、`runtime/workflow/workflow_state.py` を含まない。
 
 #### RT-UT-CASE-545
 

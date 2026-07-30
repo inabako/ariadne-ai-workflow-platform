@@ -1,4 +1,4 @@
----
+﻿---
 name: rag-build
 description: Build or refresh the Ariadne AI Workflow file-based RAG artifacts from Markdown reports. Use when the user selects /rag-build, asks to create RAG, update RAG, accumulate corrective action reports into RAG, normalize reports, chunk documents, build indexes, or create local embeddings.
 ---
@@ -15,7 +15,7 @@ Use this skill when the user specifies:
 
 ## Default Language
 
-Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.ariadne/shared/output-language-policy.md`.
 
 ## Purpose
 
@@ -193,6 +193,32 @@ work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl
 work/db/ariadne-knowledge-platform/rag/jsonized/*.json
 ```
 
+## Cleanup Classification
+
+RAG build outputs are mostly derived artifacts. Do not use chunks, optimized chunks, indexes, embeddings, retrieval files, or ingestion evidence as the only proof that a temporary workflow work scope can be removed.
+
+Cleanup evidence must come from `artifact-index.json` entries that point to approved long-lived Knowledge sources or final durable Knowledge records:
+
+- long-lived source Markdown under `work/db/ariadne-knowledge-platform/rag/{corrective-action-report,github-knowledge,workspace-environment,external-web/<category>,specialist-review/<domain>}/`
+- normalized UUID JSON under `work/db/ariadne-knowledge-platform/rag/normalized/*.json`
+- wrapper Knowledge JSON under `work/db/ariadne-knowledge-platform/rag/jsonized/*.json` only when the producing workflow directly treats it as Knowledge, such as SDK analysis
+
+Never treat these as cleanup evidence by themselves:
+
+- `work/db/ariadne-knowledge-platform/rag/chunks/`
+- `work/db/ariadne-knowledge-platform/rag/optimized-chunks/`
+- `work/db/ariadne-knowledge-platform/rag/indexes/`
+- `work/db/ariadne-knowledge-platform/rag/embeddings/`
+- `work/db/ariadne-knowledge-platform/rag/retrieval/`
+- `db/rag/evidence/ingestion/`
+
+After Knowledge absorption is confirmed, remove temporary workflow work only through:
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-check --work-id <work-id>
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-apply --work-id <work-id> --human-check approved
+```
+
 ## Workflow
 
 1. Inspect the source report directory.
@@ -208,7 +234,7 @@ Create or update a Feedback report when you observe ambiguity, repeated checks, 
 Use the existing helper when creating a new report:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "<slash-command>" `
   --reporter "AI workflow" `
   --situation "<what was happening>" `

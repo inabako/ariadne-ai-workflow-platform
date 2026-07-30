@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from runtime.common import ctl
+from runtime.ctl import ctl
 from runtime.workflow import mcp_server_group
 
 
@@ -18,9 +18,9 @@ def write_template(repo_root: Path, template_name: str) -> None:
 
 def write_all_templates(repo_root: Path) -> None:
     for template_name in [
-        "local-model-mcp-server-template",
+        "mcp-server-template",
         "mcp-client-template",
-        "local-ai-agent-runtime-template",
+        "ai-agent-runtime-template",
         "discord-gateway-template",
     ]:
         write_template(repo_root, template_name)

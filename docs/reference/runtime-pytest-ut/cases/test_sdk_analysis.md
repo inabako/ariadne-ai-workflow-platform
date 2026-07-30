@@ -5,7 +5,7 @@
 ## 対象
 
 - `runtime/workflow/sdk_analysis.py`
-- `runtime/common/ctl.py`
+- `runtime/ctl/ctl.py`
 
 | 項目 | 値 |
 | --- | ---: |
@@ -24,7 +24,7 @@ runtime/tests/test_sdk_analysis.py::test_sdk_analysis_skips_when_sdk_input_is_mi
 - 確認内容: `work/requirements/sdk/` が無い場合、SDK事前解析が `skipped` として終了し、要件定義workflowを止めないことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_sdk_analysis.py:10`
+  - source: `runtime/tests/test_sdk_analysis.py:11`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -45,10 +45,10 @@ runtime/tests/test_sdk_analysis.py::test_sdk_analysis_writes_context_report_requ
 - 確認内容: SDKプログラム内のREADME、package metadata、source fileを解析し、SDK名、version、license、auth/network/test観点、Context First登録、Knowledge JSON候補を生成することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_sdk_analysis.py:21`
+  - source: `runtime/tests/test_sdk_analysis.py:22`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: `context`, `knowledge`
+  - inline input: `context`, `artifact_index`, `knowledge`
 - 期待結果:
   - `status == "available"`
   - SDK name/version/licenseを抽出する
@@ -58,6 +58,7 @@ runtime/tests/test_sdk_analysis.py::test_sdk_analysis_writes_context_report_requ
   - Context First manifestに `sdk-analysis` が登録される
   - `work/db/ariadne-knowledge-platform/rag/jsonized/*.json` にKnowledge JSON候補が生成される
 
+  - `work_cleanup.ready_for_check` is true and generic `work cleanup-check` is ready for the SDK analysis work scope
 #### RT-UT-CASE-567
 
 - pytest node id:
@@ -69,7 +70,7 @@ runtime/tests/test_sdk_analysis.py::test_sdk_analysis_detects_secret_like_litera
 - 確認内容: SDKプログラムにsecret-like literalが含まれていても、値そのものをcontext/report/Knowledgeへコピーせず、検出事実だけをHuman Checkへ渡すことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_sdk_analysis.py:58`
+  - source: `runtime/tests/test_sdk_analysis.py:68`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `context_text`
@@ -89,7 +90,7 @@ runtime/tests/test_sdk_analysis.py::test_aiwfctl_sdk_analyze_command
 - 確認内容: `aiwfctl sdk analyze --work-id <work-id>` からSDK事前解析runtimeを呼び出し、CLI出力に生成context pathが表示されることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_sdk_analysis.py:80`
+  - source: `runtime/tests/test_sdk_analysis.py:90`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`
@@ -109,7 +110,7 @@ runtime/tests/test_sdk_analysis.py::test_sdk_discovery_skips_when_sdk_program_in
 - 確認内容: `work/requirements/sdk/` が無い場合でもSDK外部discoveryがskip contextを生成し、親workflowを止めないことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_sdk_analysis.py:98`
+  - source: `runtime/tests/test_sdk_analysis.py:108`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -130,7 +131,7 @@ runtime/tests/test_sdk_analysis.py::test_sdk_discovery_generates_external_candid
 - 確認内容: SDKプログラムからpackage registry、homepage、repository、README内URL、security確認queryを生成し、Context First manifestへ `sdk-external-discovery` を登録することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_sdk_analysis.py:109`
+  - source: `runtime/tests/test_sdk_analysis.py:119`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -153,7 +154,7 @@ runtime/tests/test_sdk_analysis.py::test_sdk_analysis_detects_aws_and_gcp_cloud_
 - 確認内容: AWS SDKとGCP SDKが同一SDKプログラム入力に含まれる場合、providerを `multiple` として扱い、services、region/project要件、Human Check前提、file inventoryを生成することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_sdk_analysis.py:144`
+  - source: `runtime/tests/test_sdk_analysis.py:154`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `inventory`
@@ -176,7 +177,7 @@ runtime/tests/test_sdk_analysis.py::test_sdk_discovery_carries_cloud_sdk_metadat
 - 確認内容: `requirements.txt` からAWS/GCP Python packageを検出し、外部discovery contextへcloud metadataと公式docs検索queryを引き継ぐことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_sdk_analysis.py:180`
+  - source: `runtime/tests/test_sdk_analysis.py:190`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -197,7 +198,7 @@ runtime/tests/test_sdk_analysis.py::test_sdk_analysis_detects_stripe_payment_sdk
 - 確認内容: Stripe SDKがSDKプログラム入力に含まれる場合、paymentカテゴリとしてvendor、services、secret / webhook / idempotency / test modeのHuman Checkを生成することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_sdk_analysis.py:197`
+  - source: `runtime/tests/test_sdk_analysis.py:207`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -221,7 +222,7 @@ runtime/tests/test_sdk_analysis.py::test_sdk_discovery_carries_stripe_payment_sd
 - 確認内容: `requirements.txt` からStripe Python packageを検出し、外部discovery contextへpayment metadataとStripe公式docs / webhook確認queryを引き継ぐことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_sdk_analysis.py:233`
+  - source: `runtime/tests/test_sdk_analysis.py:243`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -243,7 +244,7 @@ runtime/tests/test_sdk_analysis.py::test_aiwfctl_sdk_discover_command
 - 確認内容: `aiwfctl sdk discover --work-id <work-id>` からSDK外部discovery runtimeを呼び出し、CLI出力に生成context pathが表示されることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_sdk_analysis.py:248`
+  - source: `runtime/tests/test_sdk_analysis.py:258`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `args`

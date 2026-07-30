@@ -11,6 +11,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.workflow_limits import NOISE_REDUCTION_FINDING_PREVIEW_LIMIT  # noqa: E402
 from runtime.workflow.workflow_state import update_state  # noqa: E402
 
 
@@ -92,11 +93,11 @@ def unknown_terms(text: str) -> list[tuple[int, str, str]]:
         if key not in seen:
             seen.add(key)
             unique.append(item)
-    return unique[:30]
+    return unique[:NOISE_REDUCTION_FINDING_PREVIEW_LIMIT]
 
 
 def ambiguous_expressions(text: str) -> list[tuple[int, str, str]]:
-    return line_refs(text, AMBIGUOUS_WORDS)[:30]
+    return line_refs(text, AMBIGUOUS_WORDS)[:NOISE_REDUCTION_FINDING_PREVIEW_LIMIT]
 
 
 def determine_readiness(missing: list[tuple[str, str]], unknowns: list[tuple[int, str, str]]) -> str:

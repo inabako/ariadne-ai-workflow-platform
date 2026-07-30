@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import runpy
@@ -65,17 +65,17 @@ def test_missing_required_files_reports_core_runtime_assets(tmp_path: Path) -> N
 
     assert ".gitignore" in missing
     assert "runtime/pytest.ini" in missing
-    assert "runtime/tools/aiwfctl.cmd" in missing
+    assert "runtime/windows-script/aiwfctl.cmd" in missing
     assert "runtime/tools/pytest_ut_spec_sync.py" in missing
     assert "runtime/observability/metrics.py" in missing
     assert "runtime/tests/test_observability_metrics.py" in missing
     assert "skills/runtime-health-check/SKILL.md" in missing
-    assert ".github/prompts/runtime-health-check.prompt.md" in missing
+    assert ".ariadne/prompts/runtime-health-check.prompt.md" in missing
     assert "docs/workflows/runtime-health-check.md" in missing
-    assert ".github/schemas/context-manifest.schema.json" in missing
-    assert ".github/schemas/runtime-metrics.schema.json" in missing
-    assert ".github/schemas/pytest-ut-spec-sync-report.schema.json" in missing
-    assert ".github/agents/runtime-quality-gate-agent.prompt.md" in missing
+    assert ".ariadne/schemas/context-manifest.schema.json" in missing
+    assert ".ariadne/schemas/runtime-metrics.schema.json" in missing
+    assert ".ariadne/schemas/pytest-ut-spec-sync-report.schema.json" in missing
+    assert ".ariadne/agents/runtime-quality-gate-agent.prompt.md" in missing
 
 
 def test_pytest_runtime_boundary_findings_blocks_root_config_and_cache(tmp_path: Path) -> None:
@@ -373,7 +373,7 @@ def test_path_constant_literal_findings_reports_runtime_path_constants(tmp_path:
         "    registry = \"db/registries/registry.duckdb\"\n"
         "    duckdb = \"db/rag/ariadne-knowledge.duckdb\"\n"
         "    source = \"work/db/ariadne-knowledge-platform\"\n"
-        "    schema = \".github/schemas/context-manifest.schema.json\"\n"
+        "    schema = \".ariadne/schemas/context-manifest.schema.json\"\n"
         "    return registry, duckdb, source, schema\n",
         encoding="utf-8",
     )
@@ -429,7 +429,7 @@ def test_workflow_doctor_fail_on_warning_turns_warning_into_fail(monkeypatch, tm
 
 def test_workflow_doctor_run_reports_all_warning_types(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: ["work/issue-1/tmp.txt"])
-    monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: ["runtime/common/ctl.py"])
+    monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: ["runtime/ctl/ctl.py"])
     monkeypatch.setattr(workflow_doctor, "pytest_runtime_boundary_findings", lambda repo_root: ["pytest.ini"])
     monkeypatch.setattr(
         workflow_doctor,
@@ -516,6 +516,7 @@ def test_text_boundary_scan_and_repair_recovers_utf8_saved_mojibake(tmp_path: Pa
     target = docs / "guide.md"
     target.write_text(f"# {mojibake}\n", encoding="utf-8")
 
+    assert text_boundary.marker_count("譛") == 1
     scan = text_boundary.scan_text_boundary(tmp_path, ["docs"], {".md"})
     assert scan["status"] == "finding"
     assert scan["findings"][0]["kind"] == "semantic-mojibake-marker"

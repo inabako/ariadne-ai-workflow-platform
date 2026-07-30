@@ -1,12 +1,12 @@
-# Runtime
+﻿# Runtime
 
 `runtime/` は、workflow を実行・補助するための処理機能を置く場所です。
 
 ## Official Runtime Entrypoint
 
-通常のworkflow実行では、`aiwfctl` / `runtime/common/ctl.py` を正式入口として使います。
+通常のworkflow実行では、`aiwfctl` / `runtime/ctl/ctl.py` を正式入口として使います。
 
-- 共通policyは `.github/shared/runtime-entrypoint-policy.md` です。
+- 共通policyは `.ariadne/shared/runtime-entrypoint-policy.md` です。
 - `runtime/workflow/*.py` は内部実装moduleです。runtime開発や単体テストを除き、workflow手順・SKILL・agent promptから直接実行しません。
 - Context First は `aiwfctl context ...` で確認します。
 - Human Check registry は `aiwfctl human-gate ...` で確認します。
@@ -14,22 +14,24 @@
 - close archive は `aiwfctl close-archive ...` で実行します。
 - self-improvement feedback は `aiwfctl self-improvement ...` で実行します。
 
-必要な操作が `aiwfctl` に存在しない場合は、その場で握りつぶさず、まず `aiwfctl self-improvement create-feedback` でFeedback reportを作成します。Human ReviewでAcceptedになったFeedbackだけを、後続の正式な改修候補にします。active workflow内で黙って `runtime/common/ctl.py` を拡張してはいけません。workflow側に新しい `python runtime/workflow/*.py ...` の直叩き手順を増やしてはいけません。
+必要な操作が `aiwfctl` に存在しない場合は、その場で握りつぶさず、まず `aiwfctl self-improvement create-feedback` でFeedback reportを作成します。Human ReviewでAcceptedになったFeedbackだけを、後続の正式な改修候補にします。active workflow内で黙って `runtime/ctl/ctl.py` を拡張してはいけません。workflow側に新しい `python runtime/workflow/*.py ...` の直叩き手順を増やしてはいけません。
 
 ## Windows 11 PowerShell Runtime
 
 Windows 11 で AI workflow を実行する場合は、まず PowerShell native runtime を使います。
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 help
-.\runtime\windows-ps1\aiwf.ps1 ctl help search github knowledge
-.\runtime\windows-ps1\aiwf.ps1 pytest -q
-.\runtime\windows-ps1\aiwf.ps1 spec-check
+.\runtime\windows-script\aiwf.cmd help
+.\runtime\windows-script\aiwf.cmd ctl help search github knowledge
+.\runtime\windows-script\aiwf.cmd pytest -q
+.\runtime\windows-script\aiwf.cmd spec-check
 ```
 
-`runtime/windows-ps1/aiwf.ps1` は PowerShell の UTF-8 no BOM 入出力、repo root / runtime root 解決、`uv run ... python ...` の固定だけを担当します。Context First、Human Check、GitHub knowledge maintenance などの workflow 判断は引き続き `aiwfctl` / `runtime/common/ctl.py` が担当します。
+`runtime/windows-script/aiwf.cmd` is the normal PATH-friendly Windows entrypoint. It delegates to `runtime/windows-script/aiwf.cmd`, which invokes `runtime/windows-script/aiwf.ps1` with process-scoped `-ExecutionPolicy Bypass`, so the repository does not require changing the user's PowerShell policy.
 
-不足している操作がある場合は、PS1 に直接 workflow logic を増やさず、まず self-improvement Feedback に流します。Accepted Feedback になった後でのみ、`runtime/common/ctl.py` の正式入口改修候補にします。
+`runtime/windows-script/aiwf.ps1` は PowerShell の UTF-8 no BOM 入出力、repo root / runtime root 解決、`uv run ... python ...` の固定だけを担当します。Context First、Human Check、GitHub knowledge maintenance などの workflow 判断は引き続き `aiwfctl` / `runtime/ctl/ctl.py` が担当します。
+
+不足している操作がある場合は、PS1 に直接 workflow logic を増やさず、まず self-improvement Feedback に流します。Accepted Feedback になった後でのみ、`runtime/ctl/ctl.py` の正式入口改修候補にします。
 
 ## POSIX Bash Runtime
 
@@ -42,9 +44,9 @@ Linux / WSL / macOS で AI workflow を実行する場合は、まず bash nativ
 ./runtime/posix-bash/aiwf.sh spec-check
 ```
 
-`runtime/posix-bash/aiwf.sh` は Bash の `set -Eeuo pipefail`、repo root / runtime root 解決、`PYTHONUTF8=1` / `PYTHONIOENCODING=utf-8`、`uv run ... python ...` の固定だけを担当します。Context First、Human Check、GitHub knowledge maintenance などの workflow 判断は引き続き `aiwfctl` / `runtime/common/ctl.py` が担当します。
+`runtime/posix-bash/aiwf.sh` は Bash の `set -Eeuo pipefail`、repo root / runtime root 解決、`PYTHONUTF8=1` / `PYTHONIOENCODING=utf-8`、`uv run ... python ...` の固定だけを担当します。Context First、Human Check、GitHub knowledge maintenance などの workflow 判断は引き続き `aiwfctl` / `runtime/ctl/ctl.py` が担当します。
 
-不足している操作がある場合は、bash に直接 workflow logic を増やさず、まず self-improvement Feedback に流します。Accepted Feedback になった後でのみ、`runtime/common/ctl.py` の正式入口改修候補にします。
+不足している操作がある場合は、bash に直接 workflow logic を増やさず、まず self-improvement Feedback に流します。Accepted Feedback になった後でのみ、`runtime/ctl/ctl.py` の正式入口改修候補にします。
 
 ## GitHub CLI Preflight
 
@@ -52,13 +54,13 @@ GitHub metadata / sync workflow では、`gh --version` と `gh auth status` を
 Windows 11 では次を正式入口にします。
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 preflight --profile github-cli --work-id "<work-id>"
+.\runtime\windows-script\aiwf.cmd preflight --profile github-cli --work-id "<work-id>"
 ```
 
 未ログインで `GITHUB_TOKEN` / `GH_TOKEN` / `GITHUB_API_TOKEN` / `GITHUB_API_KEY` が repository `.env` または process ENV にある場合は、次で `gh auth login --with-token` と `gh auth setup-git` を実行します。token値はreportへ出力しません。
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 preflight --profile github-cli --gh-login-from-env --human-check approved
+.\runtime\windows-script\aiwf.cmd preflight --profile github-cli --gh-login-from-env --human-check approved
 ```
 
 GitHub passwordをENVに保存しません。GitHub CLI/API と git remote の認証情報はtokenを共用できますが、runtimeは値をログ出力しないことを前提に扱います。
@@ -80,7 +82,7 @@ GitHub passwordをENVに保存しません。GitHub CLI/API と git remote の�
 
 | Script | Responsibility |
 | --- | --- |
-| `runtime/common/ctl.py` | `runtime/tools/aiwfctl.cmd` から呼び出される `aiwfctl help` / `aiwfctl env` の実体。help検索、Environment Dispatcher、`work/<work-id>/context/environment-selection.json` 作成を行う |
+| `runtime/ctl/ctl.py` | `runtime/windows-script/aiwfctl.cmd` から呼び出される `aiwfctl help` / `aiwfctl env` の実体。help検索、Environment Dispatcher、`work/<work-id>/context/environment-selection.json` 作成を行う |
 | `db/registries/registry.duckdb` | `aiwfctl env` が参照する利用者向けEnvironmentと内部Backend profile registry |
 | `runtime/intake/intake_requirements.py` | `work/requirements/` の要件定義書を受付ID単位で移動し、初期contextを作る |
 | `runtime/environment/preflight.py` | 必要tool / packageを確認し、install listを作る |
@@ -116,8 +118,8 @@ GitHub passwordをENVに保存しません。GitHub CLI/API と git remote の�
 ## UTF-8 BOM Tool
 
 ```powershell
-uv run --project runtime python runtime/tools/utf8_bom.py --repo-root . scan --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --fail-on-finding
-uv run --project runtime python runtime/tools/utf8_bom.py --repo-root . strip --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --write
+.\runtime\windows-script\aiwf.cmd ctl tools bom-scan --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --fail-on-finding
+.\runtime\windows-script\aiwf.cmd ctl tools bom-strip --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --write
 ```
 
 ## Environment Files
@@ -135,6 +137,7 @@ GitHub / SCM 連携で必要な値は、repository root の環境ファイルで
 ```env
 GITHUB_OWNER=
 GITHUB_TOKEN=
+ARIADNE_KNOWLEDGE_REPOSITORY=ariadne-knowledge-platform
 ```
 
 `GITHUB_OWNER` を設定すると、`localty-system-gui` のようなrepository名だけの指定を `<GITHUB_OWNER>/localty-system-gui` として解決できます。
@@ -143,7 +146,7 @@ GITHUB_TOKEN=
 
 ## GitHub Issue Body
 
-`runtime/github/issue_manager.py` は、Issue bodyを次の優先順位で選びます。
+`aiwfctl github issue` は、Issue bodyを次の優先順位で選びます。
 
 1. `--body-file` で明示されたMarkdown
 2. target repository の `.github/ISSUE_TEMPLATE.md`
@@ -155,7 +158,7 @@ Issue title は workflow に応じて `[新規機能フロー]`、`[改善フロ
 
 ## Pull Request
 
-Issue branch push後、`runtime/github/pull_request_manager.py` で `develop` へのPull Requestを作成します。
+Issue branch push後、`aiwfctl github pr` で `develop` へのPull Requestを作成します。
 
 Pull Request title はGitHub Issue titleを使用します。
 
@@ -183,15 +186,15 @@ uv run --group dev coverage report -m
 `uv` がPATHにない場合は、Ariadne runtime toolsのPATHを登録します。
 
 ```powershell
-.\runtime\tools\register-uv-path.cmd --shell
+.\runtime\windows-script\register-uv-path.cmd --shell
 ```
 
-`runtime\tools\uv.cmd` は、実uvが見つからない場合にinstall guidanceを表示します。
+`runtime\windows-script\uv.cmd` は、実uvが見つからない場合にinstall guidanceを表示します。
 
 生成物の既定言語を確認する場合:
 
 ```powershell
-uv run --project runtime python runtime/workflow/validate_output_language.py `
+.\runtime\windows-script\aiwf.cmd ctl workflow validate-output-language check `
   --paths work rag docs `
   --fail-on-violation
 ```

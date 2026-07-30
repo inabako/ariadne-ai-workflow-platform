@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Multi-Axis Design Evaluation",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "candidate_axis_evaluations"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "schema": { "type": "string" },
+    "artifact_type": {
+      "type": "string",
+      "enum": ["multi-axis-evaluation"]
+    },
+    "axis_direction": {
+      "type": "string",
+      "const": "higher-is-better"
+    },
+    "required_axes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/axisName" }
+    },
+    "candidate_axis_evaluations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/candidateAxisEvaluation" }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "axisName": {
+      "type": "string",
+      "enum": [
+        "expectation_satisfaction",
+        "usability",
+        "product_identity",
+        "delight",
+        "accessibility",
+        "implementation_cost",
+        "maintenance_cost",
+        "technical_feasibility"
+      ]
+    },
+    "stringList": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "axisEvaluation": {
+      "type": "object",
+      "required": ["score"],
+      "properties": {
+        "axis": { "$ref": "#/$defs/axisName" },
+        "score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "rationale": { "type": "string" },
+        "evidence": { "$ref": "#/$defs/stringList" },
+        "evidence_refs": { "$ref": "#/$defs/stringList" },
+        "evidence_quality": {
+          "type": "string",
+          "enum": ["provided", "assumption", "human-review", "user-test", "runtime-log"]
+        },
+        "requires_validation": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "candidateAxisEvaluation": {
+      "type": "object",
+      "required": ["candidate_id", "axes"],
+      "properties": {
+        "candidate_id": { "type": "string", "minLength": 1 },
+        "axes": {
+          "oneOf": [
+            {
+              "type": "object",
+              "propertyNames": { "$ref": "#/$defs/axisName" },
+              "additionalProperties": { "$ref": "#/$defs/axisEvaluation" }
+            },
+            {
+              "type": "array",
+              "items": { "$ref": "#/$defs/axisEvaluation" }
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -7,16 +7,16 @@
 `work/requirements/svg-input/<PREFIX>_*.svg` を確認し、対象SVGをIssue作業領域へ取り込んだうえで、共通拡張である GaC / UaC GUI Mode を実行します。
 
 ```powershell
-python runtime/workflow/gui_mode.py init-input
-python runtime/workflow/gui_mode.py run --issue-id SYS-0001
-python runtime/workflow/gui_mode.py validate --issue-id SYS-0001
-python runtime/workflow/gui_mode.py self-test
+.\runtime\windows-script\aiwf.cmd ctl gui init-input
+.\runtime\windows-script\aiwf.cmd ctl gui run --issue-id SYS-0001
+.\runtime\windows-script\aiwf.cmd ctl gui validate --issue-id SYS-0001
+.\runtime\windows-script\aiwf.cmd ctl gui self-test
 ```
 
 Corrective Action改善の実行例:
 
 ```powershell
-python runtime/workflow/gui_mode.py run `
+.\runtime\windows-script\aiwf.cmd ctl gui run `
   --issue-id FIX-123 `
   --work-dir work/issue-123 `
   --mode corrective-improvement
@@ -29,9 +29,9 @@ python runtime/workflow/gui_mode.py run `
 `work/requirements/svg-input/WEB_<PREFIX>_*.svg` を確認し、対象SVGをIssue作業領域へ取り込んだうえで、共通拡張である Web SVG Layout Mode を実行します。
 
 ```powershell
-python runtime/workflow/web_svg_layout_mode.py init-input
-python runtime/workflow/web_svg_layout_mode.py run --issue-id SYS-0001
-python runtime/workflow/web_svg_layout_mode.py validate --issue-id SYS-0001
+.\runtime\windows-script\aiwf.cmd ctl web-svg init-input
+.\runtime\windows-script\aiwf.cmd ctl web-svg run --issue-id SYS-0001
+.\runtime\windows-script\aiwf.cmd ctl web-svg validate --issue-id SYS-0001
 ```
 
 `WEB_SYS_`、`WEB_FEAT_`、`WEB_FIX_` のprefixでWeb UI modeを判別します。既存互換として `NEXT_SYS_`、`NEXT_FEAT_`、`NEXT_FIX_` も受け付けます。生成された React / Playwright ファイルは `web-ui/generated/` 配下の候補として扱い、target sourceへ自動コピーしません。
@@ -47,9 +47,9 @@ docs-sync用の作業フォルダ初期化、ドキュメント差分JSONのひ�
 Infrastructure boilerplateを `work/<work-id>/source/infrastructure/` へコピーし、非破壊のhealth checkとContext First evidenceを生成します。
 
 ```powershell
-python runtime/workflow/iac_template.py list
-python runtime/workflow/iac_template.py prepare --template opentelemetry-collector --work-id issue-123
-python runtime/workflow/iac_template.py health --template opentelemetry-collector --work-id issue-123
+.\runtime\windows-script\aiwf.cmd ctl iac template list
+.\runtime\windows-script\aiwf.cmd ctl iac template prepare --template opentelemetry-collector --work-id issue-123
+.\runtime\windows-script\aiwf.cmd ctl iac template health --template opentelemetry-collector --work-id issue-123
 ```
 
 このCLI単体では、Terraform apply、Docker起動、Collector起動、Custom Distribution buildは行いません。展開後のtemplate側で `make generate`、`make validate`、`make smoke`、`make terraform-plan` を実行します。
@@ -59,12 +59,13 @@ python runtime/workflow/iac_template.py health --template opentelemetry-collecto
 Self-Improvement Workflow用に、`work/feedback/` の初期化、Feedback report作成、Human Review結果追記、Accepted feedbackからのIssue body生成、標準branch名生成、evidence scaffold作成を行います。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement init-feedback
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback --target-workflow "/docs-sync" --situation "docs整備中" --friction "参照docsが不明"
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement review-feedback --feedback work/feedback/<feedback>.md --decision accepted --reviewer Human --reason "改善価値がある"
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement issue-body --feedback work/feedback/<feedback>.md
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement branch-name --issue-number 42
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement init-feedback
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback --target-workflow "/docs-sync" --situation "docs整備中" --friction "参照docsが不明"
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement review-feedback --feedback work/feedback/<feedback>.md --decision accepted --reviewer Human --reason "改善価値がある"
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement issue-body --feedback work/feedback/<feedback>.md
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback --target-workflow "/self-improvement" --situation "runtime log analysis needs feedback context" --friction "feedback review needs manual log inspection" --runtime-trace-id "<trace-id>" --runtime-log logs/runtime/runtime-events.log
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement branch-name --issue-number 42
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
 ```
 
 このCLI単体では、GitHub Issue作成、branch作成、source変更、push、RAG登録、close archive準備は行いません。
@@ -88,7 +89,7 @@ VSCode Environment workflow用に `work/<id>/` を初期化し、要件定義・
 完了済みIssue workflow向けに、最終knowledge capture packageを生成します。
 
 ```powershell
-python runtime/workflow/knowledge_capture.py `
+.\runtime\windows-script\aiwf.cmd ctl workflow knowledge-capture `
   --issue issue-11 `
   --repository localty-system-gui `
   --branch feature/issue-11 `
@@ -117,15 +118,15 @@ work/<issue-id>/process-report/knowledge-capture-*.json
 `prepare` は既定でRAG sourceを自動検出し、`00-summary.md`、`01-work-report.md`、`03-review-report.md`、`links.md`、`metadata.json` へ具体内容を反映します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare --issue issue-11
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive audit --issue issue-11
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prune --issue issue-11
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare --issue issue-11
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive audit --issue issue-11
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prune --issue issue-11
 ```
 
 新システム開発フロー:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --issue issue-123 `
   --category new-system-dev
 ```
@@ -133,7 +134,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 GitHub knowledge maintenance:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --work-id github/original/recent `
   --category github `
   --require-rag
@@ -142,7 +143,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 VSCode Environment:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --work-id vscode-environment `
   --category vscode `
   --require-rag
@@ -151,7 +152,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 重要なRAG sourceを必ず含めたい場合は `--source-rag` で明示指定します。複数指定できます。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --issue issue-11 `
   --source-rag work/db/ariadne-knowledge-platform/rag/normalized/issue-11.json `
   --require-rag
@@ -164,7 +165,7 @@ RAG sourceが必須のcloseでは `--require-rag` を付けます。自動検出
 `prune` は既定ではdry-runです。実削除には明示承認が必要です。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prune `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prune `
   --issue issue-11 `
   --execute `
   --human-check approved
@@ -191,7 +192,7 @@ work/close/<category>/<archive-id>/
 要件定義review draftの前に、不明ワード、Critical項目不足、曖昧表現を抽出し、Human InterviewとReadinessを生成します。
 
 ```powershell
-python runtime/workflow/noise_reduction.py run `
+.\runtime\windows-script\aiwf.cmd ctl workflow noise-reduction run `
   --draft work/requirements/draft/example.txt
 ```
 
@@ -215,8 +216,8 @@ work/requirements/draft/<draft-stem>-noise-reduction/
 workflowの現在地を `context/workflow-state.json` として標準化します。
 
 ```powershell
-python runtime/workflow/workflow_state.py --work-dir work/issue-11 show
-python runtime/workflow/workflow_state.py --work-dir work/issue-11 set `
+.\runtime\windows-script\aiwf.cmd ctl workflow state --work-dir work/issue-11 show
+.\runtime\windows-script\aiwf.cmd ctl workflow state --work-dir work/issue-11 set `
   --workflow corrective-action-fix `
   --work-id issue-11 `
   --phase implementation `
@@ -228,8 +229,8 @@ python runtime/workflow/workflow_state.py --work-dir work/issue-11 set `
 人間承認が必要な操作を `db/registries/registry.duckdb` で管理します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . human-gate list
-uv run --project runtime python runtime/common/ctl.py --repo-root . human-gate check --gate close-prune --human-check approved
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . human-gate list
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . human-gate check --gate close-prune --human-check approved
 ```
 
 ## `workflow_doctor.py`
@@ -237,8 +238,8 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . human-gate c
 workflow repositoryの軽量診断を行います。
 
 ```powershell
-python runtime/workflow/workflow_doctor.py
-python runtime/workflow/workflow_doctor.py --fail-on-warning
+.\runtime\windows-script\aiwf.cmd ctl doctor
+.\runtime\windows-script\aiwf.cmd ctl doctor --fail-on-warning
 ```
 
 主に、`work/` のREADME-only policy、Ariadne本体側 `rag/` の非追跡policy、必須runtime file、close archive標準8ファイルを確認します。
@@ -248,10 +249,8 @@ python runtime/workflow/workflow_doctor.py --fail-on-warning
 要件定義工程で `work/requirements/sdk/` に置かれたSDKプログラムを事前解析します。入力が無い場合は `status: skipped` として、親workflowを止めません。
 
 ```powershell
-python runtime/workflow/sdk_analysis.py analyze --work-id issue-123
-python runtime/workflow/sdk_analysis.py discover --work-id issue-123
-aiwfctl sdk analyze --work-id issue-123
-aiwfctl sdk discover --work-id issue-123
+.\runtime\windows-script\aiwf.cmd ctl sdk analyze --work-id issue-123
+.\runtime\windows-script\aiwf.cmd ctl sdk discover --work-id issue-123
 ```
 
 主な出力:
@@ -267,6 +266,8 @@ work/<work-id>/requirements/sdk-external-requirements.md
 work/db/ariadne-knowledge-platform/rag/jsonized/<knowledge-id>.json
 ```
 
+When Knowledge JSON is generated, `artifact-index.json` also records cleanup evidence. After absorption is confirmed, run `aiwfctl work cleanup-check --work-id <work-id>` before removing the temporary work scope.
+
 `sdk-analysis-context.json` は Context First manifest に `sdk-analysis` として登録されます。secret-like literalは値をコピーせず、検出事実だけをHuman Checkへ渡します。
 
 AWS / GCP SDKでは、provider、言語、package manager、SDK世代、候補サービス、credential model、region / project要件、local test候補、cloud固有のHuman Checkを `cloud` として構造化します。`sdk-files.json` にはSHA-256付きinventoryを保存します。
@@ -280,8 +281,8 @@ Stripe SDKでは、payment vendor、言語、package manager、候補payment ser
 生成・改修したコードが対象システムへ自然に統合されているかを確認するruntimeです。SDK解析contextが存在する場合、AWS/GCPの `cloud` metadata、Stripeなどの `payment` metadataを読み、統合ポイント、エミュレータ候補、本番差分、Human Checkを整理します。
 
 ```powershell
-python runtime/workflow/system_integration.py analyze --work-id issue-123
-python runtime/workflow/system_integration.py verify --work-id issue-123 --with-emulator
+.\runtime\windows-script\aiwf.cmd ctl integration analyze --work-id issue-123
+.\runtime\windows-script\aiwf.cmd ctl integration verify --work-id issue-123 --with-emulator
 aiwfctl integration analyze --work-id issue-123
 aiwfctl integration verify --work-id issue-123 --with-emulator
 aiwfctl integration emulator prepare --work-id issue-123
@@ -340,5 +341,5 @@ uv run --group dev coverage html
 `uv` がPATHにない場合:
 
 ```powershell
-.\runtime\tools\register-uv-path.cmd --shell
+.\runtime\windows-script\register-uv-path.cmd --shell
 ```

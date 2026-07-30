@@ -11,7 +11,9 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, read_json, relative_to_repo, write_json  # noqa: E402
+from runtime.constants.cli_defaults import RAG_CHUNK_OVERLAP_DEFAULT, RAG_CHUNK_SIZE_DEFAULT  # noqa: E402
 from runtime.rag.cleanup_guard import assert_safe_clean_output_target  # noqa: E402
 from runtime.constants.paths import GENERATED_CHUNKS, GENERATED_NORMALIZED  # noqa: E402
 
@@ -23,8 +25,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Split normalized RAG documents into JSON chunks.")
     parser.add_argument("--input-dir", default=str(GENERATED_NORMALIZED))
     parser.add_argument("--output-dir", default=str(GENERATED_CHUNKS))
-    parser.add_argument("--chunk-size", type=int, default=1800)
-    parser.add_argument("--chunk-overlap", type=int, default=180)
+    parser.add_argument("--chunk-size", type=int, default=RAG_CHUNK_SIZE_DEFAULT)
+    parser.add_argument("--chunk-overlap", type=int, default=RAG_CHUNK_OVERLAP_DEFAULT)
     parser.add_argument("--repo-root", default=None)
     parser.add_argument("--clean-output", action="store_true")
     return parser
@@ -98,7 +100,7 @@ def chunk_document(repo_root: Path, document_path: Path, output_dir: Path, args:
             "title": document.get("title", ""),
         }
         chunk = {
-            "schema_version": "1.0",
+            "schema_version": SCHEMA_VERSION,
             "chunk_id": chunk_id,
             "legacy_chunk_id": legacy_chunk_id,
             "document_id": document_id,

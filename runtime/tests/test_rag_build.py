@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -146,6 +146,9 @@ def test_rag_build_artifact_defaults_and_human_check_reasons(tmp_path: Path) -> 
     assert artifact["human_check_required"] is True
     assert "clean-output was used" in artifact["human_check_reasons"][0]
     assert "source report filenames" in artifact["human_check_reasons"][1]
+    repair_command = artifact["gate_restart"]["repair_command"]
+    assert "runtime/ctl/ctl.py --repo-root . rag build" in repair_command
+    assert "runtime/rag/rag_build.py --repo-root" not in repair_command
 
     minimal = rag_build.build_run_artifact(
         tmp_path,
@@ -180,7 +183,7 @@ def test_register_rag_build_context_uses_work_dir_name(monkeypatch, tmp_path: Pa
     assert calls[0]["work_dir"] == tmp_path / "work" / "custom-issue"
     assert calls[0]["work_id"] == "custom-issue"
     assert calls[0]["context_type"] == "rag-build-run"
-    assert calls[0]["schema"] == ".github/schemas/rag-build-run.schema.json"
+    assert calls[0]["schema"] == ".ariadne/schemas/rag-build-run.schema.json"
 
 
 def test_rag_build_run_with_standardize_and_context_registration(monkeypatch, tmp_path: Path) -> None:

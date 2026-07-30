@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -50,7 +50,7 @@ def make_work_with_manifest(repo_root: Path, issue: str = "issue-77") -> Path:
         required=True,
         generated_by="runtime-scm",
         owner="workflow",
-        schema=".github/schemas/scm-state.schema.json",
+        schema=".ariadne/schemas/scm-state.schema.json",
     )
     return work_dir
 

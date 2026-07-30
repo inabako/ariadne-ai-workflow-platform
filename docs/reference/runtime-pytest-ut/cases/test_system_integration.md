@@ -5,7 +5,7 @@
 ## 対象runtime
 
 - `runtime/workflow/system_integration.py`
-- `runtime/common/ctl.py`
+- `runtime/ctl/ctl.py`
 
 ## ケース
 

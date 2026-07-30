@@ -1,6 +1,6 @@
 # MCP Server Group Implementation
 
-MCP Server Group Implementation は、Ariadne の MCP 系 boilerplate を使って、MCP Server 群、Reusable MCP Client、Local AI Agent Runtime、Discord Gateway を段階的に実装するための workflow extension です。
+MCP Server Group Implementation は、Ariadne の MCP 系 boilerplate を使って、MCP Server 群、Reusable MCP Client、AI Agent Runtime、Discord Gateway を段階的に実装するための workflow extension です。
 
 目的はテンプレートを単にコピーすることではなく、サービス間の責務境界を Context First artifact に残し、Human Check が必要な構成を先に止めることです。
 
@@ -8,7 +8,7 @@ MCP Server Group Implementation は、Ariadne の MCP 系 boilerplate を使っ�
 
 - Local Model MCP Server boilerplate を MCP capability provider として展開する。
 - Reusable MCP Client boilerplate を runtime / gateway から使う境界として展開する。
-- Local AI Agent Runtime boilerplate を job / workflow execution 層として展開する。
+- AI Agent Runtime boilerplate を job / workflow execution 層として展開する。
 - Discord Gateway boilerplate を外部操作 gateway として展開する。
 - 選択した component、template copy 結果、boundary check を `work/<work-id>/context/` と `work/<work-id>/reports/` に保存する。
 
@@ -26,9 +26,9 @@ aiwfctl mcp-group run-workflow --work-id <work-id> --components local-model-mcp-
 
 | Component | Template | Destination |
 | --- | --- | --- |
-| `local-model-mcp-server` | `templates/boilerplates/mcp/local-model-mcp-server-template` | `work/<work-id>/implementation/mcp-server-group/local-model-mcp-server` |
+| `local-model-mcp-server` | `templates/boilerplates/mcp/mcp-server-template` | `work/<work-id>/implementation/mcp-server-group/local-model-mcp-server` |
 | `mcp-client` | `templates/boilerplates/mcp/mcp-client-template` | `work/<work-id>/implementation/mcp-server-group/mcp-client` |
-| `local-ai-agent-runtime` | `templates/boilerplates/mcp/local-ai-agent-runtime-template` | `work/<work-id>/implementation/mcp-server-group/local-ai-agent-runtime` |
+| `local-ai-agent-runtime` | `templates/boilerplates/mcp/ai-agent-runtime-template` | `work/<work-id>/implementation/mcp-server-group/local-ai-agent-runtime` |
 | `discord-gateway` | `templates/boilerplates/mcp/discord-gateway-template` | `work/<work-id>/implementation/mcp-server-group/discord-gateway` |
 
 Default component は `local-model-mcp-server,mcp-client` です。

@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "status": "agpl_policy_applied",
+  "repository_license": "AGPL-3.0-or-later",
+  "boundary_summary": {
+    "ariadne_repository_material": [
+      "runtime",
+      "workflow definitions",
+      "CLI and CTL",
+      "schemas",
+      "prompts",
+      "templates",
+      "tests",
+      "documentation"
+    ],
+    "generated_artifacts_policy": "Tool use alone does not automatically apply the ARIADNE repository license to generated outputs.",
+    "embedded_material_policy": "Outputs that include ARIADNE source code or protected materials may carry separate obligations."
+  },
+  "open_decisions": [
+    "Complete third-party dependency license review before public release.",
+    "Confirm public author, repository URL, release date, and GitHub Security Advisories availability."
+  ]
+}

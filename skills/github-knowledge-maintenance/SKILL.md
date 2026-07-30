@@ -1,4 +1,4 @@
----
+﻿---
 name: github-knowledge-maintenance
 description: Maintain a GitHub repository as a long-lived knowledge asset without erasing Git history. Use when the user selects /github-knowledge-maintenance or asks to preserve GitHub Issues, PRs, docs, CARs, commit-source, commit-message, semantic-subject, Knowledge DB, or RAG candidates as reusable repository knowledge.
 ---
@@ -7,14 +7,14 @@ description: Maintain a GitHub repository as a long-lived knowledge asset withou
 
 ## Default Language
 
-Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.ariadne/shared/output-language-policy.md`.
 
 ## Runtime Entrypoint Rule
 
-Use `aiwfctl` / `runtime/common/ctl.py` as the official runtime entrypoint for this workflow.
+Use `aiwfctl` / `runtime/ctl/ctl.py` as the official runtime entrypoint for this workflow.
 
-- Follow `.github/shared/runtime-entrypoint-policy.md`.
-- On Windows 11, start runtime commands through `runtime/windows-ps1/aiwf.ps1` first, then delegate to `aiwfctl` from there.
+- Follow `.ariadne/shared/runtime-entrypoint-policy.md`.
+- On Windows 11, start runtime commands through `runtime/windows-script/aiwf.cmd` first, then delegate to `aiwfctl` from there.
 - Do not directly invoke `runtime/workflow/github_knowledge_maintenance.py`, `runtime/workflow/context_first.py`, `runtime/workflow/human_gate_policy.py`, `runtime/workflow/self_improvement.py`, or `runtime/workflow/close_archive.py` during normal workflow execution.
 - Treat `runtime/workflow/*.py` files as internal implementation modules unless a runtime developer is testing that module itself.
 - Context First checks must go through `aiwfctl context ...`.
@@ -23,7 +23,7 @@ Use `aiwfctl` / `runtime/common/ctl.py` as the official runtime entrypoint for t
 - Close archive preparation, audit, and prune must go through `aiwfctl close-archive ...`.
 - Self-improvement feedback generated from this workflow must go through `aiwfctl self-improvement ...`.
 
-If a needed operation is not exposed through `aiwfctl`, stop the current operation and create a self-improvement Feedback report first. Do not silently add `runtime/common/ctl.py` commands inside the active workflow; wait for Human Review / accepted self-improvement flow.
+If a needed operation is not exposed through `aiwfctl`, stop the current operation and create a self-improvement Feedback report first. Do not silently add `runtime/ctl/ctl.py` commands inside the active workflow; wait for Human Review / accepted self-improvement flow.
 
 ## Mechanical Artifact Integrity Rule
 
@@ -32,7 +32,7 @@ Do not judge JSON or Markdown corruption from PowerShell console rendering alone
 - After generating or updating `github-knowledge-analysis.json` or Human-facing reports, run the official artifact check:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge artifact-integrity `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge artifact-integrity `
   --work-id "<work-id>" `
   --fail-on-finding
 ```
@@ -180,7 +180,7 @@ cd C:\github\ariadne-ai-workflow-platform
 On Windows 11, prefer:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge init `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge init `
   --repository "<target-repository>" `
   --scan-mode recent `
   --repair-mode proposal `
@@ -190,7 +190,7 @@ On Windows 11, prefer:
 ### 1. Initialize Work Area
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge init `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge init `
   --repository "<target-repository>" `
   --scan-mode recent `
   --repair-mode proposal `
@@ -202,7 +202,7 @@ If the work folder already exists, stop and ask whether to reuse it. After confi
 ### 2. Create Analysis Scaffold
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge analysis-template `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge analysis-template `
   --work-id "<work-id>"
 ```
 
@@ -215,7 +215,7 @@ work/<work-id>/context/github-knowledge-analysis.json
 Schema:
 
 ```text
-.github/schemas/github-knowledge-analysis.schema.json
+.ariadne/schemas/github-knowledge-analysis.schema.json
 ```
 
 ### 3. Repository Discovery
@@ -223,7 +223,7 @@ Schema:
 Use:
 
 ```text
-.github/agents/repository-discovery-agent.prompt.md
+.ariadne/agents/repository-discovery-agent.prompt.md
 ```
 
 Confirm repository identity, scan scope, and whether clone is forbidden or conditionally allowed.
@@ -233,13 +233,13 @@ Confirm repository identity, scan scope, and whether clone is forbidden or condi
 Use:
 
 ```text
-.github/agents/github-metadata-collector-agent.prompt.md
+.ariadne/agents/github-metadata-collector-agent.prompt.md
 ```
 
 Before metadata collection, run the repository runtime GitHub CLI preflight. This separates `gh --version`, `gh auth status`, and token availability so the AI does not decide these steps ad hoc:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 preflight `
+.\runtime\windows-script\aiwf.cmd preflight `
   --profile github-cli `
   --work-id "<work-id>"
 ```
@@ -255,7 +255,7 @@ After installation, open a new terminal or refresh PATH, then rerun the prefligh
 If `gh auth status` reports unauthenticated and repository `.env` or process ENV contains `GITHUB_TOKEN`, `GH_TOKEN`, `GITHUB_API_TOKEN`, or `GITHUB_API_KEY`, run the ENV login action through preflight. Do not print token values:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 preflight `
+.\runtime\windows-script\aiwf.cmd preflight `
   --profile github-cli `
   --gh-login-from-env `
   --human-check approved
@@ -281,7 +281,7 @@ Do not clone unless GitHub CLI/API evidence is insufficient and the human explic
 Use:
 
 ```text
-.github/agents/knowledge-asset-discovery-agent.prompt.md
+.ariadne/agents/knowledge-asset-discovery-agent.prompt.md
 ```
 
 Extract:
@@ -301,7 +301,7 @@ Record findings in `github-knowledge-analysis.json`.
 For 1-3 file commit leakage, run detection before planning:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge detect-rebase `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge detect-rebase `
   --work-id "<work-id>" `
   --base "HEAD~30" `
   --head "HEAD"
@@ -310,7 +310,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
 If the human asks for all history, or if the branch was intentionally created for safe full-history maintenance, use the explicit full-history mode instead of increasing a recent-history number by hand:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge detect-rebase `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge detect-rebase `
   --work-id "<work-id>" `
   --git-repo "." `
   --all-history `
@@ -326,7 +326,7 @@ When commit subjects are thin, the runtime must inspect commit materials as well
 Use:
 
 ```text
-.github/agents/narrative-analyzer-agent.prompt.md
+.ariadne/agents/narrative-analyzer-agent.prompt.md
 ```
 
 Check the chain:
@@ -342,20 +342,20 @@ Record narrative gaps and open questions in `github-knowledge-analysis.json`.
 Use:
 
 ```text
-.github/agents/documentation-repair-agent.prompt.md
+.ariadne/agents/documentation-repair-agent.prompt.md
 ```
 
 Create the human review plan:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge repair-plan `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge repair-plan `
   --work-id "<work-id>"
 ```
 
 Create the high-risk rebase review plan for 1-3 file commit leakage:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-plan `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-plan `
   --work-id "<work-id>"
 ```
 
@@ -364,15 +364,17 @@ This is a proposal. It does not mutate GitHub.
 Immediately verify the saved artifacts before reporting mojibake, JSON corruption, or checklist readiness:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge artifact-integrity `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge artifact-integrity `
   --work-id "<work-id>" `
   --fail-on-finding
 ```
 
+`status`, `next-action`, and `resume` include an `encoding_gate`. Treat `encoding_gate.status: block` as a hard stop: do not run rebase, replay, push, or GitHub sync apply commands until the returned repair/integrity command has been run and the saved artifacts are readable and consistent. Block conditions include UTF-8 decode failure, JSON parse failure, mojibake markers in resume artifacts, replay packages missing `target_branch` / `source_ref` / `apply_mode`, push-enabled packages missing `expected_remote_sha`, invalid approval/execution statuses, and verified/pushed candidates missing before/after SHA mapping.
+
 After the single Human Check approval package is recorded in the generated OK / NG checklist, ingest that checklist through the official runtime entrypoint. Do not hand-edit `github-knowledge-analysis.json`:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-review-intake `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-review-intake `
   --work-id "<work-id>" `
   --human-check approved
 ```
@@ -382,13 +384,13 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
 After the single Human Check approval package is ingested, execute only an approved candidate:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-package `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-package `
   --work-id "<work-id>" `
   --candidate-id "<candidate-id>" `
   --target-branch "<branch>" `
   --apply-mode direct
 
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-apply `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-apply `
   --work-id "<work-id>" `
   --human-check approved
 ```
@@ -400,7 +402,7 @@ For approved small-commit rebase packages, prefer the built-in non-interactive r
 Generate the package from approved candidates; do not hand-write the JSON:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-package `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-package `
   --work-id "<work-id>" `
   --target-branch "<branch>" `
   --apply-mode direct
@@ -411,7 +413,7 @@ Use `--candidate-id "<candidate-id>"` to restrict the package to explicit approv
 Then execute the generated package:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-apply `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-apply `
   --work-id "<work-id>" `
   --package-path "work/<work-id>/context/rebase-replay-package.json" `
   --human-check approved
@@ -422,7 +424,7 @@ When remote reflection is part of the approved package, add `--push`. The packag
 If replay was already executed and verified without `--push`, do not regenerate the package or hand-edit JSON just to add `allow_push`. Publish the verified replay tip through the dedicated runtime entrypoint:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge publish-verified-replay `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge publish-verified-replay `
   --work-id "<work-id>" `
   --target-branch "<branch>" `
   --expected-remote-sha "<approved-remote-sha>" `
@@ -434,7 +436,7 @@ If replay was already executed and verified without `--push`, do not regenerate 
 After approved small-commit rebase is verified, run commit message/body repair through the same high-risk replay runtime. Do not run `git commit --amend`, `git rebase -i`, or ad hoc scripts by hand:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge message-repair-plan `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge message-repair-plan `
   --work-id "<work-id>" `
   --source-ref "origin/<branch>"
 ```
@@ -442,7 +444,7 @@ After approved small-commit rebase is verified, run commit message/body repair t
 The message repair plan writes one OK / NG checklist for weak semantic subjects or damaged commit messages. After the human checks the list, ingest it once:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge message-review-intake `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge message-review-intake `
   --work-id "<work-id>" `
   --human-check approved
 ```
@@ -450,7 +452,7 @@ The message repair plan writes one OK / NG checklist for weak semantic subjects 
 Generate the replay package from approved message repair candidates:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge message-repair-package `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge message-repair-package `
   --work-id "<work-id>" `
   --target-branch "<branch>" `
   --source-ref "origin/<branch>" `
@@ -460,7 +462,7 @@ Generate the replay package from approved message repair candidates:
 Then execute it with the existing replay apply runtime:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge rebase-apply `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge rebase-apply `
   --work-id "<work-id>" `
   --package-path "work/<work-id>/context/message-repair-package.json" `
   --human-check approved `
@@ -521,27 +523,27 @@ Before any GitHub mutation, the human must confirm:
 Use:
 
 ```text
-.github/agents/github-documentation-sync-agent.prompt.md
+.ariadne/agents/github-documentation-sync-agent.prompt.md
 ```
 
 Create the sync plan:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge sync-plan `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge sync-plan `
   --work-id "<work-id>"
 ```
 
 Create the single OK / NG review checklist for Issue / PR / comment repair actions:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge sync-review-plan `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge sync-review-plan `
   --work-id "<work-id>"
 ```
 
 After the human checks one OK or NG per action id, ingest the checklist through ctl. Do not hand-edit `github_sync_actions[*].approval_status`:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge sync-review-intake `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge sync-review-intake `
   --work-id "<work-id>" `
   --human-check approved
 ```
@@ -572,26 +574,31 @@ Do not execute commands marked `pending` or `approved` without `human_review_dec
 Use:
 
 ```text
-.github/agents/knowledge-db-registrar-agent.prompt.md
+.ariadne/agents/knowledge-db-registrar-agent.prompt.md
 ```
 
 Create a candidate note:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rag-candidate `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rag-candidate `
   --work-id "<work-id>"
 ```
 
 Publish to `work/db/ariadne-knowledge-platform/rag/github-knowledge/` only after explicit approval:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rag-candidate `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rag-candidate `
   --work-id "<work-id>" `
   --publish-rag `
   --human-check approved
 ```
 
-Then normalize the approved published report to UUID JSON with `runtime/rag/normalize_documents.py`, and rebuild chunks, indexes, and embeddings.
+Then normalize the approved published report to UUID JSON with `runtime/rag/normalize_documents.py`, and rebuild chunks, indexes, and embeddings. After long-lived Knowledge absorption is confirmed, use the generic work cleanup ctl returned by `rag-candidate` / `next-action` before removing temporary GitHub knowledge work:
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-check --work-id github/original --recursive
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-apply --work-id github/original --recursive --human-check approved
+```
 
 ## Workflow Feedback Output
 
@@ -601,7 +608,7 @@ Create or update a Feedback report when you observe ambiguity, repeated checks, 
 Use the existing helper when creating a new report:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "<slash-command>" `
   --reporter "AI workflow" `
   --situation "<what was happening>" `

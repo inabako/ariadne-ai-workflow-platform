@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/contracts/agent-runtime/checkpoint.schema.json",
+  "title": "Checkpoint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "checkpoint_id", "workflow_id", "trace_id", "state", "completed_steps", "artifacts", "framework_metadata", "saved_at"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "checkpoint_id": { "type": "string", "minLength": 1 },
+    "workflow_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "pattern": "^[0-9a-f]{24}$" },
+    "state": { "type": "string", "enum": ["accepted", "running", "waiting_human", "completed", "failed", "cancelled"] },
+    "completed_steps": { "type": "array", "items": { "type": "string" } },
+    "artifacts": { "type": "array", "items": { "type": "string" } },
+    "framework_metadata": { "type": "object" },
+    "saved_at": { "type": "string", "format": "date-time" }
+  }
+}

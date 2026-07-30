@@ -11,6 +11,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso  # noqa: E402
 
 
@@ -165,7 +166,7 @@ def scan_files(repo_root: Path, paths: Sequence[str], extensions: set[str]) -> d
         findings.extend(file_findings)
 
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "text-encoding-guard",
         "generated_at": utc_now_iso(),
         "status": "finding" if findings else "ok",

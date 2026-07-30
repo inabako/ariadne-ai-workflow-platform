@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Design Comparison Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "work_id",
+    "candidate_overviews",
+    "report_sections"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "schema": { "type": "string" },
+    "artifact_type": {
+      "type": "string",
+      "enum": ["design-comparison-report"]
+    },
+    "status": { "type": "string" },
+    "work_id": { "type": "string" },
+    "usage_context": { "type": "object" },
+    "major_expectations": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "critical_expectations": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "candidate_overviews": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/candidateOverview" }
+    },
+    "expectation_satisfaction": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "multi_axis_evaluation": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "expectation_violations": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "positive_surprise_hypotheses": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "tradeoff_analysis": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "implementation_costs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/implementationCost" }
+    },
+    "unverified_items": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "recommended_candidate": { "type": "string" },
+    "recommendation_rationale": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "alternatives": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "human_decision_items": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "report_sections": {
+      "type": "array",
+      "minItems": 15,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "candidateOverview": {
+      "type": "object",
+      "required": [
+        "candidate_id",
+        "expectation_score",
+        "recommendable",
+        "critical_violation_count",
+        "axis_average",
+        "summary",
+        "key_strengths",
+        "key_risks"
+      ],
+      "properties": {
+        "candidate_id": { "type": "string", "minLength": 1 },
+        "expectation_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "recommendable": { "type": "boolean" },
+        "critical_violation_count": { "type": "integer", "minimum": 0 },
+        "axis_average": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "summary": { "type": "string" },
+        "key_strengths": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "key_risks": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "implementationCost": {
+      "type": "object",
+      "required": [
+        "candidate_id",
+        "implementation_cost",
+        "maintenance_cost",
+        "technical_feasibility",
+        "implementation_impact",
+        "future_impact"
+      ],
+      "properties": {
+        "candidate_id": { "type": "string", "minLength": 1 },
+        "implementation_cost": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1.0 },
+        "maintenance_cost": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1.0 },
+        "technical_feasibility": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1.0 },
+        "implementation_impact": { "type": "string" },
+        "future_impact": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

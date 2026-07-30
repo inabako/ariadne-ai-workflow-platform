@@ -11,7 +11,15 @@ from typing import Any
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.cli_defaults import PROCESS_SMOKE_TIMEOUT_SECONDS  # noqa: E402
+from runtime.constants.workflow_limits import (  # noqa: E402
+    INTEGRATION_EVIDENCE_PREVIEW_LIMIT,
+    INTEGRATION_FILE_SAMPLE_LIMIT,
+    INTEGRATION_PATH_HITS_LIMIT,
+    INTEGRATION_PROBE_OUTPUT_MAX_CHARS,
+)
 from runtime.constants.schemas import (  # noqa: E402
     EMULATOR_HEALTH_CONTEXT_SCHEMA,
     EMULATOR_SETUP_CONTEXT_SCHEMA,
@@ -35,7 +43,7 @@ from runtime.constants.workspace import (  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
-SCHEMA_VERSION = "1.0"
+
 ARTIFACT_TYPE = "system-integration-context"
 EMULATOR_CONTEXT_ARTIFACT_TYPE = "emulator-setup-context"
 EMULATOR_HEALTH_ARTIFACT_TYPE = "emulator-health-context"
@@ -94,7 +102,7 @@ def load_contexts(work_dir: Path) -> dict[str, dict[str, Any]]:
     }
 
 
-def limited_files(root: Path, *, max_files: int = 300) -> list[Path]:
+def limited_files(root: Path, *, max_files: int = INTEGRATION_FILE_SAMPLE_LIMIT) -> list[Path]:
     if not root.exists() or not root.is_dir():
         return []
     excluded = {".git", ".venv", "node_modules", "__pycache__", ".pytest_cache", "dist", "build"}
@@ -138,7 +146,7 @@ def path_name_hits(target_repo: Path, keywords: list[str]) -> list[str]:
         lowered = rel.lower()
         if any(keyword in lowered for keyword in keywords):
             hits.append(rel)
-    return hits[:20]
+    return hits[:INTEGRATION_PATH_HITS_LIMIT]
 
 
 def extract_cloud(contexts: dict[str, dict[str, Any]]) -> dict[str, Any]:
@@ -571,13 +579,13 @@ def docker_preflight(*, probe: bool = False) -> dict[str, Any]:
     ]
     for key, command in checks:
         try:
-            completed = subprocess.run(command, capture_output=True, text=True, timeout=10, check=False)
+            completed = subprocess.run(command, capture_output=True, text=True, timeout=PROCESS_SMOKE_TIMEOUT_SECONDS, check=False)
         except (OSError, subprocess.TimeoutExpired) as exc:
             result[key] = "error"
             result.setdefault("probe_errors", []).append(f"{key}: {exc}")
             continue
         result[key] = "pass" if completed.returncode == 0 else "fail"
-        result.setdefault("probe_outputs", {})[key] = (completed.stdout or completed.stderr).strip()[:500]
+        result.setdefault("probe_outputs", {})[key] = (completed.stdout or completed.stderr).strip()[:INTEGRATION_PROBE_OUTPUT_MAX_CHARS]
     return result
 
 
@@ -1005,7 +1013,7 @@ def collect_evidence_files(repo_root: Path, work_dir: Path, target_repo: Path) -
                     "status": "present" if path.stat().st_size > 0 else "empty",
                 }
             )
-    return evidence[:200]
+    return evidence[:INTEGRATION_EVIDENCE_PREVIEW_LIMIT]
 
 
 def completion_checks(

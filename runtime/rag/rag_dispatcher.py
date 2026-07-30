@@ -12,7 +12,16 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import gate_restart, find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.cli_defaults import (  # noqa: E402
+    RAG_DISPATCH_AGGREGATE_MAX_CHARS_DEFAULT,
+    RAG_DISPATCH_JOBS_DEFAULT,
+    RAG_DISPATCH_MAX_CHARS_DEFAULT,
+    RAG_DISPATCH_MAX_QUERIES_DEFAULT,
+    RAG_DISPATCH_TOP_K_DEFAULT,
+    TASK_RUNNER_MIN_WORKERS,
+)
 from runtime.constants.paths import (  # noqa: E402
     CHUNKS_INDEX,
     DUCKDB_DEFAULT_PATH,
@@ -21,20 +30,17 @@ from runtime.constants.paths import (  # noqa: E402
     GENERATED_INDEXES,
     GENERATED_NORMALIZED,
     GENERATED_RETRIEVAL,
-    RAG_BUILD_INDEX_SCRIPT,
-    RAG_CHUNK_SCRIPT,
-    RAG_EMBED_SCRIPT,
-    RAG_NORMALIZE_SCRIPT,
-    RAG_RETRIEVE_CONTEXT_SCRIPT,
     SOURCE_CORRECTIVE_ACTION_REPORTS,
 )
 from runtime.constants.schemas import RAG_DISPATCH_PLAN_SCHEMA, RAG_LOAD_DISPATCH_SCHEMA  # noqa: E402
+from runtime.constants.workflow_limits import RAG_DISPATCH_COMPONENT_CANDIDATE_LIMIT  # noqa: E402
 from runtime.constants.workspace import (  # noqa: E402
     context_dir_for_work_dir,
     context_file,
     resolve_work_dir as workspace_resolve_work_dir,
 )
 from runtime.workflow.context_first import context_entry, context_path, load_manifest, manifest_path_for_work_dir, register_context  # noqa: E402
+from runtime.rag.scoring_constants import TRUNCATION_RESERVED_CHARS  # noqa: E402
 
 
 DEFAULT_QUERIES = [
@@ -86,11 +92,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-freshness", type=float, default=None)
     parser.add_argument("--output-dir", default=str(GENERATED_RETRIEVAL))
     parser.add_argument("--search-mode", default="hybrid", choices=["keyword", "semantic", "hybrid"])
-    parser.add_argument("--top-k", type=int, default=5)
-    parser.add_argument("--max-chars", type=int, default=4000)
-    parser.add_argument("--max-queries", type=int, default=5)
-    parser.add_argument("--jobs", type=int, default=4)
-    parser.add_argument("--aggregate-max-chars", type=int, default=12000)
+    parser.add_argument("--top-k", type=int, default=RAG_DISPATCH_TOP_K_DEFAULT)
+    parser.add_argument("--max-chars", type=int, default=RAG_DISPATCH_MAX_CHARS_DEFAULT)
+    parser.add_argument("--max-queries", type=int, default=RAG_DISPATCH_MAX_QUERIES_DEFAULT)
+    parser.add_argument("--jobs", type=int, default=RAG_DISPATCH_JOBS_DEFAULT)
+    parser.add_argument("--aggregate-max-chars", type=int, default=RAG_DISPATCH_AGGREGATE_MAX_CHARS_DEFAULT)
     parser.add_argument("--build-if-missing", action="store_true")
     parser.add_argument("--write-markdown", action="store_true")
     parser.add_argument("--repo-root", default=None)
@@ -209,7 +215,7 @@ def extract_component_terms(text: str) -> list[str]:
     candidates.extend(re.findall(r"\b[A-Za-z_][A-Za-z0-9_]+\.py\b", text))
     candidates.extend(re.findall(r"\b[A-Z][A-Za-z0-9]*(?:Window|Service|Session|Controller|Client|Widget|Logic|Receiver)\b", text))
     candidates.extend(re.findall(r"\b[A-Za-z0-9_-]*(?:telemetry|watchdog|gstreamer|discovery|control|video)[A-Za-z0-9_-]*\b", text, flags=re.IGNORECASE))
-    return unique_keep_order(candidates)[:8]
+    return unique_keep_order(candidates)[:RAG_DISPATCH_COMPONENT_CANDIDATE_LIMIT]
 
 
 def collect_planning_context(args: argparse.Namespace, repo_root: Path) -> str:
@@ -380,7 +386,7 @@ def build_dispatch_plan(args: argparse.Namespace, repo_root: Path) -> dict[str, 
             raise ValueError(f"Invalid dispatch plan: {args.dispatch_plan}")
         if data.get("artifact_type") != "rag-dispatch-plan":
             raise ValueError(f"Dispatch plan artifact_type must be rag-dispatch-plan: {args.dispatch_plan}")
-        data.setdefault("schema_version", "1.0")
+        data.setdefault("schema_version", SCHEMA_VERSION)
         data.setdefault("plan_id", str(uuid.uuid4()))
         data.setdefault("queries", [])
         if args.work_id and "execution_plan_gate" not in data:
@@ -403,7 +409,7 @@ def build_dispatch_plan(args: argparse.Namespace, repo_root: Path) -> dict[str, 
     gate = execution_plan_gate(repo_root, args, work_dir)
     execution_plan = str(gate.get("execution_plan", ""))
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "rag-dispatch-plan",
         "plan_id": str(uuid.uuid4()),
         "created_at": utc_now_iso(),
@@ -519,7 +525,11 @@ def ensure_indexes(args: argparse.Namespace, repo_root: Path) -> None:
     build_commands = [
         [
             args.python,
-            RAG_NORMALIZE_SCRIPT.as_posix(),
+            "runtime/ctl/ctl.py",
+            "--repo-root",
+            ".",
+            "rag",
+            "normalize",
             "--source-dir",
             str(SOURCE_CORRECTIVE_ACTION_REPORTS),
             "--output-dir",
@@ -527,33 +537,49 @@ def ensure_indexes(args: argparse.Namespace, repo_root: Path) -> None:
             "--document-type",
             "corrective-action-report",
             "--clean-output",
+            "--json",
         ],
         [
             args.python,
-            RAG_CHUNK_SCRIPT.as_posix(),
+            "runtime/ctl/ctl.py",
+            "--repo-root",
+            ".",
+            "rag",
+            "chunk",
             "--input-dir",
             str(GENERATED_NORMALIZED),
             "--output-dir",
             str(GENERATED_CHUNKS),
             "--clean-output",
+            "--json",
         ],
         [
             args.python,
-            RAG_BUILD_INDEX_SCRIPT.as_posix(),
+            "runtime/ctl/ctl.py",
+            "--repo-root",
+            ".",
+            "rag",
+            "index",
             "--normalized-dir",
             str(GENERATED_NORMALIZED),
             "--chunks-dir",
             str(GENERATED_CHUNKS),
             "--output-dir",
             str(GENERATED_INDEXES),
+            "--json",
         ],
         [
             args.python,
-            RAG_EMBED_SCRIPT.as_posix(),
+            "runtime/ctl/ctl.py",
+            "--repo-root",
+            ".",
+            "rag",
+            "embed",
             "--chunks-index",
             str(CHUNKS_INDEX),
             "--output",
             str(EMBEDDINGS_INDEX),
+            "--json",
         ],
     ]
     for command in build_commands:
@@ -568,7 +594,11 @@ def retrieval_command(args: argparse.Namespace, query_item: dict[str, Any]) -> l
     search_mode = str(query_item.get("search_mode") or args.search_mode)
     command = [
         args.python,
-        RAG_RETRIEVE_CONTEXT_SCRIPT.as_posix(),
+        "runtime/ctl/ctl.py",
+        "--repo-root",
+        ".",
+        "rag",
+        "retrieve",
         query,
         "--chunks-index",
         args.chunks_index,
@@ -611,11 +641,12 @@ def retrieval_command(args: argparse.Namespace, query_item: dict[str, Any]) -> l
         command.extend(["--tag", tag])
     if args.write_markdown:
         command.append("--write-markdown")
+    command.append("--json")
     return command
 
 
 def run_retrievals(args: argparse.Namespace, repo_root: Path, query_items: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    max_workers = max(1, min(args.jobs, len(query_items)))
+    max_workers = max(TASK_RUNNER_MIN_WORKERS, min(args.jobs, len(query_items)))
     results: list[dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {
@@ -659,7 +690,7 @@ def aggregate_context_packs(repo_root: Path, retrievals: list[dict[str, Any]], m
         header = f"## Query: {result.get('query', '')}\n\nContext Pack: `{context_pack_path}`"
         section = f"{header}\n\n{context}".strip()
         if len(section) > remaining:
-            section = section[: max(0, remaining - 20)].rstrip() + "\n\n[truncated]"
+            section = section[: max(0, remaining - TRUNCATION_RESERVED_CHARS)].rstrip() + "\n\n[truncated]"
         if section:  # pragma: no branch - header or truncation marker keeps this non-empty.
             sections.append(section)
             remaining -= len(section) + 2
@@ -753,7 +784,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     json_path = output_dir / f"{dispatch_id}.json"
     markdown_path = output_dir / f"{dispatch_id}.md"
     result = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "rag-load-dispatch",
         "dispatch_id": dispatch_id,
         "dispatch_plan_id": plan.get("plan_id", ""),

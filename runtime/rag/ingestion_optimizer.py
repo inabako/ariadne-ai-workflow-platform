@@ -14,11 +14,61 @@ if __package__ in {None, ""}:
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag.cleanup_guard import assert_safe_clean_output_target  # noqa: E402
+from runtime.constants.runtime_values import OPTIMIZATION_SCORE_DECIMALS, SCHEMA_VERSION  # noqa: E402
 from runtime.constants.paths import (  # noqa: E402
     DUCKDB_INGESTION_EVIDENCE_DIR,
     GENERATED_CHUNKS,
     GENERATED_OPTIMIZED_CHUNKS,
     RAG_INGESTION_POLICY_PATH,
+)
+from runtime.rag.scoring_constants import (  # noqa: E402
+    ACCEPT_WITH_NOISE_REWRITE_THRESHOLD,
+    AMBIGUITY_PENALTY_CAP,
+    AMBIGUITY_PENALTY_WEIGHT,
+    CONFLICT_PENALTY_CAP,
+    CONFLICT_TERM_WEIGHT,
+    CONTEXT_INDEPENDENCE_AMBIGUITY_CAP,
+    CONTEXT_INDEPENDENCE_AMBIGUITY_WEIGHT,
+    DEFAULT_ACCEPT_THRESHOLD,
+    DEFAULT_REWRITE_THRESHOLD,
+    DUPLICATE_CONTENT_PENALTY,
+    FRAGMENT_CODE_BLOCK_PENALTY,
+    FRAGMENT_HEADING_ONLY_PENALTY,
+    FRAGMENT_INCOMPLETE_SENTENCE_PENALTY,
+    FRAGMENT_SHORT_TEXT_CHARS,
+    FRAGMENT_SHORT_TEXT_PENALTY,
+    NOISE_DECORATION_PENALTY,
+    NOISE_PATTERN_PENALTY_CAP,
+    NOISE_PATTERN_PENALTY_WEIGHT,
+    NOISE_REPETITION_PENALTY_CAP,
+    NOISE_REPETITION_PENALTY_WEIGHT,
+    OVERSIZE_TEXT_CHARS,
+    RETRIEVAL_BASE_SCORE,
+    RETRIEVAL_DECORATION_ONLY_SCORE,
+    RETRIEVAL_HEADING_BONUS,
+    RETRIEVAL_TAG_BONUS,
+    RETRIEVAL_UNIQUE_TERM_BONUS_CAP,
+    RETRIEVAL_UNIQUE_TERM_DIVISOR,
+    SCORE_MAX,
+    SCORE_MIN,
+    SEMANTIC_BASE_SCORE,
+    SEMANTIC_EMPTY_SCORE,
+    SEMANTIC_HEADING_ONLY_SCORE,
+    SEMANTIC_LENGTH_BONUS_CAP,
+    SEMANTIC_LENGTH_BONUS_DIVISOR,
+    SEMANTIC_SENTENCE_BONUS_CAP,
+    SEMANTIC_SENTENCE_MARKER_WEIGHT,
+    SEMANTIC_SHORT_TEXT_CHARS,
+    SEMANTIC_SHORT_TEXT_SCORE,
+    SOURCE_RELIABILITY_APPROVED_STATUS_BONUS,
+    SOURCE_RELIABILITY_BASE_SCORE,
+    SOURCE_RELIABILITY_COMMIT_BONUS,
+    SOURCE_RELIABILITY_DRAFT_STATUS_BONUS,
+    SOURCE_RELIABILITY_HIGH_TRUST_BONUS,
+    SOURCE_RELIABILITY_LOW_TRUST_PENALTY,
+    SOURCE_RELIABILITY_MEDIUM_TRUST_BONUS,
+    SOURCE_RELIABILITY_SOURCES_BONUS,
+    TRACEABILITY_PRESENT_FIELD_DIVISOR,
 )
 
 
@@ -45,7 +95,7 @@ def resolve_repo_path(repo_root: Path, value: str | Path) -> Path:
 
 
 def clamp(value: float) -> float:
-    return max(0.0, min(1.0, value))
+    return max(SCORE_MIN, min(SCORE_MAX, value))
 
 
 def sha256_text(value: str) -> str:
@@ -93,7 +143,7 @@ def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
 def line_repetition_ratio(text: str) -> float:
     lines = [line.strip() for line in text.splitlines() if line.strip()]
     if len(lines) < 2:
-        return 0.0
+        return SCORE_MIN
     counts = Counter(lines)
     repeated = sum(count - 1 for count in counts.values() if count > 1)
     return repeated / len(lines)
@@ -132,13 +182,13 @@ def is_present(value: Any) -> bool:
 def score_semantic_completeness(text: str) -> float:
     clean = normalized_text(text)
     if not clean:
-        return 0.0
+        return SCORE_MIN
     if HEADING_ONLY_RE.match(clean):
-        return 0.25
-    if len(clean) < 40:
-        return 0.45
+        return SEMANTIC_HEADING_ONLY_SCORE
+    if len(clean) < SEMANTIC_SHORT_TEXT_CHARS:
+        return SEMANTIC_SHORT_TEXT_SCORE
     sentence_markers = sum(clean.count(marker) for marker in ["。", ".", "です", "ます", ":", "："])
-    return clamp(0.62 + min(0.28, len(clean) / 1200) + min(0.10, sentence_markers * 0.02))
+    return clamp(SEMANTIC_BASE_SCORE + min(SEMANTIC_LENGTH_BONUS_CAP, len(clean) / SEMANTIC_LENGTH_BONUS_DIVISOR) + min(SEMANTIC_SENTENCE_BONUS_CAP, sentence_markers * SEMANTIC_SENTENCE_MARKER_WEIGHT))
 
 
 def score_retrieval_usefulness(chunk: dict[str, Any], text: str) -> float:
@@ -146,10 +196,10 @@ def score_retrieval_usefulness(chunk: dict[str, Any], text: str) -> float:
     tags = metadata_value(chunk, "tags") or []
     unique_terms = len(set(re.findall(r"[A-Za-z0-9_.:-]+|[\u3040-\u30ff\u3400-\u9fff]+", text)))
     if not text.strip():
-        return 0.0
+        return SCORE_MIN
     if MARKDOWN_DECORATION_RE.match(text.strip()):
-        return 0.1
-    return clamp(0.35 + min(0.30, unique_terms / 80) + (0.15 if heading_path else 0.0) + (0.15 if tags else 0.0))
+        return RETRIEVAL_DECORATION_ONLY_SCORE
+    return clamp(RETRIEVAL_BASE_SCORE + min(RETRIEVAL_UNIQUE_TERM_BONUS_CAP, unique_terms / RETRIEVAL_UNIQUE_TERM_DIVISOR) + (RETRIEVAL_HEADING_BONUS if heading_path else SCORE_MIN) + (RETRIEVAL_TAG_BONUS if tags else SCORE_MIN))
 
 
 def score_source_reliability(chunk: dict[str, Any]) -> float:
@@ -157,21 +207,21 @@ def score_source_reliability(chunk: dict[str, Any]) -> float:
     trust_level = str(metadata_value(chunk, "trust_level") or "").lower()
     sources = metadata_value(chunk, "sources")
     commit = str(metadata_value(chunk, "commit") or "")
-    score = 0.50
+    score = SOURCE_RELIABILITY_BASE_SCORE
     if trust_level in {"high", "official", "verified"}:
-        score += 0.30
+        score += SOURCE_RELIABILITY_HIGH_TRUST_BONUS
     elif trust_level in {"medium", "internal"}:
-        score += 0.15
+        score += SOURCE_RELIABILITY_MEDIUM_TRUST_BONUS
     elif trust_level in {"low", "unknown"}:
-        score -= 0.15
+        score -= SOURCE_RELIABILITY_LOW_TRUST_PENALTY
     if status in {"approved", "merged", "reviewed", "published"}:
-        score += 0.20
+        score += SOURCE_RELIABILITY_APPROVED_STATUS_BONUS
     elif status in {"draft", "proposed"}:
-        score += 0.15
+        score += SOURCE_RELIABILITY_DRAFT_STATUS_BONUS
     if is_present(sources):
-        score += 0.10
+        score += SOURCE_RELIABILITY_SOURCES_BONUS
     if commit and commit != "unknown":
-        score += 0.10
+        score += SOURCE_RELIABILITY_COMMIT_BONUS
     return clamp(score)
 
 
@@ -191,8 +241,8 @@ def score_metadata_completeness(chunk: dict[str, Any], hash_value: str) -> float
 def score_context_independence(text: str, ambiguous_terms: Sequence[str]) -> float:
     hits = term_hits(ambiguous_terms, text)
     if not hits:
-        return 1.0
-    return clamp(1.0 - min(0.75, len(hits) * 0.18))
+        return SCORE_MAX
+    return clamp(SCORE_MAX - min(CONTEXT_INDEPENDENCE_AMBIGUITY_CAP, len(hits) * CONTEXT_INDEPENDENCE_AMBIGUITY_WEIGHT))
 
 
 def score_traceability(chunk: dict[str, Any]) -> float:
@@ -209,55 +259,55 @@ def score_traceability(chunk: dict[str, Any]) -> float:
         metadata_value(chunk, "sources"),
     ]
     present = sum(1 for value in fields if is_present(value) and value != "unknown")
-    return clamp(present / 6)
+    return clamp(present / TRACEABILITY_PRESENT_FIELD_DIVISOR)
 
 
 def noise_penalty(text: str, noise_patterns: Sequence[str]) -> float:
     clean = normalized_text(text)
     if not clean:
-        return 1.0
-    penalty = 0.0
-    penalty += min(0.35, len(pattern_hits(noise_patterns, clean)) * 0.12)
-    penalty += min(0.35, line_repetition_ratio(clean) * 0.8)
+        return SCORE_MAX
+    penalty = SCORE_MIN
+    penalty += min(NOISE_PATTERN_PENALTY_CAP, len(pattern_hits(noise_patterns, clean)) * NOISE_PATTERN_PENALTY_WEIGHT)
+    penalty += min(NOISE_REPETITION_PENALTY_CAP, line_repetition_ratio(clean) * NOISE_REPETITION_PENALTY_WEIGHT)
     if MARKDOWN_DECORATION_RE.match(clean):
-        penalty += 0.45
+        penalty += NOISE_DECORATION_PENALTY
     return clamp(penalty)
 
 
 def duplication_penalty(hash_value: str, seen_hashes: set[str]) -> float:
-    return 1.0 if hash_value in seen_hashes else 0.0
+    return DUPLICATE_CONTENT_PENALTY if hash_value in seen_hashes else SCORE_MIN
 
 
 def ambiguity_penalty(text: str, ambiguous_terms: Sequence[str]) -> float:
     hits = term_hits(ambiguous_terms, text)
-    return clamp(min(0.8, len(hits) * 0.18))
+    return clamp(min(AMBIGUITY_PENALTY_CAP, len(hits) * AMBIGUITY_PENALTY_WEIGHT))
 
 
 def oversize_penalty(text: str) -> float:
     length = len(text)
-    if length <= 2400:
-        return 0.0
-    return clamp((length - 2400) / 2400)
+    if length <= OVERSIZE_TEXT_CHARS:
+        return SCORE_MIN
+    return clamp((length - OVERSIZE_TEXT_CHARS) / OVERSIZE_TEXT_CHARS)
 
 
 def fragmentation_penalty(text: str) -> float:
     clean = normalized_text(text)
     if not clean:
-        return 1.0
+        return SCORE_MAX
     if HEADING_ONLY_RE.match(clean):
-        return 0.9
+        return FRAGMENT_HEADING_ONLY_PENALTY
     if clean.startswith("```") and clean.endswith("```"):
-        return 0.65
-    if len(clean) < 25:
-        return 0.75
+        return FRAGMENT_CODE_BLOCK_PENALTY
+    if len(clean) < FRAGMENT_SHORT_TEXT_CHARS:
+        return FRAGMENT_SHORT_TEXT_PENALTY
     if clean.endswith(("、", ",", ":", "：", "and", "or")):
-        return 0.45
-    return 0.0
+        return FRAGMENT_INCOMPLETE_SENTENCE_PENALTY
+    return SCORE_MIN
 
 
 def conflict_penalty(text: str) -> float:
     conflict_terms = ["矛盾", "conflict", "deprecated", "廃止", "旧版", "新版", "不一致", "互換性"]
-    return clamp(min(0.8, len(term_hits(conflict_terms, text)) * 0.20))
+    return clamp(min(CONFLICT_PENALTY_CAP, len(term_hits(conflict_terms, text)) * CONFLICT_TERM_WEIGHT))
 
 
 def detect_human_check_reasons(chunk: dict[str, Any], text: str, policy: dict[str, Any], conflict: float) -> list[str]:
@@ -265,7 +315,7 @@ def detect_human_check_reasons(chunk: dict[str, Any], text: str, policy: dict[st
     for topic in policy.get("human_check_topics", []):
         if str(topic).lower() in text.lower() or str(topic) in text:
             reasons.append(f"high-risk-topic:{topic}")
-    if conflict > 0:
+    if conflict > SCORE_MIN:
         reasons.append("conflict-candidate")
     if not is_present(chunk.get("source_path")):
         reasons.append("missing-source-traceability")
@@ -278,27 +328,27 @@ def detect_reject_reasons(text: str, policy: dict[str, Any], duplicate: float, f
         reasons.append("empty-content")
     for pattern in pattern_hits(policy.get("reject_patterns", []), text):
         reasons.append(f"reject-pattern:{pattern}")
-    if duplicate >= 1.0:
+    if duplicate >= SCORE_MAX:
         reasons.append("duplicate-content-hash")
-    if fragment >= 1.0:
+    if fragment >= SCORE_MAX:
         reasons.append("unrecoverable-fragment")
     return reasons
 
 
 def compute_weighted_score(scores: dict[str, float], weights: dict[str, Any]) -> float:
-    positive_score = 0.0
-    positive_weight = 0.0
-    penalty_score = 0.0
+    positive_score = SCORE_MIN
+    positive_weight = SCORE_MIN
+    penalty_score = SCORE_MIN
     for name, raw_weight in weights.items():
         weight = float(raw_weight)
-        value = float(scores.get(name, 0.0))
+        value = float(scores.get(name, SCORE_MIN))
         if name.endswith("_penalty"):
             penalty_score += weight * value
         else:
             positive_score += weight * value
             positive_weight += weight
-    score = (positive_score / positive_weight if positive_weight else 0.0) - penalty_score
-    return round(clamp(score), 4)
+    score = (positive_score / positive_weight if positive_weight else SCORE_MIN) - penalty_score
+    return round(clamp(score), OPTIMIZATION_SCORE_DECIMALS)
 
 
 def decide(score: float, reject_reasons: list[str], human_check_reasons: list[str], policy: dict[str, Any]) -> str:
@@ -307,8 +357,8 @@ def decide(score: float, reject_reasons: list[str], human_check_reasons: list[st
     if human_check_reasons:
         return "HUMAN_CHECK"
     thresholds = policy.get("thresholds", {})
-    accept_threshold = float(thresholds.get("accept", 0.80))
-    rewrite_threshold = float(thresholds.get("rewrite", 0.55))
+    accept_threshold = float(thresholds.get("accept", DEFAULT_ACCEPT_THRESHOLD))
+    rewrite_threshold = float(thresholds.get("rewrite", DEFAULT_REWRITE_THRESHOLD))
     if score >= accept_threshold:
         return "ACCEPT"
     if score >= rewrite_threshold:
@@ -367,7 +417,7 @@ def evaluate_chunk(
     reject_reasons = detect_reject_reasons(text, policy, duplicate, scores["fragmentation_penalty"])
     human_check_reasons = detect_human_check_reasons(chunk, text, policy, conflict)
     decision = decide(score, reject_reasons, human_check_reasons, policy)
-    if not after_rewrite and decision == "ACCEPT" and scores["noise_penalty"] >= 0.12:
+    if not after_rewrite and decision == "ACCEPT" and scores["noise_penalty"] >= ACCEPT_WITH_NOISE_REWRITE_THRESHOLD:
         decision = "REWRITE"
     if after_rewrite and decision == "REWRITE":
         decision = "HUMAN_CHECK"
@@ -384,7 +434,7 @@ def evaluate_chunk(
 
 def build_candidate_record(repo_root: Path, chunk_path: Path, chunk: dict[str, Any], hash_value: str) -> dict[str, Any]:
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "candidate_chunk_id": chunk.get("chunk_id", ""),
         "document_id": chunk.get("document_id", ""),
         "source_path": chunk.get("source_path", ""),
@@ -435,7 +485,7 @@ def optimize_chunk(
 
     optimized = enriched_chunk(chunk, final) if final["decision"] == "ACCEPT" else None
     evaluation = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "rag-ingestion-evaluation",
         "evaluated_at": utc_now_iso(),
         "candidate_chunk_id": chunk.get("chunk_id", ""),
@@ -492,7 +542,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     chunk_paths = discover_chunks(chunks_dir)
     source_manifest = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "rag-ingestion-source-manifest",
         "created_at": utc_now_iso(),
         "chunks_dir": relative_to_repo(repo_root, chunks_dir),
@@ -531,7 +581,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             rewritten_rows.append(evaluation)
 
     summary = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "rag-ingestion-summary",
         "created_at": utc_now_iso(),
         "policy": source_manifest["policy"],
@@ -544,10 +594,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "human_check_required_count": len(human_rows),
         "rejected_chunk_count": len(rejected_rows),
         "average_optimization_score": round(
-            sum(float(item["score"]) for item in evaluations) / len(evaluations), 4
+            sum(float(item["score"]) for item in evaluations) / len(evaluations), OPTIMIZATION_SCORE_DECIMALS
         )
         if evaluations
-        else 0.0,
+        else SCORE_MIN,
         "embedding_allowed_chunk_count": len(accepted_rows),
         "human_check_required": bool(human_rows),
     }

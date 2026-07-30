@@ -3,7 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Sequence
 
+from runtime.constants.runtime_values import SCHEMA_VERSION
 from runtime.common.common import relative_to_repo, utc_now_iso
+from runtime.constants.encoding import MOJIBAKE_MARKERS, SOURCE_ENCODINGS
 
 TEXT_EXTENSIONS = {
     ".cfg",
@@ -26,27 +28,6 @@ EXCLUDED_DIR_NAMES = {
     "node_modules",
 }
 DEFAULT_PATHS = [".github", "docs", "runtime", "skills", "templates"]
-SOURCE_ENCODINGS = ("cp932", "shift_jis")
-MOJIBAKE_MARKERS = (
-    "\u7e3a",
-    "\u7e67",
-    "\u7e5d",
-    "\u7e32",
-    "\u8b41",
-    "\u8b4c",
-    "\u8700",
-    "\u8737",
-    "\u86f9",
-    "\u86fb",
-    "\u8c41",
-    "\u96b1",
-    "\u9081",
-    "\u8373",
-    "\u9015",
-    "\u9a65",
-    "\u87c7",
-    "\ufffd",
-)
 ALLOW_MOJIBAKE_EXAMPLE = "text-boundary: allow-mojibake-example"
 
 
@@ -170,7 +151,7 @@ def scan_text_boundary(repo_root: Path, paths: Sequence[str], extensions: set[st
         file_result, _text = file_findings(repo_root, path)
         findings.extend(file_result)
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "text-boundary-scan",
         "generated_at": utc_now_iso(),
         "status": "finding" if findings else "ok",
@@ -247,7 +228,7 @@ def repair_text_boundary(
 
     post_scan = scan_text_boundary(repo_root, paths, extensions)
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "text-boundary-repair",
         "generated_at": utc_now_iso(),
         "status": "repaired" if repairs and not post_scan["findings"] else "remaining-findings" if post_scan["findings"] else "ok",

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/contracts/agent-runtime/workflow-request.schema.json",
+  "title": "WorkflowRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "workflow_id", "trace_id", "workflow_type", "input", "context", "constraints", "requested_at"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "workflow_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "pattern": "^[0-9a-f]{24}$" },
+    "workflow_type": { "type": "string", "minLength": 1 },
+    "input": { "type": "object" },
+    "context": { "type": "object" },
+    "constraints": { "type": "object" },
+    "requested_at": { "type": "string", "format": "date-time" }
+  }
+}

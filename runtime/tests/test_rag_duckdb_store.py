@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -562,7 +562,7 @@ def test_duckdb_store_verify_references_writes_evidence(tmp_path: Path) -> None:
     entry = manifest["contexts"][0]
     assert entry["type"] == "rag-duckdb-reference-check"
     assert entry["status"] == "human-check-required"
-    assert entry["schema"] == ".github/schemas/rag-duckdb-reference-check.schema.json"
+    assert entry["schema"] == ".ariadne/schemas/rag-duckdb-reference-check.schema.json"
 
     default_result = duckdb_store.run(
         argparse.Namespace(

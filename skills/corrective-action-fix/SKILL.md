@@ -1,4 +1,4 @@
----
+﻿---
 name: corrective-action-fix
 description: Create a corrective action report for a specified GitHub repository and branch, store the base branch under work/<branch>, build/load RAG, create a GitHub Issue, create a separate work/issue-XXX folder with feature/issue-XXX branch, implement fixes, test, request human startup/integration approval, then push. Use when the user selects /corrective-action-fix or asks to move from improvement report creation into corrective implementation.
 ---
@@ -7,7 +7,7 @@ description: Create a corrective action report for a specified GitHub repository
 
 ## Default Language
 
-Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.ariadne/shared/output-language-policy.md`.
 
 ## Required Inputs
 
@@ -218,8 +218,8 @@ If there is no suitable saved external-web RAG, use the external-web source revi
 
 ```text
 work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md
-.github/agents/external-web-source-reviewer-agent.prompt.md
-.github/agents/external-web-rag-dispatcher-agent.prompt.md
+.ariadne/agents/external-web-source-reviewer-agent.prompt.md
+.ariadne/agents/external-web-rag-dispatcher-agent.prompt.md
 ```
 
 Record external-web references as supporting references in:
@@ -447,7 +447,7 @@ work/issue-<issue-number>/process-report/nextjs-webapp-implementation-prep.md
 Use:
 
 ```text
-.github/prompts/nextjs-webapp-implementation-prep.prompt.md
+.ariadne/prompts/nextjs-webapp-implementation-prep.prompt.md
 templates/artifacts/process-report/nextjs-webapp-implementation-prep-template.md
 ```
 
@@ -467,7 +467,7 @@ work/requirements/svg-input/WEB_FIX_<name>.svg
 Use:
 
 ```text
-.github/prompts/web-svg-layout-mode.prompt.md
+.ariadne/prompts/web-svg-layout-mode.prompt.md
 runtime/workflow/web_svg_layout_mode.py
 templates/workflows/web-svg-layout/
 ```
@@ -774,7 +774,7 @@ Create or update a Feedback report when you observe ambiguity, repeated checks, 
 Use the existing helper when creating a new report:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "<slash-command>" `
   --reporter "AI workflow" `
   --situation "<what was happening>" `

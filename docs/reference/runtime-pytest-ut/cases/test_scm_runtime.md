@@ -93,6 +93,40 @@ runtime/tests/test_scm_runtime.py::test_prepare_repository_dry_run_writes_scm_st
   - inline input: `args`, `manifest`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
+#### RT-UT-CASE-483
+
+- pytest node id:
+
+```text
+runtime/tests/test_scm_runtime.py::test_ctl_scm_prepare_dry_run_writes_scm_state
+```
+
+- Confirm: `aiwfctl scm prepare` routes target repository preparation through the official CTL entrypoint.
+- Input:
+  - pytest node: runtime/tests/test_scm_runtime.py::test_ctl_scm_prepare_dry_run_writes_scm_state
+  - source: `runtime/tests/test_scm_runtime.py:151`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=None case=None
+  - inline input: work directory, `scm prepare --dry-run --json`
+- Expected: CTL returns SCM state JSON, writes `scm-state.json`, and records runtime event command path `scm prepare`.
+
+#### RT-UT-CASE-484
+
+- pytest node id:
+
+```text
+runtime/tests/test_scm_runtime.py::test_ctl_scm_branch_local_only_dry_run_uses_existing_source
+```
+
+- Confirm: `aiwfctl scm branch` creates the expected issue branch metadata in local-only dry-run mode.
+- Input:
+  - pytest node: runtime/tests/test_scm_runtime.py::test_ctl_scm_branch_local_only_dry_run_uses_existing_source
+  - source: `runtime/tests/test_scm_runtime.py:182`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=None case=None
+  - inline input: existing source directory, `scm branch --local-only --dry-run --json`
+- Expected: CTL returns `feature/issue-42` branch metadata without remote mutation.
+
 #### RT-UT-CASE-435
 
 - pytest node id:

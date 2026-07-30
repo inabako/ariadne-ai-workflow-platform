@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ariadne Review Council Knowledge Capture",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "status",
+    "review_id",
+    "work_id",
+    "captured_at",
+    "rag_candidates"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "const": "review-council-knowledge-capture" },
+    "status": { "const": "captured" },
+    "review_id": { "type": "string" },
+    "work_id": { "type": "string" },
+    "captured_at": { "type": "string" },
+    "verdict": { "type": "string" },
+    "summary": { "type": "string" },
+    "rag_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "path", "reason"],
+        "properties": {
+          "kind": { "type": "string" },
+          "path": { "type": "string" },
+          "reason": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "open_issues": { "type": "array", "items": { "type": "object" } },
+    "finding_count": { "type": "integer" },
+    "challenge_count": { "type": "integer" },
+    "reinspection_count": { "type": "integer" },
+    "artifacts": { "type": "object" }
+  },
+  "additionalProperties": true
+}

@@ -4,7 +4,7 @@ MCP-related service templates live here. Keep MCP Server, MCP Client, Agent Runt
 
 | Template | Purpose |
 | --- | --- |
-| `local-model-mcp-server-template/` | Local model MCP Server capability provider |
+| `mcp-server-template/` | FastMCP adapter-separated MCP Server capability provider |
 | `mcp-client-template/` | Reusable MCP Client facade / session manager |
-| `local-ai-agent-runtime-template/` | Local AI Agent Runtime / job workflow engine |
+| `ai-agent-runtime-template/` | AI Agent Runtime / job workflow engine |
 | `discord-gateway-template/` | Discord operation gateway for local Agent Runtime |

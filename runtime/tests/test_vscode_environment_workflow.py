@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from runtime.workflow import vscode_environment
+from runtime.workflow import vscode_environment, work_cleanup
 
 
 def namespace(**kwargs):
@@ -46,13 +46,25 @@ def test_vscode_environment_init_work_writes_state_and_runtime_context(tmp_path:
 
     assert result["mode"] == "target-workspace"
     assert state["target_dir"] == str(target.resolve())
-    assert runtime_context["tool_paths"] == ["runtime/tools"]
+    assert runtime_context["tool_paths"] == ["runtime/windows-script"]
     assert runtime_context["encoding_contract"]["policy"] == "utf-8-first"
     assert runtime_context["encoding_contract"]["vscode_settings"]["files.encoding"] == "utf8"
     assert runtime_context["encoding_contract"]["vscode_settings"]["files.autoGuessEncoding"] is False
     assert runtime_context["encoding_contract"]["vscode_settings"]["terminal.integrated.env.windows"]["PYTHONUTF8"] == "1"
     assert runtime_context["encoding_contract"]["codex_config_note"]["standard_encoding_key_supported"] is False
     assert runtime_context["encoding_contract"]["codex_config_note"]["do_not_add_encoding_table_as_enforcement"] is True
+    assert runtime_context["knowledge_source_backup"]["mode"] == "local-backup"
+    assert runtime_context["knowledge_source_backup"]["push_to_git"] is False
+    assert runtime_context["knowledge_source_backup"]["source_repo"] == vscode_environment.KNOWLEDGE_SOURCE_REPO.as_posix()
+    verification_commands = "\n".join(runtime_context["verification_commands"])
+    assert "runtime/ctl/ctl.py --repo-root . workflow validate-vscode-workspace check" in verification_commands
+    assert "runtime/ctl/ctl.py --repo-root . doctor --fail-on-warning" in verification_commands
+    assert "runtime/workflow/validate_vscode_workspace.py" not in verification_commands
+    assert "runtime/workflow/workflow_doctor.py" not in verification_commands
+    assert result["knowledge_source_backup"]["push_to_git"] is False
+    for relative_dir in vscode_environment.KNOWLEDGE_SOURCE_LOCAL_BACKUP_DIRS:
+        assert (tmp_path / relative_dir).is_dir()
+    assert not (tmp_path / vscode_environment.KNOWLEDGE_SOURCE_REPO / ".git").exists()
     assert {entry["type"] for entry in manifest["contexts"]} >= {"vscode-environment-state", "runtime-context"}
 
     with pytest.raises(FileExistsError, match="Work directory already exists"):
@@ -99,6 +111,8 @@ def test_vscode_environment_open_questions_records_drafts(tmp_path: Path) -> Non
     state = json.loads((tmp_path / result["state_path"]).read_text(encoding="utf-8-sig"))
 
     assert "VSCODE-Q001" in open_questions
+    assert "runtime/ctl/ctl.py --repo-root . workflow vscode-environment init" in open_questions
+    assert "runtime/workflow/vscode_environment.py init" not in open_questions
     assert result["draft_files"] == ["drafts/legacy.txt", "drafts/README_terminal.md"]
     assert state["status"] == "blocked"
     assert state["draft_files"] == result["draft_files"]
@@ -122,6 +136,10 @@ def test_vscode_environment_rag_filename_and_template(monkeypatch: pytest.Monkey
     assert filename.endswith("_ABC123_local-env.md")
     assert "repository: owner/repo" in text
     assert "target_workspace: `C:/repo`" in text
+    assert "runtime/ctl/ctl.py --repo-root . rag standardize" in text
+    assert "runtime/ctl/ctl.py --repo-root . rag normalize" in text
+    assert "runtime/rag/standardize_corrective_report_names.py" not in text
+    assert "runtime/rag/normalize_documents.py" not in text
 
 
 def test_vscode_environment_write_rag_template_requires_repo_local_source_dir(tmp_path: Path) -> None:
@@ -140,6 +158,37 @@ def test_vscode_environment_write_rag_template_requires_repo_local_source_dir(tm
 
     assert result["document_type"] == "workspace-environment-pattern"
     assert (tmp_path / result["path"]).exists()
+    assert result["work_cleanup"]["ready_for_check"] is False
+    assert result["next_action"] == {}
+    artifact_index = json.loads(
+        (tmp_path / "work" / "vscode-env" / "context" / "artifact-index.json").read_text(encoding="utf-8-sig")
+    )
+    assert artifact_index["artifacts"][0]["cleanup_ready"] is False
+
+    approved = vscode_environment.write_rag_template(
+        namespace(
+            work_id="vscode-env-approved",
+            source_dir="work/db/ariadne-knowledge-platform/rag/workspace-environment",
+            topic="Local Env Approved",
+            repository="owner/repo",
+            target_workspace="",
+            mode="self-provision",
+            status="approved",
+            repo_root=str(tmp_path),
+        )
+    )
+
+    assert approved["work_cleanup"]["ready_for_check"] is True
+    assert approved["next_action"]["action"] == "check-work-cleanup"
+    check = work_cleanup.cleanup_check(
+        namespace(
+            work_id="vscode-env-approved",
+            repo_root=str(tmp_path),
+            recursive=False,
+            required_artifact=[],
+        )
+    )
+    assert check["status"] == "ready"
 
     with pytest.raises(ValueError, match="must be inside repo root"):
         vscode_environment.write_rag_template(

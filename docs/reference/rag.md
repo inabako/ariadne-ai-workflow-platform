@@ -11,7 +11,7 @@ work/db/ariadne-knowledge-platform/rag/workspace-environment/YYYYMMDDHHMMSS_<ran
 After human approval, normalize approved notes with:
 
 ```powershell
-uv run --project runtime python runtime/rag/normalize_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag normalize `
   --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment `
   --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type workspace-environment-pattern
@@ -36,7 +36,7 @@ work/db/ariadne-knowledge-platform/rag/github-knowledge/YYYYMMDD_HHMMSS_<topic>.
 Normalize approved notes with:
 
 ```powershell
-uv run --project runtime python runtime/rag/normalize_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag normalize `
   --source-dir work/db/ariadne-knowledge-platform/rag/github-knowledge `
   --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type github-repository-knowledge
@@ -84,6 +84,27 @@ source markdown
   -> retrieval result / context pack
   -> load dispatch aggregate
 ```
+
+## Cleanup Classification
+
+`aiwfctl work cleanup-check/apply` removes temporary workflow work scopes only after long-lived Knowledge absorption is confirmed. RAG paths are classified as follows.
+
+| Class | Paths | Cleanup Role |
+| --- | --- | --- |
+| Long-lived source Knowledge | `work/db/ariadne-knowledge-platform/rag/corrective-action-report/`, `github-knowledge/`, `workspace-environment/`, `external-web/<category>/`, `specialist-review/<domain>/` | May be registered in `artifact-index.json` as cleanup evidence after human approval or equivalent workflow verification. |
+| Final durable Knowledge record | `work/db/ariadne-knowledge-platform/rag/normalized/*.json` | Primary machine-readable Knowledge record. May be used as cleanup evidence when produced from approved sources. |
+| Compatibility Knowledge wrapper | `work/db/ariadne-knowledge-platform/rag/jsonized/*.json` | May be cleanup evidence for workflows that directly produce wrapper Knowledge, such as SDK analysis. It is not the preferred final RAG record when a normalized document exists. |
+| Derived build artifacts | `chunks/`, `optimized-chunks/`, `indexes/`, `embeddings/` | Not cleanup evidence by themselves. They are rebuildable from source/normalized Knowledge and must not justify deleting a temporary work scope alone. |
+| Retrieval artifacts | `retrieval/*.json`, `external-web/retrieval/*.md` | Not cleanup evidence. They are query/session outputs for loading context and may be regenerated. |
+| Ingestion evidence | `db/rag/evidence/ingestion/` | Not cleanup evidence. It explains build quality decisions but does not prove Knowledge absorption. |
+| Temporary workflow work | `work/<work-id>/`, `work/github/<scope>/<scan-mode>/` | Cleanup target only. Remove through `aiwfctl work cleanup-check` then `cleanup-apply --human-check approved`. |
+
+Rules:
+
+- `artifact-index.json` is the cleanup contract. A RAG file outside `artifact-index.json` does not automatically make cleanup safe.
+- Draft or review-pending source notes should use `cleanup_ready: false` or omit cleanup evidence until approval.
+- Derived build/retrieval artifacts must not be the only evidence for `work cleanup-check`.
+- `work/db/<ARIADNE_KNOWLEDGE_REPOSITORY>/` is long-lived local Knowledge backup storage and is not a cleanup target.
 
 ## Output Files
 
@@ -188,7 +209,7 @@ front_matter
 外部Webだけを検索する場合は、`--source-type external-web` を使います。
 
 ```powershell
-python runtime/rag/retrieve_context.py `
+.\runtime\windows-script\aiwf.cmd ctl rag retrieve `
   "Go realtime gateway NAT traversal" `
   --source-type external-web `
   --category network
@@ -199,27 +220,27 @@ python runtime/rag/retrieve_context.py `
 ## Build
 
 ```powershell
-python runtime/rag/standardize_corrective_report_names.py `
+.\runtime\windows-script\aiwf.cmd ctl rag standardize `
   --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
   --replace-references
 
-python runtime/rag/normalize_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag normalize `
   --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
   --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type corrective-action-report `
   --clean-output
 
-python runtime/rag/chunk_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag chunk `
   --input-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --output-dir work/db/ariadne-knowledge-platform/rag/chunks `
   --clean-output
 
-python runtime/rag/build_index.py `
+.\runtime\windows-script\aiwf.cmd ctl rag index `
   --normalized-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --chunks-dir work/db/ariadne-knowledge-platform/rag/chunks `
   --output-dir work/db/ariadne-knowledge-platform/rag/indexes
 
-python runtime/rag/embed_chunks.py `
+.\runtime\windows-script\aiwf.cmd ctl rag embed `
   --chunks-index work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl `
   --output work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl
 ```
@@ -227,7 +248,7 @@ python runtime/rag/embed_chunks.py `
 ## Load
 
 ```powershell
-python runtime/rag/rag_dispatcher.py `
+.\runtime\windows-script\aiwf.cmd ctl rag load `
   --task "<task summary>" `
   --repository "<target-repository>" `
   --branch "<target-branch>" `

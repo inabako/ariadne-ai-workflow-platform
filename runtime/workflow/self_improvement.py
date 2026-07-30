@@ -4,6 +4,7 @@ import argparse
 import json
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -23,12 +24,14 @@ from runtime.common import (  # noqa: E402
     write_markdown_bom,
 )
 from runtime.constants.schemas import ARTIFACT_INDEX_SCHEMA  # noqa: E402
+from runtime.constants.workflow_limits import SELF_IMPROVEMENT_EVENT_PREVIEW_LIMIT  # noqa: E402
 from runtime.constants.workspace import (  # noqa: E402
     context_dir_for_work_dir,
     process_report_dir_for_work_dir,
     test_evidence_dir_for_work_dir,
     work_dir_for_id,
 )
+from runtime.observability.logger import runtime_event_log_path  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
@@ -54,6 +57,8 @@ def build_parser() -> argparse.ArgumentParser:
     create_feedback.add_argument("--evidence", action="append", default=[])
     create_feedback.add_argument("--priority", default="Medium", choices=["Low", "Medium", "High"])
     create_feedback.add_argument("--category", default="Workflow")
+    create_feedback.add_argument("--runtime-trace-id", default="")
+    create_feedback.add_argument("--runtime-log", default="")
     create_feedback.add_argument("--output", default="")
     create_feedback.set_defaults(handler=run_create_feedback)
 
@@ -119,7 +124,7 @@ def feedback_readme() -> str:
 標準作成:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "/docs-sync" `
   --reporter "Human" `
   --situation "docs整備中" `
@@ -129,8 +134,197 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . self-improve
 """
 
 
+def parse_runtime_event_log_line(line: str) -> dict[str, Any] | None:
+    parts = line.rstrip("\n").split(" | ", 3)
+    if len(parts) != 4:
+        return None
+    timestamp, trace_id, sequence_text, payload_text = parts
+    try:
+        sequence = int(sequence_text)
+        payload = json.loads(payload_text)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    return {
+        "timestamp": timestamp,
+        "trace_id": trace_id,
+        "sequence": sequence,
+        "payload": payload,
+    }
+
+
+def resolve_runtime_log_path(repo_root: Path, raw_log_path: str) -> Path:
+    if raw_log_path:
+        return resolve_path(repo_root, raw_log_path)
+    return runtime_event_log_path(repo_root)
+
+
+def load_runtime_event_log(repo_root: Path, *, runtime_log: str, runtime_trace_id: str) -> dict[str, Any]:
+    log_path = resolve_runtime_log_path(repo_root, runtime_log)
+    result: dict[str, Any] = {
+        "log_path": log_path,
+        "trace_id": runtime_trace_id.strip(),
+        "events": [],
+        "malformed_lines": 0,
+        "status": "ok",
+    }
+    if not log_path.exists():
+        result["status"] = "missing_log"
+        return result
+
+    events: list[dict[str, Any]] = []
+    malformed = 0
+    for line in log_path.read_text(encoding="utf-8-sig").splitlines():
+        parsed = parse_runtime_event_log_line(line)
+        if parsed is None:
+            malformed += 1
+            continue
+        events.append(parsed)
+
+    trace_id = result["trace_id"]
+    if not trace_id and events:
+        trace_id = str(events[-1]["trace_id"])
+        result["trace_id"] = trace_id
+        result["selected_latest_trace"] = True
+
+    matched = [event for event in events if not trace_id or event["trace_id"] == trace_id]
+    result["events"] = matched
+    result["total_events"] = len(events)
+    result["malformed_lines"] = malformed
+    if trace_id and not matched:
+        result["status"] = "missing_trace"
+    elif not matched:
+        result["status"] = "empty_log"
+    return result
+
+
+def _counter_text(counter: Counter[str]) -> str:
+    if not counter:
+        return "None"
+    return ", ".join(f"{key}: {value}" for key, value in counter.items())
+
+
+def summarize_runtime_events(log_data: dict[str, Any], repo_root: Path) -> dict[str, Any]:
+    events = list(log_data.get("events", []))
+    commands: list[str] = []
+    statuses: Counter[str] = Counter()
+    reasons: Counter[str] = Counter()
+    durations: list[int] = []
+    problem_events: list[dict[str, Any]] = []
+
+    for event in events:
+        payload = event.get("payload", {})
+        command = str(payload.get("command", "")).strip()
+        if command and command not in commands:
+            commands.append(command)
+        output = payload.get("output", {})
+        if isinstance(output, dict):
+            status = str(output.get("status", "")).strip()
+            reason = str(output.get("reason", "")).strip()
+            if status:
+                statuses[status] += 1
+            if reason:
+                reasons[reason] += 1
+            duration = output.get("duration_ms")
+            if isinstance(duration, int):
+                durations.append(duration)
+            exit_code = output.get("exit_code")
+            if (status and status != "completed") or (isinstance(exit_code, int) and exit_code != 0):
+                problem_events.append(event)
+
+    if "blocked" in statuses:
+        outcome = "blocked"
+    elif problem_events:
+        outcome = "failed"
+    elif events:
+        outcome = "completed"
+    else:
+        outcome = log_data.get("status", "empty_log")
+
+    return {
+        "log_path": relative_to_repo(repo_root, Path(log_data["log_path"])),
+        "trace_id": log_data.get("trace_id", ""),
+        "event_count": len(events),
+        "total_events": log_data.get("total_events", len(events)),
+        "malformed_lines": log_data.get("malformed_lines", 0),
+        "commands": commands,
+        "statuses": statuses,
+        "reasons": reasons,
+        "duration_total_ms": sum(durations),
+        "duration_max_ms": max(durations) if durations else 0,
+        "first_timestamp": events[0]["timestamp"] if events else "",
+        "last_timestamp": events[-1]["timestamp"] if events else "",
+        "problem_events": problem_events,
+        "outcome": outcome,
+        "status": log_data.get("status", "ok"),
+        "selected_latest_trace": bool(log_data.get("selected_latest_trace")),
+    }
+
+
+def render_runtime_problem_events(events: list[dict[str, Any]]) -> str:
+    if not events:
+        return "- None"
+    lines: list[str] = []
+    for event in events[:SELF_IMPROVEMENT_EVENT_PREVIEW_LIMIT]:
+        payload = event.get("payload", {})
+        output = payload.get("output", {}) if isinstance(payload.get("output", {}), dict) else {}
+        lines.append(
+            "- "
+            f"seq={event.get('sequence'):05d} "
+            f"event={payload.get('event', '')} "
+            f"command={payload.get('command', '')} "
+            f"status={output.get('status', '')} "
+            f"reason={output.get('reason', '')} "
+            f"exit_code={output.get('exit_code', '')} "
+            f"duration_ms={output.get('duration_ms', '')}"
+        )
+    if len(events) > 10:
+        lines.append(f"- ... truncated: {len(events) - 10} events")
+    return "\n".join(lines)
+
+
+def render_runtime_log_sections(args: argparse.Namespace, repo_root: Path) -> str:
+    runtime_log = getattr(args, "runtime_log", "")
+    runtime_trace_id = getattr(args, "runtime_trace_id", "")
+    if not runtime_log and not runtime_trace_id:
+        return ""
+
+    log_data = load_runtime_event_log(repo_root, runtime_log=runtime_log, runtime_trace_id=runtime_trace_id)
+    summary = summarize_runtime_events(log_data, repo_root)
+    trace_note = "latest trace in log" if summary["selected_latest_trace"] else "requested trace"
+    commands = ", ".join(f"`{command}`" for command in summary["commands"]) if summary["commands"] else "None"
+    window = (
+        f"{summary['first_timestamp']} -> {summary['last_timestamp']}"
+        if summary["first_timestamp"] and summary["last_timestamp"]
+        else "None"
+    )
+    return f"""
+## Runtime Observation
+
+- Log: `{summary["log_path"]}`
+- Trace ID: `{summary["trace_id"] or "None"}` ({trace_note})
+- Events: {summary["event_count"]} / {summary["total_events"]}
+- Malformed Lines: {summary["malformed_lines"]}
+- Window: {window}
+- Commands: {commands}
+- Statuses: {_counter_text(summary["statuses"])}
+- Reasons: {_counter_text(summary["reasons"])}
+- Duration: total={summary["duration_total_ms"]}ms, max={summary["duration_max_ms"]}ms
+
+## Runtime Log Analysis
+
+- Outcome: `{summary["outcome"]}`
+- Log Status: `{summary["status"]}`
+- Blocked/Failed Events:
+{render_runtime_problem_events(summary["problem_events"])}
+"""
+
+
 def render_feedback_report(args: argparse.Namespace) -> str:
     evidence = "\n".join(f"- {item}" for item in args.evidence) if args.evidence else "- None"
+    repo_root = resolve_repo_root(args)
+    runtime_sections = render_runtime_log_sections(args, repo_root)
     return f"""# Workflow Feedback
 
 ## Target Workflow
@@ -160,6 +354,7 @@ def render_feedback_report(args: argparse.Namespace) -> str:
 ## Evidence
 
 {evidence}
+{runtime_sections}
 
 ## Review Status
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from runtime.common import ctl
+from runtime.ctl import ctl
 from runtime.workflow import system_integration
 
 

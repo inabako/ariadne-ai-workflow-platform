@@ -12,6 +12,7 @@ from typing import Any, Iterable
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json
 from runtime.constants.schemas import PYTEST_UT_SPEC_SYNC_REPORT_SCHEMA
 from runtime.constants.workspace import (  # noqa: E402
@@ -382,7 +383,7 @@ def build_report_payload(
     check_result: dict[str, object],
 ) -> dict[str, Any]:
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "pytest-ut-spec-sync-report",
         "generated_at": utc_now_iso(),
         "status": check_result["status"],

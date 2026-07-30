@@ -13,8 +13,15 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
+from runtime.constants.cli_defaults import RAG_EMBEDDING_DIMENSIONS_DEFAULT  # noqa: E402
 from runtime.constants.paths import CHUNKS_INDEX, EMBEDDINGS_INDEX  # noqa: E402
+from runtime.rag.scoring_constants import (  # noqa: E402
+    EMBEDDING_VALUE_DEFAULT,
+    SPARSE_EMBEDDING_HASH_BYTES,
+    SPARSE_EMBEDDING_VALUE_DECIMALS,
+)
 
 
 WORD_RE = re.compile(r"[A-Za-z0-9_.:-]+|[\u3040-\u30ff\u3400-\u9fff]+")
@@ -26,7 +33,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--chunks-index", default=str(CHUNKS_INDEX))
     parser.add_argument("--output", default=str(EMBEDDINGS_INDEX))
-    parser.add_argument("--dimensions", type=int, default=768)
+    parser.add_argument("--dimensions", type=int, default=RAG_EMBEDDING_DIMENSIONS_DEFAULT)
     parser.add_argument("--repo-root", default=None)
     return parser
 
@@ -66,7 +73,7 @@ def tokenize(value: str) -> list[str]:
 
 def stable_dimension(token: str, dimensions: int) -> int:
     digest = hashlib.sha256(token.encode("utf-8")).digest()
-    return int.from_bytes(digest[:8], "big") % dimensions
+    return int.from_bytes(digest[:SPARSE_EMBEDDING_HASH_BYTES], "big") % dimensions
 
 
 def sparse_embedding(text: str, dimensions: int) -> dict[str, float]:
@@ -76,11 +83,11 @@ def sparse_embedding(text: str, dimensions: int) -> dict[str, float]:
     values: dict[int, float] = {}
     for token, count in counts.items():
         index = stable_dimension(token, dimensions)
-        values[index] = values.get(index, 0.0) + float(count)
+        values[index] = values.get(index, EMBEDDING_VALUE_DEFAULT) + float(count)
     norm = math.sqrt(sum(value * value for value in values.values()))
     if norm == 0:
         return {}
-    return {str(index): round(value / norm, 8) for index, value in sorted(values.items())}
+    return {str(index): round(value / norm, SPARSE_EMBEDDING_VALUE_DECIMALS) for index, value in sorted(values.items())}
 
 
 def row_text(row: dict[str, Any]) -> str:
@@ -101,7 +108,7 @@ def row_text(row: dict[str, Any]) -> str:
 def build_embedding(row: dict[str, Any], dimensions: int) -> dict[str, Any]:
     chunk_id = str(row.get("chunk_id", ""))
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "embedding_id": f"{chunk_id}-embedding-local-hash-v1",
         "chunk_id": chunk_id,
         "document_id": row.get("document_id", ""),

@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "status": "scaffold",
+  "generated_for": "oss-release-foundation",
+  "project_license": "AGPL-3.0-or-later",
+  "scan_evidence": {
+    "workflow": ".github/workflows/scancode.yml",
+    "artifact_name": "ariadne-scancode-results",
+    "json": "scancode-output/scancode-results.json",
+    "html": "scancode-output/scancode-results.html",
+    "status": "local-rehearsal-reviewed",
+    "local_rehearsal": {
+      "status": "completed",
+      "artifact_path": ".act-artifacts/latest-extracted",
+      "scanned_resources": 2125,
+      "license_detections": 38,
+      "copyright_detections": 1,
+      "package_detections": 8,
+      "human_review": "No obvious license or copyright concern was found in the local rehearsal output."
+    },
+    "remaining_confirmation": "Run .github/workflows/scancode.yml with workflow_dispatch on GitHub Actions before public release.",
+    "notes": [
+      "ScanCode results are generated as GitHub Actions artifacts and are not committed directly.",
+      "Review conclusions should be reflected in this report after human review."
+    ]
+  },
+  "dependencies": [
+    {
+      "name": "duckdb",
+      "declared_requirement": "duckdb>=1.1",
+      "license_review_status": "pending"
+    },
+    {
+      "name": "langgraph",
+      "declared_requirement": "langgraph>=1.2.9",
+      "license_review_status": "pending"
+    }
+  ],
+  "notes": [
+    "Dependency license names and compatibility must be confirmed before public release.",
+    "This scaffold does not replace a full dependency license audit."
+  ]
+}

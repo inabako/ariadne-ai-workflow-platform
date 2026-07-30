@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use ARIADNE, please cite it using the metadata below."
+title: "ARIADNE"
+type: software
+authors:
+  - name: "TODO: Confirm project author"
+version: "0.1.0"
+license: AGPL-3.0-or-later
+abstract: >
+  ARIADNE is an AI workflow platform that coordinates software development
+  processes through runtime-based execution, workflow dispatch, state and
+  artifact management, evidence collection, human gates, and recovery flows.
+keywords:
+  - ai-workflow
+  - software-engineering
+  - runtime
+  - workflow-orchestration
+  - human-in-the-loop
+  - evidence
+  - llm
+repository-code: "TODO: Confirm public repository URL"
+url: "TODO: Confirm public repository URL"

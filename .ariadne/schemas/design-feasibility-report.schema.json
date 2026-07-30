@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Design Feasibility Report",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "candidate_id", "status"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "schema": { "type": "string" },
+    "artifact_type": { "type": "string", "const": "design-feasibility-report" },
+    "candidate_id": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["feasible", "constrained", "blocked"] },
+    "implementation_feasibility": { "type": "string" },
+    "standard_components": { "type": "string" },
+    "accessibility": { "type": "string" },
+    "testability": { "type": "string" },
+    "future_extensibility": { "type": "string" },
+    "constraints": { "type": "array", "items": { "type": "string" } },
+    "evidence_refs": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

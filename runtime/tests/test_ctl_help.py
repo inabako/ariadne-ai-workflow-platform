@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import runpy
@@ -7,7 +7,9 @@ from pathlib import Path
 from types import SimpleNamespace
 from uuid import UUID
 
-from runtime.common import ctl, registry_store
+from runtime.common import registry_store
+from runtime.ctl import ctl
+from runtime.observability import command_event
 from runtime.rag import duckdb_store
 
 
@@ -22,6 +24,39 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     args = parser.parse_args(["github-knowledge", "rebase-review-intake", "--work-id", "w", "--human-check", "approved"])
     assert args.github_knowledge_command == "rebase-review-intake"
     assert args.human_check == "approved"
+    status_args = parser.parse_args(["github-knowledge", "status", "--work-id", "w"])
+    assert status_args.github_knowledge_command == "status"
+    assert parser.parse_args(["github-knowledge", "next-action", "--work-id", "w"]).github_knowledge_command == "next-action"
+    assert parser.parse_args(["github-knowledge", "resume", "--work-id", "w"]).github_knowledge_command == "resume"
+    verify_args = parser.parse_args(
+        ["github-knowledge", "verify-remote", "--work-id", "w", "--expected-remote-sha", "abc123"]
+    )
+    assert verify_args.github_knowledge_command == "verify-remote"
+    assert verify_args.expected_remote_sha == "abc123"
+    cleanup_args = parser.parse_args(["github-knowledge", "cleanup-worktree", "--work-id", "w", "--force"])
+    assert cleanup_args.github_knowledge_command == "cleanup-worktree"
+    work_args = parser.parse_args(["work", "cleanup-check", "--work-id", "github/original", "--recursive"])
+    assert work_args.work_command == "cleanup-check"
+    assert work_args.recursive is True
+    assert cleanup_args.force is True
+    preflight_args = parser.parse_args(["preflight", "--profile", "github-cli", "--work-id", "w"])
+    assert preflight_args.command == "preflight"
+    assert preflight_args.profile == "github-cli"
+    assert preflight_args.work_id == "w"
+    tools_args = parser.parse_args(["tools", "bom-scan", "--paths", "docs", "--fail-on-finding"])
+    assert tools_args.command == "tools"
+    assert tools_args.tools_command == "bom-scan"
+    assert tools_args.paths == ["docs"]
+    assert tools_args.fail_on_finding is True
+    release_validate_args = parser.parse_args(["release", "validate", "--expected-license", "AGPL-3.0-or-later", "--json"])
+    assert release_validate_args.command == "release"
+    assert release_validate_args.release_command == "validate"
+    assert release_validate_args.expected_license == "AGPL-3.0-or-later"
+    assert release_validate_args.json is True
+    release_manifest_args = parser.parse_args(["release", "manifest", "--artifact", "LICENSE"])
+    assert release_manifest_args.command == "release"
+    assert release_manifest_args.release_command == "manifest"
+    assert release_manifest_args.artifact == ["LICENSE"]
     publish_args = parser.parse_args(
         [
             "github-knowledge",
@@ -42,10 +77,13 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     assert namespace["build_parser"]
 
 
-def test_windows_ps1_runtime_contract() -> None:
-    script = repo_root() / "runtime" / "windows-ps1" / "aiwf.ps1"
+def test_windows_script_runtime_contract() -> None:
+    script = repo_root() / "runtime" / "windows-script" / "aiwf.ps1"
+    wrapper = repo_root() / "runtime" / "windows-script" / "aiwf.cmd"
+    tools_cmd_files = list((repo_root() / "runtime" / "tools").glob("*.cmd"))
     raw = script.read_bytes()
     text = raw.decode("utf-8")
+    wrapper_text = wrapper.read_text(encoding="utf-8")
     bash_script = repo_root() / "runtime" / "posix-bash" / "aiwf.sh"
     bash_raw = bash_script.read_bytes()
     bash_text = bash_raw.decode("utf-8")
@@ -58,13 +96,18 @@ def test_windows_ps1_runtime_contract() -> None:
     assert '$env:PYTHONIOENCODING = "utf-8"' in text
     assert "[Parameter(ValueFromRemainingArguments = $true)]" in text
     assert "Invoke-AiwfNative" in text
-    assert '"common/ctl.py"' in text
-    assert '"environment/preflight.py"' in text
+    assert '"ctl/ctl.py"' in text
     assert '"--project", $RuntimeRoot, "python", $CtlPath, "--repo-root", $RepoRoot' in text
-    assert '"--project", $RuntimeRoot, "python", $PreflightPath, "--repo-root", $RepoRoot' in text
+    assert "powershell -NoProfile -ExecutionPolicy Bypass -File" in wrapper_text
+    assert "%~dp0aiwf.ps1" in wrapper_text
+    assert tools_cmd_files == []
+    assert '"--project", $RuntimeRoot, "python", $CtlPath, "--repo-root", $RepoRoot, "preflight"' in text
     assert '"run", "--project", $RuntimeRoot, "pytest", "-c", $PytestConfig' in text
-    assert "pytest_ut_spec_sync.py" in text
-    assert "utf8_bom.py" in text
+    assert '"tools", "spec-check"' in text
+    assert '"tools", "bom-scan"' in text
+    assert '"tools", "bom-strip"' in text
+    assert "pytest_ut_spec_sync.py" not in text
+    assert "utf8_bom.py" not in text
     assert "runtime/workflow" not in text
     assert not bash_raw.startswith(b"\xef\xbb\xbf")
     assert bash_text.startswith("#!/usr/bin/env bash")
@@ -72,13 +115,15 @@ def test_windows_ps1_runtime_contract() -> None:
     assert "Ariadne POSIX bash runtime" in bash_text
     assert "PYTHONUTF8=1" in bash_text
     assert "PYTHONIOENCODING=utf-8" in bash_text
-    assert 'ctl_path="$runtime_root/common/ctl.py"' in bash_text
-    assert 'preflight_path="$runtime_root/environment/preflight.py"' in bash_text
+    assert 'ctl_path="$runtime_root/ctl/ctl.py"' in bash_text
     assert 'run --project "$runtime_root" python "$ctl_path" --repo-root "$repo_root"' in bash_text
-    assert 'run --project "$runtime_root" python "$preflight_path" --repo-root "$repo_root"' in bash_text
+    assert 'run --project "$runtime_root" python "$ctl_path" --repo-root "$repo_root" preflight "$@"' in bash_text
     assert 'run --project "$runtime_root" pytest -c "$runtime_root/pytest.ini" "$@"' in bash_text
-    assert "pytest_ut_spec_sync.py" in bash_text
-    assert "utf8_bom.py" in bash_text
+    assert 'tools spec-check "$@"' in bash_text
+    assert 'tools bom-scan "$@"' in bash_text
+    assert 'tools bom-strip "$@"' in bash_text
+    assert "pytest_ut_spec_sync.py" not in bash_text
+    assert "utf8_bom.py" not in bash_text
     assert "runtime/workflow" not in bash_text
 
 
@@ -107,6 +152,78 @@ def test_ctl_without_modifier_warns_and_does_not_show_list() -> None:
     assert "aiwfctl path shell" in output
     assert "aiwfctl knowledge search" in output
     assert "## Workflow Commands" not in output
+
+
+def test_ctl_run_writes_runtime_event_log_for_each_command(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+    registry = tmp_path / "runtime" / "registries"
+    registry.mkdir(parents=True)
+    (registry / "workflow_help.json").write_text('{"commands": [], "extensions": []}', encoding="utf-8")
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "help", "list"])
+    code, output = ctl.run(args)
+
+    assert code == 0
+    assert "## Workflow Commands" in output
+    log_path = tmp_path / "logs" / "runtime" / "runtime-events.log"
+    lines = log_path.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 2
+    started_prefix = lines[0].split(" | ", 3)
+    completed_prefix = lines[1].split(" | ", 3)
+    assert started_prefix[1] == completed_prefix[1]
+    assert started_prefix[2] == "00001"
+    assert completed_prefix[2] == "00002"
+    started = json.loads(started_prefix[3])
+    completed = json.loads(completed_prefix[3])
+    assert started["component"] == "ctl"
+    assert started["event"] == "runtime_command_started"
+    assert started["command"] == "help list"
+    assert started["schema_version"] == "1.0"
+    assert started["level"] == "info"
+    assert started["workflow"] == "help"
+    assert started["phase"] == "execute"
+    assert started["operation_id"] == "help:list"
+    assert started["attempt"] == 1
+    assert started["diagnostics"] == {
+        "recoverable": False,
+        "next_action": "",
+        "resume_command": "",
+    }
+    assert "command" not in started["input"]
+    assert started["input"] == {
+        "json": False,
+        "repo_root": str(tmp_path),
+        "work_id": "",
+    }
+    assert completed["event"] == "runtime_command_completed"
+    assert completed["level"] == "info"
+    assert completed["workflow"] == "help"
+    assert completed["phase"] == "execute"
+    assert completed["operation_id"] == "help:list"
+    assert completed["diagnostics"] == {
+        "recoverable": False,
+        "next_action": "",
+        "resume_command": "",
+    }
+    assert "command" not in completed["input"]
+    assert completed["output"]["exit_code"] == 0
+    assert completed["output"]["reason"] == "completed"
+    assert isinstance(completed["output"]["duration_ms"], int)
+    assert completed["output"]["duration_ms"] >= 0
+
+
+def test_runtime_diagnostics_for_blocked_command_include_next_action() -> None:
+    diagnostics = command_event.runtime_diagnostics_for_result(
+        "self-improvement create-feedback",
+        "blocked",
+        "required_argument_missing",
+    )
+
+    assert diagnostics == {
+        "recoverable": True,
+        "next_action": "review_command_usage",
+        "resume_command": "aiwfctl self-improvement create-feedback",
+    }
 
 
 def test_ctl_help_without_modifier_warns_and_does_not_show_list() -> None:
@@ -310,7 +427,8 @@ def test_ctl_knowledge_usage_and_search_export_context(tmp_path: Path) -> None:
 def test_ctl_github_knowledge_sync_apply_dry_run_updates_analysis(tmp_path: Path) -> None:
     root = tmp_path
     (root / ".git").mkdir()
-    context_dir = root / "work" / "github-knowledge-repo-recent" / "context"
+    work_id = "github/main/recent"
+    context_dir = root / "work" / "github" / "main" / "recent" / "context"
     context_dir.mkdir(parents=True)
     gate_path = context_dir / "github-operation-gate.json"
     tool_path = context_dir / "tool-selection.json"
@@ -322,7 +440,7 @@ def test_ctl_github_knowledge_sync_apply_dry_run_updates_analysis(tmp_path: Path
             {
                 "schema_version": "1.0",
                 "workflow": "github-knowledge-maintenance",
-                "work_id": "github-knowledge-repo-recent",
+                "work_id": work_id,
                 "repository": "owner/repo",
                 "target_branch": "main",
                 "scan_mode": ["recent"],
@@ -343,7 +461,7 @@ def test_ctl_github_knowledge_sync_apply_dry_run_updates_analysis(tmp_path: Path
                             "draft_command": "gh issue comment 1 --body-file note.md",
                             "approval_status": "approved",
                             "human_review_decision": "OK",
-                            "human_review_source": "work/github-knowledge-repo-recent/process-report/sync-review.md",
+                            "human_review_source": "work/github/main/recent/process-report/sync-review.md",
                         }
                 ],
                 "knowledge_db_candidates": [],
@@ -361,9 +479,9 @@ def test_ctl_github_knowledge_sync_apply_dry_run_updates_analysis(tmp_path: Path
                 "contexts": [
                     {
                         "type": "github-operation-gate",
-                        "path": "work/github-knowledge-repo-recent/context/github-operation-gate.json",
+                        "path": "work/github/main/recent/context/github-operation-gate.json",
                     },
-                    {"type": "tool-selection", "path": "work/github-knowledge-repo-recent/context/tool-selection.json"},
+                    {"type": "tool-selection", "path": "work/github/main/recent/context/tool-selection.json"},
                 ],
             },
             ensure_ascii=False,
@@ -378,7 +496,7 @@ def test_ctl_github_knowledge_sync_apply_dry_run_updates_analysis(tmp_path: Path
             "github-knowledge",
             "sync-apply",
             "--work-id",
-            "github-knowledge-repo-recent",
+            work_id,
             "--action-id",
             "SYNC-1",
             "--human-check",
@@ -398,7 +516,8 @@ def test_ctl_github_knowledge_sync_apply_dry_run_updates_analysis(tmp_path: Path
 def test_ctl_github_knowledge_rebase_package_and_apply_dry_run(tmp_path: Path) -> None:
     root = tmp_path
     (root / ".git").mkdir()
-    context_dir = root / "work" / "github-knowledge-repo-recent" / "context"
+    work_id = "github/dev-bk/recent"
+    context_dir = root / "work" / "github" / "dev-bk" / "recent" / "context"
     context_dir.mkdir(parents=True)
     gate_path = context_dir / "github-operation-gate.json"
     tool_path = context_dir / "tool-selection.json"
@@ -410,7 +529,7 @@ def test_ctl_github_knowledge_rebase_package_and_apply_dry_run(tmp_path: Path) -
             {
                 "schema_version": "1.0",
                 "workflow": "github-knowledge-maintenance",
-                "work_id": "github-knowledge-repo-recent",
+                "work_id": work_id,
                 "repository": "owner/repo",
                 "target_branch": "dev-bk",
                 "scan_mode": ["recent"],
@@ -453,9 +572,9 @@ def test_ctl_github_knowledge_rebase_package_and_apply_dry_run(tmp_path: Path) -
                 "contexts": [
                     {
                         "type": "github-operation-gate",
-                        "path": "work/github-knowledge-repo-recent/context/github-operation-gate.json",
+                        "path": "work/github/dev-bk/recent/context/github-operation-gate.json",
                     },
-                    {"type": "tool-selection", "path": "work/github-knowledge-repo-recent/context/tool-selection.json"},
+                    {"type": "tool-selection", "path": "work/github/dev-bk/recent/context/tool-selection.json"},
                 ],
             },
             ensure_ascii=False,
@@ -470,7 +589,7 @@ def test_ctl_github_knowledge_rebase_package_and_apply_dry_run(tmp_path: Path) -
             "github-knowledge",
             "rebase-package",
             "--work-id",
-            "github-knowledge-repo-recent",
+            work_id,
             "--candidate-id",
             "HISTORY-1",
             "--apply-mode",
@@ -482,7 +601,7 @@ def test_ctl_github_knowledge_rebase_package_and_apply_dry_run(tmp_path: Path) -
 
     assert package_code == 0
     package_result = json.loads(package_output)
-    assert package_result["rebase_replay_package"] == "work/github-knowledge-repo-recent/context/rebase-replay-package.json"
+    assert package_result["rebase_replay_package"] == "work/github/dev-bk/recent/context/rebase-replay-package.json"
     package = json.loads((context_dir / "rebase-replay-package.json").read_text(encoding="utf-8"))
     assert package["absorb"] == [{"target": "def5678", "sources": ["abc1234"]}]
     assert package["apply_mode"] == "git-3way"
@@ -494,7 +613,7 @@ def test_ctl_github_knowledge_rebase_package_and_apply_dry_run(tmp_path: Path) -
             "github-knowledge",
             "rebase-apply",
             "--work-id",
-            "github-knowledge-repo-recent",
+            work_id,
             "--human-check",
             "approved",
             "--dry-run",
@@ -507,17 +626,17 @@ def test_ctl_github_knowledge_rebase_package_and_apply_dry_run(tmp_path: Path) -
     apply_result = json.loads(apply_output)
     assert apply_result["dry_run"] is True
     assert apply_result["apply_mode"] == "git-3way"
-    assert apply_result["worktree_path"] == "work/github-knowledge-repo-recent/git-worktree/dev-bk"
+    assert apply_result["worktree_path"] == "work/github/dev-bk/recent/git-worktree/dev-bk"
     updated = json.loads(analysis_path.read_text(encoding="utf-8"))
     assert updated["history_rewrite_candidates"][0]["replay_package_ref"] == (
-        "work/github-knowledge-repo-recent/context/rebase-replay-package.json"
+        "work/github/dev-bk/recent/context/rebase-replay-package.json"
     )
     metrics_context_path = context_dir / "runtime-metrics.json"
-    metrics_evidence_path = root / "work" / "github-knowledge-repo-recent" / "test-evidence" / "runtime-metrics.json"
+    metrics_evidence_path = root / "work" / "github" / "dev-bk" / "recent" / "test-evidence" / "runtime-metrics.json"
     assert metrics_context_path.exists()
     assert metrics_evidence_path.exists()
     metrics = json.loads(metrics_context_path.read_text(encoding="utf-8"))
-    assert metrics["workflow_id"] == "github-knowledge-repo-recent"
+    assert metrics["workflow_id"] == work_id
     assert metrics["workflow_name"] == "/github-knowledge-maintenance"
     assert metrics["events"][0]["event"] == "workflow_started"
     assert metrics["events"][-1]["event"] == "workflow_completed"
@@ -527,11 +646,11 @@ def test_ctl_github_knowledge_rebase_package_and_apply_dry_run(tmp_path: Path) -
     assert runtime_metrics_contexts == [
         {
             "type": "runtime-metrics",
-            "path": "work/github-knowledge-repo-recent/context/runtime-metrics.json",
+            "path": "work/github/dev-bk/recent/context/runtime-metrics.json",
             "required": False,
             "generated_by": "runtime-observability",
             "owner": "workflow",
-            "schema": ".github/schemas/runtime-metrics.schema.json",
+            "schema": ".ariadne/schemas/runtime-metrics.schema.json",
             "status": "available",
             "updated_at": runtime_metrics_contexts[0]["updated_at"],
         }
@@ -802,15 +921,17 @@ def test_ctl_env_select_writes_workflow_context(tmp_path: Path) -> None:
     source = repo_root()
     runtime_dir = root / "runtime" / "registries"
     schema_runtime = root / "runtime" / "tools"
+    windows_script_dir = root / "runtime" / "windows-script"
     runtime_dir.mkdir(parents=True)
     schema_runtime.mkdir(parents=True)
+    windows_script_dir.mkdir(parents=True)
     (runtime_dir / "workflow_environment_profiles.json").write_text(
         json.dumps(ctl.load_environment_registry(source), ensure_ascii=False),
         encoding="utf-8",
     )
     (root / "runtime" / "workflow").mkdir(parents=True)
     (root / "runtime" / "workflow" / "workflow_doctor.py").write_text("", encoding="utf-8")
-    (root / "runtime" / "tools" / "aiwfctl.cmd").write_text("", encoding="utf-8")
+    (windows_script_dir / "aiwfctl.cmd").write_text("", encoding="utf-8")
     (root / "runtime" / "registries" / "workflow_help.json").write_text('{"commands": [], "extensions": []}', encoding="utf-8")
     args = ctl.build_parser().parse_args(
         ["--repo-root", str(root), "env", "select", "gui-mode", "--work-id", "issue-123"]
@@ -836,7 +957,7 @@ def test_ctl_env_select_writes_workflow_context(tmp_path: Path) -> None:
     assert data["environment"] == "gui-mode"
     assert data["backend"] == "windows-msys2-gui"
     assert data["work_id"] == "issue-123"
-    assert data["source"]["schema"] == ".github/schemas/environment-selection.schema.json"
+    assert data["source"]["schema"] == ".ariadne/schemas/environment-selection.schema.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert manifest["artifact_type"] == "context-manifest"
     assert manifest["architecture"] == "context-first"
@@ -849,15 +970,17 @@ def test_ctl_env_select_warns_before_overwriting_different_context(tmp_path: Pat
     source = repo_root()
     runtime_dir = root / "runtime" / "registries"
     runtime_tools = root / "runtime" / "tools"
+    windows_script_dir = root / "runtime" / "windows-script"
     runtime_dir.mkdir(parents=True)
     runtime_tools.mkdir(parents=True)
+    windows_script_dir.mkdir(parents=True)
     (runtime_dir / "workflow_environment_profiles.json").write_text(
         json.dumps(ctl.load_environment_registry(source), ensure_ascii=False),
         encoding="utf-8",
     )
     (root / "runtime" / "workflow").mkdir(parents=True)
     (root / "runtime" / "workflow" / "workflow_doctor.py").write_text("", encoding="utf-8")
-    (root / "runtime" / "tools" / "aiwfctl.cmd").write_text("", encoding="utf-8")
+    (windows_script_dir / "aiwfctl.cmd").write_text("", encoding="utf-8")
     (root / "runtime" / "registries" / "workflow_help.json").write_text('{"commands": [], "extensions": []}', encoding="utf-8")
     context_path = root / "work" / "issue-123" / "context" / "environment-selection.json"
     context_path.parent.mkdir(parents=True)
@@ -878,7 +1001,7 @@ def test_ctl_env_select_warns_before_overwriting_different_context(tmp_path: Pat
                 "context_path": "work/issue-123/context/environment-selection.json",
                 "source": {
                     "registry": "db/registries/registry.duckdb",
-                    "schema": ".github/schemas/environment-selection.schema.json",
+                    "schema": ".ariadne/schemas/environment-selection.schema.json",
                 },
             },
             ensure_ascii=False,
@@ -958,7 +1081,7 @@ def test_vscode_environment_help_declares_repo_local_tools_path() -> None:
     assert "self-provision mode" in output
     assert "target-workspace mode" in output
     assert "custom-design mode" in output
-    assert "runtime/tools" in output
+    assert "runtime/windows-script" in output
     assert "terminal.integrated.env.windows.Path" in output
     assert "runtime-context.json" in output
 
@@ -1297,6 +1420,64 @@ def test_workflow_help_uses_terms_from_separated_json(tmp_path: Path) -> None:
     assert matches[0]["_search_terms"][0]["owner_id"] == "alpha"
 
 
+def write_registry_source(source_dir: Path) -> None:
+    source_dir.mkdir(parents=True)
+    (source_dir / "workflow_help.json").write_text(
+        json.dumps(
+            {
+                "registry_version": "1.0",
+                "commands": [
+                    {
+                        "id": "alpha",
+                        "command": "/alpha",
+                        "workflow": "alpha",
+                        "skill": "alpha",
+                        "overview": "alpha overview",
+                        "prerequisites": [],
+                        "arguments": [],
+                        "details": [],
+                        "examples": [],
+                    }
+                ],
+                "extensions": [],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    (source_dir / "search_terms.json").write_text(
+        json.dumps(
+            {
+                "registry_version": "1.0",
+                "terms": [
+                    {
+                        "id": "11111111-1111-4111-8111-111111111111",
+                        "owner_registry": "workflow_help",
+                        "owner_type": "command",
+                        "owner_id": "alpha",
+                        "term": "entrypoint maintenance",
+                        "locale": "en",
+                        "kind": "intent",
+                    }
+                ],
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    for name, payload in {
+        "tool_candidates.json": {"registry_version": "1.0", "tools": []},
+        "human_gates.json": {"registry_version": "1.0", "gates": []},
+        "workflow_environment_profiles.json": {
+            "registry_version": "1.0",
+            "environments": [{"name": "local", "backend": "windows-powershell", "purpose": "local runtime"}],
+            "profiles": [{"id": "windows-powershell", "environment": "local"}],
+            "mappings": [],
+        },
+    }.items():
+        (source_dir / name).write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+
 def test_registry_store_builds_search_terms_table_with_owner_id(tmp_path: Path) -> None:
     source_dir = tmp_path / "work" / "db" / "ariadne-knowledge-platform" / "registries"
     source_dir.mkdir(parents=True)
@@ -1370,6 +1551,51 @@ def test_registry_store_builds_search_terms_table_with_owner_id(tmp_path: Path) 
     registry = registry_store.load_workflow_help(tmp_path)
     matches = ctl.search_commands(registry, ["入口整理"])
     assert matches[0]["command"] == "/alpha"
+
+
+def test_registry_store_ensure_builds_missing_duckdb_from_source_backup(tmp_path: Path) -> None:
+    source_dir = tmp_path / "work" / "db" / "ariadne-knowledge-platform" / "registries"
+    db_path = tmp_path / "db" / "registries" / "registry.duckdb"
+    write_registry_source(source_dir)
+
+    result = registry_store.ensure_registry_read_model(tmp_path, source_dir, db_path)
+
+    assert result["action"] == "built"
+    assert db_path.exists()
+    assert result["counts"]["workflow_help_commands"] == 1
+    assert result["counts"]["workflow_environments"] == 1
+
+    existing = registry_store.ensure_registry_read_model(tmp_path, source_dir, db_path)
+
+    assert existing["action"] == "existing"
+    assert existing["counts"]["workflow_help_commands"] == 1
+
+
+def test_registry_load_auto_builds_missing_duckdb_from_default_source_backup(tmp_path: Path) -> None:
+    source_dir = tmp_path / "work" / "db" / "ariadne-knowledge-platform" / "registries"
+    db_path = tmp_path / "db" / "registries" / "registry.duckdb"
+    write_registry_source(source_dir)
+
+    registry = registry_store.load_workflow_help(tmp_path)
+    environment_registry = registry_store.load_environment_profiles(tmp_path)
+
+    assert db_path.exists()
+    assert registry["commands"][0]["command"] == "/alpha"
+    assert registry["commands"][0]["_search_terms"][0]["term"] == "entrypoint maintenance"
+    assert environment_registry["environments"][0]["name"] == "local"
+
+
+def test_registry_store_ensure_skips_when_source_backup_is_incomplete(tmp_path: Path) -> None:
+    source_dir = tmp_path / "work" / "db" / "ariadne-knowledge-platform" / "registries"
+    source_dir.mkdir(parents=True)
+    (source_dir / "workflow_help.json").write_text('{"commands": [], "extensions": []}', encoding="utf-8")
+
+    result = registry_store.ensure_registry_read_model(tmp_path)
+
+    assert result["action"] == "missing-source"
+    assert result["status"] == "skipped"
+    assert "tool_candidates.json" in result["missing_sources"][0]
+    assert not (tmp_path / "db" / "registries" / "registry.duckdb").exists()
 
 
 def test_workflow_help_search_terms_cover_all_prompt_commands() -> None:
@@ -1771,3 +1997,154 @@ def test_ctl_run_manual_error_and_json_branches(monkeypatch, tmp_path: Path) -> 
     )
     assert code == 0
     assert "## Workflow Extensions" not in output
+
+
+def test_ctl_work_cleanup_check_and_apply_requires_absorbed_knowledge(tmp_path: Path) -> None:
+    root = tmp_path
+    work_dir = root / "work" / "github" / "original" / "recent"
+    context_dir = work_dir / "context"
+    context_dir.mkdir(parents=True)
+    (context_dir / "github-knowledge-analysis.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "workflow": "github-knowledge-maintenance",
+                "work_id": "github/original/recent",
+                "repository": "owner/repo",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    blocked_args = ctl.build_parser().parse_args(
+        ["--repo-root", str(root), "work", "cleanup-check", "--work-id", "github/original", "--recursive", "--json"]
+    )
+    blocked_code, blocked_output = ctl.run(blocked_args)
+
+    assert blocked_code == 0
+    blocked = json.loads(blocked_output)
+    assert blocked["status"] == "blocked"
+    assert "long-lived knowledge artifact is not confirmed" in blocked["blockers"]
+
+    metrics_work = root / "work" / "github" / "metrics-only" / "recent"
+    (metrics_work / "context").mkdir(parents=True)
+    (metrics_work / "test-evidence").mkdir(parents=True)
+    (metrics_work / "context" / "runtime-metrics.json").write_text(
+        json.dumps({"artifact_type": "runtime-metrics", "workflow_id": "github/metrics-only/recent"}),
+        encoding="utf-8",
+    )
+    (metrics_work / "test-evidence" / "runtime-metrics.json").write_text(
+        json.dumps({"artifact_type": "runtime-metrics", "workflow_id": "github/metrics-only/recent"}),
+        encoding="utf-8",
+    )
+    (metrics_work / "context" / "context-manifest.json").write_text(
+        json.dumps(
+            {
+                "contexts": [
+                    {
+                        "type": "runtime-metrics",
+                        "path": "work/github/metrics-only/recent/context/runtime-metrics.json",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    metrics_args = ctl.build_parser().parse_args(
+        ["--repo-root", str(root), "work", "cleanup-check", "--work-id", "github/metrics-only", "--recursive", "--json"]
+    )
+    metrics_code, metrics_output = ctl.run(metrics_args)
+
+    assert metrics_code == 0
+    metrics = json.loads(metrics_output)
+    assert metrics["status"] == "ready"
+    assert metrics["checks"][0]["workflow"] == "metrics-only-empty-work"
+    assert metrics["checks"][0]["empty_runtime_metrics_only"] is True
+
+    protected_args = ctl.build_parser().parse_args(
+        ["--repo-root", str(root), "work", "cleanup-check", "--work-id", "github", "--recursive", "--json"]
+    )
+    protected_code, protected_output = ctl.run(protected_args)
+
+    assert protected_code == 1
+    assert "protected work scope" in protected_output
+
+    rag_source = root / "work" / "db" / "ariadne-knowledge-platform" / "rag" / "github-knowledge" / "source.md"
+    rag_source.parent.mkdir(parents=True)
+    rag_source.write_text("# absorbed\n", encoding="utf-8")
+    (context_dir / "artifact-index.json").write_text(
+        json.dumps(
+            {
+                "artifacts": [
+                    {
+                        "id": "GITHUB-KNOWLEDGE-RAG-CANDIDATE",
+                        "path": "work/db/ariadne-knowledge-platform/rag/github-knowledge/source.md",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    ready_args = ctl.build_parser().parse_args(
+        ["--repo-root", str(root), "work", "cleanup-check", "--work-id", "github/original", "--recursive", "--json"]
+    )
+    ready_code, ready_output = ctl.run(ready_args)
+
+    assert ready_code == 0
+    ready = json.loads(ready_output)
+    assert ready["status"] == "ready"
+    assert ready["apply_command"].endswith("--human-check approved")
+
+    required_args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "work",
+            "cleanup-check",
+            "--work-id",
+            "github/original",
+            "--recursive",
+            "--required-artifact",
+            "work/db/ariadne-knowledge-platform/rag/github-knowledge/source.md",
+            "--json",
+        ]
+    )
+    required_code, required_output = ctl.run(required_args)
+
+    assert required_code == 0
+    required = json.loads(required_output)
+    assert (
+        "--required-artifact work/db/ariadne-knowledge-platform/rag/github-knowledge/source.md"
+        in required["apply_command"]
+    )
+
+    pending_args = ctl.build_parser().parse_args(
+        ["--repo-root", str(root), "work", "cleanup-apply", "--work-id", "github/original", "--recursive", "--json"]
+    )
+    pending_code, pending_output = ctl.run(pending_args)
+
+    assert pending_code == 1
+    assert "requires --human-check approved" in pending_output
+
+    apply_args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "work",
+            "cleanup-apply",
+            "--work-id",
+            "github/original",
+            "--recursive",
+            "--human-check",
+            "approved",
+            "--json",
+        ]
+    )
+    apply_code, apply_output = ctl.run(apply_args)
+
+    assert apply_code == 0
+    applied = json.loads(apply_output)
+    assert applied["status"] == "removed"
+    assert applied["exists_after"] is False
+    assert not (root / "work" / "github" / "original").exists()

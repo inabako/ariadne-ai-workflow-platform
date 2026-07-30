@@ -12,6 +12,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json, write_markdown_bom  # noqa: E402
 
 
@@ -235,7 +236,7 @@ def build_audit(
         else run_coverage_measurement(runtime_root, pytest_args)
     )
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "generated_at": utc_now_iso(),
         "repo_root": str(repo_root),
         "runtime_root": relative_to_repo(repo_root, runtime_root),

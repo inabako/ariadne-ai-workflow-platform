@@ -1,4 +1,4 @@
-# GitHub Knowledge Maintenance
+﻿# GitHub Knowledge Maintenance
 
 `/github-knowledge-maintenance` は、GitHub Repositoryを長期的な知識資産として保守するworkflowです。
 
@@ -56,7 +56,7 @@ If no `--target-branch` is provided, the original repository-level scan goes und
 Initialize:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge init `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge init `
   --repository "<target-repository>" `
   --scan-mode recent `
   --repair-mode proposal `
@@ -66,21 +66,21 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
 Create the analysis scaffold:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge analysis-template `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge analysis-template `
   --work-id "<work-id>"
 ```
 
 Create a human review repair plan:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge repair-plan `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge repair-plan `
   --work-id "<work-id>"
 ```
 
 Detect 1-3 file commit leakage candidates from local Git history:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge detect-rebase `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge detect-rebase `
   --work-id "<work-id>" `
   --base "HEAD~30" `
   --head "HEAD"
@@ -89,21 +89,21 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
 Create the GitHub sync plan:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge sync-plan `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge sync-plan `
   --work-id "<work-id>"
 ```
 
 Create the OK / NG review checklist for Issue / PR / comment repair actions:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge sync-review-plan `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge sync-review-plan `
   --work-id "<work-id>"
 ```
 
 Ingest the checked review plan through ctl before execution:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge sync-review-intake `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge sync-review-intake `
   --work-id "<work-id>" `
   --human-check approved
 ```
@@ -111,7 +111,7 @@ Ingest the checked review plan through ctl before execution:
 Execute one reviewed and approved GitHub sync action:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge sync-apply `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge sync-apply `
   --work-id "<work-id>" `
   --action-id "<action-id>" `
   --human-check approved
@@ -129,14 +129,14 @@ aiwfctl github-knowledge sync-apply `
 Create a high-risk rebase review plan for 1-3 file commit leakage:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-plan `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-plan `
   --work-id "<work-id>"
 ```
 
 Ingest the Human Review OK / NG checklist through ctl before package generation:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-review-intake `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-review-intake `
   --work-id "<work-id>" `
   --human-check approved
 ```
@@ -146,7 +146,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
 Approved small-commit rebase packages should use the built-in replay runtime:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-package `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-package `
   --work-id "<work-id>" `
   --target-branch "<branch>" `
   --apply-mode direct
@@ -155,7 +155,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowl
 `rebase-replay-package` は、`approval_status: approved` の実行可能candidateだけから `work/<work-id>/context/rebase-replay-package.json` を生成します。AIはこのJSONを手書きしません。`--candidate-id` を指定した場合は、その承認済みcandidateだけをpackage化します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rebase-apply `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rebase-apply `
   --work-id "<work-id>" `
   --package-path "work/<work-id>/context/rebase-replay-package.json" `
   --human-check approved
@@ -168,7 +168,7 @@ Use `apply_mode: direct` by default. If direct patch replay cannot match context
 If a replay package has already been executed and verified without `--push`, publish the verified tip through ctl instead of regenerating the package or editing JSON:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge publish-verified-replay `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge publish-verified-replay `
   --work-id "<work-id>" `
   --target-branch "<branch>" `
   --expected-remote-sha "<approved-remote-sha>" `
@@ -177,10 +177,16 @@ If a replay package has already been executed and verified without `--push`, pub
 
 `publish-verified-replay` selects the latest unpublished `tree_equal: true` replay execution, checks that `source_tip..new_tip` has no tree diff, verifies the remote branch still equals the approved expected SHA, and pushes `new_tip` with `force-with-lease`. Use `--new-tip "<sha>"` when more than one verified unpublished replay exists.
 
+### Resume Encoding Gate
+
+`status` / `next-action` / `resume` run an encoding gate before returning a replay, push, or GitHub sync command. The gate checks saved artifact bytes, strict UTF-8 decode, JSON parse, mojibake markers, replay package fields, candidate status values, and before/after SHA mapping requirements.
+
+If `encoding_gate.status` is `block`, do not continue rebase, replay, push, or GitHub sync apply. Run the returned `encoding_gate.repair_command` / `next_action.command` first and inspect the artifact integrity report. Console rendering alone is not evidence of saved-file corruption.
+
 After the approved small-commit rebase is verified, run commit message/body repair before GitHub sync when weak semantic subjects remain:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge message-repair-plan `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge message-repair-plan `
   --work-id "<work-id>" `
   --source-ref "origin/<branch>"
 ```
@@ -188,7 +194,7 @@ After the approved small-commit rebase is verified, run commit message/body repa
 The generated message repair checklist is the single Human Check for message rewrite candidates. Ingest it through ctl:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge message-review-intake `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge message-review-intake `
   --work-id "<work-id>" `
   --human-check approved
 ```
@@ -196,7 +202,7 @@ The generated message repair checklist is the single Human Check for message rew
 Generate a tree-preserving replay package from approved message candidates:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge message-repair-package `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge message-repair-package `
   --work-id "<work-id>" `
   --target-branch "<branch>" `
   --source-ref "origin/<branch>" `
@@ -206,7 +212,7 @@ Generate a tree-preserving replay package from approved message candidates:
 Execute that package with the existing replay apply runtime:
 
 ```powershell
-.\runtime\windows-ps1\aiwf.ps1 ctl github-knowledge rebase-apply `
+.\runtime\windows-script\aiwf.cmd ctl github-knowledge rebase-apply `
   --work-id "<work-id>" `
   --package-path "work/<work-id>/context/message-repair-package.json" `
   --human-check approved `
@@ -218,8 +224,15 @@ Execute that package with the existing replay apply runtime:
 Create a RAG candidate:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . github-knowledge rag-candidate `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . github-knowledge rag-candidate `
   --work-id "<work-id>"
+```
+
+After publishing a RAG candidate to the long-lived knowledge area, `rag-candidate` and `next-action` return a work cleanup hint. Confirm the temporary GitHub knowledge work scope through the generic cleanup ctl before removing it:
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-check --work-id github/original --recursive
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-apply --work-id github/original --recursive --human-check approved
 ```
 
 ## Main Artifact
@@ -231,7 +244,7 @@ work/<work-id>/context/github-knowledge-analysis.json
 Schema:
 
 ```text
-.github/schemas/github-knowledge-analysis.schema.json
+.ariadne/schemas/github-knowledge-analysis.schema.json
 ```
 
 ## Context First

@@ -50,7 +50,7 @@ Specialist review RAG also uses the same JSON pipeline. It is project-specific i
 ### 1. Normalize Documents
 
 ```powershell
-python runtime/rag/normalize_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag normalize `
   --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
   --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type corrective-action-report `
@@ -60,7 +60,7 @@ python runtime/rag/normalize_documents.py `
 ### 2. Chunk Documents
 
 ```powershell
-python runtime/rag/chunk_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag chunk `
   --input-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --output-dir work/db/ariadne-knowledge-platform/rag/chunks `
   --clean-output
@@ -69,7 +69,7 @@ python runtime/rag/chunk_documents.py `
 External Web RAG normalize example:
 
 ```powershell
-python runtime/rag/normalize_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag normalize `
   --source-dir work/db/ariadne-knowledge-platform/rag/external-web/network `
   --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type external-web-knowledge
@@ -78,7 +78,7 @@ python runtime/rag/normalize_documents.py `
 ### 3. Optimize Ingestion
 
 ```powershell
-python runtime/rag/ingestion_optimizer.py `
+.\runtime\windows-script\aiwf.cmd ctl rag optimize `
   --chunks-dir work/db/ariadne-knowledge-platform/rag/chunks `
   --output-dir work/db/ariadne-knowledge-platform/rag/optimized-chunks `
   --evidence-dir db/rag/evidence/ingestion `
@@ -90,7 +90,7 @@ This stage evaluates chunk candidates before indexing and embedding. It writes `
 ### 4. Build Index
 
 ```powershell
-python runtime/rag/build_index.py `
+.\runtime\windows-script\aiwf.cmd ctl rag index `
   --normalized-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --chunks-dir work/db/ariadne-knowledge-platform/rag/optimized-chunks `
   --output-dir work/db/ariadne-knowledge-platform/rag/indexes
@@ -99,12 +99,12 @@ python runtime/rag/build_index.py `
 Optional DuckDB read model:
 
 ```powershell
-python runtime/rag/duckdb_store.py init
-python runtime/rag/duckdb_store.py migrate --source work/db/ariadne-knowledge-platform/rag/optimized-chunks
-python runtime/rag/duckdb_store.py rebuild --reset
-python runtime/rag/duckdb_store.py search --query "PyQt GUI smoke test" --limit 10
-python runtime/rag/duckdb_store.py export-context --query "PyQt GUI smoke test" --output work/issue-123/context/knowledge.json
-python runtime/rag/duckdb_store.py verify --query workflow --query runtime --query RAG --work-dir db/rag/evidence --work-id duckdb-reference-check
+.\runtime\windows-script\aiwf.cmd ctl knowledge init
+.\runtime\windows-script\aiwf.cmd ctl knowledge migrate --source work/db/ariadne-knowledge-platform/rag/optimized-chunks
+.\runtime\windows-script\aiwf.cmd ctl knowledge rebuild --reset
+.\runtime\windows-script\aiwf.cmd ctl knowledge search --query "PyQt GUI smoke test" --limit 10
+.\runtime\windows-script\aiwf.cmd ctl knowledge export-context --query "PyQt GUI smoke test" --output work/issue-123/context/knowledge.json
+.\runtime\windows-script\aiwf.cmd ctl knowledge verify --query workflow --query runtime --query RAG --work-dir db/rag/evidence --work-id duckdb-reference-check
 ```
 
 `db/rag/ariadne-knowledge.duckdb` は生成物です。Git管理せず、必要なタイミングで再生成します。
@@ -131,30 +131,30 @@ aiwfctl knowledge verify --query workflow --query runtime --query RAG --source-r
 
 特定Issueや実行中workflowに紐づく確認では、`--work-id <work-id>` を指定し、`work/<work-id>/context/context-manifest.json` に登録します。
 
-`retrieve_context.py` からDuckDB read modelを使う場合:
+`aiwfctl rag retrieve` からDuckDB read modelを使う場合:
 
 ```powershell
-python runtime/rag/retrieve_context.py `
+.\runtime\windows-script\aiwf.cmd ctl rag retrieve `
   "PyQt GUI smoke test" `
   --backend duckdb `
   --duckdb-path db/rag/ariadne-knowledge.duckdb `
   --tag gui
 ```
 
-`rag_dispatcher.py` からDuckDB read modelを使う場合:
+`aiwfctl rag load` からDuckDB read modelを使う場合:
 
 ```powershell
-python runtime/rag/rag_dispatcher.py `
+.\runtime\windows-script\aiwf.cmd ctl rag load `
   --task "PyQt GUI smoke test" `
   --retrieval-backend duckdb `
   --duckdb-path db/rag/ariadne-knowledge.duckdb `
   --tag gui
 ```
 
-`rag_build.py` からRAG build成果物としてDuckDB migration evidenceを残す場合:
+`aiwfctl rag build` からRAG build成果物としてDuckDB migration evidenceを残す場合:
 
 ```powershell
-python runtime/rag/rag_build.py `
+.\runtime\windows-script\aiwf.cmd ctl rag build `
   --duckdb-migrate `
   --work-id issue-123
 ```
@@ -166,13 +166,13 @@ python runtime/rag/rag_build.py `
 Optional local embeddings:
 
 ```powershell
-python runtime/rag/embed_chunks.py `
+.\runtime\windows-script\aiwf.cmd ctl rag embed `
   --chunks-index work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl `
   --output work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl
 ```
 
 ```powershell
-python runtime/rag/retrieve_context.py `
+.\runtime\windows-script\aiwf.cmd ctl rag retrieve `
   "MainWindow 分割 Qt smoke test" `
   --chunks-index work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl `
   --embeddings-index work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl `
@@ -185,7 +185,7 @@ python runtime/rag/retrieve_context.py `
 External-web only retrieval:
 
 ```powershell
-python runtime/rag/retrieve_context.py `
+.\runtime\windows-script\aiwf.cmd ctl rag retrieve `
   "Go realtime gateway NAT traversal" `
   --source-type external-web `
   --category network `
@@ -194,7 +194,7 @@ python runtime/rag/retrieve_context.py `
   --max-chars 4000
 ```
 
-`retrieve_context.py` は、local JSONL index に対する keyword retrieval、local embedding cosine similarity、hybrid reranking、extractive compression を行います。
+`aiwfctl rag retrieve` は、local JSONL index に対する keyword retrieval、local embedding cosine similarity、hybrid reranking、extractive compression を行います。
 
 Vector DB、embeddings、semantic search、reranking は、将来の MCP repository 側で担当します。この local workflow では、MCP へ渡しやすい deterministic な context pack を作るところまでを責務にします。
 
@@ -202,14 +202,14 @@ Local embeddings は `local-hash-embedding-v1` による deterministic sparse em
 
 RAG artifact のファイル名は UUID にします。検索はファイル名ではなく JSON の `content` と metadata を対象にします。
 
-Corrective action report Markdown は、RAG build前に `runtime/rag/standardize_corrective_report_names.py` で `YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md` へ統一します。標準は8桁です。
+Corrective action report Markdown は、RAG build前に `aiwfctl rag standardize` で `YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md` へ統一します。標準は8桁です。
 
 ### 6. Dispatch Parallel RAG Load
 
-開発前の RAG 読み込みでは、dispatcher を使って `rag-dispatch-plan` を作成し、複数queryを計画・並列検索し、`retrieve_context.py` の圧縮済みcontext packを集約します。
+開発前の RAG 読み込みでは、`aiwfctl rag load` を使って `rag-dispatch-plan` を作成し、複数queryを計画・並列検索し、`aiwfctl rag retrieve` の圧縮済みcontext packを集約します。
 
 ```powershell
-python runtime/rag/rag_dispatcher.py `
+.\runtime\windows-script\aiwf.cmd ctl rag load `
   --task "MainWindow 分離 責務集中" `
   --repository "C:\github\localty-system-gui" `
   --branch develop `
@@ -222,7 +222,7 @@ python runtime/rag/rag_dispatcher.py `
 既存の計画をAgent間で引き継ぐ場合は、`--dispatch-plan` で `artifact_type: rag-dispatch-plan` のJSONを渡します。
 
 ```powershell
-python runtime/rag/rag_dispatcher.py `
+.\runtime\windows-script\aiwf.cmd ctl rag load `
   --dispatch-plan work/db/ariadne-knowledge-platform/rag/retrieval/<plan-uuid>.json `
   --search-mode hybrid `
   --top-k 5 `
@@ -232,7 +232,7 @@ python runtime/rag/rag_dispatcher.py `
 ### 7. JSONize Existing Markdown Artifacts
 
 ```powershell
-python runtime/rag/jsonize_rag_tree.py `
+.\runtime\windows-script\aiwf.cmd ctl rag jsonize `
   --rag-dir work/db/ariadne-knowledge-platform/rag `
   --output-dir work/db/ariadne-knowledge-platform/rag/jsonized `
   --clean-output
@@ -245,7 +245,7 @@ python runtime/rag/jsonize_rag_tree.py `
 `work/db/ariadne-knowledge-platform/legacy-root-rag-*` に退避された旧 root RAG は、次のruntimeで標準RAG sourceへ統合します。新しい `legacy-root-rag-*` は作らず、出力先は常に `work/db/ariadne-knowledge-platform/rag/` です。
 
 ```powershell
-python runtime/rag/migrate_legacy_root_rag.py `
+.\runtime\windows-script\aiwf.cmd ctl rag migrate-legacy-root `
   --legacy-dir work/db/ariadne-knowledge-platform/legacy-root-rag-<timestamp>
 ```
 

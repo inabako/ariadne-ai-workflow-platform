@@ -36,9 +36,9 @@ GitHub連携に必要な値は repository root の `.env` から読み込みま�
 
 `--github-repo` が未指定の場合、`scm-state.json` の repository を使います。
 
-repository は要件定義書の `Repository Control` から `runtime/scm/prepare_repository.py` が解決します。`.env` に repository fallback は置きません。
+repository は要件定義書の `Repository Control` から `aiwfctl scm prepare` が解決します。`.env` に repository fallback は置きません。
 
-ただし、`runtime/scm/prepare_repository.py` 済みの案件では、`work/<採番ID>/context/scm-state.json` の repository から GitHub repository を解決できます。
+ただし、`aiwfctl scm prepare` 済みの案件では、`work/<採番ID>/context/scm-state.json` の repository から GitHub repository を解決できます。
 
 `--label` / `--assignee` が未指定の場合、`DEFAULT_GITHUB_ISSUE_LABELS` / `DEFAULT_GITHUB_ISSUE_ASSIGNEES` をカンマ区切りで読みます。
 
@@ -53,7 +53,7 @@ Issue title は workflow に応じてprefixを付けます。
 | New system / initial development | `[初期開発]` |
 | Realtime IaC | `[IaC]` |
 
-`runtime/github/issue_manager.py` は `--flow-label` または `--title-prefix` でprefixを付与できます。
+`aiwfctl github issue` は `--flow-label` または `--title-prefix` でprefixを付与できます。
 
 ## Issue Body Template
 
@@ -61,16 +61,16 @@ Issue body のsourceは次の優先順位で決定します。
 
 1. `--body-file` で明示されたMarkdown
 2. target repository の `.github/ISSUE_TEMPLATE.md`
-3. `runtime/github/issue_manager.py` のfallback本文
+3. `aiwfctl github issue` のruntime fallback本文
 
 target repository templateを使う場合、`Report`、`Target branch`、`Target commit` の空欄は、利用可能なworkflow contextから自動補完します。
 
 ## CLI
 
 ```text
-runtime/github/issue_manager.py
-runtime/github/pull_request_manager.py
-runtime/scm/create_issue_branch.py --link-to-issue
+aiwfctl github issue
+aiwfctl github pr
+aiwfctl scm branch --link-to-issue
 ```
 
 ## Example
@@ -78,7 +78,7 @@ runtime/scm/create_issue_branch.py --link-to-issue
 Draft only:
 
 ```powershell
-python runtime/github/issue_manager.py `
+.\runtime\windows-script\aiwf.cmd ctl github issue `
   --work-id WF-20260601-090000 `
   --github-repo owner/repository `
   --title "Add remote gateway skeleton" `
@@ -88,7 +88,7 @@ python runtime/github/issue_manager.py `
 Create GitHub Issue:
 
 ```powershell
-python runtime/github/issue_manager.py `
+.\runtime\windows-script\aiwf.cmd ctl github issue `
   --work-id WF-20260601-090000 `
   --github-repo owner/repository `
   --title "Add remote gateway skeleton" `
@@ -100,7 +100,7 @@ python runtime/github/issue_manager.py `
 Create Pull Request after the issue branch has been pushed:
 
 ```powershell
-python runtime/github/pull_request_manager.py `
+.\runtime\windows-script\aiwf.cmd ctl github pr `
   --work-id issue-11 `
   --base develop `
   --create `
@@ -115,4 +115,4 @@ By default, this runtime creates local drafts only. It calls GitHub only when `-
 
 Pull Request creation also requires `--create --human-check approved`.
 
-Issue linked branch creation is handled during `runtime/scm/create_issue_branch.py --link-to-issue`. It uses GitHub GraphQL `createLinkedBranch` after the GitHub Issue number is available.
+Issue linked branch creation is handled during `aiwfctl scm branch --link-to-issue`. It uses GitHub GraphQL `createLinkedBranch` after the GitHub Issue number is available.

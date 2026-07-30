@@ -1,4 +1,4 @@
-# Operations
+﻿# Operations
 
 このページは、workflow運用で迷いやすい共通ルールをまとめます。
 
@@ -53,7 +53,7 @@ chore: update workflow skill index
 必要tool、Python module、MSYS2 package、support repositoryが不足している場合は、install listを作って止まります。installは人間承認後にだけ行います。
 
 ```powershell
-python runtime/environment/preflight.py `
+.\runtime\windows-script\aiwf.cmd ctl preflight `
   --profile corrective-action-fix `
   --work-id "<work-id>"
 ```
@@ -105,14 +105,14 @@ work/close/<category>/<archive-id>/
 改善フローの作成・監査:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare --issue issue-<issue-number>
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive audit --issue issue-<issue-number>
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare --issue issue-<issue-number>
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive audit --issue issue-<issue-number>
 ```
 
 RAG sourceを必ず反映したい場合:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --issue issue-<issue-number> `
   --source-rag work/db/ariadne-knowledge-platform/rag/normalized/<rag-source>.json `
   --require-rag
@@ -123,7 +123,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 新システム開発フロー:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --issue issue-<issue-number> `
   --category new-system-dev
 ```
@@ -131,7 +131,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 GitHub knowledge maintenance:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --work-id github/original/recent `
   --category github
 ```
@@ -139,7 +139,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 VSCode Environment:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --work-id vscode-environment `
   --category vscode
 ```
@@ -162,8 +162,8 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 削除は必ずdry-run確認後、人間承認付きで実行します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prune --issue issue-<issue-number>
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prune `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prune --issue issue-<issue-number>
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prune `
   --issue issue-<issue-number> `
   --execute `
   --human-check approved
@@ -188,13 +188,13 @@ Pull Request bodyには、変更点のMermaid式sequence diagramを含めます�
 ## Runtime Human Gate Registry
 
 人間承認が必要な操作は `db/registries/registry.duckdb` にも機械可読形式で定義します。
-構造定義は `.github/schemas/human-gates.schema.json` に置きます。
-責任分離を明確にするため、`db/registries/` はruntime横断のregistry実体、`.github/schemas/` はschema定義専用とします。
+構造定義は `.ariadne/schemas/human-gates.schema.json` に置きます。
+責任分離を明確にするため、`db/registries/` はruntime横断のregistry実体、`.ariadne/schemas/` はschema定義専用とします。
 `registry.duckdb` の `human_gates` registry payload には `$schema` と `schema_version` を置かず、registry自体の版は `registry_version` で表します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . human-gate list
-uv run --project runtime python runtime/common/ctl.py --repo-root . human-gate check --gate close-prune --human-check approved
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . human-gate list
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . human-gate check --gate close-prune --human-check approved
 ```
 
 詳細は [Human Gate Registry](human-gates.md) を参照します。
@@ -212,6 +212,15 @@ RAG source of truthは、標準では `work/db/ariadne-knowledge-platform` にcl
 
 確認は次で行います。
 
+The knowledge source repository name is configured by `ARIADNE_KNOWLEDGE_REPOSITORY` in `.env` or process ENV. The runtime derives the backup path as `work/db/<ARIADNE_KNOWLEDGE_REPOSITORY>` and keeps generated DuckDB read models under `db/rag/`. Provisioning creates the backup directory tree locally when missing, but does not clone, create `.git`, commit, or push.
+
+Temporary workflow workspaces are removed only after long-lived Knowledge absorption is confirmed. For GitHub knowledge maintenance, check a whole branch/original scope before cleanup:
+
 ```powershell
-python runtime/workflow/workflow_doctor.py
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-check --work-id github/original --recursive
+.\runtime\windows-script\aiwf.cmd ctl work cleanup-apply --work-id github/original --recursive --human-check approved
+```
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl doctor
 ```

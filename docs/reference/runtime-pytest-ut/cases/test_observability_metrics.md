@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 17 |
+| cases | 19 |
 
 ## ケース一覧
 
@@ -19,7 +19,7 @@ runtime/tests/test_observability_metrics.py::test_monthly_log_path_uses_year_mon
 - 確認内容: pytest case `monthly log path uses year month suffix` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:17`
+  - source: `runtime/tests/test_observability_metrics.py:23`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -36,7 +36,7 @@ runtime/tests/test_observability_metrics.py::test_resolve_log_path_rotates_base_
 - 確認内容: pytest case `resolve log path rotates base runtime metrics file` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:25`
+  - source: `runtime/tests/test_observability_metrics.py:31`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -53,7 +53,7 @@ runtime/tests/test_observability_metrics.py::test_resolve_log_path_can_disable_r
 - 確認内容: pytest case `resolve log path can disable rotation for base or directory` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:33`
+  - source: `runtime/tests/test_observability_metrics.py:39`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -70,7 +70,7 @@ runtime/tests/test_observability_metrics.py::test_append_jsonl_appends_one_recor
 - 確認内容: pytest case `append jsonl appends one record per line` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:40`
+  - source: `runtime/tests/test_observability_metrics.py:46`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -87,11 +87,62 @@ runtime/tests/test_observability_metrics.py::test_append_jsonl_returns_warning_w
 - 確認内容: pytest case `append jsonl returns warning without raising when parent is file` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:51`
+  - source: `runtime/tests/test_observability_metrics.py:57`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: case passes and Runtime Observability metrics are recorded without breaking workflow execution.
+
+#### RT-UT-CASE-212TRACE
+
+- pytest node id:
+
+```text
+runtime/tests/test_observability_metrics.py::test_generate_trace_id_returns_24_hex_characters
+```
+
+- 確認内容: Runtime Event Log の自動生成 trace id が衝突しにくい24桁hexで生成されることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_observability_metrics.py:67`
+  - fixture/arg: なし
+  - parameter: names=なし, case=なし
+  - inline input: `logger.generate_trace_id()`
+- 期待結果: 生成された trace id は24文字で、hex文字列として解釈できる。
+
+#### RT-UT-CASE-212A
+
+- pytest node id:
+
+```text
+runtime/tests/test_observability_metrics.py::test_runtime_event_logger_writes_pipe_prefixed_json_line
+```
+
+- 確認内容: runtime event logger が `timestamp | trace-id | sequence | json` の1行形式でイベントを保存し、sensitive key を mask することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_observability_metrics.py:67`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `payload`
+- 期待結果: `logs/runtime/runtime-events.log` に同一traceの連番イベントが保存され、JSON payload の機密値が `***` へmaskされる。
+
+#### RT-UT-CASE-212B
+
+- pytest node id:
+
+```text
+runtime/tests/test_observability_metrics.py::test_runtime_event_logger_rotates_when_max_bytes_is_exceeded
+```
+
+- 確認内容: runtime event logger が最大サイズ超過時に log file を rotation し、新しいイベントを現行ファイルへ保存することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_observability_metrics.py:94`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- 期待結果: size limit を超えたとき `runtime-events.log.1` が作成され、現行 `runtime-events.log` には最新イベントが残る。
 
 #### RT-UT-CASE-213
 
@@ -104,7 +155,7 @@ runtime/tests/test_observability_metrics.py::test_schema_helpers_sanitize_negati
 - 確認内容: pytest case `schema helpers sanitize negative and invalid values` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:61`
+  - source: `runtime/tests/test_observability_metrics.py:114`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -121,7 +172,7 @@ runtime/tests/test_observability_metrics.py::test_runtime_metric_record_falls_ba
 - 確認内容: pytest case `runtime metric record falls back to runtime error for unknown event` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:72`
+  - source: `runtime/tests/test_observability_metrics.py:125`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -138,7 +189,7 @@ runtime/tests/test_observability_metrics.py::test_duration_timer_records_elapsed
 - 確認内容: pytest case `duration timer records elapsed duration` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:80`
+  - source: `runtime/tests/test_observability_metrics.py:133`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -149,13 +200,13 @@ runtime/tests/test_observability_metrics.py::test_duration_timer_records_elapsed
 - pytest node id:
 
 ```text
-runtime/tests/test_observability_metrics.py::test_collector_defaults_log_dir_under_runtime_logs
+runtime/tests/test_observability_metrics.py::test_collector_defaults_log_dir_under_repo_logs
 ```
 
-- 確認内容: pytest case `collector defaults log dir under runtime logs` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
+- 確認内容: pytest case `collector defaults log dir under repo logs` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:87`
+  - source: `runtime/tests/test_observability_metrics.py:140`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -172,7 +223,7 @@ runtime/tests/test_observability_metrics.py::test_collector_records_non_fatal_lo
 - 確認内容: pytest case `collector records non fatal log write warning` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:93`
+  - source: `runtime/tests/test_observability_metrics.py:146`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -189,7 +240,7 @@ runtime/tests/test_observability_metrics.py::test_collector_records_workflow_age
 - 確認内容: pytest case `collector records workflow agent token context and monthly jsonl` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:104`
+  - source: `runtime/tests/test_observability_metrics.py:157`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -206,7 +257,7 @@ runtime/tests/test_observability_metrics.py::test_collector_records_human_check_
 - 確認内容: pytest case `collector records human check evidence and runtime error` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:140`
+  - source: `runtime/tests/test_observability_metrics.py:193`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -223,7 +274,7 @@ runtime/tests/test_observability_metrics.py::test_collector_failed_workflow_save
 - 確認内容: pytest case `collector failed workflow saves human check required evidence` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:155`
+  - source: `runtime/tests/test_observability_metrics.py:208`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `payload`
@@ -240,7 +291,7 @@ runtime/tests/test_observability_metrics.py::test_collector_saves_workflow_evide
 - 確認内容: pytest case `collector saves workflow evidence and registers context` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:168`
+  - source: `runtime/tests/test_observability_metrics.py:221`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `manifest`
@@ -257,7 +308,7 @@ runtime/tests/test_observability_metrics.py::test_collector_evidence_summary_can
 - 確認内容: pytest case `collector evidence summary can skip work dir or manifest registration` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:192`
+  - source: `runtime/tests/test_observability_metrics.py:245`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -274,7 +325,7 @@ runtime/tests/test_observability_metrics.py::test_collector_evidence_summary_ret
 - 確認内容: pytest case `collector evidence summary returns warning without raising` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:206`
+  - source: `runtime/tests/test_observability_metrics.py:259`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -291,7 +342,7 @@ runtime/tests/test_observability_metrics.py::test_register_runtime_metrics_conte
 - 確認内容: pytest case `register runtime metrics context uses runtime metrics type` checks Runtime Observability monthly rotation, JSONL append, evidence output, Context First registration, token/context/cost handling, and non-fatal write warnings.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_observability_metrics.py:218`
+  - source: `runtime/tests/test_observability_metrics.py:271`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル

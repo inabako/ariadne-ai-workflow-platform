@@ -171,7 +171,7 @@ Issue body は次の優先順位で選びます。
 
 1. 明示された `--body-file`
 2. target repository の `.github/ISSUE_TEMPLATE.md`
-3. `runtime/github/issue_manager.py` のfallback本文
+3. `aiwfctl github issue` のruntime fallback本文
 
 target repository templateを使う場合、`Report`、`Target branch`、`Target commit` はworkflow contextから補完します。
 

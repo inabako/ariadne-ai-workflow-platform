@@ -1,0 +1,151 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/inabako/ariadne-ai-workflow-platform/.ariadne/schemas/integration-test-plan-context.schema.json",
+  "title": "Integration Test Plan Context",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "status",
+    "work_id",
+    "workflow",
+    "target_repo",
+    "source_context",
+    "emulator_health_context",
+    "phases",
+    "human_checks",
+    "completion_evidence",
+    "rules"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "artifact_type": {
+      "const": "integration-test-plan-context"
+    },
+    "status": {
+      "enum": [
+        "planned",
+        "human-check-required"
+      ]
+    },
+    "work_id": {
+      "type": "string"
+    },
+    "workflow": {
+      "const": "system-integration-quality"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "target_repo": {
+      "type": "string"
+    },
+    "source_context": {
+      "type": "string"
+    },
+    "emulator_health_context": {
+      "type": "string"
+    },
+    "phases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "purpose",
+          "human_check_required"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "inputs": {},
+          "human_check_required": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "human_checks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "completion_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rules": {
+      "type": "object",
+      "required": [
+        "do_not_start_emulator_in_plan",
+        "do_not_start_target_system_in_plan",
+        "human_check_required_before_mutation",
+        "do_not_use_production_credentials",
+        "do_not_treat_emulator_success_as_production_equivalence"
+      ],
+      "properties": {
+        "do_not_start_emulator_in_plan": {
+          "const": true
+        },
+        "do_not_start_target_system_in_plan": {
+          "const": true
+        },
+        "human_check_required_before_mutation": {
+          "const": true
+        },
+        "do_not_use_production_credentials": {
+          "const": true
+        },
+        "do_not_treat_emulator_success_as_production_equivalence": {
+          "const": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "artifacts": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "type": "string"
+        },
+        "runbook": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "manifest_path": {
+      "type": "string"
+    },
+    "manifest_contexts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -29,6 +29,7 @@ from runtime.common import (
     write_json,
     write_markdown_bom,
 )
+from runtime.constants import paths as runtime_paths
 
 
 def test_slugify_and_relative_to_repo_are_stable(tmp_path: Path) -> None:
@@ -135,6 +136,20 @@ def test_env_file_process_and_github_resolution_edges(tmp_path: Path, monkeypatc
     assert resolve_github_repo({}, "https://example.test/repo.git") == "https://example.test/repo.git"
     with pytest.raises(ValueError, match="GitHub repository is required"):
         resolve_github_repo({})
+
+
+def test_knowledge_source_repository_env_helpers() -> None:
+    settings = {"ARIADNE_KNOWLEDGE_REPOSITORY": "custom-knowledge-repo", "ARIADNE_KNOWLEDGE_REPOSITORY_OWNER": "owner"}
+
+    assert runtime_paths.knowledge_source_repo_name_from_settings(settings) == "custom-knowledge-repo"
+    assert runtime_paths.knowledge_source_repo_path_from_settings(settings) == Path("work/db/custom-knowledge-repo")
+    assert runtime_paths.knowledge_source_repo_url_from_settings(settings) == "https://github.com/owner/custom-knowledge-repo.git"
+    assert runtime_paths.knowledge_source_repo_name_from_settings(
+        {"ARIADNE_KNOWLEDGE_REPOSITORY": "https://github.com/owner/other-knowledge.git"}
+    ) == "other-knowledge"
+    assert runtime_paths.knowledge_source_repo_url_from_settings(
+        {"ARIADNE_KNOWLEDGE_REPOSITORY_URL": "https://example.test/knowledge.git"}
+    ) == "https://example.test/knowledge.git"
 
 
 def test_extract_repository_config_from_markdown_text() -> None:

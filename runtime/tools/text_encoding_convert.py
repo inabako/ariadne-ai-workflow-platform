@@ -10,7 +10,9 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso  # noqa: E402
+from runtime.constants.cli_defaults import TEXT_PREVIEW_MAX_BYTES_DEFAULT, TEXT_PREVIEW_MAX_CHARS_DEFAULT  # noqa: E402
 
 
 TEXT_EXTENSIONS = {
@@ -77,8 +79,8 @@ def build_parser() -> argparse.ArgumentParser:
         default=list(DEFAULT_INSPECT_ENCODINGS),
         help="Candidate source encodings to try with strict decoding.",
     )
-    preview.add_argument("--bytes", type=int, default=160, help="Maximum bytes to include in the hex preview.")
-    preview.add_argument("--chars", type=int, default=120, help="Maximum decoded characters per encoding preview.")
+    preview.add_argument("--bytes", type=int, default=TEXT_PREVIEW_MAX_BYTES_DEFAULT, help="Maximum bytes to include in the hex preview.")
+    preview.add_argument("--chars", type=int, default=TEXT_PREVIEW_MAX_CHARS_DEFAULT, help="Maximum decoded characters per encoding preview.")
     preview.add_argument("--fail-on-warning", action="store_true", help="Return exit code 1 when warnings exist.")
 
     convert = subparsers.add_parser("convert", help="Safely convert text files from a source encoding to UTF-8.")
@@ -231,7 +233,7 @@ def inspect_files(repo_root: Path, paths: Sequence[str], extensions: set[str], e
         )
 
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "text-encoding-inspect",
         "generated_at": utc_now_iso(),
         "status": "warning" if warnings else "ok",
@@ -285,7 +287,7 @@ def preview_files(
         )
 
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "text-encoding-preview",
         "generated_at": utc_now_iso(),
         "status": "warning" if warnings else "ok",
@@ -365,7 +367,7 @@ def convert_files(args: argparse.Namespace) -> dict[str, Any]:
         converted.append(record)
 
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "text-encoding-convert",
         "generated_at": utc_now_iso(),
         "status": "blocked" if blocked else ("converted" if converted and args.write else ("candidate" if converted else "ok")),

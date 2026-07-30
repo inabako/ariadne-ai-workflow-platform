@@ -1,0 +1,37 @@
+---
+# yamllint disable rule:line-length
+name: Feature request
+description: Propose a workflow, runtime, documentation, or platform improvement.
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: intent
+    attributes:
+      label: Intent
+      description: What should this improve?
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current behavior
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and context
+      description: Link related docs, artifacts, or workflow outputs.
+  - type: checkboxes
+    id: review
+    attributes:
+      label: Review gates
+      options:
+        - label: This may affect release, security, license, or Human Gate policy.
+          required: false

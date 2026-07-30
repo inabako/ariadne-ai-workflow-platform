@@ -97,7 +97,7 @@ templates/workflows/noise-reduction/
 Noise Reduction Phaseはruntime CLIでも生成できます。
 
 ```powershell
-python runtime/workflow/noise_reduction.py run `
+.\runtime\windows-script\aiwf.cmd ctl workflow noise-reduction run `
   --draft work/requirements/draft/<draft-name>.txt
 ```
 

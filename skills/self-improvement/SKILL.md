@@ -1,4 +1,4 @@
----
+﻿---
 name: self-improvement
 description: Collect workflow feedback from Ariadne AI Workflow Platform runs, append human review decisions, generate GitHub Issue bodies for accepted feedback, create standard issue branch/evidence scaffolds, and hand off to existing GitHub/SCM helpers. Use when the user selects /self-improvement or asks to turn workflow friction, noise, repeated checks, missing context, docs ambiguity, runtime observation gaps, or workflow usability issues into a governed improvement flow.
 ---
@@ -7,7 +7,7 @@ description: Collect workflow feedback from Ariadne AI Workflow Platform runs, a
 
 ## 既定言語
 
-既定では日本語で応答してください。人間向けreport、docs、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成します。
+既定では日本語で応答してください。人間向けreport、docs、review、evidence、RAG source Markdownは `.ariadne/shared/output-language-policy.md` に従って日本語で作成します。
 
 ## 目的
 
@@ -44,13 +44,13 @@ work/<work-id>/test-evidence/self-improvement/
 Feedback置き場を初期化します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement init-feedback
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement init-feedback
 ```
 
 Feedback reportを作成します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "/docs-sync" `
   --reporter "Human" `
   --situation "docs整備中" `
@@ -61,7 +61,7 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . self-improve
 Human Review結果を追記します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement review-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement review-feedback `
   --feedback work/feedback/<feedback>.md `
   --decision accepted `
   --reviewer "Human" `
@@ -72,20 +72,20 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . self-improve
 Issue bodyを生成します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement issue-body `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement issue-body `
   --feedback work/feedback/<feedback>.md
 ```
 
 evidence scaffoldを作成します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement evidence-scaffold --work-id issue-42
 ```
 
 branch名を確認します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement branch-name --issue-number 42
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement branch-name --issue-number 42
 ```
 
 ## Human Check
@@ -107,4 +107,4 @@ GitHub Issue作成、branch作成、push、Pull Request作成、RAG登録、clos
 - 既存のGitHub / SCM helper logicを重複実装しません。
 - branch名は `feature/issue-<issue-number>` に固定します。
 - work folderは `work/issue-<issue-number>` に固定します。
-- Issue作成前に `docs/governance/` とPlatform Fit Checkを確認します。
+- Issue作成前に `docs/governance/ariadne/` とPlatform Fit Checkを確認します。

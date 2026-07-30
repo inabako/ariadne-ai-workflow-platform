@@ -1,4 +1,4 @@
-{
+﻿{
   "schema_version": "1.0",
   "skills": [
     {
@@ -6,7 +6,7 @@
       "skill": "requirement-discovery",
       "skill_path": "skills/requirement-discovery/SKILL.md",
       "delegated_prompt": "/requirement-discovery",
-      "prompt_path": ".github/prompts/requirement-discovery.prompt.md",
+      "prompt_path": ".ariadne/prompts/requirement-discovery.prompt.md",
       "workflow": "requirement-discovery",
       "description": "Create a completed target-system requirement document from a human bullet-list draft in work/requirements/draft, with clarification questions and human review before saving to work/requirements."
     },
@@ -15,7 +15,7 @@
       "skill": "docs-sync",
       "skill_path": "skills/docs-sync/SKILL.md",
       "delegated_prompt": "/docs-sync",
-      "prompt_path": ".github/prompts/docs-sync.prompt.md",
+      "prompt_path": ".ariadne/prompts/docs-sync.prompt.md",
       "workflow": "docs-sync",
       "description": "Compare implementation and docs on a target branch, store docs drift analysis as JSON, create an Issue, update docs only on feature/issue-XXX, push after approval, and prepare RAG/archive."
     },
@@ -24,7 +24,7 @@
       "skill": "self-improvement",
       "skill_path": "skills/self-improvement/SKILL.md",
       "delegated_prompt": "/self-improvement",
-      "prompt_path": ".github/prompts/self-improvement.prompt.md",
+      "prompt_path": ".ariadne/prompts/self-improvement.prompt.md",
       "workflow": "self-improvement",
       "description": "Ariadne workflow実行中の摩擦や改善候補をwork/feedback/へ保存し、Human Reviewで採用判断し、Accepted feedbackからIssue body、標準branch名、evidence scaffoldを作成する。"
     },
@@ -33,7 +33,7 @@
       "skill": "system-integration-quality",
       "skill_path": "skills/system-integration-quality/SKILL.md",
       "delegated_prompt": "/system-integration-quality",
-      "prompt_path": ".github/prompts/system-integration-quality.prompt.md",
+      "prompt_path": ".ariadne/prompts/system-integration-quality.prompt.md",
       "workflow": "system-integration-quality",
       "description": "生成・改修したコードを対象システムへ自然に統合できているか確認し、エミュレータ候補、Integration Test、Human Check、Knowledge化対象を整理する。"
     },
@@ -42,7 +42,7 @@
       "skill": "flutter-multiplatform",
       "skill_path": "skills/flutter-multiplatform/SKILL.md",
       "delegated_prompt": "/flutter-multiplatform",
-      "prompt_path": ".github/prompts/flutter-multiplatform.prompt.md",
+      "prompt_path": ".ariadne/prompts/flutter-multiplatform.prompt.md",
       "workflow": "flutter-multiplatform",
       "description": "Flutterアプリの対象platform、開発環境、boilerplate、静的解析、test、platform別build計画、evidence、Knowledge化対象を整理する。"
     },
@@ -51,7 +51,7 @@
       "skill": "github-knowledge-maintenance",
       "skill_path": "skills/github-knowledge-maintenance/SKILL.md",
       "delegated_prompt": "/github-knowledge-maintenance",
-      "prompt_path": ".github/prompts/github-knowledge-maintenance.prompt.md",
+      "prompt_path": ".ariadne/prompts/github-knowledge-maintenance.prompt.md",
       "workflow": "github-knowledge-maintenance",
       "description": "Maintain GitHub repository Issues, PRs, comments, docs, CARs, Knowledge DB candidates, and RAG candidates as reusable knowledge without rewriting Git history or changing source code."
     },
@@ -60,7 +60,7 @@
       "skill": "vscode-environment",
       "skill_path": "skills/vscode-environment/SKILL.md",
       "delegated_prompt": "/vscode-environment",
-      "prompt_path": ".github/prompts/vscode-environment.prompt.md",
+      "prompt_path": ".ariadne/prompts/vscode-environment.prompt.md",
       "workflow": "vscode-environment",
       "description": "Build or maintain reproducible VSCode Workspace-as-Code settings, tasks, launch configs, extensions, terminal profiles, AI workflow tasks, tests, evidence, and setup docs."
     },
@@ -69,7 +69,7 @@
       "skill": "ariadne-new-system",
       "skill_path": "skills/ariadne-new-system/SKILL.md",
       "delegated_prompt": "/ariadne-new-system-development",
-      "prompt_path": ".github/prompts/ariadne-new-system-development.prompt.md",
+      "prompt_path": ".ariadne/prompts/ariadne-new-system-development.prompt.md",
       "workflow": "ariadne-new-system-development",
       "description": "新しい対象システム、runtime、remote operation、device integration、architecture-level launch を開始する。"
     },
@@ -78,7 +78,7 @@
       "skill": "ariadne-new-system-iac",
       "skill_path": "skills/ariadne-new-system-iac/SKILL.md",
       "delegated_prompt": "/ariadne-new-system-iac",
-      "prompt_path": ".github/prompts/ariadne-new-system-iac.prompt.md",
+      "prompt_path": ".ariadne/prompts/ariadne-new-system-iac.prompt.md",
       "workflow": "ariadne-new-system-iac",
       "description": "新しい対象システムを設計し、Shared Artifactsを生成・検証してからrealtime IaC workflowへ渡す。"
     },
@@ -87,7 +87,7 @@
       "skill": "ariadne-feature-maintenance",
       "skill_path": "skills/ariadne-feature-maintenance/SKILL.md",
       "delegated_prompt": "/ariadne-feature-maintenance-development",
-      "prompt_path": ".github/prompts/ariadne-feature-maintenance-development.prompt.md",
+      "prompt_path": ".ariadne/prompts/ariadne-feature-maintenance-development.prompt.md",
       "workflow": "ariadne-feature-maintenance-development",
       "description": "既存対象システムの新機能追加、bug fix、hardware replacement、network change、deployment change、field issue response を開始する。"
     },
@@ -96,7 +96,7 @@
       "skill": "realtime-iac",
       "skill_path": "skills/realtime-iac/SKILL.md",
       "delegated_prompt": "/realtime-iac",
-      "prompt_path": ".github/prompts/realtime-iac.prompt.md",
+      "prompt_path": ".ariadne/prompts/realtime-iac.prompt.md",
       "workflow": "realtime-iac",
       "description": "リアルタイムシステム向けIaC、platform infrastructure、database infrastructure、Redis middleware infrastructure、OpenLDAP identity infrastructureを、共有成果物確認、boilerplate選定、Terraform設計、Docker Compose検証、セキュリティレビュー、統合試験、ドキュメント化まで進める。"
     },
@@ -105,7 +105,7 @@
       "skill": "corrective-action-report",
       "skill_path": "skills/corrective-action-report/SKILL.md",
       "delegated_prompt": "/corrective-action-report",
-      "prompt_path": ".github/prompts/corrective-action-report.prompt.md",
+      "prompt_path": ".ariadne/prompts/corrective-action-report.prompt.md",
       "workflow": "corrective-action-report",
       "description": "指定された repository / branch の現状を調査し、改善点、risk、test gap、documentation gap、architecture concern、workflow opportunity を RAG 用 report として保存する。"
     },
@@ -114,7 +114,7 @@
       "skill": "corrective-action-fix",
       "skill_path": "skills/corrective-action-fix/SKILL.md",
       "delegated_prompt": "/corrective-action-fix",
-      "prompt_path": ".github/prompts/corrective-action-fix.prompt.md",
+      "prompt_path": ".ariadne/prompts/corrective-action-fix.prompt.md",
       "workflow": "corrective-action-fix",
       "description": "GitHub repository / branchをwork/<branch>に取得し、corrective action report、RAG build/load、GitHub Issue、work/issue-XXX + feature/issue-XXX、改善修正、test、人間確認、pushまで進める。"
     },
@@ -123,7 +123,7 @@
       "skill": "knowledge-capture",
       "skill_path": "skills/knowledge-capture/SKILL.md",
       "delegated_prompt": "/knowledge-capture",
-      "prompt_path": ".github/prompts/knowledge-capture.prompt.md",
+      "prompt_path": ".ariadne/prompts/knowledge-capture.prompt.md",
       "workflow": "knowledge-capture",
       "description": "Completed issue workflow finalization: PR material, docs evidence check, RAG/docs candidate extraction, and archive readiness."
     },
@@ -132,7 +132,7 @@
       "skill": "rag-build",
       "skill_path": "skills/rag-build/SKILL.md",
       "delegated_prompt": "/rag-build",
-      "prompt_path": ".github/prompts/rag-build.prompt.md",
+      "prompt_path": ".ariadne/prompts/rag-build.prompt.md",
       "workflow": "rag-build",
       "description": "Markdown report を file-based RAG 用 document、chunk、index、embedding に変換する。"
     },
@@ -141,7 +141,7 @@
       "skill": "rag-load",
       "skill_path": "skills/rag-load/SKILL.md",
       "delegated_prompt": "/rag-load",
-      "prompt_path": ".github/prompts/rag-load.prompt.md",
+      "prompt_path": ".ariadne/prompts/rag-load.prompt.md",
       "workflow": "rag-load",
       "description": "開発前に file-based RAG を並列検索し、retrieve_context.py の圧縮済み context pack を読み込む。"
     },
@@ -150,7 +150,7 @@
       "skill": "runtime-health-check",
       "skill_path": "skills/runtime-health-check/SKILL.md",
       "delegated_prompt": "/runtime-health-check",
-      "prompt_path": ".github/prompts/runtime-health-check.prompt.md",
+      "prompt_path": ".ariadne/prompts/runtime-health-check.prompt.md",
       "workflow": "runtime-health-check",
       "description": "Ariadne AI Workflow Platform自身のruntime、pytest、UT仕様書、Context First、aiwfctl、docs品質を自己診断する。"
     }
@@ -167,7 +167,7 @@
     {
       "name": "gac-uac-gui-mode",
       "standalone_skill": false,
-      "prompt_path": ".github/prompts/gac-uac-gui-mode.prompt.md",
+      "prompt_path": ".ariadne/prompts/gac-uac-gui-mode.prompt.md",
       "runtime_path": "runtime/workflow/gui_mode.py",
       "trigger": "work/requirements/svg-input/{SYS,FEAT,FIX}_*.svg",
       "parent_workflows": [
@@ -180,7 +180,7 @@
     {
       "name": "nextjs-webapp-implementation-prep",
       "standalone_skill": false,
-      "prompt_path": ".github/prompts/nextjs-webapp-implementation-prep.prompt.md",
+      "prompt_path": ".ariadne/prompts/nextjs-webapp-implementation-prep.prompt.md",
       "doc_path": "docs/workflows/nextjs-webapp-implementation-prep.md",
       "template_path": "templates/artifacts/process-report/nextjs-webapp-implementation-prep-template.md",
       "trigger": "Next.js dashboard/admin/monitoring/business webapp implementation before source changes",
@@ -194,7 +194,7 @@
     {
       "name": "web-svg-layout-mode",
       "standalone_skill": false,
-      "prompt_path": ".github/prompts/web-svg-layout-mode.prompt.md",
+      "prompt_path": ".ariadne/prompts/web-svg-layout-mode.prompt.md",
       "doc_path": "docs/workflows/web-svg-layout-mode.md",
       "template_path": "templates/workflows/web-svg-layout/",
       "runtime_path": "runtime/workflow/web_svg_layout_mode.py",
@@ -209,7 +209,7 @@
     {
       "name": "flutter-multiplatform",
       "standalone_skill": true,
-      "prompt_path": ".github/prompts/flutter-multiplatform.prompt.md",
+      "prompt_path": ".ariadne/prompts/flutter-multiplatform.prompt.md",
       "doc_path": "docs/workflows/flutter-multiplatform.md",
       "template_path": "templates/boilerplates/apps/flutter-app-template/",
       "runtime_path": "runtime/workflow/flutter_multiplatform.py",
@@ -226,7 +226,7 @@
     {
       "name": "mcp-server-group-implementation",
       "standalone_skill": false,
-      "prompt_path": ".github/prompts/mcp-server-group-implementation.prompt.md",
+      "prompt_path": ".ariadne/prompts/mcp-server-group-implementation.prompt.md",
       "doc_path": "docs/workflows/mcp-server-group-implementation.md",
       "template_path": "templates/boilerplates/mcp/",
       "runtime_path": "runtime/workflow/mcp_server_group.py",
@@ -241,7 +241,7 @@
     {
       "name": "noise-reduction-phase",
       "standalone_skill": false,
-      "prompt_path": ".github/prompts/noise-reduction-phase.prompt.md",
+      "prompt_path": ".ariadne/prompts/noise-reduction-phase.prompt.md",
       "doc_path": "docs/workflows/noise-reduction-phase.md",
       "template_path": "templates/workflows/noise-reduction/",
       "trigger": "requirement discovery before requirement review draft creation",

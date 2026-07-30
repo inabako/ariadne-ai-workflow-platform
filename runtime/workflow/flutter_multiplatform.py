@@ -11,7 +11,10 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import gate_restart, find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.cli_defaults import FLUTTER_TIMEOUT_SECONDS_DEFAULT  # noqa: E402
+from runtime.constants.workflow_limits import FLUTTER_COMMAND_SLUG_MAX_CHARS  # noqa: E402
 from runtime.constants.paths import WINDOWS_FLUTTER_BIN  # noqa: E402
 from runtime.constants.schemas import FLUTTER_DEVELOPMENT_CONTEXT_SCHEMA  # noqa: E402
 from runtime.constants.workspace import (  # noqa: E402
@@ -28,7 +31,7 @@ from runtime.constants.workspace import target_repository_dir_for_work_dir  # no
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
-SCHEMA_VERSION = "1.0"
+
 ARTIFACT_TYPE = "flutter-development-context"
 DEFAULT_SCHEMA = FLUTTER_DEVELOPMENT_CONTEXT_SCHEMA
 TARGET_DECLARATION = "requirements/flutter-targets.yaml"
@@ -424,7 +427,7 @@ def command_slug(command: str) -> str:
     value = command.lower()
     for old, new in [(" --", "-"), (" ", "-"), ("/", "-"), ("\\", "-"), (".", "-")]:
         value = value.replace(old, new)
-    return "".join(ch for ch in value if ch.isalnum() or ch in {"-"})[:80].strip("-") or "command"
+    return "".join(ch for ch in value if ch.isalnum() or ch in {"-"})[:FLUTTER_COMMAND_SLUG_MAX_CHARS].strip("-") or "command"
 
 
 def run_captured_command(
@@ -795,7 +798,7 @@ def build_context(
     force: bool = False,
     execute: bool = False,
     human_check: str = "",
-    timeout_seconds: int = 600,
+    timeout_seconds: int = FLUTTER_TIMEOUT_SECONDS_DEFAULT,
 ) -> dict[str, Any]:
     work_path = resolve_work_dir(repo_root, work_id, work_dir)
     target_path = resolve_repo_path(repo_root, target_repo) if target_repo else default_target_repo(work_path)
@@ -1044,7 +1047,7 @@ def build_parser() -> argparse.ArgumentParser:
         cmd.add_argument("--force", action="store_true", help="Refresh copied boilerplate during init.")
         cmd.add_argument("--execute", action="store_true", help="Run verification/build commands and capture evidence.")
         cmd.add_argument("--human-check", choices=["approved"], default="", help="Required for release execution.")
-        cmd.add_argument("--timeout-seconds", type=int, default=600)
+        cmd.add_argument("--timeout-seconds", type=int, default=FLUTTER_TIMEOUT_SECONDS_DEFAULT)
         cmd.add_argument("--json", action="store_true")
     finalize = sub.add_parser("finalize")
     finalize.add_argument("--work-id", required=True)
@@ -1074,7 +1077,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         force=bool(getattr(args, "force", False)),
         execute=bool(getattr(args, "execute", False)),
         human_check=getattr(args, "human_check", ""),
-        timeout_seconds=int(getattr(args, "timeout_seconds", 600)),
+        timeout_seconds=int(getattr(args, "timeout_seconds", FLUTTER_TIMEOUT_SECONDS_DEFAULT)),
     )
 
 

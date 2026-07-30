@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ariadne Review Council Next Action",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "status",
+    "review_id",
+    "work_id",
+    "orchestration_status",
+    "next_actions",
+    "reason"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "const": "review-council-next-action" },
+    "status": { "enum": ["action-required", "completed"] },
+    "review_id": { "type": "string" },
+    "work_id": { "type": "string" },
+    "orchestration_status": { "type": "string" },
+    "selected_action": {
+      "anyOf": [
+        { "type": "null" },
+        { "type": "object" }
+      ]
+    },
+    "next_actions": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "reason": { "type": "string" }
+  },
+  "additionalProperties": true
+}

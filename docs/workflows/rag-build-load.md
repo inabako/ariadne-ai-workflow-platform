@@ -9,6 +9,9 @@ Corrective Action Report などのMarkdown reportを file-based RAG artifactへ�
 /rag-load
 ```
 
+通常実行の入口は `aiwfctl rag ...` です。
+内部moduleの直接実行例は、runtime module開発や単体確認のための参照として扱います。
+
 ## RAG Build
 
 標準pipeline:
@@ -31,7 +34,7 @@ source markdown
 `/rag-build` は、個別CLIを順番に手実行する代わりに、次の統合CLIでも実行できます。
 
 ```powershell
-python runtime/rag/rag_build.py `
+.\runtime\windows-script\aiwf.cmd ctl rag build `
   --work-id "<work-id>" `
   --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
   --document-type corrective-action-report `
@@ -47,33 +50,33 @@ RAG吸収最適化を一時的に外す場合だけ `--skip-optimization` を指
 RAG source reportのrenameを避けたい場合は `--skip-standardize` を指定します。source report filenameの標準化も行う場合は、必要に応じて `--replace-references` を付けます。
 
 ```powershell
-python runtime/rag/standardize_corrective_report_names.py `
+.\runtime\windows-script\aiwf.cmd ctl rag standardize `
   --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
   --replace-references
 
-python runtime/rag/normalize_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag normalize `
   --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
   --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type corrective-action-report `
   --clean-output
 
-python runtime/rag/chunk_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag chunk `
   --input-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --output-dir work/db/ariadne-knowledge-platform/rag/chunks `
   --clean-output
 
-python runtime/rag/ingestion_optimizer.py `
+.\runtime\windows-script\aiwf.cmd ctl rag optimize `
   --chunks-dir work/db/ariadne-knowledge-platform/rag/chunks `
   --output-dir work/db/ariadne-knowledge-platform/rag/optimized-chunks `
   --evidence-dir db/rag/evidence/ingestion `
   --clean-output
 
-python runtime/rag/build_index.py `
+.\runtime\windows-script\aiwf.cmd ctl rag index `
   --normalized-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --chunks-dir work/db/ariadne-knowledge-platform/rag/optimized-chunks `
   --output-dir work/db/ariadne-knowledge-platform/rag/indexes
 
-python runtime/rag/embed_chunks.py `
+.\runtime\windows-script\aiwf.cmd ctl rag embed `
   --chunks-index work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl `
   --output work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl
 ```
@@ -81,16 +84,16 @@ python runtime/rag/embed_chunks.py `
 外部Web RAGも、同じJSON pipelineへ載せます。
 
 ```powershell
-python runtime/rag/normalize_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag normalize `
   --source-dir work/db/ariadne-knowledge-platform/rag/external-web/network `
   --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --document-type external-web-knowledge
 
-python runtime/rag/chunk_documents.py `
+.\runtime\windows-script\aiwf.cmd ctl rag chunk `
   --input-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --output-dir work/db/ariadne-knowledge-platform/rag/chunks
 
-python runtime/rag/build_index.py `
+.\runtime\windows-script\aiwf.cmd ctl rag index `
   --normalized-dir work/db/ariadne-knowledge-platform/rag/normalized `
   --chunks-dir work/db/ariadne-knowledge-platform/rag/chunks `
   --output-dir work/db/ariadne-knowledge-platform/rag/indexes
@@ -115,7 +118,7 @@ verification_notes
 開発前にtask contextから複数queryを計画し、検索結果を圧縮します。
 
 ```powershell
-python runtime/rag/rag_dispatcher.py `
+.\runtime\windows-script\aiwf.cmd ctl rag load `
   --task "<development task>" `
   --repository "<target-repository>" `
   --branch "<target-branch>" `
@@ -132,7 +135,7 @@ dispatcherは検索前に `artifact_type: rag-dispatch-plan` を保存します�
 外部Web RAGだけを読む場合:
 
 ```powershell
-python runtime/rag/rag_dispatcher.py `
+.\runtime\windows-script\aiwf.cmd ctl rag load `
   --task "Go realtime gateway NAT traversal" `
   --source-type external-web `
   --category network `

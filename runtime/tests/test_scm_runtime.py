@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from runtime.ctl import ctl
 from runtime.scm import (
     bootstrap_repository,
     commit_changes,
@@ -145,6 +146,69 @@ def test_prepare_repository_dry_run_writes_scm_state_and_manifest(tmp_path: Path
     assert (repo / "work" / "issue-1" / "context" / "scm-state.json").exists()
     manifest = json.loads((repo / "work" / "issue-1" / "context" / "context-manifest.json").read_text(encoding="utf-8"))
     assert any(context["type"] == "scm-state" for context in manifest["contexts"])
+
+
+def test_ctl_scm_prepare_dry_run_writes_scm_state(tmp_path: Path) -> None:
+    repo, work_dir = make_work_repo(tmp_path)
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(repo),
+            "scm",
+            "prepare",
+            "--work-id",
+            "issue-1",
+            "--repository",
+            "inabako/example",
+            "--target-branch",
+            "develop",
+            "--dry-run",
+            "--json",
+        ]
+    )
+
+    code, output = ctl.run(args)
+
+    assert code == 0
+    result = json.loads(output)
+    assert result["repository"] == "inabako/example"
+    assert result["target_branch"] == "develop"
+    assert (work_dir / "context" / "scm-state.json").exists()
+    completed = json.loads((repo / "logs" / "runtime" / "runtime-events.log").read_text(encoding="utf-8").splitlines()[-1].split(" | ", 3)[3])
+    assert completed["command"] == "scm prepare"
+    assert completed["operation_id"] == "scm:prepare"
+
+
+def test_ctl_scm_branch_local_only_dry_run_uses_existing_source(tmp_path: Path) -> None:
+    repo, work_dir = make_work_repo(tmp_path)
+    source = work_dir / "source" / "repository"
+    source.mkdir(parents=True)
+    (work_dir / "context" / "scm-state.json").write_text(
+        json.dumps({"repository": "inabako/example", "target_branch": "develop", "remote": "origin"}),
+        encoding="utf-8",
+    )
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(repo),
+            "scm",
+            "branch",
+            "--work-id",
+            "issue-1",
+            "--issue-number",
+            "42",
+            "--local-only",
+            "--dry-run",
+            "--json",
+        ]
+    )
+
+    code, output = ctl.run(args)
+
+    assert code == 0
+    result = json.loads(output)
+    assert result["branch"] == "feature/issue-42"
+    assert result["linked_branch_status"] == "not_requested"
 
 
 def test_prepare_repository_parser_main_script_and_missing_work(
@@ -1359,7 +1423,7 @@ def test_commit_changes_dry_run_records_status_without_commit(monkeypatch: pytes
 
     def fake_run_git(args, cwd):
         if args == ["status", "--short"]:
-            return subprocess.CompletedProcess(["git", *args], 0, stdout=" M runtime/common/ctl.py\n", stderr="")
+            return subprocess.CompletedProcess(["git", *args], 0, stdout=" M runtime/ctl/ctl.py\n", stderr="")
         raise AssertionError(args)
 
     monkeypatch.setattr(commit_changes, "run_git", fake_run_git)
@@ -1378,7 +1442,7 @@ def test_commit_changes_dry_run_records_status_without_commit(monkeypatch: pytes
 
     assert result["commit"] == "dry-run"
     assert result["branch"] == "feature/issue-1"
-    assert result["status_before"] == "M runtime/common/ctl.py"
+    assert result["status_before"] == "M runtime/ctl/ctl.py"
 
 
 def test_commit_changes_missing_source_dir_is_reported(tmp_path: Path) -> None:

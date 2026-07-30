@@ -385,6 +385,8 @@ def test_run_init_marks_human_check_and_force_rewrites_context(tmp_path: Path) -
 
     rewritten = json.loads(context_path.read_text(encoding="utf-8"))
     plan = json.loads((tmp_path / "work" / "issue-ctx" / "context" / "execution-plan.json").read_text(encoding="utf-8"))
+    runtime_context = json.loads((tmp_path / "work" / "issue-ctx" / "context" / "runtime-context.json").read_text(encoding="utf-8"))
+    verification_commands = "\n".join(runtime_context["verification_commands"])
     assert result["status"] == "human-check-required"
     assert result["written"] == [
         "work/issue-ctx/context/workflow-selection.json",
@@ -395,6 +397,8 @@ def test_run_init_marks_human_check_and_force_rewrites_context(tmp_path: Path) -
     assert rewritten["workflow"] == "missing"
     assert rewritten["human_check_required"] is True
     assert "environment-selection" in plan["required_dispatcher_contexts"]
+    assert "runtime/ctl/ctl.py --repo-root . doctor --fail-on-warning" in verification_commands
+    assert "runtime/workflow/workflow_doctor.py" not in verification_commands
 
 
 def test_parser_and_main_status_paths(monkeypatch, capsys) -> None:

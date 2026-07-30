@@ -9,6 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import env_value, find_repo_root, load_env, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.workspace import TARGET_REPOSITORY_PATTERN, context_file, process_report_dir_for_work_dir, target_repository_dir_for_work_dir, work_dir_for_id  # noqa: E402
 from runtime.scm.scm_utils import current_branch, github_token_git_env, require_success, run_git  # noqa: E402
@@ -54,7 +55,7 @@ def push_branch(args: argparse.Namespace) -> dict[str, Any]:
             require_success(run_git(command, source_dir, env=git_env), "git push")
 
     record = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "work_id": args.work_id,
         "source_dir": relative_to_repo(repo_root, source_dir),
         "remote": remote,

@@ -1,0 +1,40 @@
+---
+# yamllint disable rule:line-length
+name: バグ報告
+description: ARIADNEで再現可能な不具合を報告します。
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: 何が起きましたか？
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 可能であれば、実行コマンド、workflow名、artifactのパスを含めてください。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待する動作
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 証跡
+      description: テスト出力、ログ、スクリーンショット、review artifactなどを追加してください。secretは含めないでください。
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: 公開前の安全確認
+      options:
+        - label: secret、顧客情報、private URL、ローカルユーザーのパスを含めていません。
+          required: true

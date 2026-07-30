@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from runtime.common import ctl
+from runtime.ctl import ctl
 from runtime.workflow import iac_template
 
 

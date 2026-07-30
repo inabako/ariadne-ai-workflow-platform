@@ -9,6 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import (  # noqa: E402
     default_github_owner,
     env_value,
@@ -130,7 +131,7 @@ def bootstrap_repository(args: argparse.Namespace) -> dict[str, Any]:
     branch = str(initial_branch) if args.dry_run else current_branch(source_dir)
     commit = "dry-run" if args.dry_run else current_commit(source_dir)
     record = {
-            "schema_version": "1.0",
+            "schema_version": SCHEMA_VERSION,
             "work_id": args.work_id,
         "source_dir": relative_to_repo(repo_root, source_dir),
         "github_repo": github_repo,

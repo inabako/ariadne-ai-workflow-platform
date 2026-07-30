@@ -15,6 +15,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import (  # noqa: E402
     find_repo_root,
     load_artifact_index,
@@ -1156,7 +1157,7 @@ def write_artifacts(
 
     now = utc_now_iso()
     state = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "issue_id": issue_id,
         "issue_prefix": issue_id.split("-", 1)[0].upper(),
         "mode": mode,
@@ -1319,7 +1320,7 @@ def run_generate(args: argparse.Namespace) -> dict[str, Any]:
     )
     if not svg_files:
         state = {
-            "schema_version": "1.0",
+            "schema_version": SCHEMA_VERSION,
             "issue_id": args.issue_id,
             "issue_prefix": args.issue_id.split("-", 1)[0].upper(),
             "mode": mode,

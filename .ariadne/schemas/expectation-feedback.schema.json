@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Expectation Feedback",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "feedback"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "schema": { "type": "string" },
+    "artifact_type": { "type": "string", "const": "expectation-feedback" },
+    "feedback": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["candidate_id", "expectation_id", "predicted_probability"],
+        "properties": {
+          "candidate_id": { "type": "string" },
+          "expectation_id": { "type": "string" },
+          "predicted_probability": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "observed_probability": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1.0 },
+          "delta": { "type": ["number", "null"] },
+          "cause": { "type": "array", "items": { "type": "string" } },
+          "action": { "type": "array", "items": { "type": "string" } },
+          "knowledge_candidate": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

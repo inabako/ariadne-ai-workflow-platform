@@ -40,7 +40,7 @@ work/<issue-id>/source/repository/docs/evidence/<issue-id>/integration/
 work/<issue-id>/source/repository/docs/evidence/<issue-id>/human_check/
 ```
 
-`runtime/workflow/knowledge_capture.py` は、存在しない証跡フォルダとscaffold用 `README.md` を自動生成します。ただし、`README.md` だけでは実エビデンスとはみなしません。
+`aiwfctl workflow knowledge-capture` は、存在しない証跡フォルダとscaffold用 `README.md` を自動生成します。ただし、`README.md` だけでは実エビデンスとはみなしません。
 
 ## Flow
 
@@ -85,7 +85,7 @@ active workでは、manifest上の `scm-state` を必須にします。
 Issue branch push後に、`develop` へPull Requestを送信します。
 
 ```powershell
-python runtime/github/pull_request_manager.py `
+.\runtime\windows-script\aiwf.cmd ctl github pr `
   --work-id "<issue-id>" `
   --base develop `
   --create `
@@ -97,14 +97,14 @@ python runtime/github/pull_request_manager.py `
 承認後、次を実行します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare --issue "<issue-id>" --require-rag
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive audit --issue "<issue-id>"
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare --issue "<issue-id>" --require-rag
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive audit --issue "<issue-id>"
 ```
 
 `prepare` はRAG sourceを自動検出し、吸収済みの具体内容をclose reportへ反映します。RAG sourceが自動検出できない、または重要なRAG sourceを必ず含めたい場合は、次のように明示します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prepare `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prepare `
   --issue "<issue-id>" `
   --source-rag "work/db/ariadne-knowledge-platform/rag/normalized/<rag-source>.json" `
   --require-rag
@@ -113,8 +113,8 @@ uv run --project runtime python runtime/common/ctl.py --repo-root . close-archiv
 不要なsource checkoutやcacheを削除する場合は、dry-runを確認してから承認付きで実行します。
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prune --issue "<issue-id>"
-uv run --project runtime python runtime/common/ctl.py --repo-root . close-archive prune `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prune --issue "<issue-id>"
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive prune `
   --issue "<issue-id>" `
   --execute `
   --human-check approved

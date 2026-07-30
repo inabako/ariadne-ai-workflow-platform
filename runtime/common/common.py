@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from runtime.constants.runtime_values import SCHEMA_VERSION
 from runtime.constants.workspace import (
     CONTEXT_DIR_NAME,
     DESIGN_DOCUMENT_DIR_NAME,
@@ -83,13 +84,13 @@ def load_artifact_index(work_dir: Path, project_name: str, workflow_name: str) -
     path = context_file(work_dir, "artifact-index.json")
     data = read_json(path)
     if isinstance(data, dict):
-        data.setdefault("schema_version", "1.0")
+        data.setdefault("schema_version", SCHEMA_VERSION)
         data.setdefault("project", project_name)
         data.setdefault("workflow", workflow_name)
         data.setdefault("artifacts", [])
         return data
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "project": project_name,
         "workflow": workflow_name,
         "artifacts": [],

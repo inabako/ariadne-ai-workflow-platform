@@ -1,4 +1,4 @@
----
+﻿---
 name: docs-sync
 description: Compare implementation and docs on a target branch, store docs drift analysis as JSON, create a GitHub Issue, create feature/issue-XXX from the target branch, update docs only, push after human approval, then prepare RAG capture and archive. Use when the user selects /docs-sync or asks to synchronize repository docs with implementation.
 ---
@@ -7,7 +7,7 @@ description: Compare implementation and docs on a target branch, store docs drif
 
 ## Default Language
 
-Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.ariadne/shared/output-language-policy.md`.
 
 ## Purpose
 
@@ -74,7 +74,7 @@ python runtime/scm/prepare_repository.py `
 
 ### 3. Compare Implementation And Docs
 
-Use `.github/agents/docs-drift-analyzer-agent.prompt.md`.
+Use `.ariadne/agents/docs-drift-analyzer-agent.prompt.md`.
 
 Read:
 
@@ -109,7 +109,7 @@ work/<target-branch>/context/docs-drift-analysis.json
 Schema:
 
 ```text
-.github/schemas/docs-drift-analysis.schema.json
+.ariadne/schemas/docs-drift-analysis.schema.json
 ```
 
 If helpful, create a scaffold:
@@ -294,7 +294,7 @@ Create or update a Feedback report when you observe ambiguity, repeated checks, 
 Use the existing helper when creating a new report:
 
 ```powershell
-uv run --project runtime python runtime/common/ctl.py --repo-root . self-improvement create-feedback `
+uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "<slash-command>" `
   --reporter "AI workflow" `
   --situation "<what was happening>" `

@@ -67,7 +67,7 @@ PATH_CONSTANT_LITERAL_PATTERNS: tuple[tuple[str, str], ...] = (
     (r"['\"]db/registries/registry\.duckdb['\"]", "use runtime.constants.paths.REGISTRY_DB_PATH"),
     (r"['\"]db/rag/ariadne-knowledge\.duckdb['\"]", "use runtime.constants.paths.DUCKDB_DEFAULT_PATH"),
     (r"['\"]work/db/ariadne-knowledge-platform['\"]", "use runtime.constants.paths.KNOWLEDGE_SOURCE_REPO"),
-    (r"['\"]\.github/schemas/[^'\"]+\.schema\.json['\"]", "use runtime.constants.schemas constants"),
+    (r"['\"]\.ariadne/schemas/[^'\"]+\.schema\.json['\"]", "use runtime.constants.schemas constants"),
 )
 
 
@@ -95,9 +95,9 @@ def missing_required_files(repo_root: Path) -> list[str]:
     required = [
         ".gitignore",
         "runtime/pytest.ini",
-        "runtime/tools/aiwfctl.cmd",
-        "runtime/tools/register-aiwfctl-path.cmd",
-        "runtime/common/ctl.py",
+        "runtime/windows-script/aiwfctl.cmd",
+        "runtime/windows-script/register-aiwfctl-path.cmd",
+        "runtime/ctl/ctl.py",
         "runtime/common/registry_store.py",
         "runtime/workflow/close_archive.py",
         "runtime/workflow/noise_reduction.py",
@@ -113,8 +113,8 @@ def missing_required_files(repo_root: Path) -> list[str]:
         "runtime/tools/pytest_ut_spec_sync.py",
         "runtime/tests/test_pytest_ut_spec_sync.py",
         "skills/runtime-health-check/SKILL.md",
-        ".github/prompts/runtime-health-check.prompt.md",
-        ".github/agents/runtime-quality-gate-agent.prompt.md",
+        ".ariadne/prompts/runtime-health-check.prompt.md",
+        ".ariadne/agents/runtime-quality-gate-agent.prompt.md",
         "docs/workflows/runtime-health-check.md",
         "db/registries/README.md",
         REGISTRY_DB_PATH.as_posix(),

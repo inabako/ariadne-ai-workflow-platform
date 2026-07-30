@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -642,7 +642,7 @@ def test_standardize_report_names_replace_text_references_updates_supported_file
         repo / source_root / "corrective-action-report" / "note.md",
         repo / "README.md",
         repo / "skills" / "skill.md",
-        repo / ".github" / "prompts" / "prompt.md",
+        repo / ".ariadne" / "prompts" / "prompt.md",
         repo / "runtime" / "docs" / "note.md",
     ]
     for path in files:
@@ -654,7 +654,7 @@ def test_standardize_report_names_replace_text_references_updates_supported_file
     assert sorted(updated) == sorted(
         [
             "README.md",
-            ".github/prompts/prompt.md",
+            ".ariadne/prompts/prompt.md",
             f"{source_root}/corrective-action-report/note.md",
             f"{source_root}/indexes/documents.jsonl",
             f"{source_root}/normalized/doc.json",

@@ -1,4 +1,4 @@
-# Skill Discovery
+﻿# Skill Discovery
 
 このrepoでは、VS Code / GitHub Copilot Chat の slash prompt、Codex Skill、`aiwfctl help` の候補表示を分けて扱います。
 
@@ -7,21 +7,21 @@
 VS Code / GitHub Copilot Chat の `/` 候補に出すpromptは次に置きます。
 
 ```text
-.github/prompts/*.prompt.md
+.ariadne/prompts/*.prompt.md
 ```
 
 代表例:
 
 ```text
-.github/prompts/requirement-discovery.prompt.md
-.github/prompts/docs-sync.prompt.md
-.github/prompts/corrective-action-fix.prompt.md
-.github/prompts/corrective-action-report.prompt.md
-.github/prompts/github-knowledge-maintenance.prompt.md
-.github/prompts/rag-build.prompt.md
-.github/prompts/rag-load.prompt.md
-.github/prompts/ariadne-new-system.prompt.md
-.github/prompts/ariadne-feature-maintenance.prompt.md
+.ariadne/prompts/requirement-discovery.prompt.md
+.ariadne/prompts/docs-sync.prompt.md
+.ariadne/prompts/corrective-action-fix.prompt.md
+.ariadne/prompts/corrective-action-report.prompt.md
+.ariadne/prompts/github-knowledge-maintenance.prompt.md
+.ariadne/prompts/rag-build.prompt.md
+.ariadne/prompts/rag-load.prompt.md
+.ariadne/prompts/ariadne-new-system.prompt.md
+.ariadne/prompts/ariadne-feature-maintenance.prompt.md
 ```
 
 GitHub Knowledge Maintenance の prompt command は次です。
@@ -86,7 +86,7 @@ skills/skill-index.json
 新しいworkflowを追加した場合は、次を揃えます。
 
 - `skills/<skill-name>/SKILL.md`
-- `.github/prompts/<command>.prompt.md`
+- `.ariadne/prompts/<command>.prompt.md`
 - `skills/skill-index.json`
 - `db/registries/registry.duckdb`
 - `docs/workflows/README.md`

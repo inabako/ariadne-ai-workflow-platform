@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from runtime.workflow import corrective_action_report, init_corrective_action_fix
+from runtime.workflow import corrective_action_report, init_corrective_action_fix, work_cleanup
 
 
 def make_repo(tmp_path: Path) -> Path:
@@ -275,6 +275,24 @@ def test_init_corrective_action_fix_run_with_argument_report_and_reuse_existing(
 
     reused = init_corrective_action_fix.run(make_args(repo, work_id="issue-777", reuse_existing=True))
     assert reused["work_id"] == "issue-777"
+
+
+def test_init_corrective_action_fix_uses_work_db_report_as_cleanup_evidence(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    report = repo / "work" / "db" / "ariadne-knowledge-platform" / "rag" / "corrective-action-report" / "manual.md"
+    report.parent.mkdir(parents=True)
+    report.write_text("# report\n", encoding="utf-8")
+
+    result = init_corrective_action_fix.run(
+        make_args(repo, work_id="issue-db-report", report_path=str(report), reuse_existing=False)
+    )
+
+    assert result["work_cleanup"]["ready_for_check"] is True
+    assert result["next_action"]["action"] == "check-work-cleanup"
+    check = work_cleanup.cleanup_check(
+        argparse.Namespace(work_id="issue-db-report", repo_root=str(repo), recursive=False, required_artifact=[])
+    )
+    assert check["status"] == "ready"
 
 
 def test_init_corrective_action_fix_run_missing_report_has_no_report_artifact(tmp_path: Path) -> None:

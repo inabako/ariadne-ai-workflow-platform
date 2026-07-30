@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/contracts/agent-runtime/tool-request.schema.json",
+  "title": "ToolRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "tool_id", "trace_id", "server_id", "capability", "arguments", "policy"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "tool_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "pattern": "^[0-9a-f]{24}$" },
+    "server_id": { "type": "string", "minLength": 1 },
+    "capability": { "type": "string", "minLength": 1 },
+    "arguments": { "type": "object" },
+    "policy": { "type": "object" }
+  }
+}

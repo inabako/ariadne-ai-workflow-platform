@@ -74,6 +74,46 @@ def test_basic_checks_report_detected_state(monkeypatch: pytest.MonkeyPatch, tmp
     assert missing_path.to_dict()["detected"] == ""
 
 
+def test_preflight_parser_accepts_runtime_dev_profile() -> None:
+    args = preflight.build_parser().parse_args(["--profile", "runtime-dev"])
+
+    assert args.profile == "runtime-dev"
+
+
+def test_preflight_parser_accepts_scancode_audit_profile() -> None:
+    args = preflight.build_parser().parse_args(["--profile", "scancode-audit"])
+
+    assert args.profile == "scancode-audit"
+
+
+def test_uv_runtime_check_uses_repo_local_wrapper_when_uv_is_not_on_path(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: None)
+    uv_cmd = tmp_path / "runtime" / "windows-script" / "uv.cmd"
+    uv_cmd.parent.mkdir(parents=True)
+    uv_cmd.write_text("@echo off\n", encoding="utf-8")
+
+    check = preflight.uv_runtime_check(tmp_path)
+
+    assert check.ok is True
+    assert check.detected == str(uv_cmd)
+    assert "register-uv-path.cmd" in (check.install_command or "")
+
+
+def test_windows_aiwf_cmd_wraps_powershell_with_process_bypass() -> None:
+    root = Path(__file__).resolve().parents[2]
+    wrapper = root / "runtime" / "windows-script" / "aiwf.cmd"
+
+    text = wrapper.read_text(encoding="utf-8")
+    tools_cmd_files = list((root / "runtime" / "tools").glob("*.cmd"))
+
+    assert "powershell -NoProfile -ExecutionPolicy Bypass -File" in text
+    assert "%~dp0aiwf.ps1" in text
+    assert tools_cmd_files == []
+
+
 def test_env_path_check_reads_repo_env(tmp_path: Path) -> None:
     terraform = tmp_path / "terraform.exe"
     terraform.write_text("", encoding="utf-8")
@@ -107,6 +147,30 @@ def test_python_module_check_uses_current_interpreter(monkeypatch: pytest.Monkey
     assert calls == [[sys.executable, "-c", "import pytest"]]
 
 
+def test_runtime_pytest_check_uses_uv_project_command(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    uv_cmd = tmp_path / "runtime" / "windows-script" / "uv.cmd"
+    uv_cmd.parent.mkdir(parents=True)
+    uv_cmd.write_text("@echo off\n", encoding="utf-8")
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: None)
+    calls: list[list[str]] = []
+
+    def fake_run(command, cwd=None, env=None):
+        calls.append(list(command))
+        assert cwd == tmp_path
+        return subprocess.CompletedProcess(command, 0, stdout="pytest 9.9.9\n", stderr="")
+
+    monkeypatch.setattr(preflight, "run_command", fake_run)
+
+    check = preflight.runtime_pytest_check(tmp_path, required=True)
+
+    assert check.ok is True
+    assert check.detected == "pytest 9.9.9"
+    assert calls == [[str(uv_cmd), "run", "--project", "runtime", "--group", "dev", "pytest", "--version"]]
+
+
 def test_docker_compose_check_uses_compose_version(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(preflight.shutil, "which", lambda name: "C:/Program Files/Docker/docker.exe")
 
@@ -136,6 +200,45 @@ def test_docker_compose_check_reports_compose_error(monkeypatch: pytest.MonkeyPa
     assert check.detected == "compose missing"
 
 
+def test_act_cli_check_reports_missing_and_detected(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: None)
+
+    missing = preflight.act_cli_check(required=False)
+
+    assert missing.id == "act:version"
+    assert missing.required is False
+    assert missing.ok is False
+    assert missing.install_command == "winget install --id nektos.act -e"
+
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: "C:/tools/act.exe")
+    monkeypatch.setattr(
+        preflight,
+        "run_command",
+        lambda command, cwd=None, env=None: subprocess.CompletedProcess(command, 0, stdout="act version 0.2.89\n", stderr=""),
+    )
+
+    ok = preflight.act_cli_check(required=False)
+
+    assert ok.ok is True
+    assert ok.detected == "act version 0.2.89"
+
+
+def test_docker_daemon_check_warns_when_not_running(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: "C:/Docker/docker.exe")
+    monkeypatch.setattr(
+        preflight,
+        "run_command",
+        lambda command, cwd=None, env=None: subprocess.CompletedProcess(command, 1, stdout="", stderr="daemon unavailable\n"),
+    )
+
+    check = preflight.docker_daemon_check(required=False)
+
+    assert check.id == "docker:daemon"
+    assert check.required is False
+    assert check.ok is False
+    assert "daemon unavailable" in check.detected
+
+
 def test_github_cli_checks_split_version_auth_and_env_token(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     calls: list[list[str]] = []
     monkeypatch.setattr(preflight.shutil, "which", lambda name: f"C:/tools/{name}.exe")
@@ -158,7 +261,7 @@ def test_github_cli_checks_split_version_auth_and_env_token(monkeypatch: pytest.
             protocol_dir="",
             support_branch="develop",
             msys2_root=str(tmp_path / "msys64"),
-            work_id="github-knowledge-repo-recent",
+            work_id="github/original/recent",
             github_hostname="github.com",
         ),
         tmp_path,
@@ -279,7 +382,7 @@ def test_localty_protocol_check_uses_fallback_repository(monkeypatch: pytest.Mon
 
     assert check.ok is True
     assert "fallback source repository" in check.detected
-    assert "prepare_support_repository.py" in (check.fallback_command or "")
+    assert "runtime/ctl/ctl.py --repo-root . scm support" in (check.fallback_command or "")
     assert "--branch \"main\"" in (check.fallback_command or "")
 
 
@@ -373,7 +476,23 @@ def test_docker_compose_profile_declares_required_docker_checks(monkeypatch: pyt
     [
         ("corrective-action-fix", {"path:msys2-bash", "python-module:pytest"}),
         ("web-nextjs", {"exe:node", "exe:npm", "exe:npx", "path:target-package-json"}),
-        ("vscode-environment", {"exe:code", "exe:docker", "exe:go", "path:msys2-bash", "path:target-workspace"}),
+        (
+            "runtime-dev",
+            {
+                "exe:uv",
+                "exe:py",
+                "path:runtime-windows-script-uv",
+                "path:runtime-windows-script-aiwfctl",
+                "path:runtime-windows-script-aiwf-cmd",
+                "path:runtime-windows-script-aiwf-ps1",
+                "runtime:pytest",
+            },
+        ),
+        (
+            "vscode-environment",
+            {"exe:code", "exe:docker", "exe:go", "path:msys2-bash", "path:target-workspace", "act:version", "docker:daemon"},
+        ),
+        ("scancode-audit", {"path:scancode-workflow", "path:scancode-doc", "act:version", "docker:daemon"}),
     ],
 )
 def test_build_checks_profiles_add_expected_checks(
@@ -384,6 +503,12 @@ def test_build_checks_profiles_add_expected_checks(
 ) -> None:
     source_dir = tmp_path / "source"
     source_dir.mkdir()
+    windows_script_dir = tmp_path / "runtime" / "windows-script"
+    windows_script_dir.mkdir(parents=True)
+    (windows_script_dir / "uv.cmd").write_text("@echo off\n", encoding="utf-8")
+    (windows_script_dir / "aiwfctl.cmd").write_text("@echo off\n", encoding="utf-8")
+    (windows_script_dir / "aiwf.cmd").write_text("@echo off\n", encoding="utf-8")
+    (windows_script_dir / "aiwf.ps1").write_text("Write-Output 'ok'\n", encoding="utf-8")
     monkeypatch.setattr(preflight.shutil, "which", lambda name: f"C:/tools/{name}.exe")
     monkeypatch.setattr(
         preflight,
@@ -402,6 +527,33 @@ def test_build_checks_profiles_add_expected_checks(
     checks = preflight.build_checks(args, tmp_path)
 
     assert expected_ids <= {check.id for check in checks}
+
+
+def test_scancode_audit_profile_declares_optional_local_rehearsal_checks(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    (tmp_path / ".github" / "workflows").mkdir(parents=True)
+    (tmp_path / ".github" / "workflows" / "scancode.yml").write_text("name: ScanCode\n", encoding="utf-8")
+    (tmp_path / "docs" / "security").mkdir(parents=True)
+    (tmp_path / "docs" / "security" / "scancode-github-actions.md").write_text("# ScanCode\n", encoding="utf-8")
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: None)
+    args = argparse.Namespace(
+        profile="scancode-audit",
+        source_dir="",
+        protocol_dir="",
+        support_branch="develop",
+        msys2_root=r"C:\msys64",
+        work_id="issue-1",
+    )
+
+    checks = preflight.build_checks(args, tmp_path)
+
+    by_id = {check.id: check for check in checks}
+    assert by_id["path:scancode-workflow"].required is True
+    assert by_id["path:scancode-doc"].required is True
+    assert by_id["act:version"].required is False
+    assert by_id["docker:daemon"].required is False
 
 
 def test_build_checks_localty_gui_and_profiles_without_source_dir(
@@ -596,7 +748,7 @@ def test_markdown_report_includes_fallback_command() -> None:
                 detected="missing",
                 install_hint="Install the published package first.",
                 install_command="python -m pip install localty-system-protocol",
-                fallback_command="python runtime/scm/prepare_support_repository.py --work-id issue-1",
+                fallback_command="python runtime/ctl/ctl.py --repo-root . scm support --work-id issue-1",
             ).to_dict()
         ],
     }
@@ -606,7 +758,7 @@ def test_markdown_report_includes_fallback_command() -> None:
     assert "## Missing Required" in markdown
     assert "localty-system-protocol package" in markdown
     assert "fallback:" in markdown
-    assert "prepare_support_repository.py" in markdown
+    assert "scm support" in markdown
 
 
 def test_markdown_report_includes_missing_optional_items() -> None:

@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 43 |
+| cases | 48 |
 
 ## ケース一覧
 
@@ -19,7 +19,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_build_parser_parses_eve
 - 確認内容: pytest case `build parser parses every subcommand` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:155`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:163`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `publish_args`
@@ -36,11 +36,167 @@ runtime/tests/test_github_knowledge_maintenance.py::test_repository_name_and_def
 - 確認内容: pytest case `repository name and default work id variants` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:198`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:213`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
+
+#### RT-UT-CASE-131A
+
+- pytest node id:
+
+```text
+runtime/tests/test_github_knowledge_maintenance.py::test_status_reports_package_execution_and_next_action
+```
+- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:231`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- Expected: Placeholder; pytest assertion defines the expected result.
+
+
+- 遒ｺ隱榊・螳ｹ: github-knowledge status縺後ヱ繝・こ繝ｼ繧ｸ螳溯｡後迥ｶ諷九→谺｡action繧定ｿ斐☆縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
+- 蜈･蜉帛､:
+  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+  - source: `runtime/tests/test_github_knowledge_maintenance.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
+  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
+- 譛溷ｾ・ｵ先棡: package execution count縺ｨlatest package縲∵欠螳壽欠遉ｺ縺瑚ｿ斐ｋ縲・
+
+#### RT-UT-CASE-131B
+
+- pytest node id:
+
+```text
+runtime/tests/test_github_knowledge_maintenance.py::test_next_action_prefers_reuse_worktree_when_replay_worktree_exists
+```
+- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:275`
+  - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- Expected: Placeholder; pytest assertion defines the expected result.
+
+
+- 遒ｺ隱榊・螳ｹ: replay worktree縺悟ｭ伜惠縺吶ｋ蝣ｴ蜷医↓next-action縺・reuse-worktree繧貞━蜈医☆繧九％縺ｨ繧堤｢ｺ隱阪＠縺ｾ縺吶・
+- 蜈･蜉帛､:
+  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+  - source: `runtime/tests/test_github_knowledge_maintenance.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
+  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
+- 譛溷ｾ・ｵ先棡: next action縺後◎縺ｮ縺ｾ縺ｾreuse縺吶∋縺肴欠遉ｺ縺吶ｋ縲・
+
+#### RT-UT-CASE-131B-1
+
+- pytest node id:
+
+```text
+runtime/tests/test_github_knowledge_maintenance.py::test_resume_blocks_when_analysis_json_is_corrupt
+```
+- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:315`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- Expected: Placeholder; pytest assertion defines the expected result.
+
+
+- 確認内容: corrupt analysis JSON がある場合、resume が通常復帰せず encoding gate block を返すことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:315`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- 期待結果: `encoding_gate.status` が `block` となり、next action が artifact integrity 修復確認に切り替わる。
+
+#### RT-UT-CASE-131B-2
+
+- pytest node id:
+
+```text
+runtime/tests/test_github_knowledge_maintenance.py::test_resume_blocks_push_package_without_expected_remote_sha
+```
+- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:335`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- Expected: Placeholder; pytest assertion defines the expected result.
+
+
+- 確認内容: push 許可 package に `expected_remote_sha` が無い場合、next-action が push/rebase command を返さず block することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:335`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- 期待結果: `encoding_gate.status` が `block` となり、finding に expected remote SHA 欠落が記録される。
+
+#### RT-UT-CASE-131C
+
+- pytest node id:
+
+```text
+runtime/tests/test_github_knowledge_maintenance.py::test_verify_remote_compares_expected_sha_from_package
+```
+- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:370`
+  - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
+- Expected: Placeholder; pytest assertion defines the expected result.
+
+
+- 遒ｺ隱榊・螳ｹ: verify-remote縺御ｿ晏ｭ倥＆繧後◆package縺ｮexpected SHA縺ｨactual remote SHA繧呈ｯ碑ｼ・〒縺阪ｋ縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
+- 蜈･蜉帛､:
+  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+  - source: `runtime/tests/test_github_knowledge_maintenance.py`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
+  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
+- 譛溷ｾ・ｵ先棡: expected / actual remote SHA縺悟粋閾ｴ縺吶ｋ縺薙→繧堤､ｺ縺吶・
+
+#### RT-UT-CASE-131D
+
+- pytest node id:
+
+```text
+runtime/tests/test_github_knowledge_maintenance.py::test_cleanup_worktree_requires_force_before_removal
+```
+- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:413`
+  - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch)
+  - parameter: names=なし, case=なし
+  - inline input: `calls`
+- Expected: Placeholder; pytest assertion defines the expected result.
+
+
+- 遒ｺ隱榊・螳ｹ: cleanup-worktree縺・force譛ｪ謖・ｮ壽凾縺ｯ蜑企勁縺帙★縲√謖・ｮ壽凾縺縺代Ξ繝励Ξ繧､worktree繧貞炎髯､縺吶ｋ縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
+- 蜈･蜉帛､:
+  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+  - source: `runtime/tests/test_github_knowledge_maintenance.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
+  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
+- 譛溷ｾ・ｵ先棡: force譛ｪ謖・ｮ壽凾縺ｯblocked縲、force謖・ｮ壽凾縺ｯremoved縺ｫ縺ｪ繧九・
 
 #### RT-UT-CASE-132
 
@@ -53,7 +209,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_init_work_rejects_exist
 - 確認内容: pytest case `init work rejects existing without reuse and script load` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:212`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:462`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -70,7 +226,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_gate_and_tool_selection
 - 確認内容: pytest case `gate and tool selection proposal mode do not require human check` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:253`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:503`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -87,7 +243,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_tool_selection_apply_mo
 - 確認内容: pytest case `tool selection apply mode splits local and remote git auth` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:273`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:523`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -104,7 +260,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_register_github_knowled
 - 確認内容: pytest case `register github knowledge contexts skips missing files and registers existing` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:282`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:532`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `calls`
@@ -121,7 +277,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_markdown_helpers_render
 - 確認内容: pytest case `markdown helpers render empty values booleans lists and titles` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:302`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:552`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -138,7 +294,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_load_analysis_reports_m
 - 確認内容: pytest case `load analysis reports missing work missing file and non object` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:318`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:568`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -155,7 +311,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_default_analysis_ignore
 - 確認内容: pytest case `default analysis ignores non string assumptions and analysis template missing work` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:333`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:583`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -172,7 +328,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_require_github_operatio
 - 確認内容: pytest case `require github operation gate reports missing contexts` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:355`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:605`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -189,7 +345,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_require_github_operatio
 - 確認内容: pytest case `require github operation gate rejects unapproved mutation and rag` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:363`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:613`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -206,10 +362,10 @@ runtime/tests/test_github_knowledge_maintenance.py::test_build_repair_sync_and_r
 - 確認内容: repair / sync / RAG Markdownの動的sectionに加え、rebase planのOK / NG入力欄が候補別チェックリストだけにあり、詳細事項には候補IDごとの判断材料だけが出ることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:374`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:624`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
-  - inline input: `analysis`, `repair_plan`, `rebase_plan`, `detail_section`, `sync_plan`, `rag_candidate`
+  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: rebase planは表にだけOK / NGチェック欄を出し、詳細事項には expected commit、判断理由、証跡refs、verification commands などの判断材料を出す。
 
 #### RT-UT-CASE-142
@@ -223,7 +379,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_build_sync_plan_renders
 - 確認内容: pytest case `build sync plan renders empty action placeholder` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:406`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:663`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -240,7 +396,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_history_rewrite_candida
 - 確認内容: pytest case `history rewrite candidate validation edges` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:413`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:670`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -257,7 +413,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_detect_history_rewrite_
 - 確認内容: pytest case `detect history rewrite candidates from commit log` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:453`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:710`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `calls`
@@ -274,7 +430,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_detect_history_rewrite_
 - 確認内容: pytest case `detect history rewrite candidates requires manual review when subjects are thin` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:495`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:752`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -291,7 +447,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_detect_rebase_ca
 - 確認内容: pytest case `create detect rebase candidates writes analysis` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:528`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:785`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `detected`, `updated`
@@ -308,7 +464,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_repair_plan_writ
 - 確認内容: pytest case `create repair plan writes output and registers artifact` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:588`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:845`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `artifact_index`
@@ -325,7 +481,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_rebase_plan_writ
 - 確認内容: pytest case `create rebase plan writes output and registers artifact` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:611`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:868`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `rebase_plan`, `artifact_index`
@@ -342,7 +498,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_artifact_integri
 - 確認内容: GitHub knowledge maintenance の analysis JSON と rebase plan Markdown が UTF-8 / JSON / Markdown 契約を満たすとき、artifact integrity gate が pass することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:638`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:895`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -359,7 +515,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_artifact_integri
 - 確認内容: analysis JSON が壊れている場合に、artifact integrity gate が fail として検出することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:666`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:923`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -376,7 +532,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_rebase_review_in
 - 確認内容: rebase review checklistのOK/NGを読み取り、analysis JSONの `approval_status` と具体的な `repair_goal` に反映することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:700`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:957`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `updated`
@@ -393,7 +549,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_rebase_apply_req
 - 確認内容: pytest case `create rebase apply requires human and candidate approval` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:777`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1034`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `updated`
@@ -410,7 +566,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_apply_commit_patch_auto
 - 確認内容: direct patch適用に失敗した場合、`auto-3way` がGit 3-way applyへフォールバックすることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:854`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1111`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `calls`
@@ -427,7 +583,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_rebase_replay_package_g
 - 確認内容: 承認済みhistory rewrite candidateから `rebase-replay-package.json` を生成できることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:875`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1132`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `package`, `updated`, `artifact_index`
@@ -444,7 +600,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_rebase_replay_package_r
 - 確認内容: 未承認candidateからrebase replay packageを生成できないことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:932`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1189`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -461,7 +617,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_rebase_replay_package_r
 - 確認内容: split repair candidateでは具体的なcommit message overrideが必須であることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:957`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1214`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -478,7 +634,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_rebase_replay_apply_use
 - 確認内容: rebase replay applyがmain checkoutではなくworktree配下で組み込みruntimeを使うことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:994`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1251`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `mapping`, `updated`
@@ -495,7 +651,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_rebase_replay_apply_pre
 - 確認内容: rebase replay applyがsource patchの文脈移動で通常のpatch適用に失敗し得る場合でも、承認済み吸収候補を却下せず、tree-preserving replayで最終tree一致とDROPPED mappingを成立させることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1080`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1337`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `mapping`
@@ -512,7 +668,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_rebase_replay_apply_res
 - 確認内容: rebase replay applyが短縮SHAを40桁SHAへ解決した後、相互absorb cycleを本来の履歴位置にあるearliest responsibility anchorへ自動解決することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1154`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1411`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `mapping`, `report`
@@ -529,7 +685,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_message_repair_plan_int
 - Confirm: message repair plan, OK/NG intake, message repair package, and replay apply are connected as one tree-preserving high-risk rewrite flow.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1231`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1488`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `text`, `package_data`, `updated`
@@ -545,7 +701,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_publish_verified_replay
 - Confirm: a verified unpublished replay execution can be published through the dedicated force-with-lease runtime entrypoint without regenerating a package.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1325`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1582`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `updated`
@@ -561,7 +717,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_rebase_replay_apply_dry
 - 確認内容: rebase replay applyのdry-runがworktreeを作成せず、実行予定だけを返すことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1416`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1673`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -578,7 +734,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_rebase_apply_rejects_in
 - 確認内容: pytest case `rebase apply rejects interactive rebase even when allowed` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1450`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1707`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -595,7 +751,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_github_sync_command_val
 - 確認内容: pytest case `github sync command validation edges` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1476`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1733`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `action`
@@ -612,7 +768,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_sync_review_plan
 - Confirm: GitHub Issue / PR / comment repair actions are reviewed with one OK / NG checklist and ingested into `github_sync_actions`.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1503`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1760`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `text`, `updated`
@@ -628,7 +784,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_sync_apply_requi
 - 確認内容: pytest case `create sync apply requires approval and records result` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1566`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1823`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `updated`
@@ -645,7 +801,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_sync_apply_block
 - 確認内容: pytest case `create sync apply blocks unresolved rebase candidates` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1637`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1894`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -662,7 +818,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_sync_apply_block
 - Confirm: GitHub sync apply is blocked while approved or pending commit message repair candidates remain unverified.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1658`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1915`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -678,7 +834,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_rag_candidate_re
 - 確認内容: pytest case `create rag candidate requires human approval for publish` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1693`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1950`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -695,7 +851,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_rag_candidate_wr
 - 確認内容: pytest case `create rag candidate writes explicit output with ready gate` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1712`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1969`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -712,7 +868,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_rag_candidate_de
 - 確認内容: pytest case `create rag candidate default and publish outputs` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1737`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:1994`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -729,7 +885,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_run_dispatches_commands
 - 確認内容: pytest case `run dispatches commands and rejects unknown` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1773`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:2052`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
@@ -746,7 +902,7 @@ runtime/tests/test_github_knowledge_maintenance.py::test_main_prints_json
 - 確認内容: pytest case `main prints json` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:1857`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:2151`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `capsys` (captured stdout/stderr)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル

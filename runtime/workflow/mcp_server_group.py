@@ -9,6 +9,7 @@ from typing import Any
 if __package__ in {None, ""}:  # pragma: no cover - direct script execution fallback
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.schemas import MCP_SERVER_GROUP_IMPLEMENTATION_CONTEXT_SCHEMA  # noqa: E402
 from runtime.constants.workspace import (  # noqa: E402
@@ -21,12 +22,12 @@ from runtime.constants.workspace import (  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
-SCHEMA_VERSION = "1.0"
+
 ARTIFACT_TYPE = "mcp-server-group-implementation-context"
 DEFAULT_SCHEMA = MCP_SERVER_GROUP_IMPLEMENTATION_CONTEXT_SCHEMA
 COMPONENTS = {
     "local-model-mcp-server": {
-        "template_path": "templates/boilerplates/mcp/local-model-mcp-server-template",
+        "template_path": "templates/boilerplates/mcp/mcp-server-template",
         "destination": "local-model-mcp-server",
         "role": "MCP Server capability provider",
     },
@@ -36,7 +37,7 @@ COMPONENTS = {
         "role": "Reusable MCP Client facade",
     },
     "local-ai-agent-runtime": {
-        "template_path": "templates/boilerplates/mcp/local-ai-agent-runtime-template",
+        "template_path": "templates/boilerplates/mcp/ai-agent-runtime-template",
         "destination": "local-ai-agent-runtime",
         "role": "Agent Runtime job/workflow engine",
     },

@@ -12,7 +12,13 @@ from typing import Any
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import PROBABILITY_DEFAULT, SCHEMA_VERSION  # noqa: E402
 from runtime.common import gate_restart  # noqa: E402
+from runtime.constants.cli_defaults import (  # noqa: E402
+    OUTPUT_LANGUAGE_ENGLISH_RATIO_THRESHOLD_DEFAULT,
+    OUTPUT_LANGUAGE_MIN_ENGLISH_WORDS_DEFAULT,
+    OUTPUT_LANGUAGE_MIN_JAPANESE_CHARS_DEFAULT,
+)
 from runtime.constants.paths import (  # noqa: E402
     GENERATED_CHUNKS,
     GENERATED_EMBEDDINGS,
@@ -77,9 +83,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Detect human-facing Markdown artifacts that are likely English-dominant.")
     parser.add_argument("--paths", nargs="+", default=DEFAULT_PATHS, help="Files or directories to scan.")
     parser.add_argument("--exclude", nargs="*", default=DEFAULT_EXCLUDES, help="Path patterns to exclude.")
-    parser.add_argument("--english-ratio-threshold", type=float, default=0.62)
-    parser.add_argument("--min-english-words", type=int, default=35)
-    parser.add_argument("--min-japanese-chars", type=int, default=20)
+    parser.add_argument("--english-ratio-threshold", type=float, default=OUTPUT_LANGUAGE_ENGLISH_RATIO_THRESHOLD_DEFAULT)
+    parser.add_argument("--min-english-words", type=int, default=OUTPUT_LANGUAGE_MIN_ENGLISH_WORDS_DEFAULT)
+    parser.add_argument("--min-japanese-chars", type=int, default=OUTPUT_LANGUAGE_MIN_JAPANESE_CHARS_DEFAULT)
     parser.add_argument("--fail-on-violation", action="store_true")
     parser.add_argument("--repo-root", default=None)
     parser.add_argument("--json", action="store_true")
@@ -153,7 +159,7 @@ def analyze(path: Path, args: argparse.Namespace) -> LanguageFinding | None:
     japanese_chars = count_japanese_chars(prose)
     english_words = count_english_words(prose)
     total = japanese_chars + english_words
-    english_ratio = english_words / total if total else 0.0
+    english_ratio = english_words / total if total else PROBABILITY_DEFAULT
     if english_words < args.min_english_words:
         return None
     if japanese_chars >= args.min_japanese_chars and english_ratio < args.english_ratio_threshold:
@@ -180,7 +186,7 @@ def build_result(repo_root: Path, findings: list[LanguageFinding]) -> dict[str, 
             }
         )
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "output-language-check",
         "status": status,
         "finding_count": len(findings),

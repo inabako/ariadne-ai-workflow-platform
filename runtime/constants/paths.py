@@ -1,10 +1,97 @@
 from __future__ import annotations
 
+import os
+import re
 from pathlib import Path
 
 
-KNOWLEDGE_SOURCE_REPO = Path("work/db/ariadne-knowledge-platform")
-KNOWLEDGE_SOURCE_REPO_URL = "https://github.com/inabako/ariadne-knowledge-platform.git"
+DEFAULT_KNOWLEDGE_SOURCE_REPO_NAME = "ariadne-knowledge-platform"
+DEFAULT_KNOWLEDGE_SOURCE_REPO_OWNER = "inabako"
+KNOWLEDGE_SOURCE_REPO_NAME_ENV_KEYS = (
+    "ARIADNE_KNOWLEDGE_REPOSITORY",
+    "ARIADNE_KNOWLEDGE_REPOSITORY_NAME",
+    "AIWF_KNOWLEDGE_REPOSITORY",
+    "AIWF_KNOWLEDGE_REPOSITORY_NAME",
+)
+KNOWLEDGE_SOURCE_REPO_OWNER_ENV_KEYS = (
+    "ARIADNE_KNOWLEDGE_REPOSITORY_OWNER",
+    "AIWF_KNOWLEDGE_REPOSITORY_OWNER",
+    "GITHUB_OWNER",
+)
+KNOWLEDGE_SOURCE_REPO_URL_ENV_KEYS = (
+    "ARIADNE_KNOWLEDGE_REPOSITORY_URL",
+    "AIWF_KNOWLEDGE_REPOSITORY_URL",
+)
+
+
+def _parse_env_file(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    settings: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8-sig").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+            value = value[1:-1]
+        if key:
+            settings[key] = value
+    return settings
+
+
+def _repo_root_env() -> dict[str, str]:
+    repo_root = Path(__file__).resolve().parents[2]
+    settings = {key: value for key, value in os.environ.items() if isinstance(value, str)}
+    settings.update(_parse_env_file(repo_root / ".env"))
+    return settings
+
+
+def _first_env_value(settings: dict[str, str], keys: tuple[str, ...], default: str = "") -> str:
+    for key in keys:
+        value = settings.get(key, "").strip()
+        if value:
+            return value
+    return default
+
+
+def normalize_repository_name(value: str, default: str = DEFAULT_KNOWLEDGE_SOURCE_REPO_NAME) -> str:
+    normalized = value.strip().replace("\\", "/").rstrip("/")
+    if not normalized:
+        return default
+    if normalized.endswith(".git"):
+        normalized = normalized[:-4]
+    if "/" in normalized:
+        normalized = normalized.rsplit("/", 1)[-1]
+    normalized = re.sub(r"[^A-Za-z0-9_.-]+", "-", normalized).strip("-")
+    return normalized or default
+
+
+def knowledge_source_repo_name_from_settings(settings: dict[str, str]) -> str:
+    return normalize_repository_name(
+        _first_env_value(settings, KNOWLEDGE_SOURCE_REPO_NAME_ENV_KEYS, DEFAULT_KNOWLEDGE_SOURCE_REPO_NAME)
+    )
+
+
+def knowledge_source_repo_path_from_settings(settings: dict[str, str]) -> Path:
+    return Path("work") / "db" / knowledge_source_repo_name_from_settings(settings)
+
+
+def knowledge_source_repo_url_from_settings(settings: dict[str, str]) -> str:
+    explicit = _first_env_value(settings, KNOWLEDGE_SOURCE_REPO_URL_ENV_KEYS)
+    if explicit:
+        return explicit
+    owner = _first_env_value(settings, KNOWLEDGE_SOURCE_REPO_OWNER_ENV_KEYS, DEFAULT_KNOWLEDGE_SOURCE_REPO_OWNER)
+    return f"https://github.com/{owner}/{knowledge_source_repo_name_from_settings(settings)}.git"
+
+
+_ENV_SETTINGS = _repo_root_env()
+KNOWLEDGE_SOURCE_REPO_NAME = knowledge_source_repo_name_from_settings(_ENV_SETTINGS)
+KNOWLEDGE_SOURCE_REPO = knowledge_source_repo_path_from_settings(_ENV_SETTINGS)
+KNOWLEDGE_SOURCE_REPO_URL = knowledge_source_repo_url_from_settings(_ENV_SETTINGS)
+WORK_DB_ROOT = Path("work") / "db"
 RAG_DIR_NAME = "rag"
 REGISTRIES_DIR_NAME = "registries"
 OPTIMIZED_CHUNKS_DIR_NAME = "optimized-chunks"
@@ -32,6 +119,7 @@ GENERATED_RAG = KNOWLEDGE_SOURCE_RAG
 
 SOURCE_CORRECTIVE_ACTION_REPORTS = KNOWLEDGE_SOURCE_RAG / "corrective-action-report"
 SOURCE_GITHUB_KNOWLEDGE = KNOWLEDGE_SOURCE_RAG / "github-knowledge"
+SOURCE_REVIEW_COUNCIL = KNOWLEDGE_SOURCE_RAG / "review-council"
 SOURCE_WORKSPACE_ENVIRONMENT = KNOWLEDGE_SOURCE_RAG / "workspace-environment"
 
 GENERATED_NORMALIZED = GENERATED_RAG / NORMALIZED_DIR_NAME
@@ -41,6 +129,23 @@ GENERATED_JSONIZED = GENERATED_RAG / JSONIZED_DIR_NAME
 GENERATED_INDEXES = GENERATED_RAG / INDEXES_DIR_NAME
 GENERATED_EMBEDDINGS = GENERATED_RAG / EMBEDDINGS_DIR_NAME
 GENERATED_RETRIEVAL = GENERATED_RAG / RETRIEVAL_DIR_NAME
+
+KNOWLEDGE_SOURCE_LOCAL_BACKUP_DIRS = (
+    KNOWLEDGE_SOURCE_REPO,
+    KNOWLEDGE_SOURCE_RAG,
+    KNOWLEDGE_SOURCE_REGISTRIES,
+    SOURCE_CORRECTIVE_ACTION_REPORTS,
+    SOURCE_GITHUB_KNOWLEDGE,
+    SOURCE_REVIEW_COUNCIL,
+    SOURCE_WORKSPACE_ENVIRONMENT,
+    GENERATED_NORMALIZED,
+    GENERATED_CHUNKS,
+    GENERATED_OPTIMIZED_CHUNKS,
+    GENERATED_JSONIZED,
+    GENERATED_INDEXES,
+    GENERATED_EMBEDDINGS,
+    GENERATED_RETRIEVAL,
+)
 
 CHUNKS_INDEX = GENERATED_INDEXES / "chunks.jsonl"
 EMBEDDINGS_INDEX = GENERATED_EMBEDDINGS / "chunks-embeddings.jsonl"

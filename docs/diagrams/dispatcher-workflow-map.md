@@ -179,7 +179,7 @@ flowchart TD
   ExecPlan[execution-plan.json] --> QueryPlan[RAG query planning]
   Task[task / repository / branch / context files] --> QueryPlan
   QueryPlan --> RagPlan[rag-dispatch-plan.json]
-  RagPlan --> Retrieve[retrieve_context.py x N]
+  RagPlan --> Retrieve[aiwfctl rag retrieve x N]
   Retrieve --> Packs[rag-context-pack.json x N]
   Packs --> Aggregate[rag-load-dispatch.json]
   Aggregate --> Workflow[Workflow / Agent]

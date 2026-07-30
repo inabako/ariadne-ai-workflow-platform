@@ -15,6 +15,13 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso  # noqa: E402
+from runtime.constants.cli_defaults import (  # noqa: E402
+    DUCKDB_CONTEXT_MAX_CHARS_DEFAULT,
+    DUCKDB_SEARCH_LIMIT_DEFAULT,
+    DUCKDB_VERIFY_LIMIT_DEFAULT,
+    DUCKDB_VERIFY_MIN_RESULTS_DEFAULT,
+)
+from runtime.constants.runtime_values import SCHEMA_VERSION as ARTIFACT_SCHEMA_VERSION  # noqa: E402
 from runtime.constants.paths import (  # noqa: E402
     CHUNKS_DIR_NAME,
     DUCKDB_DEFAULT_PATH,
@@ -36,6 +43,13 @@ from runtime.constants.workspace import (  # noqa: E402
     work_dir_for_id,
 )
 from runtime.rag import ingestion_optimizer  # noqa: E402
+from runtime.rag.scoring_constants import (  # noqa: E402
+    DUCKDB_DUPLICATION_SCORE_BASE,
+    DUCKDB_FRESHNESS_MISSING_SCORE,
+    DUCKDB_FRESHNESS_PRESENT_SCORE,
+    SCORE_DEFAULT,
+    TEXT_MATCH_SCORE_DECIMALS,
+)
 from runtime.workflow.context_first import register_context  # noqa: E402
 
 
@@ -134,12 +148,12 @@ def build_parser() -> argparse.ArgumentParser:
     export = subparsers.add_parser("export-context", help="Export search results as Agent context JSON.")
     add_search_arguments(export)
     export.add_argument("--output", required=True, help="Context JSON output path.")
-    export.add_argument("--max-chars", type=int, default=4000, help="Maximum content characters per exported result.")
+    export.add_argument("--max-chars", type=int, default=DUCKDB_CONTEXT_MAX_CHARS_DEFAULT, help="Maximum content characters per exported result.")
 
     verify = subparsers.add_parser("verify", help="Verify DuckDB references by running representative searches.")
     verify.add_argument("--query", action="append", default=[], help="Reference query. Can be repeated.")
-    verify.add_argument("--min-results", type=int, default=1)
-    verify.add_argument("--limit", type=int, default=5)
+    verify.add_argument("--min-results", type=int, default=DUCKDB_VERIFY_MIN_RESULTS_DEFAULT)
+    verify.add_argument("--limit", type=int, default=DUCKDB_VERIFY_LIMIT_DEFAULT)
     verify.add_argument("--output", default=str(DEFAULT_REFERENCE_CHECK_OUTPUT))
     verify.add_argument("--work-id", default="", help=f"Register reference check evidence under {context_path_pattern()}.")
     verify.add_argument("--work-dir", default="", help="Explicit work directory for Context First registration.")
@@ -158,7 +172,7 @@ def add_search_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--workflow", default="")
     parser.add_argument("--min-reliability", type=float, default=None)
     parser.add_argument("--min-freshness", type=float, default=None)
-    parser.add_argument("--limit", type=int, default=10)
+    parser.add_argument("--limit", type=int, default=DUCKDB_SEARCH_LIMIT_DEFAULT)
 
 
 def resolve_repo_path(repo_root: Path, value: str | Path) -> Path:
@@ -573,13 +587,13 @@ def score_record(record: KnowledgeRecord, policy: dict[str, Any], seen_hashes: s
     existing_decision = record.metadata.get("optimization_decision")
     evaluation = ingestion_optimizer.evaluate_chunk(record_as_optimizer_chunk(record), policy, seen_hashes)
     scores = evaluation["scores"]
-    freshness = 1.0 if record.updated_at or record.created_at else 0.5
-    duplication = 1.0 - float(scores.get("duplication_penalty", 0.0))
+    freshness = DUCKDB_FRESHNESS_PRESENT_SCORE if record.updated_at or record.created_at else DUCKDB_FRESHNESS_MISSING_SCORE
+    duplication = DUCKDB_DUPLICATION_SCORE_BASE - float(scores.get("duplication_penalty", SCORE_DEFAULT))
     optimization_score = float(existing_score) if isinstance(existing_score, (int, float)) else float(evaluation["score"])
     optimization_decision = first_text(existing_decision, evaluation["decision"])
     return {
-        "reliability_score": float(scores.get("source_reliability", 0.0)),
-        "relevance_score": float(scores.get("retrieval_usefulness", 0.0)),
+        "reliability_score": float(scores.get("source_reliability", SCORE_DEFAULT)),
+        "relevance_score": float(scores.get("retrieval_usefulness", SCORE_DEFAULT)),
         "freshness_score": freshness,
         "duplication_score": duplication,
         "total_score": float(evaluation["score"]),
@@ -859,10 +873,10 @@ def normalize_terms(value: str) -> list[str]:
 def text_match_score(query: str, *values: str) -> float:
     terms = normalize_terms(query)
     if not terms:
-        return 0.0
+        return SCORE_DEFAULT
     haystack = "\n".join(value or "" for value in values).lower()
     hits = sum(1 for term in terms if term in haystack)
-    return round(hits / len(terms), 4)
+    return round(hits / len(terms), TEXT_MATCH_SCORE_DECIMALS)
 
 
 def semantic_hint_score(query: str, semantic_hint: str, explicit_hint: str = "") -> float:
@@ -870,7 +884,7 @@ def semantic_hint_score(query: str, semantic_hint: str, explicit_hint: str = "")
         text_match_score(query, semantic_hint),
         text_match_score(explicit_hint, semantic_hint),
     )
-    return round(score, 4)
+    return round(score, TEXT_MATCH_SCORE_DECIMALS)
 
 
 def search_filters_from_args(args: argparse.Namespace) -> SearchFilters:
@@ -885,7 +899,7 @@ def search_filters_from_args(args: argparse.Namespace) -> SearchFilters:
         workflow=str(getattr(args, "workflow", "") or ""),
         min_reliability=getattr(args, "min_reliability", None),
         min_freshness=getattr(args, "min_freshness", None),
-        limit=max(0, int(getattr(args, "limit", 10) or 0)),
+        limit=max(0, int(getattr(args, "limit", DUCKDB_SEARCH_LIMIT_DEFAULT) or 0)),
     )
 
 
@@ -1054,13 +1068,13 @@ def context_result(row: dict[str, Any], max_chars: int) -> dict[str, Any]:
         "document_type": row.get("document_type", ""),
         "category": row.get("category", ""),
         "tags": row.get("tags", []),
-        "score": row.get("final_score", 0.0),
+        "score": row.get("final_score", SCORE_DEFAULT),
         "scores": {
-            "keyword_match": row.get("keyword_match_score", 0.0),
-            "semantic_hint": row.get("semantic_hint_score", 0.0),
-            "relevance": row.get("relevance_score", 0.0),
-            "reliability": row.get("reliability_score", 0.0),
-            "freshness": row.get("freshness_score", 0.0),
+            "keyword_match": row.get("keyword_match_score", SCORE_DEFAULT),
+            "semantic_hint": row.get("semantic_hint_score", SCORE_DEFAULT),
+            "relevance": row.get("relevance_score", SCORE_DEFAULT),
+            "reliability": row.get("reliability_score", SCORE_DEFAULT),
+            "freshness": row.get("freshness_score", SCORE_DEFAULT),
         },
     }
 
@@ -1068,7 +1082,7 @@ def context_result(row: dict[str, Any], max_chars: int) -> dict[str, Any]:
 def export_context(repo_root: Path, db_path: Path, filters: SearchFilters, output: Path, max_chars: int) -> dict[str, Any]:
     search = search_knowledge(db_path, filters)
     context = {
-        "schema_version": "1.0",
+        "schema_version": ARTIFACT_SCHEMA_VERSION,
         "artifact_type": "rag-duckdb-context",
         "query": filters.query,
         "generated_at": utc_now_iso(),
@@ -1097,7 +1111,7 @@ def reference_query_summary(row: dict[str, Any]) -> dict[str, Any]:
         "source_path": row.get("source_path", ""),
         "document_type": row.get("document_type", ""),
         "category": row.get("category", ""),
-        "score": row.get("final_score", 0.0),
+        "score": row.get("final_score", SCORE_DEFAULT),
     }
 
 
@@ -1135,7 +1149,7 @@ def verify_references(
     queries: list[str],
     output: Path,
     min_results: int = 1,
-    limit: int = 5,
+    limit: int = DUCKDB_VERIFY_LIMIT_DEFAULT,
     work_dir: Path | None = None,
     work_id: str = "",
     source_repository: dict[str, Any] | None = None,
@@ -1170,7 +1184,7 @@ def verify_references(
         )
     failed = [check for check in checks if check["status"] != "passed"]
     evidence = {
-        "schema_version": "1.0",
+        "schema_version": ARTIFACT_SCHEMA_VERSION,
         "artifact_type": "rag-duckdb-reference-check",
         "status": "completed" if not failed else "human-check-required",
         "generated_at": utc_now_iso(),
@@ -1300,7 +1314,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             list(getattr(args, "query", []) or []),
             resolve_repo_path(repo_root, args.output).resolve(),
             min_results=int(getattr(args, "min_results", 1)),
-            limit=int(getattr(args, "limit", 5)),
+            limit=int(getattr(args, "limit", DUCKDB_VERIFY_LIMIT_DEFAULT)),
             work_dir=work_dir,
             work_id=work_id,
             source_repository=source_repository,

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ariadne Review Council Specialist Run",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "status",
+    "review_id",
+    "work_id",
+    "reviewer",
+    "agent_id",
+    "prompt_path",
+    "prompt_exists",
+    "output_path",
+    "input",
+    "required_output"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "artifact_type": { "const": "review-council-specialist-run" },
+    "status": { "enum": ["ready", "blocked"] },
+    "review_id": { "type": "string" },
+    "work_id": { "type": "string" },
+    "reviewer": { "type": "string" },
+    "agent_id": { "type": "string" },
+    "prompt_path": { "type": "string" },
+    "prompt_exists": { "type": "boolean" },
+    "handoff_path": { "type": "string" },
+    "output_path": { "type": "string" },
+    "role": { "type": "string" },
+    "input": { "type": "object" },
+    "required_output": { "type": "object" },
+    "blocked_reason": { "type": "string" },
+    "artifacts": { "type": "object" }
+  },
+  "additionalProperties": true
+}

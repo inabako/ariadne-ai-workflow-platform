@@ -9,6 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, read_json, relative_to_repo  # noqa: E402
 from runtime.constants.paths import GENERATED_CHUNKS, GENERATED_INDEXES, GENERATED_NORMALIZED  # noqa: E402
 
@@ -35,7 +36,7 @@ def document_index_row(repo_root: Path, path: Path) -> dict[str, Any]:
         raise ValueError(f"Invalid normalized document: {path}")
     metadata = document.get("metadata", {})
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "document_id": document.get("document_id", ""),
         "document_type": document.get("document_type", ""),
         "title": document.get("title", ""),
@@ -65,7 +66,7 @@ def chunk_index_row(repo_root: Path, path: Path) -> dict[str, Any]:
         raise ValueError(f"Invalid chunk document: {path}")
     metadata = chunk.get("metadata", {})
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "chunk_id": chunk.get("chunk_id", ""),
         "document_id": chunk.get("document_id", ""),
         "document_type": metadata.get("document_type", ""),
