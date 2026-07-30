@@ -2,7 +2,7 @@
 
 ## Summary
 
-ARIADNEの公開license方針は `AGPL-3.0-or-later` です。公開前に、著作権者、公開URL、初回release日、security contact、third-party dependency licenseを確認します。
+ARIADNEの公開license方針は `AGPL-3.0-or-later` です。公開前に、著作権者、公開URL、初回release日、GitHub Security Advisories方針、third-party dependency licenseを確認します。
 
 ## License Status
 
@@ -16,7 +16,7 @@ ARIADNEの公開license方針は `AGPL-3.0-or-later` です。公開前に、著
 - `CITATION.cff` のproject author nameを確認する。
 - public repository URLを確認する。
 - first public release dateを確認する。
-- security contactを確認する。
+- security contactとしてGitHub Security Advisoriesを使用する方針を確認する。
 - third-party dependency license reviewを完了する。
 - GitHub Actions本番でREUSE lint workflowを実行し、artifactを確認する。
 - trademarkとlogo usage policyを確認する。

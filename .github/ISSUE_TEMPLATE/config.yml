@@ -1,0 +1,14 @@
+---
+blank_issues_enabled: false
+contact_links:
+  - name: バグ報告・質問・提案 / Bug Reports, Questions, Proposals
+    url: https://github.com/inabako/ariadne-ai-workflow-platform/discussions
+    about: >
+      通常の連絡はGitHub Discussionsで受け付けます。
+      Use GitHub Discussions for general contact.
+  - name: セキュリティ・脆弱性連絡 / Security Advisories
+    url: >
+      https://github.com/inabako/ariadne-ai-workflow-platform/security/advisories/new
+    about: >
+      脆弱性の詳細は公開IssueやDiscussionsに投稿しないでください。
+      Report vulnerabilities privately.

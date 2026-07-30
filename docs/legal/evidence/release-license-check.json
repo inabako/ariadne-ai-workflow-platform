@@ -18,5 +18,5 @@
       "evidence": "LICENSE, package metadata, CITATION.cff, README, and legal policy use AGPL-3.0-or-later"
     }
   ],
-  "required_human_review": "Confirm copyright holder, public repository URL, first release date, security contact, and third-party dependency licenses before release."
+  "required_human_review": "Confirm copyright holder, public repository URL, first release date, GitHub Security Advisories availability, and third-party dependency licenses before release."
 }

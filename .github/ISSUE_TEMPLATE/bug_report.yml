@@ -1,3 +1,5 @@
+---
+# yamllint disable rule:line-length
 name: Bug report
 description: Report a reproducible defect in ARIADNE.
 title: "bug: "

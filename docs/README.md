@@ -150,7 +150,7 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 | [Third-Party Licenses](legal/third-party-licenses.md) | dependency license auditの入口 |
 | [Legal FAQ](legal/faq.md) | 公開前に利用者へ説明するライセンスFAQ |
 | [Legal Evidence Index](legal/README.md#release-evidence) | 公開前のreview itemとrelease evidenceの入口 |
-| [Legal Review Items](legal/evidence/legal-review-items.md) | 公開前に人間確認が必要な著作権者、公開URL、security contactなど |
+| [Legal Review Items](legal/evidence/legal-review-items.md) | 公開前に人間確認が必要な著作権者、公開URL、GitHub Security Advisories方針など |
 | [Dependency License Report](legal/evidence/dependency-license-report.json) | third-party dependency license review状況 |
 | [License Boundary Report](legal/evidence/license-boundary-report.json) | ARIADNE本体、生成物、外部入力のlicense boundary |
 | [Release License Check](legal/evidence/release-license-check.json) | AGPL方針へのrelease license整合性確認 |

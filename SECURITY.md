@@ -12,15 +12,22 @@ ARIADNEは、まだstable public releaseとして公開されていません。
 
 ## Vulnerability Reporting
 
-公開security contactはまだ確定していません。公開contactが定義されるまでは、脆弱性の詳細をpublic issueに投稿しないでください。
+セキュリティ・脆弱性の連絡は、GitHub Security Advisoriesで受け付けます。
 
-報告はprivate project-owner channelを使用し、可能な範囲で次を含めてください。
+脆弱性の詳細、exploit手順、secret、credential、private repository informationは、public issue、GitHub Discussions、pull request、公開コメントには投稿しないでください。
+
+報告には、可能な範囲で次を含めてください。
 
 - 影響するcommit、branch、release candidate。
 - 再現手順。
 - 期待する動作と観測された動作。
 - impact assessment。
 - secret、credential、customer data、private repository informationが関係する可能性。
+
+## General Contact
+
+バグ報告、質問、提案、使い方の相談はGitHub Discussionsで受け付けます。
+security-sensitiveな内容が含まれる場合は、DiscussionsではなくGitHub Security Advisoriesを使用してください。
 
 ## Public Disclosure
 

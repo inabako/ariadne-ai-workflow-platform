@@ -11,6 +11,8 @@ For the Japanese version, see [CONTRIBUTING.md](CONTRIBUTING.md).
 - Read [docs/README.md](docs/README.md) for the documentation map.
 - Read [docs/architecture/overview.md](docs/architecture/overview.md) for the platform structure.
 - Check [docs/release/release-policy.md](docs/release/release-policy.md) before release-facing changes.
+- Use GitHub Discussions for bug reports, questions, proposals, and usage discussions.
+- Do not post security or vulnerability details in GitHub Discussions or public issues. Use GitHub Security Advisories instead.
 - Keep generated local work under ignored workspaces such as `work/`, `logs/`, or `db/rag/` unless a document explicitly says the artifact is tracked.
 
 ## Contribution Flow

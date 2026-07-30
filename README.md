@@ -300,9 +300,11 @@ project、publication、presentation、technical reportでARIADNEを利用する
 
 contribution policyは [CONTRIBUTING.md](CONTRIBUTING.md) に記載しています。英語版は [CONTRIBUTING.en.md](CONTRIBUTING.en.md) を参照してください。
 
+バグ報告、質問、提案はGitHub Discussionsで受け付けます。Issueは、maintainerが追跡対象として切り出した作業や、合意済みの変更を管理するために使います。
+
 ## Security
 
-security policyは [SECURITY.md](SECURITY.md) に記載しています。英語版は [SECURITY.en.md](SECURITY.en.md) を参照してください。public security contactはまだrelease-blocking placeholderです。
+security policyは [SECURITY.md](SECURITY.md) に記載しています。英語版は [SECURITY.en.md](SECURITY.en.md) を参照してください。セキュリティ・脆弱性の連絡はGitHub Security Advisoriesで受け付けます。
 
 ## License
 

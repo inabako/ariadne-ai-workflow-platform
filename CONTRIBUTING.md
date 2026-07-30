@@ -11,6 +11,8 @@ ARIADNEは、intent capture、context-first execution、review可能なartifact�
 - documentation mapとして [docs/README.md](docs/README.md) を確認してください。
 - platform構造は [docs/architecture/overview.md](docs/architecture/overview.md) を確認してください。
 - releaseに影響する変更では [docs/release/release-policy.md](docs/release/release-policy.md) を確認してください。
+- バグ報告、質問、提案、使い方の相談はGitHub Discussionsを使用してください。
+- セキュリティ・脆弱性の詳細はGitHub Discussionsやpublic issueに投稿せず、GitHub Security Advisoriesを使用してください。
 - 明示的にtracked artifactとして定義されていない生成物は、`work/`、`logs/`、`db/rag/` などのignored workspaceに保存してください。
 
 ## Contribution Flow

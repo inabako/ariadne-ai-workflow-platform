@@ -1,3 +1,5 @@
+---
+# yamllint disable rule:line-length
 name: 機能要望
 description: workflow、runtime、documentation、platformの改善を提案します。
 title: "feat: "

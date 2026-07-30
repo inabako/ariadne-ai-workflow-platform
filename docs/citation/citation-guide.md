@@ -9,7 +9,7 @@ project、publication、presentation、technical reportでARIADNEを引用する
 - project author。
 - public repository URL。
 - initial public release date。
-- security contact。
+- security contactとしてGitHub Security Advisoriesを使う方針。
 
 これらの値は、初回公開release前にhumanが確認する必要があります。local path、Git設定、会話履歴から推測してはいけません。
 

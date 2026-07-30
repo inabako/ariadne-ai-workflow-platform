@@ -37,5 +37,6 @@ logs/
 runtime/logs/
 scancode-output/
 reuse-lint-output/
+dependency-review-output/
 .act-artifacts/
 .gitignore

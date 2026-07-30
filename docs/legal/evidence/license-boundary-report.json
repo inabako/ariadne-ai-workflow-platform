@@ -18,6 +18,6 @@
   },
   "open_decisions": [
     "Complete third-party dependency license review before public release.",
-    "Confirm public author, repository URL, release date, and security contact."
+    "Confirm public author, repository URL, release date, and GitHub Security Advisories availability."
   ]
 }

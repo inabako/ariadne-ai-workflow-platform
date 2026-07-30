@@ -23,4 +23,4 @@ Human Gateでは次を記録します。
 
 ## 現在のOSS Gate
 
-現在のrepository license方針は `AGPL-3.0-or-later` です。公開前に必要な著作権者、公開URL、初回release日、security contact、third-party dependency license reviewは [legal-review-items.md](../legal/evidence/legal-review-items.md) で追跡します。
+現在のrepository license方針は `AGPL-3.0-or-later` です。公開前に必要な著作権者、公開URL、初回release日、GitHub Security Advisories方針、third-party dependency license reviewは [legal-review-items.md](../legal/evidence/legal-review-items.md) で追跡します。

@@ -12,15 +12,22 @@ For the Japanese version, see [SECURITY.md](SECURITY.md).
 
 ## Reporting a Vulnerability
 
-The public security contact is not yet finalized. Until a public contact is defined, do not publish vulnerability details in public issues.
+Security and vulnerability reports are accepted through GitHub Security Advisories.
 
-Use a private project-owner channel for reports, and include:
+Do not post vulnerability details, exploit steps, secrets, credentials, or private repository information in public issues, GitHub Discussions, pull requests, or public comments.
+
+When reporting, include:
 
 - Affected commit, branch, or release candidate.
 - Reproduction steps.
 - Expected and observed behavior.
 - Impact assessment.
 - Whether secrets, credentials, customer data, or private repository information may be involved.
+
+## General Contact
+
+Use GitHub Discussions for bug reports, questions, proposals, and usage discussions.
+If the topic includes security-sensitive details, use GitHub Security Advisories instead of Discussions.
 
 ## Public Disclosure
 

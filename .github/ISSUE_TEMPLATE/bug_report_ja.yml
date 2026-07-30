@@ -1,3 +1,5 @@
+---
+# yamllint disable rule:line-length
 name: バグ報告
 description: ARIADNEで再現可能な不具合を報告します。
 title: "bug: "

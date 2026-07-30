@@ -22,11 +22,13 @@
 
 | Evidence | Purpose |
 | --- | --- |
-| [evidence/legal-review-items.md](evidence/legal-review-items.md) | 公開前に人間確認が必要な著作権者、公開URL、security contactなど |
+| [evidence/legal-review-items.md](evidence/legal-review-items.md) | 公開前に人間確認が必要な著作権者、公開URL、GitHub Security Advisories方針など |
 | [evidence/dependency-license-report.json](evidence/dependency-license-report.json) | third-party dependency license review状況 |
 | [evidence/license-boundary-report.json](evidence/license-boundary-report.json) | ARIADNE本体、生成物、外部入力のlicense boundary確認 |
 | [evidence/release-license-check.json](evidence/release-license-check.json) | AGPL方針へのrelease license整合性確認 |
 | [evidence/reuse-lint-local-rehearsal.md](evidence/reuse-lint-local-rehearsal.md) | REUSE lintローカル予行結果とSPDX metadata整備の残課題 |
+| [evidence/dependency-review-github-actions.md](evidence/dependency-review-github-actions.md) | Dependency ReviewによるPR依存license / vulnerability確認の運用記録 |
+| [evidence/workflows-public-readiness-local-rehearsal.md](evidence/workflows-public-readiness-local-rehearsal.md) | GitHub Actions workflowの公開前ローカル予行結果 |
 
 ## ScanCode Evidence
 
@@ -38,3 +40,8 @@ ScanCode artifactはrepositoryへ直接commitせず、review結果だけを必�
 
 REUSE lintは、repository内fileのSPDX copyright / license metadataが機械可読に整備されているかを確認するために使います。
 ローカル予行結果は [evidence/reuse-lint-local-rehearsal.md](evidence/reuse-lint-local-rehearsal.md) に記録します。
+
+## Dependency Review Evidence
+
+Dependency Reviewは、pull requestで追加・変更されるdependencyのlicense policy違反とvulnerabilityを確認するために使います。
+GitHub Actionsの実行結果はartifactとして保存し、公開前の依存関係review evidenceとして扱います。
