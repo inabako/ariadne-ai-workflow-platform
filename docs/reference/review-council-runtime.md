@@ -1,4 +1,4 @@
----
+﻿---
 language: ja-JP
 ---
 
@@ -77,7 +77,7 @@ gate定義は `human-gate` runtimeと同じ `approved_value` を使い、Review 
 
 `review run-specialist` は、Specialist Reviewer Agent を無承認で自動実行するコマンドではありません。
 
-Reviewer名から `.github/agents/` 配下のpromptを選び、Review Packet、handoff packet、期待されるreview report、finding登録commandを1つの実行パケットにまとめます。これにより担当Agentまたは人間は、同じ入力と同じ出力contractで専門レビューを開始できます。
+Reviewer名から `.ariadne/agents/` 配下のpromptを選び、Review Packet、handoff packet、期待されるreview report、finding登録commandを1つの実行パケットにまとめます。これにより担当Agentまたは人間は、同じ入力と同じ出力contractで専門レビューを開始できます。
 
 `review next-action` は `review orchestrate` の結果を運用向けに整えます。missing reviewer がある場合は、直接 `review run-specialist --reviewer <reviewer>` を次アクションとして提示します。
 

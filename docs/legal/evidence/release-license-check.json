@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "status": "pass_with_human_review_items",
+  "checks": [
+    {
+      "id": "root-license-present",
+      "status": "pass",
+      "evidence": "LICENSE exists"
+    },
+    {
+      "id": "package-license-present",
+      "status": "pass",
+      "evidence": "runtime/pyproject.toml declares AGPL-3.0-or-later"
+    },
+    {
+      "id": "license-policy-consistent",
+      "status": "pass",
+      "evidence": "LICENSE, package metadata, CITATION.cff, README, and legal policy use AGPL-3.0-or-later"
+    }
+  ],
+  "required_human_review": "Confirm copyright holder, public repository URL, first release date, security contact, and third-party dependency licenses before release."
+}

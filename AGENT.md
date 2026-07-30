@@ -1,4 +1,4 @@
-# Ariadne AI Workflow: Agent Guide
+﻿# Ariadne AI Workflow: Agent Guide
 
 このリポジトリは、Localty の対象システム開発を Intent、Safety、Operational Learning を中心に進めるための AI workflow repository です。
 
@@ -78,7 +78,7 @@ GitHub token、account、repository、git user config などの実値を prompt�
 
 ## Prompt Usage
 
-Workflow prompts live in `.github/prompts/`.
+Workflow prompts live in `.ariadne/prompts/`.
 
 Current prompt set:
 
@@ -101,7 +101,7 @@ Current prompt set:
 - `/ariadne-test-strategy`
 - `/ariadne-release-and-field-operation`
 
-Role-based Agent prompts live in `.github/agents/`.
+Role-based Agent prompts live in `.ariadne/agents/`.
 
 Workflow Skill entrypoints live in `skills/`.
 
@@ -118,13 +118,13 @@ Current Skill entrypoints:
 - `/rag-build` -> `skills/rag-build/SKILL.md` -> `rag/normalized/`, `rag/chunks/`, `rag/indexes/`, `rag/embeddings/`
 - `/rag-load` -> `skills/rag-load/SKILL.md` -> `rag/retrieval/<uuid>.json`
 
-GaC / UaC GUI Mode is not a standalone Skill entrypoint. Before Issue creation, SVG files are placed under `work/requirements/svg-input/` with `SYS_`, `FEAT_`, or `FIX_` prefixes. After the Issue work area exists, the three implementation workflows claim matching files and dispatch `.github/prompts/gac-uac-gui-mode.prompt.md`.
+GaC / UaC GUI Mode is not a standalone Skill entrypoint. Before Issue creation, SVG files are placed under `work/requirements/svg-input/` with `SYS_`, `FEAT_`, or `FIX_` prefixes. After the Issue work area exists, the three implementation workflows claim matching files and dispatch `.ariadne/prompts/gac-uac-gui-mode.prompt.md`.
 
 `/corrective-action-report` を使う場合は、対象repositoryと対象branchを user に確認してから read-only review を開始してください。未指定の場合は必ず入力を求めます。
 
 ## Shared Data Contract
 
-Agent間の情報連携フォーマットは `.github/schemas/*.schema.json` で定義します。
+Agent間の情報連携フォーマットは `.ariadne/schemas/*.schema.json` で定義します。
 
 JSON Schema は実データそのものではなく、Agentやtoolが共有JSONを structured data として解釈・検証するための contract です。
 
@@ -167,7 +167,7 @@ Agent は、次のAgentが必要とする情報を schema に沿って残して�
 
 ## Shared Rules
 
-共通判断ルールは `.github/shared/` を参照してください。
+共通判断ルールは `.ariadne/shared/` を参照してください。
 
 - `localty-principles.md`
 - `risk-and-severity.md`

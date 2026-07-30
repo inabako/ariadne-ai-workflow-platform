@@ -1,4 +1,4 @@
----
+﻿---
 name: github-knowledge-maintenance
 description: Maintain a GitHub repository as a long-lived knowledge asset without erasing Git history. Use when the user selects /github-knowledge-maintenance or asks to preserve GitHub Issues, PRs, docs, CARs, commit-source, commit-message, semantic-subject, Knowledge DB, or RAG candidates as reusable repository knowledge.
 ---
@@ -7,13 +7,13 @@ description: Maintain a GitHub repository as a long-lived knowledge asset withou
 
 ## Default Language
 
-Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.ariadne/shared/output-language-policy.md`.
 
 ## Runtime Entrypoint Rule
 
 Use `aiwfctl` / `runtime/ctl/ctl.py` as the official runtime entrypoint for this workflow.
 
-- Follow `.github/shared/runtime-entrypoint-policy.md`.
+- Follow `.ariadne/shared/runtime-entrypoint-policy.md`.
 - On Windows 11, start runtime commands through `runtime/windows-script/aiwf.cmd` first, then delegate to `aiwfctl` from there.
 - Do not directly invoke `runtime/workflow/github_knowledge_maintenance.py`, `runtime/workflow/context_first.py`, `runtime/workflow/human_gate_policy.py`, `runtime/workflow/self_improvement.py`, or `runtime/workflow/close_archive.py` during normal workflow execution.
 - Treat `runtime/workflow/*.py` files as internal implementation modules unless a runtime developer is testing that module itself.
@@ -215,7 +215,7 @@ work/<work-id>/context/github-knowledge-analysis.json
 Schema:
 
 ```text
-.github/schemas/github-knowledge-analysis.schema.json
+.ariadne/schemas/github-knowledge-analysis.schema.json
 ```
 
 ### 3. Repository Discovery
@@ -223,7 +223,7 @@ Schema:
 Use:
 
 ```text
-.github/agents/repository-discovery-agent.prompt.md
+.ariadne/agents/repository-discovery-agent.prompt.md
 ```
 
 Confirm repository identity, scan scope, and whether clone is forbidden or conditionally allowed.
@@ -233,7 +233,7 @@ Confirm repository identity, scan scope, and whether clone is forbidden or condi
 Use:
 
 ```text
-.github/agents/github-metadata-collector-agent.prompt.md
+.ariadne/agents/github-metadata-collector-agent.prompt.md
 ```
 
 Before metadata collection, run the repository runtime GitHub CLI preflight. This separates `gh --version`, `gh auth status`, and token availability so the AI does not decide these steps ad hoc:
@@ -281,7 +281,7 @@ Do not clone unless GitHub CLI/API evidence is insufficient and the human explic
 Use:
 
 ```text
-.github/agents/knowledge-asset-discovery-agent.prompt.md
+.ariadne/agents/knowledge-asset-discovery-agent.prompt.md
 ```
 
 Extract:
@@ -326,7 +326,7 @@ When commit subjects are thin, the runtime must inspect commit materials as well
 Use:
 
 ```text
-.github/agents/narrative-analyzer-agent.prompt.md
+.ariadne/agents/narrative-analyzer-agent.prompt.md
 ```
 
 Check the chain:
@@ -342,7 +342,7 @@ Record narrative gaps and open questions in `github-knowledge-analysis.json`.
 Use:
 
 ```text
-.github/agents/documentation-repair-agent.prompt.md
+.ariadne/agents/documentation-repair-agent.prompt.md
 ```
 
 Create the human review plan:
@@ -523,7 +523,7 @@ Before any GitHub mutation, the human must confirm:
 Use:
 
 ```text
-.github/agents/github-documentation-sync-agent.prompt.md
+.ariadne/agents/github-documentation-sync-agent.prompt.md
 ```
 
 Create the sync plan:
@@ -574,7 +574,7 @@ Do not execute commands marked `pending` or `approved` without `human_review_dec
 Use:
 
 ```text
-.github/agents/knowledge-db-registrar-agent.prompt.md
+.ariadne/agents/knowledge-db-registrar-agent.prompt.md
 ```
 
 Create a candidate note:

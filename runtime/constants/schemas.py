@@ -1,9 +1,9 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from pathlib import Path
 
 
-SCHEMA_ROOT = Path(".github/schemas")
+SCHEMA_ROOT = Path(".ariadne/schemas")
 
 
 def schema_file(name: str) -> str:

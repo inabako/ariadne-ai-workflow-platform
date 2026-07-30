@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
@@ -253,7 +253,7 @@ def test_collector_saves_workflow_evidence_and_registers_context(tmp_path: Path)
     assert context_path.exists()
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert manifest["contexts"][0]["type"] == "runtime-metrics"
-    assert manifest["contexts"][0]["schema"] == ".github/schemas/runtime-metrics.schema.json"
+    assert manifest["contexts"][0]["schema"] == ".ariadne/schemas/runtime-metrics.schema.json"
 
 
 def test_collector_evidence_summary_can_skip_work_dir_or_manifest_registration(tmp_path: Path) -> None:

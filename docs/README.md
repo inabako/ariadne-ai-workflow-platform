@@ -1,4 +1,4 @@
-# Documentation Guide
+﻿# Documentation Guide
 
 この `docs/` は、Ariadne AI Workflow Platform を運用するための日本語ドキュメント置き場です。
 
@@ -31,6 +31,12 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 12. [Mermaid Diagrams](diagrams/README.md)
    - 各AI workflowの動作イメージをflowchartで確認する。
    - Dispatcher群とWorkflowの関係は [Dispatcher / Workflow Map](diagrams/dispatcher-workflow-map.md) を確認する。
+13. [Architecture Overview](architecture/overview.md)
+   - OSS公開前に、aiwfctl、runtime、workflow dispatch、state、artifact、evidence、Human Gate、復帰処理の全体像を確認する。
+14. [Release Policy](release/release-policy.md)
+   - release checklist、versioning、manifest、公開前検証の流れを確認する。
+15. [License Policy](legal/license-policy.md)
+   - `AGPL-3.0-or-later` 方針、生成物への非波及方針、公開前の法務レビュー事項を確認する。
 
 ## Governance Docs
 
@@ -54,6 +60,8 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 | [Philosophy — Ariadne AI Workflow Platform](brand/philosophy.md) | Mission、Value、Human Responsibility、Design Principle |
 | [なぜ糸巻なのか？](brand/why-a-spool.md) | 糸巻というlogo motifが象徴するContext、Evidence、Human Check、帰還路 |
 | [Epilogue — Ariadne AI Workflow Platform](brand/epilogue.md) | Ariadneという名前とContext Firstの物語的背景 |
+| [商標とブランド利用](brand/trademarks.md) | ARIADNEの名称、logo、visual identityの利用境界 |
+| [Trademarks](brand/trademarks.en.md) | English trademark and brand usage policy |
 
 ## Workflow Docs
 
@@ -99,7 +107,7 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 | [VSCode Environment](reference/vscode-environment.md) | VSCode Workspace as Code、terminal profiles、task labels、preflight |
 | [Skill Discovery](reference/skill-discovery.md) | VS Code prompt候補とCodex Skill候補の違い |
 | [Agent Inventory](reference/agent-inventory.md) | 既存Agentの責務、RAG利用、専門Agent候補の棚卸し |
-| [Data Model](reference/data-model.md) | `.github/schemas/` と `work/<id>/context/*.json` |
+| [Data Model](reference/data-model.md) | `.ariadne/schemas/` と `work/<id>/context/*.json` |
 | [Context First Architecture](reference/context-first-architecture.md) | Dispatcher Contextを標準インターフェース化する設計原則 |
 | [Workflow Help CLI](reference/workflow-help.md) | `aiwfctl help` でprompt command、必須引数、処理概要、詳細を検索する |
 | [Workflow Feedback](reference/workflow-feedback.md) | 各AI workflow実行時にFeedback reportを保存し、蓄積後に`/self-improvement`で採用判断する運用 |
@@ -108,9 +116,47 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 | [RAG Dispatcher Design Notes](reference/rag-dispatcher.md) | dispatch plan、query planning、Agent間handoff、UUIDと意味検索の責任分離 |
 | [Operations](reference/operations.md) | commit rule、human gate、encoding、archiveの運用注意 |
 
+## Architecture文書
+
+| Document | Purpose |
+| --- | --- |
+| [Architecture Overview](architecture/overview.md) | ARIADNE全体の構成、責務、設計文書への入口 |
+| [aiwfctl Architecture](architecture/aiwfctl-architecture.md) | CLI entrypoint、subcommand dispatch、runtime境界 |
+| [Runtime Architecture](architecture/runtime-architecture.md) | runtime packageの責務、構成、failure handling |
+| [Workflow Dispatch](architecture/workflow-dispatch.md) | workflow選択、context作成、review境界 |
+| [State and Artifact Management](architecture/state-and-artifact-management.md) | state、artifact、evidence保存方針 |
+| [Evidence and Completion](architecture/evidence-and-completion.md) | 完了条件、test/review/release evidence |
+| [Human Gate](architecture/human-gate.md) | 人間判断が必要な操作と記録項目 |
+| [Retry and Resume](architecture/retry-and-resume.md) | 中断後の復帰、再実行、release再現性 |
+
+## Release文書
+
+| Document | Purpose |
+| --- | --- |
+| [Release Policy](release/release-policy.md) | releaseに必要な文書、検証、Human Gate |
+| [Release Checklist](release/release-checklist.md) | 公開前、テスト、文書、release、post-release確認 |
+| [Versioning Policy](release/versioning-policy.md) | tag、package version、development noteの関係 |
+| [Citation Guide](citation/citation-guide.md) | `CITATION.cff` の未確定値と公開前確認 |
+
+## Legal文書
+
+| Document | Purpose |
+| --- | --- |
+| [License Policy](legal/license-policy.md) | `AGPL-3.0-or-later` 方針、生成物方針、公開前確認 |
+| [Generated Artifacts](legal/generated-artifacts.md) | ARIADNE利用による生成物への非波及方針 |
+| [Component License Boundaries](legal/component-license-boundaries.md) | ARIADNE本体、外部入力、生成物の境界 |
+| [Network Source Offer](legal/network-source-offer.md) | AGPL採用時に必要なnetwork source offer検討 |
+| [Third-Party Licenses](legal/third-party-licenses.md) | dependency license auditの入口 |
+| [Legal FAQ](legal/faq.md) | 公開前に利用者へ説明するライセンスFAQ |
+| [Legal Evidence Index](legal/README.md#release-evidence) | 公開前のreview itemとrelease evidenceの入口 |
+| [Legal Review Items](legal/evidence/legal-review-items.md) | 公開前に人間確認が必要な著作権者、公開URL、security contactなど |
+| [Dependency License Report](legal/evidence/dependency-license-report.json) | third-party dependency license review状況 |
+| [License Boundary Report](legal/evidence/license-boundary-report.json) | ARIADNE本体、生成物、外部入力のlicense boundary |
+| [Release License Check](legal/evidence/release-license-check.json) | AGPL方針へのrelease license整合性確認 |
+
 ## Source Of Truth
 
 - 実行手順の詳細は `skills/<skill-name>/SKILL.md` を最優先します。
 - Runtime CLI の詳細は `runtime/**/README.md` と実装を確認します。
-- 成果物の形式は `templates/` と `.github/schemas/` を確認します。
+- 成果物の形式は `templates/` と `.ariadne/schemas/` を確認します。
 - `docs/` は、運用者が迷わず入口を選ぶための整理された案内として使います。

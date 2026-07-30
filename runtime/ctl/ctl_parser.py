@@ -118,6 +118,27 @@ def _add_tools_arguments(sub: Any) -> None:
     convert.add_argument("--fail-on-blocked", action="store_true")
 
 
+def _add_release_arguments(sub: Any) -> None:
+    release_cmd = sub.add_parser("release", help="Validate release readiness and build release evidence through the runtime.")
+    release_sub = release_cmd.add_subparsers(dest="release_command")
+
+    validate = release_sub.add_parser("validate", help="Validate OSS release readiness.")
+    validate.add_argument("--expected-license", default=None, help="Expected license identifier. Defaults to AGPL-3.0-or-later.")
+    validate.add_argument("--json", action="store_true")
+    validate.add_argument("--fail-on-warning", action="store_true")
+
+    manifest = release_sub.add_parser("manifest", help="Build a release manifest JSON.")
+    manifest.add_argument("--version", default=None, help="Release version. Defaults to runtime/pyproject.toml.")
+    manifest.add_argument("--tag", default=None, help="Git tag. Defaults to v<version>.")
+    manifest.add_argument("--artifact", action="append", default=[], help="Release artifact path. Can be repeated.")
+    manifest.add_argument("--output", default=None, help="Optional output JSON path.")
+    manifest.add_argument(
+        "--generated-at-utc",
+        default=None,
+        help="Fixed ISO-8601 UTC timestamp for reproducible manifest generation.",
+    )
+
+
 def _add_retrieval_arguments(sub: Any) -> None:
     retrieval_cmd = sub.add_parser("retrieval", help="Run workflow task plans through the official runtime entrypoint.")
     retrieval_sub = retrieval_cmd.add_subparsers(dest="retrieval_command")
@@ -1581,6 +1602,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     _add_preflight_arguments(sub)
     _add_tools_arguments(sub)
+    _add_release_arguments(sub)
     _add_retrieval_arguments(sub)
 
     doctor_cmd = sub.add_parser("doctor", help="Run workflow repository health checks.")

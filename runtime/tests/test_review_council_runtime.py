@@ -167,7 +167,7 @@ def test_next_action_prefers_specialist_run_for_missing_reviewer(tmp_path: Path)
 
 
 def test_run_specialist_review_writes_agent_packet(tmp_path: Path) -> None:
-    prompt = tmp_path / ".github" / "agents" / "security-reviewer-agent.prompt.md"
+    prompt = tmp_path / ".ariadne" / "agents" / "security-reviewer-agent.prompt.md"
     prompt.parent.mkdir(parents=True)
     prompt.write_text("# Security Reviewer Agent\n", encoding="utf-8")
     council.start_review(start_args(tmp_path))
@@ -195,7 +195,7 @@ def test_run_specialist_review_writes_agent_packet(tmp_path: Path) -> None:
 
 
 def test_execute_specialist_review_requires_human_check(tmp_path: Path) -> None:
-    prompt = tmp_path / ".github" / "agents" / "security-reviewer-agent.prompt.md"
+    prompt = tmp_path / ".ariadne" / "agents" / "security-reviewer-agent.prompt.md"
     prompt.parent.mkdir(parents=True)
     prompt.write_text("# Security Reviewer Agent\n", encoding="utf-8")
     council.start_review(start_args(tmp_path))
@@ -222,7 +222,7 @@ def test_execute_specialist_review_requires_human_check(tmp_path: Path) -> None:
 
 
 def test_execute_specialist_review_runs_command_and_drafts_findings(monkeypatch, tmp_path: Path) -> None:
-    prompt = tmp_path / ".github" / "agents" / "security-reviewer-agent.prompt.md"
+    prompt = tmp_path / ".ariadne" / "agents" / "security-reviewer-agent.prompt.md"
     prompt.parent.mkdir(parents=True)
     prompt.write_text("# Security Reviewer Agent\n", encoding="utf-8")
     council.start_review(start_args(tmp_path))

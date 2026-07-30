@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import runpy
@@ -48,6 +48,15 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     assert tools_args.tools_command == "bom-scan"
     assert tools_args.paths == ["docs"]
     assert tools_args.fail_on_finding is True
+    release_validate_args = parser.parse_args(["release", "validate", "--expected-license", "AGPL-3.0-or-later", "--json"])
+    assert release_validate_args.command == "release"
+    assert release_validate_args.release_command == "validate"
+    assert release_validate_args.expected_license == "AGPL-3.0-or-later"
+    assert release_validate_args.json is True
+    release_manifest_args = parser.parse_args(["release", "manifest", "--artifact", "LICENSE"])
+    assert release_manifest_args.command == "release"
+    assert release_manifest_args.release_command == "manifest"
+    assert release_manifest_args.artifact == ["LICENSE"]
     publish_args = parser.parse_args(
         [
             "github-knowledge",
@@ -641,7 +650,7 @@ def test_ctl_github_knowledge_rebase_package_and_apply_dry_run(tmp_path: Path) -
             "required": False,
             "generated_by": "runtime-observability",
             "owner": "workflow",
-            "schema": ".github/schemas/runtime-metrics.schema.json",
+            "schema": ".ariadne/schemas/runtime-metrics.schema.json",
             "status": "available",
             "updated_at": runtime_metrics_contexts[0]["updated_at"],
         }
@@ -948,7 +957,7 @@ def test_ctl_env_select_writes_workflow_context(tmp_path: Path) -> None:
     assert data["environment"] == "gui-mode"
     assert data["backend"] == "windows-msys2-gui"
     assert data["work_id"] == "issue-123"
-    assert data["source"]["schema"] == ".github/schemas/environment-selection.schema.json"
+    assert data["source"]["schema"] == ".ariadne/schemas/environment-selection.schema.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert manifest["artifact_type"] == "context-manifest"
     assert manifest["architecture"] == "context-first"
@@ -992,7 +1001,7 @@ def test_ctl_env_select_warns_before_overwriting_different_context(tmp_path: Pat
                 "context_path": "work/issue-123/context/environment-selection.json",
                 "source": {
                     "registry": "db/registries/registry.duckdb",
-                    "schema": ".github/schemas/environment-selection.schema.json",
+                    "schema": ".ariadne/schemas/environment-selection.schema.json",
                 },
             },
             ensure_ascii=False,

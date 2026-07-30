@@ -1,4 +1,4 @@
-# Context First Architecture
+﻿# Context First Architecture
 
 Context First Architecture は、Workflow / Agent が毎回 Environment、Tool、Runtime を推論する状態を避けるための設計方針です。
 
@@ -73,7 +73,7 @@ work/<work-id>/context/
       "required": true,
       "generated_by": "environment-dispatcher",
       "owner": "dispatcher",
-      "schema": ".github/schemas/environment-selection.schema.json",
+      "schema": ".ariadne/schemas/environment-selection.schema.json",
       "status": "available"
     }
   ]
@@ -83,7 +83,7 @@ work/<work-id>/context/
 schema:
 
 ```text
-.github/schemas/context-manifest.schema.json
+.ariadne/schemas/context-manifest.schema.json
 ```
 
 ## Environment Dispatcher

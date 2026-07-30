@@ -1,4 +1,4 @@
-# Runtime Registries
+﻿# Runtime Registries
 
 `registry.duckdb` is the runtime registry source used by `aiwfctl`, Context First Tool Dispatcher, Human Gate Policy, and Workflow Doctor.
 
@@ -45,4 +45,4 @@ Inspect row counts:
 uv run --project runtime python runtime/common/registry_store.py --repo-root . summary
 ```
 
-Schema definitions remain under `.github/schemas/`; generated work artifacts remain under `work/`.
+Schema definitions remain under `.ariadne/schemas/`; generated work artifacts remain under `work/`.

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import runpy
@@ -70,12 +70,12 @@ def test_missing_required_files_reports_core_runtime_assets(tmp_path: Path) -> N
     assert "runtime/observability/metrics.py" in missing
     assert "runtime/tests/test_observability_metrics.py" in missing
     assert "skills/runtime-health-check/SKILL.md" in missing
-    assert ".github/prompts/runtime-health-check.prompt.md" in missing
+    assert ".ariadne/prompts/runtime-health-check.prompt.md" in missing
     assert "docs/workflows/runtime-health-check.md" in missing
-    assert ".github/schemas/context-manifest.schema.json" in missing
-    assert ".github/schemas/runtime-metrics.schema.json" in missing
-    assert ".github/schemas/pytest-ut-spec-sync-report.schema.json" in missing
-    assert ".github/agents/runtime-quality-gate-agent.prompt.md" in missing
+    assert ".ariadne/schemas/context-manifest.schema.json" in missing
+    assert ".ariadne/schemas/runtime-metrics.schema.json" in missing
+    assert ".ariadne/schemas/pytest-ut-spec-sync-report.schema.json" in missing
+    assert ".ariadne/agents/runtime-quality-gate-agent.prompt.md" in missing
 
 
 def test_pytest_runtime_boundary_findings_blocks_root_config_and_cache(tmp_path: Path) -> None:
@@ -373,7 +373,7 @@ def test_path_constant_literal_findings_reports_runtime_path_constants(tmp_path:
         "    registry = \"db/registries/registry.duckdb\"\n"
         "    duckdb = \"db/rag/ariadne-knowledge.duckdb\"\n"
         "    source = \"work/db/ariadne-knowledge-platform\"\n"
-        "    schema = \".github/schemas/context-manifest.schema.json\"\n"
+        "    schema = \".ariadne/schemas/context-manifest.schema.json\"\n"
         "    return registry, duckdb, source, schema\n",
         encoding="utf-8",
     )

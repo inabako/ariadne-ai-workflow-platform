@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,49 +18,49 @@ SPECIALIST_AGENT_RULES = (
     SpecialistAgentRule(
         "security",
         "security-reviewer-agent",
-        ".github/agents/security-reviewer-agent.prompt.md",
+        ".ariadne/agents/security-reviewer-agent.prompt.md",
         "specialist-review-security.md",
         "Review authentication, authorization, secrets, remote access, and command authority risk.",
     ),
     SpecialistAgentRule(
         "safety",
         "safety-reviewer-agent",
-        ".github/agents/safety-reviewer-agent.prompt.md",
+        ".ariadne/agents/safety-reviewer-agent.prompt.md",
         "specialist-review-safety.md",
         "Review STOP path, safe state, control authority, watchdog, and safety-critical assumptions.",
     ),
     SpecialistAgentRule(
         "network",
         "network-reviewer-agent",
-        ".github/agents/network-reviewer-agent.prompt.md",
+        ".ariadne/agents/network-reviewer-agent.prompt.md",
         "specialist-review-network.md",
         "Review network boundary, route, protocol, latency, loss, and exposure assumptions.",
     ),
     SpecialistAgentRule(
         "runtime",
         "ariadne-runtime-agent",
-        ".github/agents/ariadne-runtime-agent.prompt.md",
+        ".ariadne/agents/ariadne-runtime-agent.prompt.md",
         "specialist-review-runtime.md",
         "Review process model, lifecycle, restart, recovery, health check, and workflow execution behavior.",
     ),
     SpecialistAgentRule(
         "deployment",
         "platform-deployment-specialist-agent",
-        ".github/agents/platform-deployment-specialist-agent.prompt.md",
+        ".ariadne/agents/platform-deployment-specialist-agent.prompt.md",
         "specialist-review-platform-deployment.md",
         "Review platform, deployment, startup, Windows/Linux, Docker, and environment assumptions.",
     ),
     SpecialistAgentRule(
         "observability",
         "observability-reviewer-agent",
-        ".github/agents/observability-reviewer-agent.prompt.md",
+        ".ariadne/agents/observability-reviewer-agent.prompt.md",
         "specialist-review-observability.md",
         "Review logs, metrics, traces, evidence quality, incident traceability, and audit readiness.",
     ),
     SpecialistAgentRule(
         "testing",
         "test-fault-injection-specialist-agent",
-        ".github/agents/test-fault-injection-specialist-agent.prompt.md",
+        ".ariadne/agents/test-fault-injection-specialist-agent.prompt.md",
         "specialist-review-testing.md",
         "Review test strategy, fault injection, regression coverage, and required evidence.",
     ),

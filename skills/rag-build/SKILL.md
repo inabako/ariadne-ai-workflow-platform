@@ -1,4 +1,4 @@
----
+﻿---
 name: rag-build
 description: Build or refresh the Ariadne AI Workflow file-based RAG artifacts from Markdown reports. Use when the user selects /rag-build, asks to create RAG, update RAG, accumulate corrective action reports into RAG, normalize reports, chunk documents, build indexes, or create local embeddings.
 ---
@@ -15,7 +15,7 @@ Use this skill when the user specifies:
 
 ## Default Language
 
-Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.ariadne/shared/output-language-policy.md`.
 
 ## Purpose
 

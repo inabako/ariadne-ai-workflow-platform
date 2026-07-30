@@ -1,4 +1,4 @@
----
+﻿---
 name: ariadne-new-system
 description: Start the Ariadne AI Workflow for creating a new target system, runtime, remote operation system, device integration, or architecture-level system launch. Use when the user selects /ariadne-new-system or asks to begin an Ariadne New System flow from a completed requirement document in work/requirements/.
 ---
@@ -7,7 +7,7 @@ description: Start the Ariadne AI Workflow for creating a new target system, run
 
 ## Default Language
 
-Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.ariadne/shared/output-language-policy.md`.
 
 ## Slash Command
 
@@ -20,7 +20,7 @@ Use this skill when the user specifies:
 This skill delegates the detailed workflow to:
 
 ```text
-.github/prompts/ariadne-new-system-development.prompt.md
+.ariadne/prompts/ariadne-new-system-development.prompt.md
 ```
 
 ## Intake Gate
@@ -77,7 +77,7 @@ After the Issue work area exists, dispatch:
 python runtime/workflow/gui_mode.py run --issue-id "<SYS-receipt-id>"
 ```
 
-Use `.github/prompts/gac-uac-gui-mode.prompt.md` for the sub-workflow contract.
+Use `.ariadne/prompts/gac-uac-gui-mode.prompt.md` for the sub-workflow contract.
 
 Rules:
 
@@ -145,7 +145,7 @@ Run this gate after boilerplate selection and before source changes when the new
 Use:
 
 ```text
-.github/prompts/nextjs-webapp-implementation-prep.prompt.md
+.ariadne/prompts/nextjs-webapp-implementation-prep.prompt.md
 templates/artifacts/process-report/nextjs-webapp-implementation-prep-template.md
 ```
 
@@ -168,7 +168,7 @@ Run this gate after Next.js Webapp Implementation Preparation and before source 
 Use:
 
 ```text
-.github/prompts/web-svg-layout-mode.prompt.md
+.ariadne/prompts/web-svg-layout-mode.prompt.md
 runtime/workflow/web_svg_layout_mode.py
 templates/workflows/web-svg-layout/
 ```

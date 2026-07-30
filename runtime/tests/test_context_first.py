@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -40,7 +40,7 @@ def test_context_manifest_registers_dispatcher_context(tmp_path: Path) -> None:
         required=True,
         generated_by="environment-dispatcher",
         owner="dispatcher",
-        schema=".github/schemas/environment-selection.schema.json",
+        schema=".ariadne/schemas/environment-selection.schema.json",
     )
 
     assert manifest["artifact_type"] == "context-manifest"
@@ -53,7 +53,7 @@ def test_context_manifest_registers_dispatcher_context(tmp_path: Path) -> None:
             "required": True,
             "generated_by": "environment-dispatcher",
             "owner": "dispatcher",
-            "schema": ".github/schemas/environment-selection.schema.json",
+            "schema": ".ariadne/schemas/environment-selection.schema.json",
             "status": "available",
             "updated_at": manifest["contexts"][0]["updated_at"],
         }
@@ -90,7 +90,7 @@ def test_context_first_require_passes_when_context_exists(tmp_path: Path) -> Non
         required=True,
         generated_by="environment-dispatcher",
         owner="dispatcher",
-        schema=".github/schemas/environment-selection.schema.json",
+        schema=".ariadne/schemas/environment-selection.schema.json",
     )
     args = argparse.Namespace(repo_root=str(repo_root), work_dir=str(work_dir), context=["environment-selection"])
 
@@ -117,7 +117,7 @@ def test_context_first_loads_test_evidence_context(tmp_path: Path) -> None:
         required=True,
         generated_by="pytest-ut-spec-sync",
         owner="workflow",
-        schema=".github/schemas/pytest-ut-spec-sync-report.schema.json",
+        schema=".ariadne/schemas/pytest-ut-spec-sync-report.schema.json",
     )
 
     evidence = context_first.load_test_evidence_context(repo_root, work_dir)
@@ -230,7 +230,7 @@ def test_context_first_require_environment_rejects_invalid_selection_document(tm
         required=True,
         generated_by="environment-dispatcher",
         owner="dispatcher",
-        schema=".github/schemas/environment-selection.schema.json",
+        schema=".ariadne/schemas/environment-selection.schema.json",
     )
 
     with pytest.raises(RuntimeError, match="invalid environment-selection context"):
@@ -358,7 +358,7 @@ def test_gui_mode_registers_state_after_environment_selection(tmp_path: Path) ->
         required=True,
         generated_by="environment-dispatcher",
         owner="dispatcher",
-        schema=".github/schemas/environment-selection.schema.json",
+        schema=".ariadne/schemas/environment-selection.schema.json",
     )
     args = argparse.Namespace(
         repo_root=str(tmp_path),
@@ -394,7 +394,7 @@ def test_web_svg_layout_mode_rejects_gui_environment_selection(tmp_path: Path) -
         required=True,
         generated_by="environment-dispatcher",
         owner="dispatcher",
-        schema=".github/schemas/environment-selection.schema.json",
+        schema=".ariadne/schemas/environment-selection.schema.json",
     )
     args = argparse.Namespace(
         repo_root=str(tmp_path),
@@ -430,7 +430,7 @@ def test_context_first_require_environment_checks_expected_environment(tmp_path:
         required=True,
         generated_by="environment-dispatcher",
         owner="dispatcher",
-        schema=".github/schemas/environment-selection.schema.json",
+        schema=".ariadne/schemas/environment-selection.schema.json",
     )
     args = argparse.Namespace(repo_root=str(tmp_path), work_dir=str(work_dir), environment="docker")
 
@@ -455,7 +455,7 @@ def test_context_first_require_environment_rejects_mismatch(tmp_path: Path) -> N
         required=True,
         generated_by="environment-dispatcher",
         owner="dispatcher",
-        schema=".github/schemas/environment-selection.schema.json",
+        schema=".ariadne/schemas/environment-selection.schema.json",
     )
     args = argparse.Namespace(repo_root=str(tmp_path), work_dir=str(work_dir), environment="docker")
 
@@ -1185,7 +1185,7 @@ def test_knowledge_capture_prefers_manifest_context_then_records_resolution(tmp_
         required=True,
         generated_by="runtime-scm",
         owner="workflow",
-        schema=".github/schemas/scm-state.schema.json",
+        schema=".ariadne/schemas/scm-state.schema.json",
     )
     args = argparse.Namespace(
         issue="issue-9001",

@@ -1,4 +1,4 @@
-# Operations
+﻿# Operations
 
 このページは、workflow運用で迷いやすい共通ルールをまとめます。
 
@@ -188,8 +188,8 @@ Pull Request bodyには、変更点のMermaid式sequence diagramを含めます�
 ## Runtime Human Gate Registry
 
 人間承認が必要な操作は `db/registries/registry.duckdb` にも機械可読形式で定義します。
-構造定義は `.github/schemas/human-gates.schema.json` に置きます。
-責任分離を明確にするため、`db/registries/` はruntime横断のregistry実体、`.github/schemas/` はschema定義専用とします。
+構造定義は `.ariadne/schemas/human-gates.schema.json` に置きます。
+責任分離を明確にするため、`db/registries/` はruntime横断のregistry実体、`.ariadne/schemas/` はschema定義専用とします。
 `registry.duckdb` の `human_gates` registry payload には `$schema` と `schema_version` を置かず、registry自体の版は `registry_version` で表します。
 
 ```powershell

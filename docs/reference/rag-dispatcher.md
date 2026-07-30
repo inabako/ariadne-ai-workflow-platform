@@ -1,4 +1,4 @@
-# RAG Dispatcher Design Notes
+﻿# RAG Dispatcher Design Notes
 
 この文書は、RAG dispatcher の設計思想、Agent間で共有するノウハウ、運用上の判断基準をまとめます。
 
@@ -263,9 +263,9 @@ single query debug:
 | --- | --- |
 | `runtime/rag/rag_dispatcher.py` | query planning、parallel retrieval、aggregate |
 | `runtime/rag/retrieve_context.py` | scoring、chunk選択、context pack生成 |
-| `.github/schemas/rag-dispatch-plan.schema.json` | dispatch plan schema |
-| `.github/schemas/rag-retrieval-result.schema.json` | retrieval result schema |
-| `.github/schemas/rag-context-pack.schema.json` | context pack schema |
+| `.ariadne/schemas/rag-dispatch-plan.schema.json` | dispatch plan schema |
+| `.ariadne/schemas/rag-retrieval-result.schema.json` | retrieval result schema |
+| `.ariadne/schemas/rag-context-pack.schema.json` | context pack schema |
 | `skills/rag-load/SKILL.md` | RAG読み込みskillの実行手順 |
 | `docs/reference/rag.md` | RAG全体のpipeline |
 

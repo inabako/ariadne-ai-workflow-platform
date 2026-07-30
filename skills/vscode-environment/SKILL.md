@@ -1,4 +1,4 @@
----
+﻿---
 name: vscode-environment
 description: Build or maintain reproducible VSCode Workspace-as-Code environments for AI workflows. Use when the user selects /vscode-environment or asks to standardize .vscode/settings.json, tasks.json, launch.json, extensions.json, workspace.code-workspace, terminal profiles, AI extension setup, Docker/Git/Python/Node/Java tooling, or evidence-backed VSCode environment setup.
 ---
@@ -7,7 +7,7 @@ description: Build or maintain reproducible VSCode Workspace-as-Code environment
 
 ## Default Language
 
-Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.ariadne/shared/output-language-policy.md`.
 
 ## Purpose
 
@@ -270,7 +270,7 @@ Stop until the human answers and approves.
 
 ### 2. Requirements Analysis
 
-Use `.github/agents/workspace-requirements-analyst-agent.prompt.md`.
+Use `.ariadne/agents/workspace-requirements-analyst-agent.prompt.md`.
 
 Create:
 
@@ -284,7 +284,7 @@ In self-provision mode, derive these from the current repository. For this workf
 
 ### 3. Shared Artifact Validation
 
-Use `.github/agents/workspace-shared-artifact-validator-agent.prompt.md`.
+Use `.ariadne/agents/workspace-shared-artifact-validator-agent.prompt.md`.
 
 Validate that the requirements include:
 
@@ -304,7 +304,7 @@ Do not implement `.vscode` files until validation is `pass` or human-approved `c
 
 ### 4. VSCode Design
 
-Use `.github/agents/vscode-architect-agent.prompt.md`.
+Use `.ariadne/agents/vscode-architect-agent.prompt.md`.
 
 Create:
 
@@ -316,7 +316,7 @@ Design `settings.json`, `tasks.json`, `launch.json`, `extensions.json`, and `wor
 
 ### 5. Terminal Design
 
-Use `.github/agents/terminal-architect-agent.prompt.md`.
+Use `.ariadne/agents/terminal-architect-agent.prompt.md`.
 
 Create:
 
@@ -328,13 +328,13 @@ Define terminal roles such as Dispatcher, Software Workflow, IaC Workflow, Docke
 
 ### 6. Implementation
 
-Use `.github/agents/workspace-implementer-agent.prompt.md`.
+Use `.ariadne/agents/workspace-implementer-agent.prompt.md`.
 
 Implement only after requirements, validation, and design artifacts exist. Preserve existing user settings unless the workflow explicitly replaces them. Prefer additive `.vscode` changes and document any migration.
 
 ### 7. Test And Evidence
 
-Use `.github/agents/workspace-test-agent.prompt.md`.
+Use `.ariadne/agents/workspace-test-agent.prompt.md`.
 
 Create:
 
@@ -347,7 +347,7 @@ Test JSON validity, task labels, terminal profile names, debug configs, Docker i
 
 ### 8. Documentation
 
-Use `.github/agents/workspace-documentation-writer-agent.prompt.md`.
+Use `.ariadne/agents/workspace-documentation-writer-agent.prompt.md`.
 
 Update the target workspace README or setup docs with setup steps, recommended extensions, tasks, troubleshooting, and evidence capture instructions.
 

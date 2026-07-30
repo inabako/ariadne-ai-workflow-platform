@@ -1,4 +1,4 @@
-# Web SVG Layout Mode
+﻿# Web SVG Layout Mode
 
 SVGで表現された画面レイアウト案を、Web画面向けのroute、section、component責務、responsive layout、React候補、Playwright候補へ変換する共通サブフローです。Next.jsは、このフローが扱うWeb framework profileの1つです。
 
@@ -96,7 +96,7 @@ work/<issue-id>/
     review/web-svg-layout-review.md
 ```
 
-`web-svg-layout-state.json` は `.github/schemas/web-svg-layout-state.schema.json` に従い、親workflowへの返却可否と成果物pathを記録します。成果物は `context/artifact-index.json` にも登録されます。
+`web-svg-layout-state.json` は `.ariadne/schemas/web-svg-layout-state.schema.json` に従い、親workflowへの返却可否と成果物pathを記録します。成果物は `context/artifact-index.json` にも登録されます。
 
 SVGが無い場合も `work/<issue-id>/context/web-svg-layout-state.json` へ `status: skipped` を残します。
 

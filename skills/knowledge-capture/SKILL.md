@@ -1,4 +1,4 @@
----
+﻿---
 name: knowledge-capture
 description: Finalize a completed corrective action issue by generating PR material, checking docs evidence placement, extracting RAG/docs candidates, and preparing archive readiness without changing implementation. Use when the user selects /knowledge-capture or asks to run finalization and knowledge recovery for work/issue-XXX.
 ---
@@ -7,7 +7,7 @@ description: Finalize a completed corrective action issue by generating PR mater
 
 ## Default Language
 
-Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.ariadne/shared/output-language-policy.md`.
 
 ## Purpose
 

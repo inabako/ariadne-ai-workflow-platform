@@ -34,6 +34,8 @@ from runtime.ctl.ctl_self_improvement_adapter import run_self_improvement
 from runtime.ctl.ctl_tools_adapter import run_tools
 from runtime.ctl.ctl_work_adapter import run_work_cleanup
 from runtime.ctl.ctl_workflow_adapter import run_workflow
+from runtime.release import manifest as release_manifest
+from runtime.release import validation as release_validation
 
 
 HelperModule = Any
@@ -1210,6 +1212,48 @@ def _handle_tools(args: argparse.Namespace, repo_root: Path, registry: dict[str,
         return 1, f"Unknown tools command: {tools_command}\n"
 
 
+def _handle_release(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    release_command = getattr(args, "release_command", None)
+    if release_command is None:
+        return 1, (
+            "Release Runtime\n\n"
+            "Usage:\n"
+            "  aiwfctl release validate --json\n"
+            "  aiwfctl release manifest --artifact LICENSE\n"
+        )
+    if release_command == "validate":
+        result = release_validation.validation_result(
+            repo_root,
+            getattr(args, "expected_license", None),
+            fail_on_warning=getattr(args, "fail_on_warning", False),
+        )
+        if getattr(args, "json", False):
+            output = json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+        else:
+            output = release_validation.format_validation_result(result)
+        return (0 if result.get("status") == "pass" else 1), output
+    if release_command == "manifest":
+        try:
+            result = release_manifest.build_manifest(
+                repo_root,
+                getattr(args, "version", None),
+                getattr(args, "tag", None),
+                getattr(args, "artifact", []),
+                getattr(args, "generated_at_utc", None),
+            )
+        except FileNotFoundError as exc:
+            return 1, f"{exc}\n"
+        output = json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+        if getattr(args, "output", ""):
+            output_path = (repo_root / args.output).resolve()
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(output, encoding="utf-8")
+            result["output"] = str(output_path.relative_to(repo_root))
+            output = json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+        return 0, output
+    return 1, f"Unknown release command: {release_command}\n"
+
+
 COMMAND_HANDLERS: dict[str, CommandHandler] = {
     "env": _handle_env,
     "context": _handle_context,
@@ -1236,6 +1280,7 @@ COMMAND_HANDLERS: dict[str, CommandHandler] = {
     "integration": _handle_integration,
     "preflight": _handle_preflight,
     "tools": _handle_tools,
+    "release": _handle_release,
     "doctor": _handle_doctor,
     "help": _handle_help,
 }

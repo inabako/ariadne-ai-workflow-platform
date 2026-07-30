@@ -1,4 +1,4 @@
-# Workflow Help CLI
+﻿# Workflow Help CLI
 
 この文書は、AI workflow prompt command のヘルプをターミナルから確認するための `aiwfctl` 入口を説明します。
 
@@ -197,22 +197,22 @@ work/db/ariadne-knowledge-platform/registries/search_terms.json
 構造定義は次に置きます。
 
 ```text
-.github/schemas/workflow-help.schema.json
-.github/schemas/search-terms.schema.json
+.ariadne/schemas/workflow-help.schema.json
+.ariadne/schemas/search-terms.schema.json
 ```
 
-`db/registries/` はruntime横断で参照するregistry実体、`.github/schemas/` は構造定義専用です。
+`db/registries/` はruntime横断で参照するregistry実体、`.ariadne/schemas/` は構造定義専用です。
 
 ## 更新ルール
 
-ヘルプの追加、修正、検索性改善は、必要に応じて `.github/agents/workflow-help-curator-agent.prompt.md` を使います。
+ヘルプの追加、修正、検索性改善は、必要に応じて `.ariadne/agents/workflow-help-curator-agent.prompt.md` を使います。
 
 workflow prompt commandを追加、削除、引数変更した場合は、次を更新します。
 
 1. `work/db/ariadne-knowledge-platform/registries/workflow_help.json`
 2. `work/db/ariadne-knowledge-platform/registries/search_terms.json`
 3. `db/registries/registry.duckdb`
-4. `.github/schemas/workflow-help.schema.json` / `.github/schemas/search-terms.schema.json` が必要なら更新
+4. `.ariadne/schemas/workflow-help.schema.json` / `.ariadne/schemas/search-terms.schema.json` が必要なら更新
 5. `docs/reference/workflow-help.md`
 6. `runtime/tests/test_ctl_help.py`
 

@@ -1,4 +1,4 @@
-# GitHub Knowledge Maintenance
+﻿# GitHub Knowledge Maintenance
 
 `/github-knowledge-maintenance` は、GitHub Repositoryを長期的な知識資産として保守するworkflowです。
 
@@ -244,7 +244,7 @@ work/<work-id>/context/github-knowledge-analysis.json
 Schema:
 
 ```text
-.github/schemas/github-knowledge-analysis.schema.json
+.ariadne/schemas/github-knowledge-analysis.schema.json
 ```
 
 ## Context First

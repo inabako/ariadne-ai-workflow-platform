@@ -1,4 +1,4 @@
----
+﻿---
 name: requirement-discovery
 description: Create a completed target-system requirement document from a human bullet-list draft in work/requirements/draft by inspecting it, asking blocking clarification questions, using optional RAG context, preparing a review draft, and saving the final document to work/requirements only after human OK. Use when the user selects /requirement-discovery or asks to create requirements from draft bullets.
 ---
@@ -7,7 +7,7 @@ description: Create a completed target-system requirement document from a human 
 
 ## Default Language
 
-Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.github/shared/output-language-policy.md`.
+Respond to the user in Japanese by default. Human-facing reports, docs, reviews, evidence, and RAG source Markdown must follow `.ariadne/shared/output-language-policy.md`.
 
 ## Slash Command
 
@@ -20,7 +20,7 @@ Use this skill when the user specifies:
 This skill delegates the detailed workflow to:
 
 ```text
-.github/prompts/requirement-discovery.prompt.md
+.ariadne/prompts/requirement-discovery.prompt.md
 ```
 
 ## Input Location
@@ -106,7 +106,7 @@ Run this gate after first inspection and before requirement review draft creatio
 Use:
 
 ```text
-.github/prompts/noise-reduction-phase.prompt.md
+.ariadne/prompts/noise-reduction-phase.prompt.md
 templates/workflows/noise-reduction/
 ```
 

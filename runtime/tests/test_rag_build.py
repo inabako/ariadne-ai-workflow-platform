@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -183,7 +183,7 @@ def test_register_rag_build_context_uses_work_dir_name(monkeypatch, tmp_path: Pa
     assert calls[0]["work_dir"] == tmp_path / "work" / "custom-issue"
     assert calls[0]["work_id"] == "custom-issue"
     assert calls[0]["context_type"] == "rag-build-run"
-    assert calls[0]["schema"] == ".github/schemas/rag-build-run.schema.json"
+    assert calls[0]["schema"] == ".ariadne/schemas/rag-build-run.schema.json"
 
 
 def test_rag_build_run_with_standardize_and_context_registration(monkeypatch, tmp_path: Path) -> None:

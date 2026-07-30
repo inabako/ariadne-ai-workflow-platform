@@ -1,0 +1,35 @@
+name: 機能要望
+description: workflow、runtime、documentation、platformの改善を提案します。
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: intent
+    attributes:
+      label: 意図
+      description: 何を改善したいですか？
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: 現在の動作
+  - type: textarea
+    id: proposed
+    attributes:
+      label: 提案する動作
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 証跡と背景
+      description: 関連するdocs、artifact、workflow outputがあれば記載してください。
+  - type: checkboxes
+    id: review
+    attributes:
+      label: Review Gate
+      options:
+        - label: release、security、license、Human Gate policyに影響する可能性があります。
+          required: false

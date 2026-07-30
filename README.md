@@ -1,8 +1,10 @@
-# Ariadne AI Workflow Platform
+﻿# Ariadne AI Workflow Platform
 
 <p align="center">
   <img src="docs/brand/logo/ariadne-logo-master.svg" alt="Ariadne AI Workflow Platform logo" width="360">
 </p>
+
+## Overview
 
 Ariadne AI Workflow Platform は、AI Agent が複雑なworkflow迷宮を迷わず進むためのContext First型AI workflow repositoryです。
 
@@ -16,7 +18,7 @@ Ariadne は特定ドメイン専用ではなく、対象システムの責務境
 
 この repository は、現場で学びながら、安全に試し、安全に止め、安全に戻し、学びを次の workflow / Agent / RAG に残すための foundation です。
 
-## Ariadne の責務
+## Core Concepts
 
 Ariadne は、AI Agent が作業を進める前に必要な文脈、判断、証跡、人間確認点をそろえるための workflow platform です。
 
@@ -75,6 +77,20 @@ GUI SVGはIssue作成前に`work/requirements/svg-input/`へ配置します。Py
 
 Ariadne workflow では、作れるかより先に、安全に試せるか、止められるか、戻せるか、観測できるかを確認します。
 
+## Architecture
+
+ARIADNEの構成は、prompt、agent、schema、runtime、workflow document、template、work artifactを分離する形です。全体像は [Architecture Overview](docs/architecture/overview.md) を参照してください。
+
+主な設計文書:
+
+- [aiwfctl Architecture](docs/architecture/aiwfctl-architecture.md)
+- [Runtime Architecture](docs/architecture/runtime-architecture.md)
+- [Workflow Dispatch](docs/architecture/workflow-dispatch.md)
+- [State and Artifact Management](docs/architecture/state-and-artifact-management.md)
+- [Evidence and Completion](docs/architecture/evidence-and-completion.md)
+- [Human Gate](docs/architecture/human-gate.md)
+- [Retry and Resume](docs/architecture/retry-and-resume.md)
+
 ## Repository Map
 
 ```text
@@ -88,6 +104,14 @@ work/       per-workflow artifacts and cloned sources
 ```
 
 詳しくは [Repository Structure](docs/reference/repository-structure.md) を参照してください。
+
+## Installation
+
+現時点では、ARIADNEはローカルrepository上で `aiwfctl` とworkflow documentを使って運用します。RuntimeのPython環境は `runtime/pyproject.toml` を基準にします。
+
+```powershell
+uv run --project runtime python -m pytest runtime/tests
+```
 
 ## Documentation
 
@@ -105,10 +129,16 @@ work/       per-workflow artifacts and cloned sources
 | Data model | [docs/reference/data-model.md](docs/reference/data-model.md) |
 | RAG | [docs/reference/rag.md](docs/reference/rag.md) |
 | Operations | [docs/reference/operations.md](docs/reference/operations.md) |
+| Architecture | [docs/architecture/overview.md](docs/architecture/overview.md) |
+| Release | [docs/release/release-policy.md](docs/release/release-policy.md) |
+| Citation | [docs/citation/citation-guide.md](docs/citation/citation-guide.md) |
+| Legal | [docs/legal/license-policy.md](docs/legal/license-policy.md) |
 
-## Runtime And Skills
+## aiwfctl
 
-Runtime helper CLI は `runtime/` にあります。詳細は [Runtime](docs/reference/runtime.md) と `runtime/**/README.md` を参照してください。
+`aiwfctl` は ARIADNE のCLIエントリーポイントです。サブコマンドを通じてworkflowまたはruntime helperを呼び出し、状態、成果物、evidence、完了条件、Human Gate、復帰手順を扱います。
+
+Runtime helper CLI は `runtime/` にあります。詳細は [Runtime](docs/reference/runtime.md)、[Workflow Help CLI](docs/reference/workflow-help.md)、[aiwfctl Architecture](docs/architecture/aiwfctl-architecture.md) を参照してください。
 
 AI workflow prompt command のスペル、必須引数、引数の設定内容、処理概要、詳細をターミナルから確認する場合は `aiwfctl help` を使います。
 VSCode統合ターミナルでは `.vscode/settings.json` により `runtime/windows-script` が `PATH` に追加されるため、短い `aiwfctl` で呼び出せます。
@@ -177,6 +207,18 @@ Skill entrypoint は `skills/` にあります。対応関係は `skills/skill-i
 
 `skills/` はこの repository の source of truth です。Codex候補として表示するには、必要に応じて `C:\Users\User\.codex\skills` からJunctionで接続します。詳しくは [Skill Discovery](docs/reference/skill-discovery.md) を参照してください。
 
+## Runtime and Workflow Model
+
+Workflowは `.ariadne/prompts/` と `docs/workflows/` を入口にし、runtime helperは `runtime/` で実行可能な操作へ落とし込みます。Shell wrapperは薄く保ち、判断とartifact生成はPython runtimeまたはdocumented workflowへ寄せます。
+
+## State, Artifacts, and Evidence
+
+ARIADNEでは会話ログではなく、状態、成果物、証跡をrepository上のartifactとして残します。詳細は [State and Artifact Management](docs/architecture/state-and-artifact-management.md) と [Evidence and Completion](docs/architecture/evidence-and-completion.md) を参照してください。
+
+## Human Gates and Recovery
+
+ライセンス、公開、Git履歴、security、不可逆操作はHuman Gateの対象です。中断後はstateとartifactから復帰できることを重視します。詳細は [Human Gate](docs/architecture/human-gate.md) と [Retry and Resume](docs/architecture/retry-and-resume.md) を参照してください。
+
 ## Environment
 
 GitHub / SCM 連携で必要な値は repository root の環境ファイルで管理します。
@@ -238,6 +280,35 @@ uv run --project runtime python runtime/workflow/validate_output_language.py `
   --fail-on-violation
 ```
 
+## Releases
+
+公開前には [Release Policy](docs/release/release-policy.md) と [Release Checklist](docs/release/release-checklist.md) を確認し、release manifestと検証結果を残します。
+
+```powershell
+aiwfctl release validate
+aiwfctl release manifest --artifact LICENSE
+```
+
+## Citation
+
+project、publication、presentation、technical reportでARIADNEを利用する場合は、[CITATION.cff](CITATION.cff) のmetadataを使って引用してください。
+
+未確定の著者名、公開URL、初回公開日は推測せず、[Citation Guide](docs/citation/citation-guide.md) に従って公開前に確認します。
+
+## Contributing
+
+contribution policyは [CONTRIBUTING.md](CONTRIBUTING.md) に記載しています。英語版は [CONTRIBUTING.en.md](CONTRIBUTING.en.md) を参照してください。
+
+## Security
+
+security policyは [SECURITY.md](SECURITY.md) に記載しています。英語版は [SECURITY.en.md](SECURITY.en.md) を参照してください。public security contactはまだrelease-blocking placeholderです。
+
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE).
+このprojectは GNU Affero General Public License Version 3 or any later version のもとでlicenseされます。
+
+SPDX-License-Identifier: `AGPL-3.0-or-later`
+
+ARIADNEをtoolとして使用して生成されたcode、document、design、configuration、imageその他のartifactには、ARIADNEを使用したという理由だけではARIADNEのAGPL licenseを自動適用する方針ではありません。
+
+ただし、生成artifactにARIADNEのsource codeまたはAGPL対象materialが含まれる場合は、その部分または結合物について別途license上の義務が生じる可能性があります。詳細は [License Policy](docs/legal/license-policy.md) を参照してください。

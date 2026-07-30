@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "status": "scaffold",
+  "generated_for": "oss-release-foundation",
+  "project_license": "AGPL-3.0-or-later",
+  "dependencies": [
+    {
+      "name": "duckdb",
+      "declared_requirement": "duckdb>=1.1",
+      "license_review_status": "pending"
+    },
+    {
+      "name": "langgraph",
+      "declared_requirement": "langgraph>=1.2.9",
+      "license_review_status": "pending"
+    }
+  ],
+  "notes": [
+    "Dependency license names and compatibility must be confirmed before public release.",
+    "This scaffold does not replace a full dependency license audit."
+  ]
+}

@@ -1,4 +1,4 @@
-# Runtime pytest UTテスト項目表
+﻿# Runtime pytest UTテスト項目表
 
 作成日: 2026-07-07
 
@@ -59,7 +59,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | RT-UT-007 | `runtime/tests/test_dispatcher_context.py` | 12 | 12 | `runtime/workflow/dispatcher_context.py` | workflow/tool candidate scoring、Human Check、registry fallback、context生成 | Intentからworkflow/tool選定へ進むdispatcherの判断根拠を固定する |
 | RT-UT-008 | `runtime/tests/test_docs_sync_workflow.py` | 11 | 11 | `runtime/workflow/docs_sync.py` | docs-sync init、SCM context gate、analysis template、Issue body、CLI dispatch | 実装とdocs差分をdocs-only workflowとして安全に切り出す |
 | RT-UT-009 | `runtime/tests/test_flutter_multiplatform.py` | 16 | 16 | `runtime/workflow/flutter_multiplatform.py`、`runtime/ctl/ctl.py` | target未指定Human Check、yaml/CLI target読込、host OS別build可否、boilerplate展開、verify/build evidence、WebDriver不足判断、finalize完了判定、aiwfctl入口 | Flutter multi-platform開発でtarget/platform/build環境を推測せず、実試験証跡と完了判定をContext Firstで後続workflowへ渡す |
-| RT-UT-009A | `runtime/tests/test_gate_restart.py` | 4 | 4 | `runtime/common/gate_restart.py`, `.github/shared/gate-restart-policy.md`, `.github/schemas/gate-restart.schema.json` | gate failure後の同一gate再開、repair command必須化、pass/fail後の固定遷移 | gate異常を下流工程へ飛ばさず、修復後も同じgateから本線復帰させる |
+| RT-UT-009A | `runtime/tests/test_gate_restart.py` | 4 | 4 | `runtime/common/gate_restart.py`, `.ariadne/shared/gate-restart-policy.md`, `.ariadne/schemas/gate-restart.schema.json` | gate failure後の同一gate再開、repair command必須化、pass/fail後の固定遷移 | gate異常を下流工程へ飛ばさず、修復後も同じgateから本線復帰させる |
 | RT-UT-010 | `runtime/tests/test_github_knowledge_maintenance.py` | 50 | 50 | `runtime/workflow/github_knowledge_maintenance.py` | GitHub knowledge init、operation gate、tool selection、artifact integrity、repair/rebase detect/plan/review-intake/package/apply/sync plan/apply/RAG candidate、resume encoding gate | GitHub情報を長期知識資産化する前のhuman gateと出力を守る |
 | RT-UT-011 | `runtime/tests/test_github_runtime.py` | 34 | 38 | `runtime/github/*`, `runtime/ctl/ctl.py` | REST/GraphQL API、Issue作成、PR作成、linked branch、title/body生成、error response、`aiwfctl github issue/pr` | GitHub mutationをmockで安全に検証し、実API依存を局所化する |
 | RT-UT-012 | `runtime/tests/test_iac_template.py` | 6 | 6 | `runtime/workflow/iac_template.py`、`runtime/ctl/ctl.py` | IaC template catalog、OpenTelemetry Collector template copy、overwrite guard、health evidence、Terraform ENV path、aiwfctl route | Infrastructure boilerplateをtemplate原本からwork配下へ安全に展開し、非破壊healthとContext First evidenceを残す |

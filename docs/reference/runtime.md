@@ -1,4 +1,4 @@
-# Runtime
+﻿# Runtime
 
 `runtime/` は、workflow を実行・補助するための処理機能を置く場所です。
 
@@ -6,7 +6,7 @@
 
 通常のworkflow実行では、`aiwfctl` / `runtime/ctl/ctl.py` を正式入口として使います。
 
-- 共通policyは `.github/shared/runtime-entrypoint-policy.md` です。
+- 共通policyは `.ariadne/shared/runtime-entrypoint-policy.md` です。
 - `runtime/workflow/*.py` は内部実装moduleです。runtime開発や単体テストを除き、workflow手順・SKILL・agent promptから直接実行しません。
 - Context First は `aiwfctl context ...` で確認します。
 - Human Check registry は `aiwfctl human-gate ...` で確認します。

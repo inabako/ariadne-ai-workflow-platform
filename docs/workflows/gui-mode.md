@@ -1,4 +1,4 @@
-# GaC / UaC GUI Mode
+﻿# GaC / UaC GUI Mode
 
 SVGで表現された人間の画面意図を、Semantic Layout Graph、Widget Mapping、Layout Spec、PyQt6候補、QTest候補へ変換し、既存Issue駆動workflowへ安全に返す共通拡張です。
 
@@ -114,7 +114,7 @@ work/<issue-id>/
     review/gac-uac-review.md
 ```
 
-`gui-mode-state.json`は`.github/schemas/gui-mode-state.schema.json`に従い、親workflowへの返却可否と成果物pathを記録します。成果物は`context/artifact-index.json`にも登録されます。
+`gui-mode-state.json`は`.ariadne/schemas/gui-mode-state.schema.json`に従い、親workflowへの返却可否と成果物pathを記録します。成果物は`context/artifact-index.json`にも登録されます。
 
 SVGが無い場合も`work/<issue-id>/context/gui-mode-state.json`へ`status: skipped`を残します。SVGがある場合は、元inbox pathとIssue配下へ取り込んだpathをstateへ記録し、同じstateを`context/`と`gac-uac/`の両方へ保存します。
 

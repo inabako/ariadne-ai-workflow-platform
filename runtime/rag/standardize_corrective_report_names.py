@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -100,7 +100,7 @@ def replace_text_references(repo_root: Path, path_map: dict[str, str]) -> list[s
         repo_root / "README.md",
         repo_root / "AGENT.md",
         *repo_root.glob("skills/**/*.md"),
-        *repo_root.glob(".github/prompts/**/*.md"),
+        *repo_root.glob(".ariadne/prompts/**/*.md"),
         *repo_root.glob("runtime/**/*.md"),
     ]
     for path in sorted(set(targets)):

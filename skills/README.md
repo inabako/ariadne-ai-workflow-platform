@@ -1,4 +1,4 @@
-# Workflow Skills
+﻿# Workflow Skills
 
 このディレクトリは、Ariadne workflow を開始するための Skill entrypoint を格納します。
 
@@ -93,7 +93,7 @@ C:\Users\User\.codex\skills\knowledge-capture
   -> C:\github\ariadne-ai-workflow-platform\skills\knowledge-capture
 ```
 
-VS Code Copilot Chat の `/` 候補は `.github/prompts/*.prompt.md`、Codex Skill 候補は `C:\Users\User\.codex\skills` を主に見ます。
+VS Code Copilot Chat の `/` 候補は `.ariadne/prompts/*.prompt.md`、Codex Skill 候補は `C:\Users\User\.codex\skills` を主に見ます。
 
 ## Corrective Action Report Rule
 

@@ -1,4 +1,4 @@
-# 実行環境選択
+﻿# 実行環境選択
 
 AI workflowを実行する前に、OS、shell、runtime、toolの違いによる失敗を避けるため、`aiwfctl env` で実行環境を選択します。
 
@@ -45,8 +45,8 @@ db/registries/registry.duckdb
 schemaは次です。
 
 ```text
-.github/schemas/environment-selection.schema.json
-.github/schemas/workflow-environment-profiles.schema.json
+.ariadne/schemas/environment-selection.schema.json
+.ariadne/schemas/workflow-environment-profiles.schema.json
 ```
 
 ## CLI
