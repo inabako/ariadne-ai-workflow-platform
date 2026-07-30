@@ -35,4 +35,7 @@ runtime/.coverage_html/
 runtime/.coverage.json
 logs/
 runtime/logs/
+scancode-output/
+reuse-lint-output/
+.act-artifacts/
 .gitignore

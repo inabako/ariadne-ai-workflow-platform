@@ -137,6 +137,7 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 | [Release Checklist](release/release-checklist.md) | 公開前、テスト、文書、release、post-release確認 |
 | [Versioning Policy](release/versioning-policy.md) | tag、package version、development noteの関係 |
 | [Citation Guide](citation/citation-guide.md) | `CITATION.cff` の未確定値と公開前確認 |
+| [ScanCode GitHub Actions](security/scancode-github-actions.md) | OSS公開前のScanCode license audit workflowとローカル予行 |
 
 ## Legal文書
 

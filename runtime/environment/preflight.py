@@ -253,6 +253,70 @@ def docker_compose_check(*, required: bool) -> Check:
     )
 
 
+def docker_daemon_check(*, required: bool) -> Check:
+    if shutil.which("docker") is None:
+        return Check(
+            id="docker:daemon",
+            label="Docker daemon",
+            kind="docker-daemon",
+            required=required,
+            ok=False,
+            detected="",
+            install_hint=(
+                "Docker Desktop is required for local act rehearsal of GitHub Actions. "
+                "Install and start Docker Desktop, then verify: docker info."
+            ),
+            install_command="winget install --id Docker.DockerDesktop -e",
+        )
+    completed = run_command([
+        "docker",
+        "info",
+        "--format",
+        "DockerServer={{.ServerVersion}} OS={{.OperatingSystem}} Architecture={{.Architecture}}",
+    ])
+    return Check(
+        id="docker:daemon",
+        label="Docker daemon",
+        kind="docker-daemon",
+        required=required,
+        ok=completed.returncode == 0,
+        detected=completed.stdout.strip() if completed.returncode == 0 else (completed.stderr or "").strip(),
+        install_hint=(
+            "Docker Desktop must be running for local act rehearsal. "
+            "GitHub Actions hosted runners do not require local Docker Desktop."
+        ),
+        install_command="winget install --id Docker.DockerDesktop -e",
+    )
+
+
+def act_cli_check(*, required: bool) -> Check:
+    if shutil.which("act") is None:
+        return Check(
+            id="act:version",
+            label="act",
+            kind="github-actions-local-runner",
+            required=required,
+            ok=False,
+            detected="",
+            install_hint=(
+                "Install act to rehearse .github/workflows/scancode.yml locally. "
+                "GitHub Actions hosted execution does not require act."
+            ),
+            install_command="winget install --id nektos.act -e",
+        )
+    completed = run_command(["act", "--version"])
+    return Check(
+        id="act:version",
+        label="act",
+        kind="github-actions-local-runner",
+        required=required,
+        ok=completed.returncode == 0,
+        detected=completed.stdout.strip() if completed.returncode == 0 else (completed.stderr or "").strip(),
+        install_hint="act must be callable before local GitHub Actions rehearsal can run.",
+        install_command="winget install --id nektos.act -e",
+    )
+
+
 def github_cli_version_check(*, required: bool) -> Check:
     if shutil.which("gh") is None:
         return Check(
@@ -695,6 +759,26 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
                 required=True,
                 install_hint="Pass --source-dir pointing at the target workspace root.",
             ))
+        checks.append(act_cli_check(required=False))
+        checks.append(docker_daemon_check(required=False))
+
+    if args.profile == "scancode-audit":
+        checks.append(path_check(
+            repo_root / ".github" / "workflows" / "scancode.yml",
+            check_id="path:scancode-workflow",
+            label=".github/workflows/scancode.yml",
+            required=True,
+            install_hint="Add the ScanCode GitHub Actions workflow before local rehearsal.",
+        ))
+        checks.append(path_check(
+            repo_root / "docs" / "security" / "scancode-github-actions.md",
+            check_id="path:scancode-doc",
+            label="docs/security/scancode-github-actions.md",
+            required=True,
+            install_hint="Document ScanCode workflow operation and local rehearsal steps.",
+        ))
+        checks.append(act_cli_check(required=False))
+        checks.append(docker_daemon_check(required=False))
 
     if args.profile == "web-nextjs":
         checks.append(which_check(
@@ -900,6 +984,7 @@ def build_parser() -> argparse.ArgumentParser:
             "docker-compose",
             "runtime-dev",
             "vscode-environment",
+            "scancode-audit",
             "flutter",
             "github-cli",
             "github-knowledge-maintenance",

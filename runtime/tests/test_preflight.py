@@ -80,6 +80,12 @@ def test_preflight_parser_accepts_runtime_dev_profile() -> None:
     assert args.profile == "runtime-dev"
 
 
+def test_preflight_parser_accepts_scancode_audit_profile() -> None:
+    args = preflight.build_parser().parse_args(["--profile", "scancode-audit"])
+
+    assert args.profile == "scancode-audit"
+
+
 def test_uv_runtime_check_uses_repo_local_wrapper_when_uv_is_not_on_path(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -192,6 +198,45 @@ def test_docker_compose_check_reports_compose_error(monkeypatch: pytest.MonkeyPa
 
     assert check.ok is False
     assert check.detected == "compose missing"
+
+
+def test_act_cli_check_reports_missing_and_detected(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: None)
+
+    missing = preflight.act_cli_check(required=False)
+
+    assert missing.id == "act:version"
+    assert missing.required is False
+    assert missing.ok is False
+    assert missing.install_command == "winget install --id nektos.act -e"
+
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: "C:/tools/act.exe")
+    monkeypatch.setattr(
+        preflight,
+        "run_command",
+        lambda command, cwd=None, env=None: subprocess.CompletedProcess(command, 0, stdout="act version 0.2.89\n", stderr=""),
+    )
+
+    ok = preflight.act_cli_check(required=False)
+
+    assert ok.ok is True
+    assert ok.detected == "act version 0.2.89"
+
+
+def test_docker_daemon_check_warns_when_not_running(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: "C:/Docker/docker.exe")
+    monkeypatch.setattr(
+        preflight,
+        "run_command",
+        lambda command, cwd=None, env=None: subprocess.CompletedProcess(command, 1, stdout="", stderr="daemon unavailable\n"),
+    )
+
+    check = preflight.docker_daemon_check(required=False)
+
+    assert check.id == "docker:daemon"
+    assert check.required is False
+    assert check.ok is False
+    assert "daemon unavailable" in check.detected
 
 
 def test_github_cli_checks_split_version_auth_and_env_token(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -443,7 +488,11 @@ def test_docker_compose_profile_declares_required_docker_checks(monkeypatch: pyt
                 "runtime:pytest",
             },
         ),
-        ("vscode-environment", {"exe:code", "exe:docker", "exe:go", "path:msys2-bash", "path:target-workspace"}),
+        (
+            "vscode-environment",
+            {"exe:code", "exe:docker", "exe:go", "path:msys2-bash", "path:target-workspace", "act:version", "docker:daemon"},
+        ),
+        ("scancode-audit", {"path:scancode-workflow", "path:scancode-doc", "act:version", "docker:daemon"}),
     ],
 )
 def test_build_checks_profiles_add_expected_checks(
@@ -478,6 +527,33 @@ def test_build_checks_profiles_add_expected_checks(
     checks = preflight.build_checks(args, tmp_path)
 
     assert expected_ids <= {check.id for check in checks}
+
+
+def test_scancode_audit_profile_declares_optional_local_rehearsal_checks(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    (tmp_path / ".github" / "workflows").mkdir(parents=True)
+    (tmp_path / ".github" / "workflows" / "scancode.yml").write_text("name: ScanCode\n", encoding="utf-8")
+    (tmp_path / "docs" / "security").mkdir(parents=True)
+    (tmp_path / "docs" / "security" / "scancode-github-actions.md").write_text("# ScanCode\n", encoding="utf-8")
+    monkeypatch.setattr(preflight.shutil, "which", lambda name: None)
+    args = argparse.Namespace(
+        profile="scancode-audit",
+        source_dir="",
+        protocol_dir="",
+        support_branch="develop",
+        msys2_root=r"C:\msys64",
+        work_id="issue-1",
+    )
+
+    checks = preflight.build_checks(args, tmp_path)
+
+    by_id = {check.id: check for check in checks}
+    assert by_id["path:scancode-workflow"].required is True
+    assert by_id["path:scancode-doc"].required is True
+    assert by_id["act:version"].required is False
+    assert by_id["docker:daemon"].required is False
 
 
 def test_build_checks_localty_gui_and_profiles_without_source_dir(

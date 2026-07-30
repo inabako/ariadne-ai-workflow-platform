@@ -13,6 +13,8 @@ from typing import Iterable
 REQUIRED_FILES = [
     "CITATION.cff",
     "LICENSE",
+    "LICENSES/AGPL-3.0-or-later.txt",
+    "REUSE.toml",
     "README.md",
     "CHANGELOG.md",
     "CHANGELOG.en.md",
@@ -26,6 +28,9 @@ REQUIRED_FILES = [
     "docs/release/release-checklist.md",
     "docs/release/versioning-policy.md",
     "docs/citation/citation-guide.md",
+    "docs/security/scancode-github-actions.md",
+    "docs/legal/evidence/reuse-lint-local-rehearsal.md",
+    ".github/workflows/reuse-lint.yml",
 ]
 
 REQUIRED_ARCHITECTURE_DOCS = [

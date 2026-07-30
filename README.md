@@ -307,7 +307,7 @@ security policyは [SECURITY.md](SECURITY.md) に記載しています。英語�
 
 このprojectは GNU Affero General Public License Version 3 or any later version のもとでlicenseされます。
 
-SPDX-License-Identifier: `AGPL-3.0-or-later`
+SPDX license identifier: `AGPL-3.0-or-later`
 
 ARIADNEをtoolとして使用して生成されたcode、document、design、configuration、imageその他のartifactには、ARIADNEを使用したという理由だけではARIADNEのAGPL licenseを自動適用する方針ではありません。
 

@@ -1,0 +1,140 @@
+name: REUSE Lint
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  REUSE_VERSION: "6.2.0"
+  PYTHON_VERSION: "3.12"
+  REUSE_OUTPUT_DIR: reuse-lint-output
+
+jobs:
+  reuse-lint:
+    name: Check REUSE compliance
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout ARIADNE
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install REUSE
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "reuse[charset-normalizer]==${REUSE_VERSION}"
+          reuse --version
+
+      - name: Prepare output directory
+        run: |
+          rm -rf "${REUSE_OUTPUT_DIR}"
+          mkdir -p "${REUSE_OUTPUT_DIR}"
+
+      - name: Run REUSE lint
+        run: |
+          set +e
+          reuse lint > "${REUSE_OUTPUT_DIR}/reuse-lint.txt" 2>&1
+          status="$?"
+          set -e
+          printf "%s\n" "${status}" > "${REUSE_OUTPUT_DIR}/reuse-lint.exit-code"
+          cat "${REUSE_OUTPUT_DIR}/reuse-lint.txt"
+
+      - name: Write REUSE lint summary and metadata
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import re
+          import subprocess
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          output_dir = Path(os.environ.get("REUSE_OUTPUT_DIR", "reuse-lint-output"))
+          output_dir.mkdir(exist_ok=True)
+          lint_path = output_dir / "reuse-lint.txt"
+          exit_code_path = output_dir / "reuse-lint.exit-code"
+          lint_text = lint_path.read_text(encoding="utf-8", errors="replace") if lint_path.is_file() else ""
+          exit_code = int(exit_code_path.read_text(encoding="utf-8").strip()) if exit_code_path.is_file() else 1
+
+          summary_values = {}
+          for line in lint_text.splitlines():
+              match = re.match(r"\* ([^:]+):\s*(.*)$", line)
+              if match:
+                  summary_values[match.group(1).strip()] = match.group(2).strip()
+
+          version_output = []
+          try:
+              version_output = subprocess.check_output(["reuse", "--version"], text=True).strip().splitlines()
+          except Exception:
+              pass
+
+          metadata = {
+              "repository": "ARIADNE",
+              "scanner": "REUSE lint",
+              "scannerVersion": os.environ.get("REUSE_VERSION", ""),
+              "scannerVersionOutput": version_output,
+              "workflow": ".github/workflows/reuse-lint.yml",
+              "job": "reuse-lint",
+              "target": ".",
+              "localSimulation": os.environ.get("ACT", "").lower() == "true",
+              "exitCode": exit_code,
+              "status": "pass" if exit_code == 0 else "fail",
+              "summary": summary_values,
+              "generatedAtUtc": datetime.now(timezone.utc).isoformat(),
+          }
+          (output_dir / "execution-metadata.json").write_text(
+              json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          lines = [
+              "# REUSE Lint Summary",
+              "",
+              "- scanner: REUSE lint",
+              f"- scanner version: `{metadata['scannerVersion']}`",
+              f"- target: `{metadata['target']}`",
+              f"- local simulation: `{str(metadata['localSimulation']).lower()}`",
+              f"- status: `{metadata['status']}`",
+              f"- exit code: `{metadata['exitCode']}`",
+              "",
+              "## REUSE Summary",
+              "",
+          ]
+          if summary_values:
+              for key, value in summary_values.items():
+                  lines.append(f"- {key}: `{value}`")
+          else:
+              lines.append("- no summary values parsed")
+          lines.extend([
+              "",
+              "REUSE lint checks machine-readable copyright and license metadata.",
+          ])
+          (output_dir / "reuse-lint-summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+          PY
+
+      - name: Upload REUSE lint results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ariadne-reuse-lint-results
+          path: reuse-lint-output/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail on REUSE lint findings
+        if: always()
+        run: |
+          status="$(cat "${REUSE_OUTPUT_DIR}/reuse-lint.exit-code")"
+          if [ "${status}" != "0" ]; then
+            echo "REUSE lint failed with exit code ${status}."
+            exit "${status}"
+          fi

@@ -467,6 +467,80 @@
         "cwd": "${workspaceFolder}"
       },
       "problemMatcher": []
+    },
+    {
+      "label": "ARIADNE: List ScanCode GitHub Actions Jobs",
+      "type": "shell",
+      "command": "act",
+      "args": [
+        "workflow_dispatch",
+        "--list",
+        "-W",
+        "${workspaceFolder}/.github/workflows/scancode.yml",
+        "-P",
+        "ubuntu-latest=catthehacker/ubuntu:act-22.04"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "ARIADNE: Rehearse ScanCode Workflow",
+      "type": "shell",
+      "command": "act",
+      "args": [
+        "workflow_dispatch",
+        "-W",
+        "${workspaceFolder}/.github/workflows/scancode.yml",
+        "-j",
+        "scancode",
+        "-P",
+        "ubuntu-latest=catthehacker/ubuntu:act-22.04",
+        "--artifact-server-path",
+        "${workspaceFolder}/.act-artifacts"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "ARIADNE: List REUSE Lint GitHub Actions Jobs",
+      "type": "shell",
+      "command": "act",
+      "args": [
+        "workflow_dispatch",
+        "--list",
+        "-W",
+        "${workspaceFolder}/.github/workflows/reuse-lint.yml",
+        "-P",
+        "ubuntu-latest=catthehacker/ubuntu:act-22.04"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "ARIADNE: Rehearse REUSE Lint Workflow",
+      "type": "shell",
+      "command": "act",
+      "args": [
+        "workflow_dispatch",
+        "-W",
+        "${workspaceFolder}/.github/workflows/reuse-lint.yml",
+        "-j",
+        "reuse-lint",
+        "-P",
+        "ubuntu-latest=catthehacker/ubuntu:act-22.04",
+        "--artifact-server-path",
+        "${workspaceFolder}/.act-artifacts"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
     }
   ]
 }
