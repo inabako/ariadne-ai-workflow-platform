@@ -9,6 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import (  # noqa: E402
     default_github_owner,
     ensure_work_tree,
@@ -137,7 +138,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
     )
 
     agent_context = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "project": {
             "name": repo_name,
             "repository": repository,
@@ -206,7 +207,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
     write_json(
         context_dir / "handoff-package.json",
         {
-            "schema_version": "1.0",
+            "schema_version": SCHEMA_VERSION,
             "from_agent": "runtime-workflow",
             "to_agent": "docs-drift-analyzer",
             "workflow": "docs-sync",
@@ -264,7 +265,7 @@ def default_analysis(work_dir: Path, repo_root: Path) -> dict[str, Any]:
     target_branch = scm_state.get("target_branch") or scm_state.get("current_branch") or ""
     docs_root = Path(scm_state.get("source_dir", "")) / "docs" if scm_state.get("source_dir") else target_repository_dir_for_work_dir(work_dir) / "docs"
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "workflow": "docs-sync",
         "work_id": work_dir.name,
         "repository": repository,

@@ -12,6 +12,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo, slugify, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.paths import (  # noqa: E402
     GENERATED_NORMALIZED,
@@ -165,7 +166,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
     created_backup_dirs = ensure_knowledge_source_local_backup(repo_root)
     target_dir = Path(args.target_dir).resolve() if args.target_dir else None
     state = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "vscode-environment-state",
         "workflow": "vscode-environment",
         "work_id": args.work_id,
@@ -185,7 +186,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
     state_path = context_file(base, "vscode-environment-state.json")
     write_json(state_path, state)
     runtime_context = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "runtime-context",
         "architecture": "context-first",
         "workflow": "vscode-environment",
@@ -476,7 +477,7 @@ def write_open_questions(args: argparse.Namespace) -> dict[str, Any]:
     path = design_document_dir_for_work_dir(base) / "open-questions.md"
     path.write_text(open_questions_text(args.work_id, args.draft_dir, draft_paths), encoding="utf-8")
     state = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "vscode-environment-draft-state",
         "workflow": "vscode-environment",
         "work_id": args.work_id,
@@ -860,7 +861,7 @@ def write_validation_template(args: argparse.Namespace) -> dict[str, Any]:
     base = work_dir(repo_root, args.work_id)
     ensure_work_dirs(base)
     data: dict[str, Any] = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "workspace-shared-artifact-validation",
         "workflow": "vscode-environment",
         "work_id": args.work_id,

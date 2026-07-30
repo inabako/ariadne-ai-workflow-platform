@@ -9,6 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import gate_restart  # noqa: E402
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.workspace import (  # noqa: E402
@@ -38,7 +39,7 @@ def manifest_path_for_work_dir(work_dir: Path) -> Path:
 
 def default_manifest(work_id: str) -> dict[str, Any]:
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "context-manifest",
         "architecture": "context-first",
         "adoption_phase": "phase-1",
@@ -57,7 +58,7 @@ def load_manifest(work_dir: Path, work_id: str = "") -> dict[str, Any]:
     path = manifest_path_for_work_dir(work_dir)
     data = read_json(path, default=None)
     if isinstance(data, dict):
-        data.setdefault("schema_version", "1.0")
+        data.setdefault("schema_version", SCHEMA_VERSION)
         data.setdefault("artifact_type", "context-manifest")
         data.setdefault("architecture", "context-first")
         data.setdefault("adoption_phase", "phase-1")

@@ -11,6 +11,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.paths import GENERATED_JSONIZED, GENERATED_RETRIEVAL, LEGACY_RETRIEVAL_PREFIX  # noqa: E402
 
@@ -90,7 +91,7 @@ def companion_json_for_markdown(path: Path) -> Path | None:
 def markdown_artifact(repo_root: Path, path: Path) -> dict[str, Any]:
     artifact_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"rag-retrieval-markdown:{relative_to_repo(repo_root, path)}"))
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "rag-retrieval-markdown-source",
         "artifact_id": artifact_id,
         "created_at": utc_now_iso(),
@@ -173,7 +174,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     deleted: list[str] = []
     for migration in migrations:
         payload = replace_refs(migration["payload"], path_map)
-        payload.setdefault("schema_version", "1.0")
+        payload.setdefault("schema_version", SCHEMA_VERSION)
         payload["artifact_type"] = migration["artifact_type"]
         if migration["artifact_type"] == "rag-load-dispatch":
             payload["dispatch_id"] = migration["artifact_id"]

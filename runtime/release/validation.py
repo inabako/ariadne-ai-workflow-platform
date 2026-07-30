@@ -12,6 +12,7 @@ from typing import Iterable
 
 REQUIRED_FILES = [
     "CITATION.cff",
+    "AGENTS.md",
     "LICENSE",
     "LICENSES/AGPL-3.0-or-later.txt",
     "REUSE.toml",
@@ -30,6 +31,9 @@ REQUIRED_FILES = [
     "docs/citation/citation-guide.md",
     "docs/security/scancode-github-actions.md",
     "docs/legal/evidence/reuse-lint-local-rehearsal.md",
+    ".github/copilot-instructions.md",
+    ".github/instructions/ariadne.instructions.md",
+    ".github/prompts/ariadne-workflows.prompt.md",
     ".github/workflows/reuse-lint.yml",
 ]
 

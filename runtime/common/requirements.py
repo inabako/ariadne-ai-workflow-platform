@@ -102,4 +102,3 @@ def requirement_files_from_artifact_index(repo_root: Path, work_dir: Path) -> li
         path = Path(raw_path)
         paths.append(path if path.is_absolute() else repo_root / path)
     return paths
-

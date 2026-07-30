@@ -3,6 +3,18 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from runtime.design.expectation.constants import (
+    DEFAULT_AXIS_SCORE,
+    DEFAULT_CRITICAL_MINIMUM_PROBABILITY,
+    DEFAULT_EVALUATION_CONFIDENCE,
+    DEFAULT_EXPECTATION_CONFIDENCE,
+    DEFAULT_EXPECTATION_PROBABILITY,
+    DEFAULT_EXPECTATION_WEIGHT,
+    DEFAULT_USAGE_CONTEXT_CONFIDENCE,
+    SCORE_MAX,
+    SCORE_MIN,
+)
+
 
 def _tuple(value: Any) -> tuple[str, ...]:
     if value is None:
@@ -14,8 +26,8 @@ def _tuple(value: Any) -> tuple[str, ...]:
 
 def _probability(value: Any, *, field: str) -> float:
     number = float(value)
-    if not 0.0 <= number <= 1.0:
-        raise ValueError(f"{field} must be between 0.0 and 1.0: {number}")
+    if not SCORE_MIN <= number <= SCORE_MAX:
+        raise ValueError(f"{field} must be between {SCORE_MIN:.1f} and {SCORE_MAX:.1f}: {number}")
     return number
 
 
@@ -38,7 +50,7 @@ class Expectation:
             success_conditions=_tuple(data.get("success_conditions", data.get("success_condition"))),
             failure_conditions=_tuple(data.get("failure_conditions", data.get("failure_condition"))),
             sources=_tuple(data.get("sources", data.get("source"))),
-            confidence=_probability(data.get("confidence", 1.0), field="confidence"),
+            confidence=_probability(data.get("confidence", DEFAULT_EXPECTATION_CONFIDENCE), field="confidence"),
         )
 
 
@@ -58,7 +70,7 @@ class UsageContext:
             actor=str(data.get("actor", "")),
             situation=str(data.get("situation", "")),
             goal=str(data.get("goal", "")),
-            confidence=_probability(data.get("confidence", 1.0), field="confidence"),
+            confidence=_probability(data.get("confidence", DEFAULT_USAGE_CONTEXT_CONFIDENCE), field="confidence"),
             evidence_refs=_tuple(data.get("evidence_refs", data.get("evidence"))),
         )
 
@@ -90,7 +102,7 @@ class ExpectationWeight:
             decided_by = decided_by.get("type", "")
         return cls(
             expectation_id=str(data.get("expectation_id") or data.get("id") or ""),
-            weight=_probability(data.get("weight", 0.0), field="weight"),
+            weight=_probability(data.get("weight", DEFAULT_EXPECTATION_WEIGHT), field="weight"),
             rationale=_tuple(data.get("rationale")),
             decided_by=str(decided_by or "ariadne-initial"),
         )
@@ -108,7 +120,10 @@ class CriticalExpectation:
     def from_mapping(cls, data: dict[str, Any]) -> "CriticalExpectation":
         return cls(
             expectation_id=str(data.get("expectation_id") or data.get("id") or ""),
-            minimum_probability=_probability(data.get("minimum_probability", 1.0), field="minimum_probability"),
+            minimum_probability=_probability(
+                data.get("minimum_probability", DEFAULT_CRITICAL_MINIMUM_PROBABILITY),
+                field="minimum_probability",
+            ),
             failure_action=str(data.get("failure_action", "reject-candidate")),
             reason=str(data.get("reason", "")),
             human_override_allowed=bool(data.get("human_override_allowed", False)),
@@ -189,8 +204,8 @@ class ExpectationEvaluation:
         return cls(
             candidate_id=str(data.get("candidate_id") or candidate_id),
             expectation_id=str(data.get("expectation_id") or data.get("id") or ""),
-            probability=_probability(data.get("probability", 0.0), field="probability"),
-            confidence=_probability(data.get("confidence", 1.0), field="confidence"),
+            probability=_probability(data.get("probability", DEFAULT_EXPECTATION_PROBABILITY), field="probability"),
+            confidence=_probability(data.get("confidence", DEFAULT_EVALUATION_CONFIDENCE), field="confidence"),
             evidence_refs=evidence_refs,
             evidence_quality=evidence_quality,
             requires_validation=requires_validation,
@@ -215,7 +230,7 @@ class AxisEvaluation:
         return cls(
             candidate_id=str(data.get("candidate_id") or candidate_id),
             axis=str(data.get("axis") or axis),
-            score=_probability(data.get("score", 0.0), field="score"),
+            score=_probability(data.get("score", DEFAULT_AXIS_SCORE), field="score"),
             rationale=str(data.get("rationale", "")),
             evidence_refs=evidence_refs,
             evidence_quality=evidence_quality,
@@ -339,7 +354,10 @@ class ExpectationVerification:
         return cls(
             candidate_id=str(data.get("candidate_id", "")),
             expectation_id=str(data.get("expectation_id", "")),
-            design_probability=_probability(data.get("design_probability", 0.0), field="design_probability"),
+            design_probability=_probability(
+                data.get("design_probability", DEFAULT_EXPECTATION_PROBABILITY),
+                field="design_probability",
+            ),
             verified_result=None if verified is None else _probability(verified, field="verified_result"),
             evidence_refs=_tuple(data.get("evidence_refs", data.get("evidence"))),
         )
@@ -359,7 +377,10 @@ class ExpectationFeedback:
         return cls(
             candidate_id=str(data.get("candidate_id", "")),
             expectation_id=str(data.get("expectation_id", "")),
-            predicted_probability=_probability(data.get("predicted_probability", 0.0), field="predicted_probability"),
+            predicted_probability=_probability(
+                data.get("predicted_probability", DEFAULT_EXPECTATION_PROBABILITY),
+                field="predicted_probability",
+            ),
             observed_probability=None if observed is None else _probability(observed, field="observed_probability"),
             knowledge_candidate=bool(data.get("knowledge_candidate", False)),
         )

@@ -9,6 +9,7 @@ from typing import Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import (  # noqa: E402
     default_github_owner,
     ensure_work_tree,
@@ -137,7 +138,7 @@ def write_corrective_report_context(
     write_json(
         context_path,
         {
-            "schema_version": "1.0",
+            "schema_version": SCHEMA_VERSION,
             "artifact_type": "corrective-action-report",
             "architecture": "context-first",
             "created_at": utc_now_iso(),
@@ -242,7 +243,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
     report_rel = report_input["report_path"]
 
     agent_context = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "project": {
             "name": repo_name,
             "repository": repository,
@@ -303,7 +304,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
     write_json(
         context_dir / "handoff-package.json",
         {
-            "schema_version": "1.0",
+            "schema_version": SCHEMA_VERSION,
             "from_agent": "runtime-workflow",
             "to_agent": "corrective-action-fix",
             "workflow": "corrective-action-fix",

@@ -17,6 +17,34 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
+from runtime.constants.cli_defaults import (  # noqa: E402
+    GITHUB_DETECT_REBASE_MAX_COMMITS_DEFAULT,
+    GITHUB_DETECT_REBASE_MAX_FILES_DEFAULT,
+    GITHUB_MESSAGE_PLAN_MAX_COMMITS_DEFAULT,
+)
+from runtime.constants.workflow_limits import (  # noqa: E402
+    GITHUB_KNOWLEDGE_CHECKLIST_PATH_LIMIT,
+    GITHUB_KNOWLEDGE_COMMAND_OUTPUT_MAX_CHARS,
+    GITHUB_KNOWLEDGE_COMMIT_REF_CHARS,
+    GITHUB_KNOWLEDGE_DOMAIN_SUMMARY_LIMIT,
+    GITHUB_KNOWLEDGE_FINDING_PREVIEW_LIMIT,
+    GITHUB_KNOWLEDGE_GIT_LOG_SAMPLE_COMMAND,
+    GITHUB_KNOWLEDGE_HISTORY_FILE_PATH_MAX,
+    GITHUB_KNOWLEDGE_HISTORY_FILE_PATH_MIN,
+    GITHUB_KNOWLEDGE_MIN_POSITIVE_RELATED_SCORE,
+    GITHUB_KNOWLEDGE_ORDER_FALLBACK,
+    GITHUB_KNOWLEDGE_PATH_AFFINITY_DIRECTORY_SCORE,
+    GITHUB_KNOWLEDGE_PATH_AFFINITY_DOMAIN_SCORE,
+    GITHUB_KNOWLEDGE_PATH_AFFINITY_EXACT_PATH_SCORE,
+    GITHUB_KNOWLEDGE_PATH_AFFINITY_ROOT_SCORE,
+    GITHUB_KNOWLEDGE_PATH_SUMMARY_LIMIT,
+    GITHUB_KNOWLEDGE_RAG_SOURCE_ID_RANDOM_LENGTH,
+    GITHUB_KNOWLEDGE_RELATED_SCORE_DEFAULT,
+    GITHUB_KNOWLEDGE_SEMANTIC_SUBJECT_BONUS,
+    GITHUB_KNOWLEDGE_SHORT_COMMIT_CHARS,
+    GITHUB_KNOWLEDGE_SUBJECT_MAX_CHARS,
+)
 from runtime.common import (  # noqa: E402
     default_github_owner,
     ensure_work_tree,
@@ -258,8 +286,8 @@ def build_parser() -> argparse.ArgumentParser:
     detect_rebase_parser.add_argument("--git-repo", default="")
     detect_rebase_parser.add_argument("--base", default="HEAD~30")
     detect_rebase_parser.add_argument("--head", default="HEAD")
-    detect_rebase_parser.add_argument("--max-commits", type=int, default=80)
-    detect_rebase_parser.add_argument("--max-files", type=int, default=3)
+    detect_rebase_parser.add_argument("--max-commits", type=int, default=GITHUB_DETECT_REBASE_MAX_COMMITS_DEFAULT)
+    detect_rebase_parser.add_argument("--max-files", type=int, default=GITHUB_DETECT_REBASE_MAX_FILES_DEFAULT)
     detect_rebase_parser.add_argument("--all-history", action="store_true", help="Scan the full reachable history from --head.")
     detect_rebase_parser.add_argument("--append", action="store_true")
     detect_rebase_parser.add_argument("--repo-root", default=None)
@@ -304,7 +332,7 @@ def build_parser() -> argparse.ArgumentParser:
     message_plan_parser.add_argument("--analysis-path", default="")
     message_plan_parser.add_argument("--git-repo", default="")
     message_plan_parser.add_argument("--source-ref", default="")
-    message_plan_parser.add_argument("--max-commits", type=int, default=200)
+    message_plan_parser.add_argument("--max-commits", type=int, default=GITHUB_MESSAGE_PLAN_MAX_COMMITS_DEFAULT)
     message_plan_parser.add_argument("--output", default="")
     message_plan_parser.add_argument("--repo-root", default=None)
 
@@ -481,7 +509,7 @@ def work_id_from_work_dir(work_dir: Path) -> str:
 
 def rag_source_report_name(topic: str) -> str:
     timestamp = local_timestamp().replace("_", "")
-    random_id = "".join(secrets.choice(RAG_SOURCE_ID_ALPHABET) for _ in range(6))
+    random_id = "".join(secrets.choice(RAG_SOURCE_ID_ALPHABET) for _ in range(GITHUB_KNOWLEDGE_RAG_SOURCE_ID_RANDOM_LENGTH))
     return f"{timestamp}_{random_id}_{slugify(topic)}.md"
 
 
@@ -499,7 +527,7 @@ def github_operation_gate(
     if rag_output:
         reasons.append("RAG publication requires human approval before publication.")
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "github-operation-gate",
         "workflow": "github-knowledge-maintenance",
         "work_id": work_id,
@@ -596,7 +624,7 @@ def github_tool_selection(
             }
         )
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "tool-selection",
         "architecture": "context-first",
         "selected_at": utc_now_iso(),
@@ -681,7 +709,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
     scan_modes = sorted(set(args.scan_mode), key=args.scan_mode.index)
 
     agent_context = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "project": {
             "name": repo_name,
             "repository": repository,
@@ -751,7 +779,7 @@ def init_work(args: argparse.Namespace) -> dict[str, Any]:
     write_json(
         context_dir / "handoff-package.json",
         {
-            "schema_version": "1.0",
+            "schema_version": SCHEMA_VERSION,
             "from_agent": "runtime-workflow",
             "to_agent": "repository-discovery-agent",
             "workflow": "github-knowledge-maintenance",
@@ -832,7 +860,7 @@ def default_analysis(work_dir: Path) -> dict[str, Any]:
             key, value = item.split("=", 1)
             assumption_map[key] = value
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "workflow": "github-knowledge-maintenance",
         "work_id": assumption_map.get("work_id", work_id_from_work_dir(work_dir)),
         "repository": context.get("project", {}).get("repository", ""),
@@ -1548,10 +1576,10 @@ def path_affinity_score(left_files: list[str], right_files: list[str]) -> int:
     left_suffixes = {Path(path).suffix for path in left_normalized if Path(path).suffix}
     right_suffixes = {Path(path).suffix for path in right_normalized if Path(path).suffix}
     return (
-        len(left_normalized & right_normalized) * 6
-        + len(left_dirs & right_dirs) * 4
-        + len(path_domains(list(left_normalized)) & path_domains(list(right_normalized))) * 3
-        + len(left_roots & right_roots) * 2
+        len(left_normalized & right_normalized) * GITHUB_KNOWLEDGE_PATH_AFFINITY_EXACT_PATH_SCORE
+        + len(left_dirs & right_dirs) * GITHUB_KNOWLEDGE_PATH_AFFINITY_DIRECTORY_SCORE
+        + len(path_domains(list(left_normalized)) & path_domains(list(right_normalized))) * GITHUB_KNOWLEDGE_PATH_AFFINITY_DOMAIN_SCORE
+        + len(left_roots & right_roots) * GITHUB_KNOWLEDGE_PATH_AFFINITY_ROOT_SCORE
         + len(left_suffixes & right_suffixes)
     )
 
@@ -1562,10 +1590,10 @@ def nearest_related_commit(commits: list[dict[str, Any]], index: int, candidate_
         if other_index == index:
             continue
         score = path_affinity_score(candidate_files, commit.get("files", []) or [])
-        if score <= 0:
+        if score <= GITHUB_KNOWLEDGE_MIN_POSITIVE_RELATED_SCORE:
             continue
         distance = abs(other_index - index)
-        semantic_bonus = 2 if not commit_subject_is_weak(str(commit.get("subject", ""))) else 0
+        semantic_bonus = GITHUB_KNOWLEDGE_SEMANTIC_SUBJECT_BONUS if not commit_subject_is_weak(str(commit.get("subject", ""))) else 0
         current = (score, semantic_bonus, -distance, -other_index, commit)
         if best is None or current > best:
             best = current
@@ -1585,7 +1613,7 @@ def nearest_semantic_commit(
 def short_commit(commit: dict[str, Any]) -> str:
     commit_hash = str(commit.get("hash", ""))
     subject = str(commit.get("subject", ""))
-    return f"{commit_hash[:7]} {subject}".strip()
+    return f"{commit_hash[:GITHUB_KNOWLEDGE_SHORT_COMMIT_CHARS]} {subject}".strip()
 
 
 def build_detected_history_candidate(
@@ -1593,7 +1621,7 @@ def build_detected_history_candidate(
     expected_commit: dict[str, Any] | None,
     index: int,
     *,
-    related_score: int = 0,
+    related_score: int = GITHUB_KNOWLEDGE_RELATED_SCORE_DEFAULT,
 ) -> dict[str, Any]:
     commit_hash = str(commit.get("hash", ""))
     expected = short_commit(expected_commit) if expected_commit else ""
@@ -1614,7 +1642,7 @@ def build_detected_history_candidate(
     if commit_hash:
         draft_commands.extend(
             [
-                f"git switch -c rewrite/{candidate_id.lower()} {commit_hash[:12]}^",
+                f"git switch -c rewrite/{candidate_id.lower()} {commit_hash[:GITHUB_KNOWLEDGE_COMMIT_REF_CHARS]}^",
                 f"# replay approved commits with git cherry-pick --no-commit and git commit -F <message-file>",
                 "git diff --quiet <old-head>..<new-head>",
             ]
@@ -1652,7 +1680,7 @@ def build_detected_history_candidate(
         "rollback_plan": f"git reset --hard {commit_hash}" if commit_hash else "",
         "draft_commands": draft_commands,
         "verification_commands": [
-            "git log --format=\"%H %s\" --max-count=20",
+            GITHUB_KNOWLEDGE_GIT_LOG_SAMPLE_COMMAND,
             "git diff --stat",
         ],
     }
@@ -1738,8 +1766,14 @@ def validate_history_rewrite_candidates(candidates: list[dict[str, Any]]) -> lis
     for candidate in candidates:
         candidate_id = str(candidate.get("id", "HISTORY-XXX"))
         file_paths = candidate.get("file_paths", []) or []
-        if not isinstance(file_paths, list) or not 1 <= len(file_paths) <= 3:
-            errors.append(f"{candidate_id}: file_paths must contain 1 to 3 files.")
+        if (
+            not isinstance(file_paths, list)
+            or not GITHUB_KNOWLEDGE_HISTORY_FILE_PATH_MIN <= len(file_paths) <= GITHUB_KNOWLEDGE_HISTORY_FILE_PATH_MAX
+        ):
+            errors.append(
+                f"{candidate_id}: file_paths must contain "
+                f"{GITHUB_KNOWLEDGE_HISTORY_FILE_PATH_MIN} to {GITHUB_KNOWLEDGE_HISTORY_FILE_PATH_MAX} files."
+            )
         repair_goal = str(candidate.get("repair_goal", ""))
         if repair_goal and repair_goal not in REBASE_REPAIR_GOALS:
             errors.append(f"{candidate_id}: repair_goal is not supported.")
@@ -1991,7 +2025,7 @@ def next_action_from_status(status: dict[str, Any]) -> dict[str, Any]:
                 "github-sync-apply",
             ],
             "finding_count": len(findings),
-            "findings": findings[:10],
+            "findings": findings[:GITHUB_KNOWLEDGE_FINDING_PREVIEW_LIMIT],
         }
     latest_package = status.get("latest_package", {}) or {}
     latest_execution_record = status.get("latest_execution", {}) or {}
@@ -2455,10 +2489,10 @@ def infer_commit_type_scope(paths: list[str], subject: str) -> tuple[str, str]:
 def summarize_commit_responsibility(paths: list[str], subject: str) -> str:
     clean_subject = re.sub(r"^(update|fix|docs|chore|feat|test)(\([^)]*\))?:\s*", "", subject, flags=re.IGNORECASE).strip()
     if clean_subject and not contains_mojibake(clean_subject) and clean_subject.lower() not in {"update", "fix", "修正", "対応", "変更"}:
-        return clean_subject[:80]
+        return clean_subject[:GITHUB_KNOWLEDGE_SUBJECT_MAX_CHARS]
     domains = sorted({path.replace("\\", "/").split("/", 1)[0] for path in paths if path})
     if domains:
-        return f"{', '.join(domains[:3])} の責務を明確化"
+        return f"{', '.join(domains[:GITHUB_KNOWLEDGE_DOMAIN_SUMMARY_LIMIT])} の責務を明確化"
     return "履歴上の責務を明確化"
 
 
@@ -2466,7 +2500,7 @@ def proposed_commit_message_for_repair(commit: str, subject: str, paths: list[st
     commit_type, scope = infer_commit_type_scope(paths, subject)
     responsibility = summarize_commit_responsibility(paths, subject)
     proposed_subject = f"{commit_type}({scope}): {responsibility}"
-    path_summary = ", ".join(paths[:8]) if paths else "(no changed paths)"
+    path_summary = ", ".join(paths[:GITHUB_KNOWLEDGE_PATH_SUMMARY_LIMIT]) if paths else "(no changed paths)"
     body = "\n".join(
         [
             "Intent: GitHub commit listで変更責務を読み取れるようにする。",
@@ -2505,7 +2539,7 @@ def detect_message_repair_candidates(
                 "approval_status": "pending",
                 "execution_status": "pending",
                 "verification_commands": [
-                    "git log --format=\"%H %s\" --max-count=20",
+                    GITHUB_KNOWLEDGE_GIT_LOG_SAMPLE_COMMAND,
                     f"git diff --quiet {source_ref}..HEAD",
                 ],
             }
@@ -2523,11 +2557,11 @@ def message_repair_checklist(candidates: list[dict[str, Any]]) -> str:
         "| --- | --- | --- | --- | --- | --- | --- |",
     ]
     for candidate in candidates:
-        paths = ", ".join(candidate.get("file_paths", [])[:4])
+        paths = ", ".join(candidate.get("file_paths", [])[:GITHUB_KNOWLEDGE_CHECKLIST_PATH_LIMIT])
         lines.append(
             "| {id} | [ ] OK | [ ] NG | {commit} | {current} | {proposed} | {paths} |".format(
                 id=candidate.get("id", ""),
-                commit=str(candidate.get("commit", ""))[:12],
+                commit=str(candidate.get("commit", ""))[:GITHUB_KNOWLEDGE_COMMIT_REF_CHARS],
                 current=str(candidate.get("current_subject", "")).replace("|", "\\|"),
                 proposed=str(candidate.get("proposed_subject", "")).replace("|", "\\|"),
                 paths=paths.replace("|", "\\|"),
@@ -2557,7 +2591,7 @@ def build_message_repair_plan(analysis: dict[str, Any], candidates: list[dict[st
             "",
             "- before/after SHA mappingを出力する",
             "- final treeがsource refと一致することを確認する",
-            "- `git log --format=\"%H %s\" --max-count=20` を実行する",
+            f"- `{GITHUB_KNOWLEDGE_GIT_LOG_SAMPLE_COMMAND}` を実行する",
             "- remote反映は `force-with-lease` で expected remote SHA と一致する場合だけ行う",
         ]
     )
@@ -2942,7 +2976,7 @@ def build_rebase_replay_package_from_candidates(
         raise ValueError("rebase-replay-package requires --target-branch or analysis.target_branch.")
     source_ref = source_ref or target_branch
     package: dict[str, Any] = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "target_branch": target_branch,
         "source_ref": source_ref,
         "remote": remote or "origin",
@@ -3014,7 +3048,7 @@ def build_message_repair_package_from_candidates(
         raise ValueError("message-repair-package requires --target-branch or analysis.target_branch.")
     source_ref = source_ref or f"origin/{target_branch}"
     package: dict[str, Any] = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "target_branch": target_branch,
         "source_ref": source_ref,
         "remote": remote or "origin",
@@ -3343,12 +3377,12 @@ def select_absorb_anchor(
 ) -> tuple[str, str]:
     sinks = sorted(
         [commit for commit in component if not outgoing.get(commit)],
-        key=lambda commit: order.get(commit, 10**9),
+        key=lambda commit: order.get(commit, GITHUB_KNOWLEDGE_ORDER_FALLBACK),
     )
     if sinks:
         return sinks[0], "component sink target"
     return (
-        min(component, key=lambda commit: order.get(commit, 10**9)),
+        min(component, key=lambda commit: order.get(commit, GITHUB_KNOWLEDGE_ORDER_FALLBACK)),
         "cycle resolved to earliest responsibility anchor",
     )
 
@@ -3373,7 +3407,7 @@ def resolve_absorb_anchor_graph(
         anchor, reason = select_absorb_anchor(component, outgoing, order)
         component_sources = sorted(
             (component & originally_absorbed) - {anchor},
-            key=lambda commit: order.get(commit, 10**9),
+            key=lambda commit: order.get(commit, GITHUB_KNOWLEDGE_ORDER_FALLBACK),
         )
         if component_sources:
             resolved_absorb.setdefault(anchor, set()).update(component_sources)
@@ -3400,8 +3434,11 @@ def resolve_absorb_anchor_graph(
 
     package = dict(package)
     package["absorb"] = {
-        target: sorted(sources, key=lambda commit: order.get(commit, 10**9))
-        for target, sources in sorted(resolved_absorb.items(), key=lambda item: order.get(item[0], 10**9))
+        target: sorted(sources, key=lambda commit: order.get(commit, GITHUB_KNOWLEDGE_ORDER_FALLBACK))
+        for target, sources in sorted(
+            resolved_absorb.items(),
+            key=lambda item: order.get(item[0], GITHUB_KNOWLEDGE_ORDER_FALLBACK),
+        )
     }
     if resolutions:
         package["semantic_anchor_resolution"] = resolutions
@@ -3724,8 +3761,8 @@ def run_approved_verification_command(repo_path: Path, command: str) -> dict[str
     return {
         "command": stripped,
         "returncode": result.returncode,
-        "stdout": result.stdout[:4000],
-        "stderr": result.stderr[:4000],
+        "stdout": result.stdout[:GITHUB_KNOWLEDGE_COMMAND_OUTPUT_MAX_CHARS],
+        "stderr": result.stderr[:GITHUB_KNOWLEDGE_COMMAND_OUTPUT_MAX_CHARS],
     }
 
 
@@ -4857,8 +4894,8 @@ def run_github_sync_command(command_parts: list[str], *, dry_run: bool) -> dict[
         "command": " ".join(command_parts),
         "skipped": False,
         "returncode": result.returncode,
-        "stdout": result.stdout[:4000],
-        "stderr": result.stderr[:4000],
+        "stdout": result.stdout[:GITHUB_KNOWLEDGE_COMMAND_OUTPUT_MAX_CHARS],
+        "stderr": result.stderr[:GITHUB_KNOWLEDGE_COMMAND_OUTPUT_MAX_CHARS],
     }
 
 
@@ -5066,7 +5103,7 @@ def build_rag_candidate(analysis: dict[str, Any], topic: str) -> str:
     return "\n".join(
         [
             "---",
-            "schema_version: '1.0'",
+            f"schema_version: '{SCHEMA_VERSION}'",
             "document_type: github-repository-knowledge",
             f"repository: {analysis.get('repository', '')}",
             f"branch: {analysis.get('target_branch', '')}",

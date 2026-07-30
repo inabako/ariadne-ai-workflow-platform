@@ -10,6 +10,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import ensure_work_tree, find_repo_root, read_json, relative_to_repo, slugify, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.schemas import CORRECTIVE_ACTION_REPORT_SCHEMA  # noqa: E402
 from runtime.constants.workspace import (  # noqa: E402
@@ -113,7 +114,7 @@ def build_report_context(repo_root: Path, args: argparse.Namespace, report_path:
     target_commit = str(front_matter.get("commit", ""))
     report_rel = relative_to_repo(repo_root, report_path)
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "corrective-action-report",
         "architecture": "context-first",
         "created_at": utc_now_iso(),

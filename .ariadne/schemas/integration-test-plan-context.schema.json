@@ -1,6 +1,6 @@
-{
+﻿{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/inabako/ariadne-ai-workflow-platform/.github/schemas/integration-test-plan-context.schema.json",
+  "$id": "https://github.com/inabako/ariadne-ai-workflow-platform/.ariadne/schemas/integration-test-plan-context.schema.json",
   "title": "Integration Test Plan Context",
   "type": "object",
   "required": [

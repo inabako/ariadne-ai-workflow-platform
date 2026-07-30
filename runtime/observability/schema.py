@@ -3,8 +3,14 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
+from runtime.constants.runtime_values import (
+    COST_AMOUNT_DEFAULT,
+    NON_NEGATIVE_FLOAT_DEFAULT,
+    NON_NEGATIVE_INT_DEFAULT,
+    SCHEMA_VERSION,
+)
 
-SCHEMA_VERSION = "1.0"
+
 ARTIFACT_TYPE = "runtime-metrics"
 EVENT_NAMES = {
     "workflow_started",
@@ -24,26 +30,26 @@ def utc_now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
-def _non_negative_int(value: Any, default: int = 0) -> int:
+def _non_negative_int(value: Any, default: int = NON_NEGATIVE_INT_DEFAULT) -> int:
     try:
         parsed = int(value)
     except (TypeError, ValueError):
         return default
-    return max(parsed, 0)
+    return max(parsed, NON_NEGATIVE_INT_DEFAULT)
 
 
-def _non_negative_float(value: Any, default: float = 0.0) -> float:
+def _non_negative_float(value: Any, default: float = NON_NEGATIVE_FLOAT_DEFAULT) -> float:
     try:
         parsed = float(value)
     except (TypeError, ValueError):
         return default
-    return max(parsed, 0.0)
+    return max(parsed, NON_NEGATIVE_FLOAT_DEFAULT)
 
 
 def token_usage(
     *,
-    input_tokens: Any = 0,
-    output_tokens: Any = 0,
+    input_tokens: Any = NON_NEGATIVE_INT_DEFAULT,
+    output_tokens: Any = NON_NEGATIVE_INT_DEFAULT,
     total_tokens: Any | None = None,
     estimated: bool = True,
 ) -> dict[str, Any]:
@@ -60,8 +66,8 @@ def token_usage(
 
 def cost_usage(
     *,
-    input_cost: Any = 0.0,
-    output_cost: Any = 0.0,
+    input_cost: Any = COST_AMOUNT_DEFAULT,
+    output_cost: Any = COST_AMOUNT_DEFAULT,
     total_cost: Any | None = None,
     currency: str = "USD",
     estimated: bool = True,
@@ -80,9 +86,9 @@ def cost_usage(
 
 def context_usage(
     *,
-    selected_context_count: Any = 0,
-    estimated_context_tokens: Any = 0,
-    rag_reference_count: Any = 0,
+    selected_context_count: Any = NON_NEGATIVE_INT_DEFAULT,
+    estimated_context_tokens: Any = NON_NEGATIVE_INT_DEFAULT,
+    rag_reference_count: Any = NON_NEGATIVE_INT_DEFAULT,
     dispatcher_route: str = "",
 ) -> dict[str, Any]:
     return {
@@ -95,10 +101,10 @@ def context_usage(
 
 def runtime_status(
     *,
-    retry_count: Any = 0,
+    retry_count: Any = NON_NEGATIVE_INT_DEFAULT,
     human_check_required: bool = False,
     evidence_generated: bool = False,
-    error_count: Any = 0,
+    error_count: Any = NON_NEGATIVE_INT_DEFAULT,
 ) -> dict[str, Any]:
     return {
         "retry_count": _non_negative_int(retry_count),
@@ -116,7 +122,7 @@ def runtime_metric_record(
     agent_name: str = "",
     started_at: str = "",
     ended_at: str = "",
-    duration_ms: Any = 0,
+    duration_ms: Any = NON_NEGATIVE_INT_DEFAULT,
     token: dict[str, Any] | None = None,
     context: dict[str, Any] | None = None,
     runtime: dict[str, Any] | None = None,

@@ -1,4 +1,4 @@
-# /runtime-health-check
+﻿# /runtime-health-check
 
 ## Purpose
 
@@ -10,7 +10,7 @@ Ariadne AI Workflow Platform 自身の runtime health を確認する自己診�
 
 主担当:
 
-- `.github/agents/runtime-quality-gate-agent.prompt.md`
+- `.ariadne/agents/runtime-quality-gate-agent.prompt.md`
 
 ## 入力
 
@@ -78,6 +78,6 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
   --fail-on-warning
 
 .\tools\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
-  --paths ..\docs\reference\runtime-pytest-ut-test-items.md ..\docs\reference\runtime-pytest-ut-case-specification.md ..\.github\schemas\README.md ..\.github\agents\runtime-quality-gate-agent.prompt.md `
+  --paths ..\docs\reference\runtime-pytest-ut-test-items.md ..\docs\reference\runtime-pytest-ut-case-specification.md ..\.ariadne\schemas\README.md ..\.ariadne\agents\runtime-quality-gate-agent.prompt.md `
   --fail-on-violation
 ```

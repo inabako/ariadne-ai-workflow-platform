@@ -8,6 +8,14 @@ import time
 from pathlib import Path
 from typing import Any
 
+from runtime.constants.runtime_values import MILLISECONDS_PER_SECOND, SCHEMA_VERSION
+from runtime.constants.cli_defaults import (
+    RAG_CHUNK_OVERLAP_DEFAULT,
+    RAG_CHUNK_SIZE_DEFAULT,
+    RAG_EMBEDDING_DIMENSIONS_DEFAULT,
+    RAG_STANDARDIZE_RANDOM_LENGTH_DEFAULT,
+    REVIEW_SPECIALIST_TIMEOUT_SECONDS_DEFAULT,
+)
 from runtime.common import local_timestamp, read_json, relative_to_repo, slugify, utc_now_iso, write_json, write_markdown
 from runtime.common import gate_restart
 from runtime.constants.paths import (
@@ -26,6 +34,7 @@ from runtime.constants.schemas import REVIEW_COUNCIL_RAG_BUILD_SCHEMA
 from runtime.constants.schemas import REVIEW_COUNCIL_SPECIALIST_EXECUTION_SCHEMA
 from runtime.observability.logger import RuntimeEventLogger
 from runtime.rag import rag_build
+from runtime.review.constants import DEFAULT_REVIEW_FINDING_CONFIDENCE
 from runtime.review.domain.finding import normalize_finding
 from runtime.review.domain.review_issue import build_review_issues
 from runtime.review.domain.review_packet import ReviewPacket, packet_hash
@@ -356,7 +365,7 @@ def _finding_registration_command(session: dict[str, Any], draft: dict[str, Any]
         parts.extend(["--reasoning-summary", _command_value(str(draft["reasoning_summary"]))])
     if draft.get("requested_action"):
         parts.extend(["--requested-action", _command_value(str(draft["requested_action"]))])
-    parts.extend(["--confidence", str(draft.get("confidence", 0.8))])
+    parts.extend(["--confidence", str(draft.get("confidence", DEFAULT_REVIEW_FINDING_CONFIDENCE))])
     _append_command_args(parts, "--required-test", [str(item) for item in draft.get("required_tests", [])])
     parts.append("--blocking" if draft.get("blocking") else "--non-blocking")
     return " ".join(parts)
@@ -389,7 +398,7 @@ def _finding_draft_from_section(
         "counterexample": values.get("counterexample", ""),
         "reasoning_summary": values.get("reasoning_summary", ""),
         "requested_action": values.get("requested_action", ""),
-        "confidence": _coerce_float(values.get("confidence", ""), 0.8),
+        "confidence": _coerce_float(values.get("confidence", ""), DEFAULT_REVIEW_FINDING_CONFIDENCE),
         "required_tests": _split_inline_values(values.get("required_tests", "")),
         "blocking": blocking,
     }
@@ -496,7 +505,7 @@ def _review_summary_record(session: dict[str, Any]) -> dict[str, Any]:
     run = latest_run if isinstance(latest_run, dict) else evaluate_langgraph_review_state(session, run_id="summary")
     next_actions = [_operational_action(item, str(session.get("review_id", ""))) for item in run.get("next_actions", [])]
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-summary",
         "status": "summarized",
         "review_id": session.get("review_id", ""),
@@ -737,7 +746,7 @@ def plan_review(args: argparse.Namespace) -> dict[str, Any]:
     review_id = getattr(args, "review_id", "") or _review_id()
     start_command = _review_start_command(packet, review_id)
     plan = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-plan",
         "status": "planned",
         "created_at": utc_now_iso(),
@@ -778,7 +787,7 @@ def start_review(args: argparse.Namespace) -> dict[str, Any]:
         packet["required_reviewers"] = selection["required_reviewers"]
     review_id = getattr(args, "review_id", "") or _review_id()
     session = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-session",
         "review_id": review_id,
         "work_id": args.work_id,
@@ -887,7 +896,7 @@ def handoff_review(args: argparse.Namespace) -> dict[str, Any]:
         output={"reviewers": reviewers, "handoff_count": len(written)},
     )
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-handoff",
         "status": "handoff-ready",
         "review_id": session["review_id"],
@@ -1190,7 +1199,7 @@ def _execution_block_record(
     json_path = output_dir / f"specialist-execution-{safe_reviewer}-{stamp}.json"
     md_path = output_dir / f"specialist-execution-{safe_reviewer}-{stamp}.md"
     record = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-specialist-execution",
         "schema": REVIEW_COUNCIL_SPECIALIST_EXECUTION_SCHEMA,
         "status": status,
@@ -1317,7 +1326,7 @@ def execute_specialist_review(args: argparse.Namespace) -> dict[str, Any]:
     stderr_path = output_dir / f"specialist-execution-{safe_reviewer}-{stamp}-stderr.txt"
     packet_report_path = _resolve_path(repo_root, str(packet.get("artifacts", {}).get("specialist_run_report", "")))
     stdin_text = packet_report_path.read_text(encoding="utf-8-sig") if packet_report_path.exists() else ""
-    timeout_seconds = int(getattr(args, "timeout_seconds", 1800))
+    timeout_seconds = int(getattr(args, "timeout_seconds", REVIEW_SPECIALIST_TIMEOUT_SECONDS_DEFAULT))
     _log(
         repo_root,
         "reviewer_started",
@@ -1349,7 +1358,7 @@ def execute_specialist_review(args: argparse.Namespace) -> dict[str, Any]:
         stdout_text = str(exc.stdout or "")
         stderr_text = str(exc.stderr or "")
         exit_code = None
-    duration_ms = int((time.perf_counter() - started) * 1000)
+    duration_ms = int((time.perf_counter() - started) * MILLISECONDS_PER_SECOND)
     stdout_bytes = _write_execution_text(stdout_path, stdout_text)
     stderr_bytes = _write_execution_text(stderr_path, stderr_text)
     output_path = _resolve_path(repo_root, str(packet.get("output_path", "")))
@@ -1365,7 +1374,7 @@ def execute_specialist_review(args: argparse.Namespace) -> dict[str, Any]:
     elif not report_exists:
         reason = "specialist_agent_report_missing"
     record = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-specialist-execution",
         "schema": REVIEW_COUNCIL_SPECIALIST_EXECUTION_SCHEMA,
         "status": status,
@@ -1443,7 +1452,7 @@ def next_action_review(args: argparse.Namespace) -> dict[str, Any]:
     next_actions = [_operational_action(item, review_id) for item in run.get("next_actions", [])]
     selected_action = next_actions[0] if next_actions else None
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-next-action",
         "status": "completed" if selected_action is None else "action-required",
         "review_id": review_id,
@@ -1485,7 +1494,7 @@ def draft_findings_review(args: argparse.Namespace) -> dict[str, Any]:
     md_path = output_dir / f"finding-draft-{safe_reviewer}-{stamp}.md"
     source_report = relative_to_repo(repo_root, report_path)
     record = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-finding-draft",
         "status": "drafted",
         "review_id": session["review_id"],
@@ -1584,7 +1593,7 @@ def human_gate_review(args: argparse.Namespace) -> dict[str, Any]:
             f"--gate {gate_id} --human-check {approved_value}"
         )
     record = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-human-gate",
         "status": status,
         "review_id": session["review_id"],
@@ -1735,7 +1744,7 @@ def capture_review_knowledge(args: argparse.Namespace) -> dict[str, Any]:
             )
     unique_candidates = list({item["path"]: item for item in rag_candidates}.values())
     record = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-knowledge-capture",
         "status": "captured",
         "review_id": session["review_id"],
@@ -1991,7 +2000,7 @@ def rag_build_review(args: argparse.Namespace) -> dict[str, Any]:
     report_path = output_dir / f"rag-build-{stamp}.md"
     rag_build_output = str(getattr(args, "output", "")).strip() or str(RAG_BUILD_RUN_LATEST)
     record = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-rag-build",
         "schema": REVIEW_COUNCIL_RAG_BUILD_SCHEMA,
         "status": "ready",
@@ -2045,14 +2054,14 @@ def rag_build_review(args: argparse.Namespace) -> dict[str, Any]:
                 branch=str(getattr(args, "branch", "")),
                 commit=str(getattr(args, "commit", "") or session.get("packet", {}).get("target_revision", "")),
                 status=str(getattr(args, "status", "") or "captured"),
-                chunk_size=int(getattr(args, "chunk_size", 1800)),
-                chunk_overlap=int(getattr(args, "chunk_overlap", 180)),
-                embedding_dimensions=int(getattr(args, "embedding_dimensions", 768)),
+                chunk_size=int(getattr(args, "chunk_size", RAG_CHUNK_SIZE_DEFAULT)),
+                chunk_overlap=int(getattr(args, "chunk_overlap", RAG_CHUNK_OVERLAP_DEFAULT)),
+                embedding_dimensions=int(getattr(args, "embedding_dimensions", RAG_EMBEDDING_DIMENSIONS_DEFAULT)),
                 clean_output=bool(getattr(args, "clean_output", False)),
                 standardize_filenames=False,
                 skip_standardize=True,
                 replace_references=False,
-                random_length=8,
+                random_length=RAG_STANDARDIZE_RANDOM_LENGTH_DEFAULT,
             )
         )
         record["rag_build_run"] = run_result
@@ -2111,7 +2120,7 @@ def add_finding(args: argparse.Namespace) -> dict[str, Any]:
             "counterexample": getattr(args, "counterexample", ""),
             "reasoning_summary": getattr(args, "reasoning_summary", ""),
             "requested_action": getattr(args, "requested_action", ""),
-            "confidence": getattr(args, "confidence", 0.8),
+            "confidence": getattr(args, "confidence", DEFAULT_REVIEW_FINDING_CONFIDENCE),
             "required_tests": _list_arg(args, "required_test"),
             "blocking": blocking,
         }
@@ -2257,7 +2266,7 @@ def evidence_gate(args: argparse.Namespace) -> dict[str, Any]:
     missing_artifacts = [item["path"] for item in artifact_checks if not item["exists"]]
     status = "verified" if not missing_evidence and not missing_required_tests and not missing_artifacts else "blocked"
     record = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-evidence-gate",
         "status": status,
         "review_id": session["review_id"],
@@ -2338,7 +2347,7 @@ def reinspect_review(args: argparse.Namespace) -> dict[str, Any]:
 def status_review(args: argparse.Namespace) -> dict[str, Any]:
     session = _load_from_args(args)
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-status",
         "review_id": session.get("review_id", ""),
         "work_id": session.get("work_id", ""),
@@ -2362,7 +2371,7 @@ def status_review(args: argparse.Namespace) -> dict[str, Any]:
 def list_issues(args: argparse.Namespace) -> dict[str, Any]:
     session = _load_from_args(args)
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-issues",
         "review_id": session.get("review_id", ""),
         "work_id": session.get("work_id", ""),

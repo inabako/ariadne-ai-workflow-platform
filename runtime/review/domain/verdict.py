@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from runtime.constants.runtime_values import SCHEMA_VERSION
+
+
 from typing import Any
 
 
@@ -94,7 +97,7 @@ def decide(
         reasons.append("all review council approval checks passed")
 
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-verdict",
         "verdict": verdict,
         "checks": checks,

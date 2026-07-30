@@ -1,6 +1,6 @@
-{
+﻿{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/inabako/ariadne-ai-workflow-platform/.github/schemas/emulator-health-context.schema.json",
+  "$id": "https://github.com/inabako/ariadne-ai-workflow-platform/.ariadne/schemas/emulator-health-context.schema.json",
   "title": "Emulator Health Context",
   "type": "object",
   "required": [

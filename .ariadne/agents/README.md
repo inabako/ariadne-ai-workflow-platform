@@ -1,4 +1,4 @@
-# Localty Agent Prompts
+﻿# Localty Agent Prompts
 
 このディレクトリには、Ariadne Workflow で利用する Agent prompt を格納します。
 
@@ -78,8 +78,8 @@
 
 ## 推奨フロー
 
-詳細な開発フローは `.github/prompts/` を参照してください。
-Agent間の共通schemaは `.github/schemas/`、共通判断ルールは `.github/shared/` を参照してください。
+詳細な開発フローは `.ariadne/prompts/` を参照してください。
+Agent間の共通schemaは `.ariadne/schemas/`、共通判断ルールは `.ariadne/shared/` を参照してください。
 
 ```text
 draft bullets

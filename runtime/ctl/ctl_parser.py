@@ -3,6 +3,35 @@ from __future__ import annotations
 import argparse
 from typing import Any
 
+from runtime.constants.cli_defaults import (
+    DUCKDB_CONTEXT_MAX_CHARS_DEFAULT,
+    DUCKDB_VERIFY_LIMIT_DEFAULT,
+    DUCKDB_VERIFY_MIN_RESULTS_DEFAULT,
+    FLUTTER_TIMEOUT_SECONDS_DEFAULT,
+    GITHUB_DETECT_REBASE_MAX_COMMITS_DEFAULT,
+    GITHUB_DETECT_REBASE_MAX_FILES_DEFAULT,
+    GITHUB_MESSAGE_PLAN_MAX_COMMITS_DEFAULT,
+    OUTPUT_LANGUAGE_ENGLISH_RATIO_THRESHOLD_DEFAULT,
+    OUTPUT_LANGUAGE_MIN_ENGLISH_WORDS_DEFAULT,
+    OUTPUT_LANGUAGE_MIN_JAPANESE_CHARS_DEFAULT,
+    RAG_CHUNK_OVERLAP_DEFAULT,
+    RAG_CHUNK_SIZE_DEFAULT,
+    RAG_DISPATCH_AGGREGATE_MAX_CHARS_DEFAULT,
+    RAG_DISPATCH_JOBS_DEFAULT,
+    RAG_DISPATCH_MAX_CHARS_DEFAULT,
+    RAG_DISPATCH_MAX_QUERIES_DEFAULT,
+    RAG_DISPATCH_TOP_K_DEFAULT,
+    RAG_EMBEDDING_DIMENSIONS_DEFAULT,
+    RAG_STANDARDIZE_RANDOM_LENGTH_DEFAULT,
+    RAG_STANDARDIZE_RANDOM_LENGTH_MAX_EXCLUSIVE,
+    RAG_STANDARDIZE_RANDOM_LENGTH_MIN,
+    REVIEW_SPECIALIST_TIMEOUT_SECONDS_DEFAULT,
+    SDK_ANALYSIS_MAX_BYTES_DEFAULT,
+    SDK_ANALYSIS_MAX_FILES_DEFAULT,
+    TASK_RUNNER_MAX_WORKERS_DEFAULT,
+    TEXT_PREVIEW_MAX_BYTES_DEFAULT,
+    TEXT_PREVIEW_MAX_CHARS_DEFAULT,
+)
 from runtime.constants.paths import GENERATED_JSONIZED
 from runtime.constants.workspace import (
     DEFAULT_TARGET_REPO_HELP,
@@ -12,6 +41,7 @@ from runtime.constants.workspace import (
 )
 from runtime.environment import preflight
 from runtime.rag import duckdb_store
+from runtime.review.constants import DEFAULT_REVIEW_FINDING_CONFIDENCE
 from runtime.tools import text_encoding_convert
 from runtime.tools import text_encoding_guard
 from runtime.tools import utf8_bom
@@ -104,8 +134,8 @@ def _add_tools_arguments(sub: Any) -> None:
     preview = tools_sub.add_parser("encoding-preview", help="Show hex bytes and short decode previews.")
     _add_tool_path_arguments(preview, default_paths=["docs"], default_extensions=sorted(text_encoding_convert.TEXT_EXTENSIONS))
     preview.add_argument("--encodings", nargs="+", default=list(text_encoding_convert.DEFAULT_INSPECT_ENCODINGS))
-    preview.add_argument("--bytes", type=int, default=160)
-    preview.add_argument("--chars", type=int, default=120)
+    preview.add_argument("--bytes", type=int, default=TEXT_PREVIEW_MAX_BYTES_DEFAULT)
+    preview.add_argument("--chars", type=int, default=TEXT_PREVIEW_MAX_CHARS_DEFAULT)
     preview.add_argument("--fail-on-warning", action="store_true")
 
     convert = tools_sub.add_parser("encoding-convert", help="Safely convert text files to UTF-8.")
@@ -147,7 +177,7 @@ def _add_retrieval_arguments(sub: Any) -> None:
     run.add_argument("--work-id", required=True)
     run.add_argument("--task-file", required=True)
     run.add_argument("--mode", default="auto", choices=["auto", "sequential", "parallel"])
-    run.add_argument("--max-workers", type=int, default=4)
+    run.add_argument("--max-workers", type=int, default=TASK_RUNNER_MAX_WORKERS_DEFAULT)
     run.add_argument("--dry-run", action="store_true")
     run.add_argument("--stop-on-failure", action="store_true")
     run.add_argument("--json", action="store_true")
@@ -353,14 +383,19 @@ def _add_rag_build_arguments(command: argparse.ArgumentParser) -> None:
     command.add_argument("--branch", default="")
     command.add_argument("--commit", default="")
     command.add_argument("--status", default="draft")
-    command.add_argument("--chunk-size", type=int, default=1800)
-    command.add_argument("--chunk-overlap", type=int, default=180)
-    command.add_argument("--embedding-dimensions", type=int, default=768)
+    command.add_argument("--chunk-size", type=int, default=RAG_CHUNK_SIZE_DEFAULT)
+    command.add_argument("--chunk-overlap", type=int, default=RAG_CHUNK_OVERLAP_DEFAULT)
+    command.add_argument("--embedding-dimensions", type=int, default=RAG_EMBEDDING_DIMENSIONS_DEFAULT)
     command.add_argument("--clean-output", action="store_true")
     command.add_argument("--standardize-filenames", action="store_true")
     command.add_argument("--skip-standardize", action="store_true")
     command.add_argument("--replace-references", action="store_true")
-    command.add_argument("--random-length", type=int, default=8, choices=range(5, 9))
+    command.add_argument(
+        "--random-length",
+        type=int,
+        default=RAG_STANDARDIZE_RANDOM_LENGTH_DEFAULT,
+        choices=range(RAG_STANDARDIZE_RANDOM_LENGTH_MIN, RAG_STANDARDIZE_RANDOM_LENGTH_MAX_EXCLUSIVE),
+    )
     command.add_argument("--json", action="store_true")
 
 
@@ -391,11 +426,11 @@ def _add_rag_load_arguments(command: argparse.ArgumentParser) -> None:
     command.add_argument("--min-freshness", type=float, default=None)
     command.add_argument("--output-dir", default="work/db/ariadne-knowledge-platform/rag/retrieval")
     command.add_argument("--search-mode", choices=["keyword", "semantic", "hybrid"], default="hybrid")
-    command.add_argument("--top-k", type=int, default=5)
-    command.add_argument("--max-chars", type=int, default=4000)
-    command.add_argument("--max-queries", type=int, default=5)
-    command.add_argument("--jobs", type=int, default=4)
-    command.add_argument("--aggregate-max-chars", type=int, default=12000)
+    command.add_argument("--top-k", type=int, default=RAG_DISPATCH_TOP_K_DEFAULT)
+    command.add_argument("--max-chars", type=int, default=RAG_DISPATCH_MAX_CHARS_DEFAULT)
+    command.add_argument("--max-queries", type=int, default=RAG_DISPATCH_MAX_QUERIES_DEFAULT)
+    command.add_argument("--jobs", type=int, default=RAG_DISPATCH_JOBS_DEFAULT)
+    command.add_argument("--aggregate-max-chars", type=int, default=RAG_DISPATCH_AGGREGATE_MAX_CHARS_DEFAULT)
     command.add_argument("--build-if-missing", action="store_true")
     command.add_argument("--write-markdown", action="store_true")
     command.add_argument("--python", default="python")
@@ -407,8 +442,8 @@ def _add_rag_retrieve_arguments(command: argparse.ArgumentParser) -> None:
     command.add_argument("--chunks-index", default="work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl")
     command.add_argument("--embeddings-index", default="work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl")
     command.add_argument("--output-dir", default="work/db/ariadne-knowledge-platform/rag/retrieval")
-    command.add_argument("--top-k", type=int, default=5)
-    command.add_argument("--max-chars", type=int, default=4000)
+    command.add_argument("--top-k", type=int, default=RAG_DISPATCH_TOP_K_DEFAULT)
+    command.add_argument("--max-chars", type=int, default=RAG_DISPATCH_MAX_CHARS_DEFAULT)
     command.add_argument("--search-mode", choices=["keyword", "semantic", "hybrid"], default="hybrid")
     command.add_argument("--backend", choices=["file", "duckdb"], default="file")
     command.add_argument("--duckdb-path", default=str(duckdb_store.DEFAULT_DB_PATH))
@@ -445,8 +480,8 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     chunk = rag_sub.add_parser("chunk", help="Split normalized RAG documents into chunks.")
     chunk.add_argument("--input-dir", required=True)
     chunk.add_argument("--output-dir", required=True)
-    chunk.add_argument("--chunk-size", type=int, default=1800)
-    chunk.add_argument("--chunk-overlap", type=int, default=180)
+    chunk.add_argument("--chunk-size", type=int, default=RAG_CHUNK_SIZE_DEFAULT)
+    chunk.add_argument("--chunk-overlap", type=int, default=RAG_CHUNK_OVERLAP_DEFAULT)
     chunk.add_argument("--clean-output", action="store_true")
     chunk.add_argument("--json", action="store_true")
 
@@ -459,7 +494,7 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     embed = rag_sub.add_parser("embed", help="Create local sparse embeddings for chunk index rows.")
     embed.add_argument("--chunks-index", required=True)
     embed.add_argument("--output", required=True)
-    embed.add_argument("--dimensions", type=int, default=768)
+    embed.add_argument("--dimensions", type=int, default=RAG_EMBEDDING_DIMENSIONS_DEFAULT)
     embed.add_argument("--json", action="store_true")
 
     optimize = rag_sub.add_parser("optimize", help="Optimize chunk ingestion candidates and write evidence.")
@@ -473,7 +508,12 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     standardize = rag_sub.add_parser("standardize", help="Standardize corrective action report filenames.")
     standardize.add_argument("--source-dir", default="work/db/ariadne-knowledge-platform/rag/corrective-action-report")
     standardize.add_argument("--replace-references", action="store_true")
-    standardize.add_argument("--random-length", type=int, default=8, choices=range(5, 9))
+    standardize.add_argument(
+        "--random-length",
+        type=int,
+        default=RAG_STANDARDIZE_RANDOM_LENGTH_DEFAULT,
+        choices=range(RAG_STANDARDIZE_RANDOM_LENGTH_MIN, RAG_STANDARDIZE_RANDOM_LENGTH_MAX_EXCLUSIVE),
+    )
     standardize.add_argument("--json", action="store_true")
 
     jsonize = rag_sub.add_parser("jsonize", help="Convert a RAG tree into standard JSON source records.")
@@ -584,9 +624,9 @@ def _add_workflow_quality_arguments(workflow_sub: Any) -> None:
     output_check = output_language_sub.add_parser("check", help="Check output language quality.")
     output_check.add_argument("--paths", nargs="+", default=validate_output_language.DEFAULT_PATHS)
     output_check.add_argument("--exclude", nargs="*", default=validate_output_language.DEFAULT_EXCLUDES)
-    output_check.add_argument("--english-ratio-threshold", type=float, default=0.62)
-    output_check.add_argument("--min-english-words", type=int, default=35)
-    output_check.add_argument("--min-japanese-chars", type=int, default=20)
+    output_check.add_argument("--english-ratio-threshold", type=float, default=OUTPUT_LANGUAGE_ENGLISH_RATIO_THRESHOLD_DEFAULT)
+    output_check.add_argument("--min-english-words", type=int, default=OUTPUT_LANGUAGE_MIN_ENGLISH_WORDS_DEFAULT)
+    output_check.add_argument("--min-japanese-chars", type=int, default=OUTPUT_LANGUAGE_MIN_JAPANESE_CHARS_DEFAULT)
     output_check.add_argument("--fail-on-violation", action="store_true")
     output_check.add_argument("--json", action="store_true")
 
@@ -991,13 +1031,13 @@ def build_parser() -> argparse.ArgumentParser:
     knowledge_export = knowledge_sub.add_parser("export-context", help="Export DuckDB RAG search results as context JSON.")
     duckdb_store.add_search_arguments(knowledge_export)
     knowledge_export.add_argument("--output", required=True)
-    knowledge_export.add_argument("--max-chars", type=int, default=4000)
+    knowledge_export.add_argument("--max-chars", type=int, default=DUCKDB_CONTEXT_MAX_CHARS_DEFAULT)
     knowledge_export.add_argument("--json", action="store_true")
 
     knowledge_verify = knowledge_sub.add_parser("verify", help="Verify DuckDB reference searches and write evidence.")
     knowledge_verify.add_argument("--query", action="append", default=[])
-    knowledge_verify.add_argument("--min-results", type=int, default=1)
-    knowledge_verify.add_argument("--limit", type=int, default=5)
+    knowledge_verify.add_argument("--min-results", type=int, default=DUCKDB_VERIFY_MIN_RESULTS_DEFAULT)
+    knowledge_verify.add_argument("--limit", type=int, default=DUCKDB_VERIFY_LIMIT_DEFAULT)
     knowledge_verify.add_argument("--output", default=str(duckdb_store.DEFAULT_REFERENCE_CHECK_OUTPUT))
     knowledge_verify.add_argument("--work-id", default="")
     knowledge_verify.add_argument("--work-dir", default="")
@@ -1043,15 +1083,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sdk_analyze.add_argument("--no-knowledge", action="store_true", help="Do not write Knowledge JSON.")
     sdk_analyze.add_argument("--skip-sdk-analysis", action="store_true")
-    sdk_analyze.add_argument("--max-files", type=int, default=200)
-    sdk_analyze.add_argument("--max-bytes", type=int, default=120_000)
+    sdk_analyze.add_argument("--max-files", type=int, default=SDK_ANALYSIS_MAX_FILES_DEFAULT)
+    sdk_analyze.add_argument("--max-bytes", type=int, default=SDK_ANALYSIS_MAX_BYTES_DEFAULT)
     sdk_analyze.add_argument("--json", action="store_true")
     sdk_discover = sdk_sub.add_parser("discover", help="Create external source discovery plan from work/requirements/sdk.")
     sdk_discover.add_argument("--work-id", required=True)
     sdk_discover.add_argument("--source", default="", help="SDK program directory. Default: work/requirements/sdk")
     sdk_discover.add_argument("--work-dir", default="", help=DEFAULT_WORK_DIR_HELP)
-    sdk_discover.add_argument("--max-files", type=int, default=200)
-    sdk_discover.add_argument("--max-bytes", type=int, default=120_000)
+    sdk_discover.add_argument("--max-files", type=int, default=SDK_ANALYSIS_MAX_FILES_DEFAULT)
+    sdk_discover.add_argument("--max-bytes", type=int, default=SDK_ANALYSIS_MAX_BYTES_DEFAULT)
     sdk_discover.add_argument("--json", action="store_true")
 
     flutter_cmd = sub.add_parser("flutter", help="Analyze Flutter multi-platform targets and build dispatch.")
@@ -1066,7 +1106,7 @@ def build_parser() -> argparse.ArgumentParser:
         flutter_item.add_argument("--force", action="store_true", help="Refresh copied boilerplate during init.")
         flutter_item.add_argument("--execute", action="store_true", help="Run verification/build commands and capture evidence.")
         flutter_item.add_argument("--human-check", choices=["approved"], default="", help="Required for release execution.")
-        flutter_item.add_argument("--timeout-seconds", type=int, default=600)
+        flutter_item.add_argument("--timeout-seconds", type=int, default=FLUTTER_TIMEOUT_SECONDS_DEFAULT)
         flutter_item.add_argument("--json", action="store_true")
     flutter_finalize = flutter_sub.add_parser("finalize", help="Judge Flutter verification/build evidence completion.")
     flutter_finalize.add_argument("--work-id", required=True)
@@ -1160,8 +1200,8 @@ def build_parser() -> argparse.ArgumentParser:
     github_detect_rebase.add_argument("--git-repo", default="")
     github_detect_rebase.add_argument("--base", default="HEAD~30")
     github_detect_rebase.add_argument("--head", default="HEAD")
-    github_detect_rebase.add_argument("--max-commits", type=int, default=80)
-    github_detect_rebase.add_argument("--max-files", type=int, default=3)
+    github_detect_rebase.add_argument("--max-commits", type=int, default=GITHUB_DETECT_REBASE_MAX_COMMITS_DEFAULT)
+    github_detect_rebase.add_argument("--max-files", type=int, default=GITHUB_DETECT_REBASE_MAX_FILES_DEFAULT)
     github_detect_rebase.add_argument("--all-history", action="store_true")
     github_detect_rebase.add_argument("--append", action="store_true")
     github_detect_rebase.add_argument("--json", action="store_true")
@@ -1200,7 +1240,7 @@ def build_parser() -> argparse.ArgumentParser:
     github_message_plan.add_argument("--analysis-path", default="")
     github_message_plan.add_argument("--git-repo", default="")
     github_message_plan.add_argument("--source-ref", default="")
-    github_message_plan.add_argument("--max-commits", type=int, default=200)
+    github_message_plan.add_argument("--max-commits", type=int, default=GITHUB_MESSAGE_PLAN_MAX_COMMITS_DEFAULT)
     github_message_plan.add_argument("--output", default="")
     github_message_plan.add_argument("--json", action="store_true")
     github_message_review = github_knowledge_sub.add_parser(
@@ -1410,7 +1450,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_review_lookup_arguments(review_execute_specialist)
     review_execute_specialist.add_argument("--reviewer", required=True)
     review_execute_specialist.add_argument("--agent-command", default="")
-    review_execute_specialist.add_argument("--timeout-seconds", type=int, default=1800)
+    review_execute_specialist.add_argument("--timeout-seconds", type=int, default=REVIEW_SPECIALIST_TIMEOUT_SECONDS_DEFAULT)
     review_execute_specialist.add_argument("--human-check", choices=["pending", "approved"], default="pending")
     review_execute_specialist.add_argument("--skip-draft-findings", action="store_true")
     review_execute_specialist.add_argument("--json", action="store_true")
@@ -1456,9 +1496,9 @@ def build_parser() -> argparse.ArgumentParser:
     review_rag_build.add_argument("--branch", default="")
     review_rag_build.add_argument("--commit", default="")
     review_rag_build.add_argument("--status", default="")
-    review_rag_build.add_argument("--chunk-size", type=int, default=1800)
-    review_rag_build.add_argument("--chunk-overlap", type=int, default=180)
-    review_rag_build.add_argument("--embedding-dimensions", type=int, default=768)
+    review_rag_build.add_argument("--chunk-size", type=int, default=RAG_CHUNK_SIZE_DEFAULT)
+    review_rag_build.add_argument("--chunk-overlap", type=int, default=RAG_CHUNK_OVERLAP_DEFAULT)
+    review_rag_build.add_argument("--embedding-dimensions", type=int, default=RAG_EMBEDDING_DIMENSIONS_DEFAULT)
     review_rag_build.add_argument("--clean-output", action="store_true")
     review_rag_build.add_argument("--json", action="store_true")
 
@@ -1478,7 +1518,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_finding.add_argument("--counterexample", default="")
     review_finding.add_argument("--reasoning-summary", default="")
     review_finding.add_argument("--requested-action", default="")
-    review_finding.add_argument("--confidence", type=float, default=0.8)
+    review_finding.add_argument("--confidence", type=float, default=DEFAULT_REVIEW_FINDING_CONFIDENCE)
     review_finding.add_argument("--required-test", action="append", default=[])
     review_finding.add_argument("--blocking", action="store_true")
     review_finding.add_argument("--non-blocking", action="store_true")
@@ -1613,5 +1653,3 @@ def build_parser() -> argparse.ArgumentParser:
     doctor_cmd.add_argument("--encoding-paths", nargs="+", default=None, help="Text-boundary paths to scan or repair.")
     doctor_cmd.add_argument("--encoding-extensions", nargs="+", default=None, help="Text extensions included in text-boundary scan or repair.")
     return parser
-
-

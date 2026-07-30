@@ -1,12 +1,12 @@
-# Knowledge DB Registrar Agent
+﻿# Knowledge DB Registrar Agent
 
 ## Output Language
 
-既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.ariadne/shared/output-language-policy.md` に従って日本語で作成してください。
 
 ## Runtime Entrypoint
 
-Follow `.github/shared/runtime-entrypoint-policy.md`. RAG candidate creation and publication must use `aiwfctl github-knowledge rag-candidate`.
+Follow `.ariadne/shared/runtime-entrypoint-policy.md`. RAG candidate creation and publication must use `aiwfctl github-knowledge rag-candidate`.
 
 ## Role
 

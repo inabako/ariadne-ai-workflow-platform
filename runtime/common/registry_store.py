@@ -11,6 +11,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso  # noqa: E402
+from runtime.constants.runtime_values import FILE_HASH_CHUNK_BYTES, REGISTRY_VERSION  # noqa: E402
 from runtime.constants.paths import (  # noqa: E402
     HUMAN_GATES_REGISTRY_FILE,
     KNOWLEDGE_SOURCE_REGISTRIES,
@@ -187,7 +188,7 @@ def file_sha256(path: Path) -> str:
 
     hasher = hashlib.sha256()
     with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+        for chunk in iter(lambda: handle.read(FILE_HASH_CHUNK_BYTES), b""):
             hasher.update(chunk)
     return hasher.hexdigest()
 
@@ -281,7 +282,7 @@ def read_search_terms_source(source_dir: Path) -> dict[str, Any]:
     path = source_dir / SEARCH_TERMS_REGISTRY_FILE
     data = read_json(path, default={})
     if data in ({}, None):
-        return {"registry_version": "1.0", "terms": []}
+        return {"registry_version": REGISTRY_VERSION, "terms": []}
     if not isinstance(data, dict):
         raise ValueError(f"{SEARCH_TERMS_REGISTRY_FILE} must be a JSON object.")
     data.setdefault("terms", [])
@@ -654,9 +655,9 @@ def load_tool_candidates(repo_root: Path) -> dict[str, Any]:
 
 
 def load_human_gates(repo_root: Path) -> dict[str, Any]:
-    data = load_registry(repo_root, "human_gates", {"registry_version": "1.0", "gates": []})
+    data = load_registry(repo_root, "human_gates", {"registry_version": REGISTRY_VERSION, "gates": []})
     if isinstance(data, dict):
-        data.setdefault("registry_version", "1.0")
+        data.setdefault("registry_version", REGISTRY_VERSION)
         data.setdefault("gates", [])
     return data
 

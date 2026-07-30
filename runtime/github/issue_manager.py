@@ -11,6 +11,7 @@ from urllib.parse import quote
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import (  # noqa: E402
     default_github_owner,
     find_repo_root,
@@ -272,7 +273,7 @@ def manage_issue(args: argparse.Namespace) -> dict[str, Any]:
         status = "created"
 
     issue_record = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "work_id": args.work_id,
         "github_repo": github_repo,
         "title": issue_title,

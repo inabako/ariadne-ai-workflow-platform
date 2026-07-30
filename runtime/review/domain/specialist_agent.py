@@ -1,4 +1,7 @@
-﻿from __future__ import annotations
+from __future__ import annotations
+
+from runtime.constants.runtime_values import SCHEMA_VERSION
+
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -89,7 +92,7 @@ def build_specialist_agent_packet(
     work_id = str(session.get("work_id", ""))
     output_path = Path("work") / work_id / "process-report" / report_name
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-specialist-run",
         "status": "ready" if rule and prompt_exists else "blocked",
         "review_id": review_id,

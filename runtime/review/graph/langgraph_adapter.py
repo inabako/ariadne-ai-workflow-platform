@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from runtime.constants.runtime_values import SCHEMA_VERSION
+
+
 import importlib.util
 from typing import Any, Callable
 
@@ -51,7 +54,7 @@ def build_langgraph_review_plan(session: dict[str, Any]) -> dict[str, Any]:
         ]
     )
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-langgraph-plan",
         "adapter": "langgraph",
         "available": langgraph_available(),
@@ -429,7 +432,7 @@ def _evaluate_review_state_rules(session: dict[str, Any], *, run_id: str = "") -
         status = "orchestration-ready"
 
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-orchestration",
         "adapter": "langgraph",
         "available": langgraph_available(),

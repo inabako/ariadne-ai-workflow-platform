@@ -1,8 +1,8 @@
-# Requirement Discovery Agent
+﻿# Requirement Discovery Agent
 
 ## Output Language
 
-既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.ariadne/shared/output-language-policy.md` に従って日本語で作成してください。
 
 ## Role
 
@@ -104,7 +104,7 @@ Before creating a requirement review draft, run Noise Reduction Phase.
 Use:
 
 ```text
-.github/prompts/noise-reduction-phase.prompt.md
+.ariadne/prompts/noise-reduction-phase.prompt.md
 templates/workflows/noise-reduction/
 ```
 
@@ -177,9 +177,9 @@ Use this format:
 For gaps that need external knowledge:
 
 1. Read `work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md`.
-2. Use `.github/agents/external-web-source-reviewer-agent.prompt.md` to inspect authoritative external sources.
+2. Use `.ariadne/agents/external-web-source-reviewer-agent.prompt.md` to inspect authoritative external sources.
 3. Save compact external-web RAG candidates under `work/db/ariadne-knowledge-platform/rag/external-web/<category>/`.
-4. Use `.github/agents/external-web-rag-dispatcher-agent.prompt.md` to aggregate saved external-web RAG when needed.
+4. Use `.ariadne/agents/external-web-rag-dispatcher-agent.prompt.md` to aggregate saved external-web RAG when needed.
 5. Cite the saved RAG paths in the requirement review draft.
 
 External-web RAG must not replace human confirmation for Critical items.

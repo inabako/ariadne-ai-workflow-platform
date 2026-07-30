@@ -1,4 +1,4 @@
----
+﻿---
 name: corrective-action-fix
 description: GitHub repository / branch と任意の corrective action report を受け取り、work/<branch> に原本を取得し、report作成または読込、RAG build/load、GitHub Issue、work/issue-XXX + feature/issue-XXX、修正、単体テスト、起動/結合確認、人間チェック、push まで進めます。
 argument-hint: "<target-repository> <target-branch> [report]"
@@ -9,7 +9,7 @@ agent: agent
 
 ## Output Language
 
-既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.ariadne/shared/output-language-policy.md` に従って日本語で作成してください。
 
 Readable workflow additions:
 
@@ -80,7 +80,7 @@ SVGが無ければ`skipped`で通常flowへ戻ります。SVGがある場合、�
 Next.js Webapp Implementation Prep:
 
 ```text
-.github/prompts/nextjs-webapp-implementation-prep.prompt.md
+.ariadne/prompts/nextjs-webapp-implementation-prep.prompt.md
 templates/artifacts/process-report/nextjs-webapp-implementation-prep-template.md
 ```
 
@@ -89,7 +89,7 @@ templates/artifacts/process-report/nextjs-webapp-implementation-prep-template.md
 Web SVG Layout Mode:
 
 ```text
-.github/prompts/web-svg-layout-mode.prompt.md
+.ariadne/prompts/web-svg-layout-mode.prompt.md
 aiwfctl web-svg run / validate
 runtime/workflow/web_svg_layout_mode.py (internal implementation)
 ```

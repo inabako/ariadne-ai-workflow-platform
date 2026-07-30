@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from runtime.review.constants import DEFAULT_REVIEW_FINDING_CONFIDENCE
+
 
 SEVERITIES = ("critical", "high", "medium", "low", "info")
 FINDING_VERDICTS = ("pass", "warn", "fail", "unsupported", "needs-qa", "changes-required")
@@ -21,7 +23,7 @@ class ReviewFinding:
     counterexample: str = ""
     reasoning_summary: str = ""
     requested_action: str = ""
-    confidence: float = 0.8
+    confidence: float = DEFAULT_REVIEW_FINDING_CONFIDENCE
     required_tests: list[str] = field(default_factory=list)
     blocking: bool = False
     status: str = "open"
@@ -70,7 +72,7 @@ def normalize_finding(raw: dict[str, Any]) -> dict[str, Any]:
         counterexample=str(raw.get("counterexample", "")).strip(),
         reasoning_summary=str(raw.get("reasoning_summary", "")).strip(),
         requested_action=str(raw.get("requested_action", "")).strip(),
-        confidence=float(raw.get("confidence", 0.8)),
+        confidence=float(raw.get("confidence", DEFAULT_REVIEW_FINDING_CONFIDENCE)),
         required_tests=[str(item) for item in raw.get("required_tests", [])],
         blocking=bool(blocking),
         status=str(raw.get("status", "open")).strip() or "open",

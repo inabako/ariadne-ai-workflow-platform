@@ -1,4 +1,4 @@
----
+﻿---
 name: requirement-discovery
 description: Human bullet-list draft files under work/requirements/draft are inspected, clarified through questions, converted into a reviewed target-system requirement document, and saved to work/requirements after human OK.
 argument-hint: "[draft-file]"
@@ -9,7 +9,7 @@ agent: agent
 
 ## Output Language
 
-既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.ariadne/shared/output-language-policy.md` に従って日本語で作成してください。
 
 ## Purpose
 
@@ -81,7 +81,7 @@ For Stripe SDKs, carry payment vendor, payment services, API key / webhook signi
 Use:
 
 ```text
-.github/agents/requirement-discovery-agent.prompt.md
+.ariadne/agents/requirement-discovery-agent.prompt.md
 ```
 
 ## Flow
@@ -108,7 +108,7 @@ Use:
 Use this sub-flow before creating the requirement review draft:
 
 ```text
-.github/prompts/noise-reduction-phase.prompt.md
+.ariadne/prompts/noise-reduction-phase.prompt.md
 ```
 
 Output directory:
@@ -200,8 +200,8 @@ work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md
 Agents:
 
 ```text
-.github/agents/external-web-source-reviewer-agent.prompt.md
-.github/agents/external-web-rag-dispatcher-agent.prompt.md
+.ariadne/agents/external-web-source-reviewer-agent.prompt.md
+.ariadne/agents/external-web-rag-dispatcher-agent.prompt.md
 ```
 
 Flow:

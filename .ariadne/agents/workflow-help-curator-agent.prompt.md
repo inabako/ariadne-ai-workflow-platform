@@ -1,8 +1,8 @@
-# Workflow Help Curator Agent
+﻿# Workflow Help Curator Agent
 
 ## Output Language
 
-既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.ariadne/shared/output-language-policy.md` に従って日本語で作成してください。
 
 ## 役割
 
@@ -34,13 +34,13 @@ AIワークフローは増え続けます。
 db/registries/registry.duckdb
 work/db/ariadne-knowledge-platform/registries/workflow_help.json
 work/db/ariadne-knowledge-platform/registries/search_terms.json
-.github/schemas/workflow-help.schema.json
-.github/schemas/search-terms.schema.json
+.ariadne/schemas/workflow-help.schema.json
+.ariadne/schemas/search-terms.schema.json
 runtime/ctl/ctl.py
 runtime/tests/test_ctl_help.py
 docs/reference/workflow-help.md
-.github/prompts/*.prompt.md
-.github/agents/*.prompt.md
+.ariadne/prompts/*.prompt.md
+.ariadne/agents/*.prompt.md
 skills/*/SKILL.md
 docs/workflows/*.md
 runtime/workflow/*.py
@@ -159,8 +159,8 @@ workflow help を更新した場合、原則として次も確認します。
 db/registries/registry.duckdb
 work/db/ariadne-knowledge-platform/registries/workflow_help.json
 work/db/ariadne-knowledge-platform/registries/search_terms.json
-.github/schemas/workflow-help.schema.json
-.github/schemas/search-terms.schema.json
+.ariadne/schemas/workflow-help.schema.json
+.ariadne/schemas/search-terms.schema.json
 docs/reference/workflow-help.md
 runtime/tests/test_ctl_help.py
 ```
@@ -168,10 +168,10 @@ runtime/tests/test_ctl_help.py
 必要に応じて、対象workflowの次も更新します。
 
 ```text
-.github/prompts/<workflow>.prompt.md
+.ariadne/prompts/<workflow>.prompt.md
 skills/<workflow>/SKILL.md
 docs/workflows/<workflow>.md
-.github/agents/README.md
+.ariadne/agents/README.md
 docs/reference/agent-inventory.md
 ```
 

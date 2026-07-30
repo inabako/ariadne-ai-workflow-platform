@@ -9,8 +9,14 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, local_timestamp, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.schemas import KNOWLEDGE_CAPTURE_SCHEMA  # noqa: E402
+from runtime.constants.workflow_limits import (  # noqa: E402
+    KNOWLEDGE_CAPTURE_DOCS_CANDIDATE_SAMPLE_MAX_CHARS,
+    KNOWLEDGE_CAPTURE_PATH_LIST_LIMIT,
+    KNOWLEDGE_CAPTURE_TEXT_SAMPLE_MAX_CHARS,
+)
 from runtime.constants.workspace import (  # noqa: E402
     process_report_dir_for_work_dir,
     target_repository_dir_for_work_dir,
@@ -115,14 +121,14 @@ def file_status(path: Path) -> dict[str, Any]:
     }
 
 
-def read_text_sample(path: Path, max_chars: int = 1200) -> str:
+def read_text_sample(path: Path, max_chars: int = KNOWLEDGE_CAPTURE_TEXT_SAMPLE_MAX_CHARS) -> str:
     try:
         return path.read_text(encoding="utf-8-sig", errors="replace")[:max_chars]
     except OSError:
         return ""
 
 
-def markdown_path_list(repo_root: Path, files: list[Path], limit: int = 30) -> str:
+def markdown_path_list(repo_root: Path, files: list[Path], limit: int = KNOWLEDGE_CAPTURE_PATH_LIST_LIMIT) -> str:
     if not files:
         return "- なし"
     lines = [f"- `{relative_to_repo(repo_root, path)}`" for path in files[:limit]]
@@ -135,7 +141,7 @@ def markdown_path_list(repo_root: Path, files: list[Path], limit: int = 30) -> s
 def find_docs_candidates(files: list[Path]) -> list[dict[str, str]]:
     candidates: dict[str, dict[str, str]] = {}
     for path in files:
-        text = read_text_sample(path, max_chars=6000)
+        text = read_text_sample(path, max_chars=KNOWLEDGE_CAPTURE_DOCS_CANDIDATE_SAMPLE_MAX_CHARS)
         for keyword in DOCS_CANDIDATE_KEYWORDS:
             if keyword.lower() in text.lower():
                 candidates.setdefault(
@@ -505,7 +511,7 @@ uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive a
     write_markdown(output_paths["knowledge_capture_report"], report, args.dry_run)
 
     result = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "issue": args.issue,
         "repository": repository,
         "branch": branch,

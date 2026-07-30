@@ -9,6 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import (  # noqa: E402
     default_github_owner,
     env_value,
@@ -83,7 +84,7 @@ def prepare_support_repository(args: argparse.Namespace) -> dict[str, Any]:
         action = "updated"
 
     result = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "work_id": args.work_id,
         "name": args.name,
         "repository": args.repository,
@@ -98,7 +99,7 @@ def prepare_support_repository(args: argparse.Namespace) -> dict[str, Any]:
 
     context_dir = context_dir_for_work_dir(work_dir)
     support_state_path = context_dir / "support-repositories.json"
-    support_state = read_json(support_state_path, default={"schema_version": "1.0", "repositories": []}) or {}
+    support_state = read_json(support_state_path, default={"schema_version": SCHEMA_VERSION, "repositories": []}) or {}
     repositories = support_state.setdefault("repositories", [])
     repositories[:] = [item for item in repositories if item.get("name") != args.name]
     repositories.append(result)

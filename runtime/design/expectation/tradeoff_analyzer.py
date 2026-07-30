@@ -1,10 +1,8 @@
 from __future__ import annotations
 
+from .constants import TRADEOFF_GAIN_THRESHOLD, TRADEOFF_LOSS_THRESHOLD
 from .models import AxisEvaluation, CandidateScore, ExpectationEvaluation, ExpectationViolation, TradeOff
 
-
-GAIN_THRESHOLD = 0.8
-LOSS_THRESHOLD = 0.6
 
 AXIS_LABELS = {
     "expectation_satisfaction": "Expectation satisfaction",
@@ -29,19 +27,19 @@ def _impact(axis_by_name: dict[str, AxisEvaluation]) -> tuple[str, str]:
     implementation_parts: list[str] = []
     future_parts: list[str] = []
 
-    if implementation_cost and implementation_cost.score < LOSS_THRESHOLD:
+    if implementation_cost and implementation_cost.score < TRADEOFF_LOSS_THRESHOLD:
         implementation_parts.append("implementation effort or delivery cost is a visible constraint")
-    elif implementation_cost and implementation_cost.score >= GAIN_THRESHOLD:
+    elif implementation_cost and implementation_cost.score >= TRADEOFF_GAIN_THRESHOLD:
         implementation_parts.append("implementation effort is comparatively light")
 
-    if technical_feasibility and technical_feasibility.score < LOSS_THRESHOLD:
+    if technical_feasibility and technical_feasibility.score < TRADEOFF_LOSS_THRESHOLD:
         implementation_parts.append("technical feasibility needs review before selection")
-    elif technical_feasibility and technical_feasibility.score >= GAIN_THRESHOLD:
+    elif technical_feasibility and technical_feasibility.score >= TRADEOFF_GAIN_THRESHOLD:
         implementation_parts.append("technical feasibility is comparatively strong")
 
-    if maintenance_cost and maintenance_cost.score < LOSS_THRESHOLD:
+    if maintenance_cost and maintenance_cost.score < TRADEOFF_LOSS_THRESHOLD:
         future_parts.append("maintenance burden may grow after implementation")
-    elif maintenance_cost and maintenance_cost.score >= GAIN_THRESHOLD:
+    elif maintenance_cost and maintenance_cost.score >= TRADEOFF_GAIN_THRESHOLD:
         future_parts.append("maintenance cost is expected to stay manageable")
 
     if not implementation_parts:
@@ -73,17 +71,17 @@ def analyze_tradeoffs(
 
         score = score_by_candidate.get(candidate_id)
         if score:
-            if score.expectation_score >= GAIN_THRESHOLD:
+            if score.expectation_score >= TRADEOFF_GAIN_THRESHOLD:
                 gained_values.append(f"High weighted expectation score ({score.expectation_score:.3f})")
-            elif score.expectation_score < LOSS_THRESHOLD:
+            elif score.expectation_score < TRADEOFF_LOSS_THRESHOLD:
                 lost_values.append(f"Low weighted expectation score ({score.expectation_score:.3f})")
 
         for axis, item in sorted(axis_by_name.items()):
             evidence_refs.extend(item.evidence_refs)
             label = _axis_label(axis)
-            if item.score >= GAIN_THRESHOLD:
+            if item.score >= TRADEOFF_GAIN_THRESHOLD:
                 gained_values.append(f"{label} is strong ({item.score:.2f})")
-            elif item.score < LOSS_THRESHOLD:
+            elif item.score < TRADEOFF_LOSS_THRESHOLD:
                 lost_values.append(f"{label} is weak or costly ({item.score:.2f})")
                 if axis in {"accessibility", "implementation_cost", "maintenance_cost", "technical_feasibility"}:
                     human_decision_required.append(f"Review {label.lower()} trade-off")

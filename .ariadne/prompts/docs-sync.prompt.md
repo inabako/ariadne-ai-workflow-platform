@@ -1,4 +1,4 @@
----
+﻿---
 name: docs-sync
 description: Compare implementation and docs on a target branch, store docs drift analysis as JSON, create an Issue, create feature/issue-XXX, update docs only, push after approval, then prepare RAG capture and a report-only close archive.
 argument-hint: "<target-repository> <target-branch>"
@@ -9,7 +9,7 @@ agent: agent
 
 ## Output Language
 
-既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.ariadne/shared/output-language-policy.md` に従って日本語で作成してください。
 
 ## Purpose
 
@@ -33,7 +33,7 @@ Example:
 Use:
 
 ```text
-.github/agents/docs-drift-analyzer-agent.prompt.md
+.ariadne/agents/docs-drift-analyzer-agent.prompt.md
 ```
 
 ## Workflow
@@ -147,7 +147,7 @@ work/<target-branch>/context/docs-drift-analysis.json
 Schema:
 
 ```text
-.github/schemas/docs-drift-analysis.schema.json
+.ariadne/schemas/docs-drift-analysis.schema.json
 ```
 
 ## Guardrails

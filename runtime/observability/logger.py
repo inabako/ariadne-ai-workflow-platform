@@ -8,14 +8,23 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from runtime.constants.runtime_values import (
+    DEFAULT_RUNTIME_EVENT_BACKUP_COUNT,
+    DEFAULT_RUNTIME_EVENT_MAX_BYTES,
+    DEFAULT_RUNTIME_TRACE_ID_BYTES,
+    LOG_SANITIZE_LIST_ITEMS_MAX_DEFAULT,
+    LOG_SANITIZE_STRING_MAX_CHARS_DEFAULT,
+    NON_NEGATIVE_INT_DEFAULT,
+    RUNTIME_EVENT_INITIAL_SEQUENCE,
+    RUNTIME_EVENT_SEQUENCE_WIDTH,
+    SCHEMA_VERSION,
+)
+
 
 LOGGER = logging.getLogger(__name__)
 DEFAULT_RUNTIME_EVENT_LOG_DIR = Path("logs") / "runtime"
 DEFAULT_RUNTIME_EVENT_LOG_FILE = "runtime-events.log"
-DEFAULT_RUNTIME_EVENT_MAX_BYTES = 5 * 1024 * 1024
-DEFAULT_RUNTIME_EVENT_BACKUP_COUNT = 5
-DEFAULT_RUNTIME_EVENT_SCHEMA_VERSION = "1.0"
-DEFAULT_RUNTIME_TRACE_ID_BYTES = 12
+DEFAULT_RUNTIME_EVENT_SCHEMA_VERSION = SCHEMA_VERSION
 SENSITIVE_KEYS = ("secret", "token", "password", "credential", "apikey", "api_key", "private_key")
 
 
@@ -93,7 +102,12 @@ def _is_sensitive_key(key: str) -> bool:
     return any(marker in lowered for marker in SENSITIVE_KEYS)
 
 
-def sanitize_for_log(value: Any, *, max_string_length: int = 500, max_list_items: int = 20) -> Any:
+def sanitize_for_log(
+    value: Any,
+    *,
+    max_string_length: int = LOG_SANITIZE_STRING_MAX_CHARS_DEFAULT,
+    max_list_items: int = LOG_SANITIZE_LIST_ITEMS_MAX_DEFAULT,
+) -> Any:
     if isinstance(value, dict):
         sanitized: dict[str, Any] = {}
         for key, item in value.items():
@@ -136,11 +150,11 @@ def format_runtime_event_line(
 ) -> str:
     timestamp_text = timestamp.astimezone().isoformat(timespec="milliseconds")
     json_payload = json.dumps(sanitize_for_log(payload), ensure_ascii=False, separators=(",", ":"))
-    return f"{timestamp_text} | {trace_id} | {sequence:05d} | {json_payload}"
+    return f"{timestamp_text} | {trace_id} | {sequence:0{RUNTIME_EVENT_SEQUENCE_WIDTH}d} | {json_payload}"
 
 
 def _rotate_log_file(path: Path, *, max_bytes: int, backup_count: int) -> None:
-    if max_bytes <= 0 or backup_count <= 0 or not path.exists():
+    if max_bytes <= NON_NEGATIVE_INT_DEFAULT or backup_count <= NON_NEGATIVE_INT_DEFAULT or not path.exists():
         return
     oldest = path.with_name(f"{path.name}.{backup_count}")
     if oldest.exists():
@@ -161,7 +175,7 @@ def append_runtime_event_line(
 ) -> dict[str, Any]:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        projected_size = (path.stat().st_size if path.exists() else 0) + len((line + "\n").encode("utf-8"))
+        projected_size = (path.stat().st_size if path.exists() else NON_NEGATIVE_INT_DEFAULT) + len((line + "\n").encode("utf-8"))
         if path.exists() and projected_size > max_bytes:
             _rotate_log_file(path, max_bytes=max_bytes, backup_count=backup_count)
         with path.open("a", encoding="utf-8", newline="\n") as file:
@@ -200,7 +214,7 @@ class RuntimeEventLogger:
         self.log_path = runtime_event_log_path(repo_root, log_dir=log_dir)
         self.max_bytes = max_bytes
         self.backup_count = backup_count
-        self.sequence = 0
+        self.sequence = RUNTIME_EVENT_INITIAL_SEQUENCE
         self.write_warnings: list[dict[str, Any]] = []
 
     def emit(

@@ -19,7 +19,14 @@ try:  # pragma: no cover - Python 3.11+ standard path, fallback is defensive.
 except ModuleNotFoundError:  # pragma: no cover
     tomllib = None  # type: ignore[assignment]
 
+from runtime.constants.runtime_values import FILE_HASH_CHUNK_BYTES, SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.cli_defaults import SDK_ANALYSIS_MAX_BYTES_DEFAULT, SDK_ANALYSIS_MAX_FILES_DEFAULT  # noqa: E402
+from runtime.constants.workflow_limits import (  # noqa: E402
+    SDK_KEYWORD_PREVIEW_LIMIT,
+    SDK_README_EXCERPT_MAX_CHARS,
+    SDK_README_SAMPLE_MAX_BYTES,
+)
 from runtime.constants.schemas import SDK_ANALYSIS_CONTEXT_SCHEMA, SDK_EXTERNAL_DISCOVERY_SCHEMA  # noqa: E402
 from runtime.constants.workspace import (  # noqa: E402
     context_dir_for_work_dir,
@@ -34,7 +41,7 @@ from runtime.workflow.context_first import register_context  # noqa: E402
 from runtime.workflow import work_cleanup_hint  # noqa: E402
 
 
-SCHEMA_VERSION = "1.0"
+
 ARTIFACT_TYPE = "sdk-analysis-context"
 DISCOVERY_ARTIFACT_TYPE = "sdk-external-discovery"
 KNOWLEDGE_ARTIFACT_TYPE = "sdk-analysis-knowledge"
@@ -317,14 +324,14 @@ def is_analyzable_file(path: Path) -> bool:
     return any(path.name.lower().startswith(name) for name in IMPORTANT_FILE_NAMES)
 
 
-def collect_files(source_dir: Path, *, max_files: int = 200) -> list[Path]:
+def collect_files(source_dir: Path, *, max_files: int = SDK_ANALYSIS_MAX_FILES_DEFAULT) -> list[Path]:
     if not source_dir.exists() or not source_dir.is_dir():
         return []
     files = [path for path in source_dir.rglob("*") if path.is_file() and is_analyzable_file(path)]
     return sorted(files, key=lambda item: item.relative_to(source_dir).as_posix().lower())[:max_files]
 
 
-def read_text_sample(path: Path, *, max_bytes: int = 120_000) -> str:
+def read_text_sample(path: Path, *, max_bytes: int = SDK_ANALYSIS_MAX_BYTES_DEFAULT) -> str:
     data = path.read_bytes()[:max_bytes]
     return data.decode("utf-8-sig", errors="replace")
 
@@ -497,7 +504,7 @@ def detect_languages(files: list[Path]) -> list[dict[str, Any]]:
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+        for chunk in iter(lambda: handle.read(FILE_HASH_CHUNK_BYTES), b""):
             digest.update(chunk)
     return digest.hexdigest()
 
@@ -863,7 +870,7 @@ def detect_keyword_hits(source_dir: Path, samples: dict[Path, str]) -> dict[str,
                 hits[category].append(
                     {
                         "file": path.relative_to(source_dir).as_posix(),
-                        "keywords": ", ".join(unique(found)[:8]),
+                        "keywords": ", ".join(unique(found)[:SDK_KEYWORD_PREVIEW_LIMIT]),
                     }
                 )
     return hits
@@ -1088,8 +1095,8 @@ def run_discovery(
     work_id: str,
     source: str = "",
     work_dir: str = "",
-    max_files: int = 200,
-    max_bytes: int = 120_000,
+    max_files: int = SDK_ANALYSIS_MAX_FILES_DEFAULT,
+    max_bytes: int = SDK_ANALYSIS_MAX_BYTES_DEFAULT,
 ) -> dict[str, Any]:
     work_path = resolve_work_dir(repo_root, work_id, work_dir)
     source_dir = resolve_repo_path(repo_root, source) if source else default_source_dir(repo_root)
@@ -1363,7 +1370,7 @@ def knowledge_record(context: dict[str, Any]) -> dict[str, Any]:
     knowledge_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"sdk-analysis:{context.get('work_id')}:{sha256_text(content)}"))
     sdk = context.get("sdk", {})
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": KNOWLEDGE_ARTIFACT_TYPE,
         "knowledge_id": knowledge_id,
         "title": f"SDK事前解析: {', '.join(sdk.get('names', [])) or context.get('work_id', '')}",
@@ -1467,8 +1474,8 @@ def run_analysis(
     knowledge_dir: str = "",
     write_knowledge: bool = True,
     skip: bool = False,
-    max_files: int = 200,
-    max_bytes: int = 120_000,
+    max_files: int = SDK_ANALYSIS_MAX_FILES_DEFAULT,
+    max_bytes: int = SDK_ANALYSIS_MAX_BYTES_DEFAULT,
 ) -> dict[str, Any]:
     work_path = resolve_work_dir(repo_root, work_id, work_dir)
     source_dir = resolve_repo_path(repo_root, source) if source else default_source_dir(repo_root)
@@ -1498,7 +1505,11 @@ def run_analysis(
     cloud = detect_cloud_sdks(source_dir, samples)
     payment = detect_payment_sdks(source_dir, samples)
     readme_path = find_readme(files)
-    readme_excerpt = redact_secret_like_literals(read_text_sample(readme_path, max_bytes=4000)[:1000]) if readme_path else ""
+    readme_excerpt = (
+        redact_secret_like_literals(read_text_sample(readme_path, max_bytes=SDK_README_SAMPLE_MAX_BYTES)[:SDK_README_EXCERPT_MAX_CHARS])
+        if readme_path
+        else ""
+    )
     hits = detect_keyword_hits(source_dir, samples)
     secrets = detect_secret_findings(source_dir, samples)
     checks = human_checks(package_metadata, hits, secrets)
@@ -1616,16 +1627,16 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("--knowledge-dir", default="", help=f"Knowledge JSON output directory. Default: {DEFAULT_KNOWLEDGE_DIR.as_posix()}")
     analyze.add_argument("--no-knowledge", action="store_true", help="Do not write Knowledge JSON.")
     analyze.add_argument("--skip-sdk-analysis", action="store_true")
-    analyze.add_argument("--max-files", type=int, default=200)
-    analyze.add_argument("--max-bytes", type=int, default=120_000)
+    analyze.add_argument("--max-files", type=int, default=SDK_ANALYSIS_MAX_FILES_DEFAULT)
+    analyze.add_argument("--max-bytes", type=int, default=SDK_ANALYSIS_MAX_BYTES_DEFAULT)
     analyze.add_argument("--json", action="store_true")
 
     discover = sub.add_parser("discover", help="Create external source discovery plan from work/requirements/sdk.")
     discover.add_argument("--work-id", required=True)
     discover.add_argument("--source", default="", help="SDK program directory. Default: work/requirements/sdk")
     discover.add_argument("--work-dir", default="", help="Explicit work directory. Default: work/<work-id>")
-    discover.add_argument("--max-files", type=int, default=200)
-    discover.add_argument("--max-bytes", type=int, default=120_000)
+    discover.add_argument("--max-files", type=int, default=SDK_ANALYSIS_MAX_FILES_DEFAULT)
+    discover.add_argument("--max-bytes", type=int, default=SDK_ANALYSIS_MAX_BYTES_DEFAULT)
     discover.add_argument("--json", action="store_true")
     return parser
 

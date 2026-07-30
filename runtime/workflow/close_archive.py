@@ -23,6 +23,31 @@ from runtime.constants.paths import (  # noqa: E402
     SOURCE_GITHUB_KNOWLEDGE,
     SOURCE_WORKSPACE_ENVIRONMENT,
 )
+from runtime.constants.workflow_limits import (  # noqa: E402
+    CLOSE_ARCHIVE_COLLECT_FILES_LIMIT,
+    CLOSE_ARCHIVE_FIRST_PARAGRAPH_MAX_CHARS,
+    CLOSE_ARCHIVE_MARKDOWN_BULLET_MAX_CHARS,
+    CLOSE_ARCHIVE_MARKDOWN_BULLETS_LIMIT,
+    CLOSE_ARCHIVE_MARKDOWN_HEADINGS_LIMIT,
+    CLOSE_ARCHIVE_METADATA_SCAN_END_LINE,
+    CLOSE_ARCHIVE_METADATA_SCAN_START_LINE,
+    CLOSE_ARCHIVE_PRUNE_TARGETS_PREVIEW_LIMIT,
+    CLOSE_ARCHIVE_CATEGORY_SOURCE_MATCH_SCORE,
+    CLOSE_ARCHIVE_RAG_DISCOVERY_LIMIT,
+    CLOSE_ARCHIVE_RAG_DISCOVERY_SCORE_THRESHOLD,
+    CLOSE_ARCHIVE_RAG_REFERENCE_SCAN_LIMIT,
+    CLOSE_ARCHIVE_RAG_REFERENCE_TEXT_MAX_CHARS,
+    CLOSE_ARCHIVE_RAG_SCORE_TEXT_MAX_CHARS,
+    CLOSE_ARCHIVE_RAG_SUMMARY_TEXT_MAX_CHARS,
+    CLOSE_ARCHIVE_RANDOM_SUFFIX_LENGTH,
+    CLOSE_ARCHIVE_REPAIR_PERMISSION_MODE,
+    CLOSE_ARCHIVE_SAMPLE_MAX_CHARS,
+    CLOSE_ARCHIVE_SOURCE_SAMPLE_MAX_CHARS,
+    CLOSE_ARCHIVE_SIGNIFICANT_TOKEN_MIN_CHARS,
+    CLOSE_ARCHIVE_TOKEN_PATH_MATCH_SCORE,
+    CLOSE_ARCHIVE_TOKEN_TEXT_MATCH_SCORE,
+    CLOSE_ARCHIVE_WORK_ID_MATCH_SCORE,
+)
 from runtime.constants.workspace import (  # noqa: E402
     context_dir_for_work_dir,
     process_report_dir_for_work_dir,
@@ -128,7 +153,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def random_suffix(length: int = 8) -> str:
+def random_suffix(length: int = CLOSE_ARCHIVE_RANDOM_SUFFIX_LENGTH) -> str:
     alphabet = string.ascii_uppercase + string.digits
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
@@ -222,13 +247,13 @@ def list_prune_targets(archive_dir: Path) -> list[Path]:
     return collapse_nested_targets(targets)
 
 
-def read_sample(path: Path, max_chars: int = 4000) -> str:
+def read_sample(path: Path, max_chars: int = CLOSE_ARCHIVE_SAMPLE_MAX_CHARS) -> str:
     if not path.exists() or not path.is_file():
         return ""
     return path.read_text(encoding="utf-8-sig", errors="replace")[:max_chars].strip()
 
 
-def collect_files(directory: Path, limit: int = 40) -> list[Path]:
+def collect_files(directory: Path, limit: int = CLOSE_ARCHIVE_COLLECT_FILES_LIMIT) -> list[Path]:
     if not directory.exists():
         return []
     return sorted(path for path in directory.rglob("*") if path.is_file())[:limit]
@@ -283,10 +308,10 @@ def collect_referenced_rag_sources(repo_root: Path, source_work_dir: Path) -> li
     if not source_work_dir.exists():
         return []
     refs: list[Path] = []
-    for path in collect_files(source_work_dir, limit=300):
+    for path in collect_files(source_work_dir, limit=CLOSE_ARCHIVE_RAG_REFERENCE_SCAN_LIMIT):
         if path.suffix.lower() not in {".md", ".json", ".txt"}:
             continue
-        text = read_text_safe(path, max_chars=20000)
+        text = read_text_safe(path, max_chars=CLOSE_ARCHIVE_RAG_REFERENCE_TEXT_MAX_CHARS)
         for ref in extract_rag_references(text):
             candidate = resolve_repo_path(repo_root, ref)
             if candidate.exists() and candidate.is_file():
@@ -297,7 +322,11 @@ def collect_referenced_rag_sources(repo_root: Path, source_work_dir: Path) -> li
 def significant_tokens(work_id: str, _category: str) -> list[str]:
     raw_tokens = re.split(r"[^a-zA-Z0-9]+", work_id)
     ignored = {"work", "issue", "github", "knowledge", "recent", "environment", "close", "test"}
-    return [token.lower() for token in raw_tokens if len(token) >= 4 and token.lower() not in ignored]
+    return [
+        token.lower()
+        for token in raw_tokens
+        if len(token) >= CLOSE_ARCHIVE_SIGNIFICANT_TOKEN_MIN_CHARS and token.lower() not in ignored
+    ]
 
 
 def candidate_rag_files(repo_root: Path, category: str) -> list[Path]:
@@ -312,20 +341,20 @@ def candidate_rag_files(repo_root: Path, category: str) -> list[Path]:
 
 def score_rag_candidate(path: Path, repo_root: Path, work_id: str, category: str) -> int:
     rel = safe_relative(repo_root, path).replace("\\", "/").lower()
-    text = read_text_safe(path, max_chars=30000).lower()
+    text = read_text_safe(path, max_chars=CLOSE_ARCHIVE_RAG_SCORE_TEXT_MAX_CHARS).lower()
     tokens = significant_tokens(work_id, category)
     score = 0
     if work_id.lower() in rel or work_id.lower() in text:
-        score += 12
+        score += CLOSE_ARCHIVE_WORK_ID_MATCH_SCORE
     if category == "github" and rel.startswith(SOURCE_GITHUB_KNOWLEDGE.as_posix() + "/"):
-        score += 5
+        score += CLOSE_ARCHIVE_CATEGORY_SOURCE_MATCH_SCORE
     if category == "vscode" and rel.startswith(SOURCE_WORKSPACE_ENVIRONMENT.as_posix() + "/"):
-        score += 5
+        score += CLOSE_ARCHIVE_CATEGORY_SOURCE_MATCH_SCORE
     for token in tokens:
         if token in rel:
-            score += 4
+            score += CLOSE_ARCHIVE_TOKEN_PATH_MATCH_SCORE
         if token in text:
-            score += 2
+            score += CLOSE_ARCHIVE_TOKEN_TEXT_MATCH_SCORE
     return score
 
 
@@ -345,11 +374,11 @@ def discover_rag_sources(
     if auto_discovery:
         for candidate in candidate_rag_files(repo_root, category):
             score = score_rag_candidate(candidate, repo_root, work_id, category)
-            if score > 5:
+            if score > CLOSE_ARCHIVE_RAG_DISCOVERY_SCORE_THRESHOLD:
                 scored.append((score, candidate))
     scored_paths = [
         path
-        for _score, path in sorted(scored, key=lambda item: (-item[0], safe_relative(repo_root, item[1])))[:8]
+        for _score, path in sorted(scored, key=lambda item: (-item[0], safe_relative(repo_root, item[1])))[:CLOSE_ARCHIVE_RAG_DISCOVERY_LIMIT]
     ]
     return unique_paths([*explicit_existing, *refs, *scored_paths])
 
@@ -376,7 +405,7 @@ def metadata_title(text: str) -> str:
     lines = text.splitlines()
     if not lines or lines[0].strip() != "---":
         return ""
-    for line in lines[1:80]:
+    for line in lines[CLOSE_ARCHIVE_METADATA_SCAN_START_LINE:CLOSE_ARCHIVE_METADATA_SCAN_END_LINE]:
         if line.strip() == "---":
             break
         if line.lower().startswith("title:"):
@@ -384,7 +413,7 @@ def metadata_title(text: str) -> str:
     return ""
 
 
-def first_paragraph(text: str, max_chars: int = 700) -> str:
+def first_paragraph(text: str, max_chars: int = CLOSE_ARCHIVE_FIRST_PARAGRAPH_MAX_CHARS) -> str:
     lines: list[str] = []
     for line in text.splitlines():
         stripped = line.strip()
@@ -401,7 +430,7 @@ def first_paragraph(text: str, max_chars: int = 700) -> str:
     return paragraph[:max_chars].rstrip()
 
 
-def markdown_headings(text: str, limit: int = 8) -> list[str]:
+def markdown_headings(text: str, limit: int = CLOSE_ARCHIVE_MARKDOWN_HEADINGS_LIMIT) -> list[str]:
     headings: list[str] = []
     for line in text.splitlines():
         stripped = line.strip()
@@ -412,14 +441,14 @@ def markdown_headings(text: str, limit: int = 8) -> list[str]:
     return headings
 
 
-def markdown_bullets(text: str, limit: int = 12) -> list[str]:
+def markdown_bullets(text: str, limit: int = CLOSE_ARCHIVE_MARKDOWN_BULLETS_LIMIT) -> list[str]:
     bullets: list[str] = []
     for line in text.splitlines():
         stripped = line.strip()
         if re.match(r"^[-*]\s+", stripped) or re.match(r"^\d+\.\s+", stripped):
             cleaned = re.sub(r"^([-*]|\d+\.)\s+", "", stripped)
             if cleaned and cleaned not in bullets:
-                bullets.append(cleaned[:240])
+                bullets.append(cleaned[:CLOSE_ARCHIVE_MARKDOWN_BULLET_MAX_CHARS])
         if len(bullets) >= limit:
             break
     return bullets
@@ -430,7 +459,7 @@ def has_mojibake(text: str) -> bool:
 
 
 def summarize_rag_source(repo_root: Path, path: Path) -> dict[str, Any]:
-    text = read_text_safe(path, max_chars=60000)
+    text = read_text_safe(path, max_chars=CLOSE_ARCHIVE_RAG_SUMMARY_TEXT_MAX_CHARS)
     body = strip_front_matter(text)
     rel = safe_relative(repo_root, path)
     return {
@@ -488,7 +517,7 @@ def write_markdown(path: Path, text: str) -> None:
 
 
 def source_hint(source_work_dir: Path, relative: str) -> str:
-    sample = read_sample(source_work_dir / relative, max_chars=2000)
+    sample = read_sample(source_work_dir / relative, max_chars=CLOSE_ARCHIVE_SOURCE_SAMPLE_MAX_CHARS)
     return sample or "元成果物が見つからないため、必要に応じてGitHub Issue / PR / Commit / RAG sourceを参照してください。"
 
 
@@ -727,7 +756,7 @@ def run_audit(args: argparse.Namespace) -> dict[str, Any]:
         "exists": archive_dir.exists(),
         "missing_report_files": missing_reports,
         "prune_target_count": len(targets),
-        "prune_targets": [safe_relative(repo_root, path) for path in targets[:200]],
+        "prune_targets": [safe_relative(repo_root, path) for path in targets[:CLOSE_ARCHIVE_PRUNE_TARGETS_PREVIEW_LIMIT]],
         "report_only_ready": archive_dir.exists() and not missing_reports and not targets,
         "gate_restart": close_archive_gate_restart("ok", command="audit"),
     }
@@ -817,7 +846,7 @@ def run_prune(args: argparse.Namespace) -> dict[str, Any]:
         "archive_dir": safe_relative(repo_root, archive_dir),
         "execute": bool(args.execute),
         "target_count": len(targets),
-        "targets": [safe_relative(repo_root, path) for path in targets[:200]],
+        "targets": [safe_relative(repo_root, path) for path in targets[:CLOSE_ARCHIVE_PRUNE_TARGETS_PREVIEW_LIMIT]],
         "removed": removed,
         "gate_restart": close_archive_gate_restart(
             "pruned" if args.execute else "dry-run",
@@ -837,13 +866,13 @@ def remove_file(path: Path) -> None:
     try:
         path.unlink()
     except PermissionError:
-        os.chmod(path, 0o700)
+        os.chmod(path, CLOSE_ARCHIVE_REPAIR_PERMISSION_MODE)
         path.unlink()
 
 
 def remove_tree(path: Path) -> None:
     def on_error(function: Any, failed_path: str, _exc_info: Any) -> None:
-        os.chmod(failed_path, 0o700)
+        os.chmod(failed_path, CLOSE_ARCHIVE_REPAIR_PERMISSION_MODE)
         function(failed_path)
 
     shutil.rmtree(path, onerror=on_error)

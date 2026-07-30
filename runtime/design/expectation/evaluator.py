@@ -12,6 +12,11 @@ from .models import (
     ExpectationViolation,
     ExpectationWeight,
 )
+from .constants import (
+    DEFAULT_EXPECTATION_CONFIDENCE,
+    SCORE_MIN,
+    SCORE_ROUND_DECIMALS,
+)
 from .violation_detector import detect_expectation_violations
 
 
@@ -31,7 +36,7 @@ def normalize_weights(weights: list[ExpectationWeight], expectations: list[Expec
     if not weights:
         if not expectations:
             return []
-        even = 1.0 / len(expectations)
+        even = DEFAULT_EXPECTATION_CONFIDENCE / len(expectations)
         return [
             ExpectationWeight(
                 expectation_id=item.expectation_id,
@@ -42,8 +47,8 @@ def normalize_weights(weights: list[ExpectationWeight], expectations: list[Expec
             for item in expectations
         ]
     total = sum(item.weight for item in weights)
-    if total <= 0.0:
-        raise ValueError("weight total must be greater than 0.0")
+    if total <= SCORE_MIN:
+        raise ValueError(f"weight total must be greater than {SCORE_MIN:.1f}")
     return [
         ExpectationWeight(
             expectation_id=item.expectation_id,
@@ -94,7 +99,7 @@ def summarize_axis_evaluations(
         by_axis = {item.axis: item for item in items}
         missing_axes = [axis for axis in required_axes if axis not in by_axis]
         warning_count = sum(1 for item in items if item.evidence_quality == "assumption" or item.requires_validation)
-        average = round(sum(item.score for item in items) / len(items), 6) if items else 0.0
+        average = round(sum(item.score for item in items) / len(items), SCORE_ROUND_DECIMALS) if items else SCORE_MIN
         summary.append(
             {
                 "candidate_id": candidate_id,
@@ -122,7 +127,7 @@ def score_candidates(
             success_conditions=(),
             failure_conditions=(),
             sources=(),
-            confidence=1.0,
+            confidence=DEFAULT_EXPECTATION_CONFIDENCE,
         )
         for item in weights
     ]
@@ -133,7 +138,7 @@ def score_candidates(
             critical_counts[violation.candidate_id] = critical_counts.get(violation.candidate_id, 0) + 1
     scores: list[CandidateScore] = []
     for candidate_id, items in sorted(evaluations.items()):
-        expectation_score = sum(weight_by_id.get(item.expectation_id, 0.0) * item.probability for item in items)
+        expectation_score = sum(weight_by_id.get(item.expectation_id, SCORE_MIN) * item.probability for item in items)
         evidence_warning_count = sum(1 for item in items if item.evidence_quality == "assumption" or item.requires_validation)
         unverified_count = sum(
             1
@@ -144,7 +149,7 @@ def score_candidates(
         scores.append(
             CandidateScore(
                 candidate_id=candidate_id,
-                expectation_score=round(expectation_score, 6),
+                expectation_score=round(expectation_score, SCORE_ROUND_DECIMALS),
                 critical_violation_count=critical_violation_count,
                 unverified_count=unverified_count,
                 evidence_warning_count=evidence_warning_count,

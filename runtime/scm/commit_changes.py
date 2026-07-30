@@ -10,6 +10,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, load_env, local_timestamp, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.workspace import process_report_dir_for_work_dir, target_repository_dir_for_work_dir, work_dir_for_id  # noqa: E402
 from runtime.scm.scm_utils import current_branch, current_commit, require_success, run_git  # noqa: E402
@@ -67,7 +68,7 @@ def commit_changes(args: argparse.Namespace) -> dict[str, Any]:
 
     commit_hash = "dry-run" if args.dry_run else current_commit(source_dir)
     record = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "work_id": args.work_id,
         "source_dir": relative_to_repo(repo_root, source_dir),
         "branch": current_branch(source_dir),

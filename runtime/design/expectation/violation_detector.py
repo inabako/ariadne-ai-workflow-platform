@@ -1,14 +1,18 @@
 from __future__ import annotations
 
+from .constants import (
+    AMBIGUOUS_PROBABILITY_LOWER,
+    AMBIGUOUS_PROBABILITY_UPPER,
+    COUNT_DEFAULT,
+    COUNT_INCREMENT,
+    EXPECTATION_VIOLATION_SEVERITY_ORDER,
+    EXPECTATION_VIOLATION_SEVERITY_ORDER_DEFAULT,
+    LOW_CONFIDENCE_THRESHOLD,
+    MAJOR_VIOLATION_THRESHOLD,
+    MINOR_VIOLATION_THRESHOLD,
+    POSITIVE_SURPRISE_THRESHOLD,
+)
 from .models import CriticalExpectation, Expectation, ExpectationEvaluation, ExpectationViolation
-
-
-MAJOR_THRESHOLD = 0.5
-MINOR_THRESHOLD = 0.8
-AMBIGUOUS_LOWER = 0.4
-AMBIGUOUS_UPPER = 0.6
-LOW_CONFIDENCE_THRESHOLD = 0.5
-POSITIVE_SURPRISE_THRESHOLD = 0.95
 
 
 def _expectation_statement(expectations: dict[str, Expectation], expectation_id: str) -> str:
@@ -85,7 +89,10 @@ def detect_expectation_violations(
                     )
                 )
 
-            if item.confidence < LOW_CONFIDENCE_THRESHOLD or AMBIGUOUS_LOWER <= item.probability <= AMBIGUOUS_UPPER:
+            if (
+                item.confidence < LOW_CONFIDENCE_THRESHOLD
+                or AMBIGUOUS_PROBABILITY_LOWER <= item.probability <= AMBIGUOUS_PROBABILITY_UPPER
+            ):
                 violations.append(
                     ExpectationViolation(
                         candidate_id=candidate_id,
@@ -99,7 +106,7 @@ def detect_expectation_violations(
                         recommendation="Clarify the interaction, add evidence, or split the expectation.",
                     )
                 )
-            elif item.probability < MAJOR_THRESHOLD:
+            elif item.probability < MAJOR_VIOLATION_THRESHOLD:
                 violations.append(
                     ExpectationViolation(
                         candidate_id=candidate_id,
@@ -110,7 +117,7 @@ def detect_expectation_violations(
                         recommendation="Revise this candidate or explain why the expectation should be relaxed.",
                     )
                 )
-            elif item.probability < MINOR_THRESHOLD:
+            elif item.probability < MINOR_VIOLATION_THRESHOLD:
                 violations.append(
                     ExpectationViolation(
                         candidate_id=candidate_id,
@@ -137,17 +144,13 @@ def detect_expectation_violations(
                     )
                 )
 
-    severity_order = {
-        "critical": 0,
-        "major": 1,
-        "minor": 2,
-        "ambiguous": 3,
-        "unverified": 4,
-        "positive-surprise": 5,
-    }
     return sorted(
         violations,
-        key=lambda item: (severity_order.get(item.severity, 99), item.candidate_id, item.expectation_id),
+        key=lambda item: (
+            EXPECTATION_VIOLATION_SEVERITY_ORDER.get(item.severity, EXPECTATION_VIOLATION_SEVERITY_ORDER_DEFAULT),
+            item.candidate_id,
+            item.expectation_id,
+        ),
     )
 
 
@@ -158,14 +161,14 @@ def summarize_violations(violations: list[ExpectationViolation]) -> list[dict[st
             item.candidate_id,
             {
                 "candidate_id": item.candidate_id,
-                "critical": 0,
-                "major": 0,
-                "minor": 0,
-                "ambiguous": 0,
-                "unverified": 0,
-                "positive_surprise": 0,
+                "critical": COUNT_DEFAULT,
+                "major": COUNT_DEFAULT,
+                "minor": COUNT_DEFAULT,
+                "ambiguous": COUNT_DEFAULT,
+                "unverified": COUNT_DEFAULT,
+                "positive_surprise": COUNT_DEFAULT,
             },
         )
         key = "positive_surprise" if item.severity == "positive-surprise" else item.severity
-        summary[key] = int(summary.get(key, 0)) + 1
+        summary[key] = int(summary.get(key, COUNT_DEFAULT)) + COUNT_INCREMENT
     return [result[candidate_id] for candidate_id in sorted(result)]

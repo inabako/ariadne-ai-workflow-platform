@@ -1,8 +1,8 @@
-# Ariadne Feature Maintenance Development Flow
+﻿# Ariadne Feature Maintenance Development Flow
 
 ## Output Language
 
-既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.ariadne/shared/output-language-policy.md` に従って日本語で作成してください。
 
 ## Purpose
 
@@ -59,10 +59,10 @@ Issue作業領域作成後、`work/requirements/svg-input/FEAT_*.svg`を確認�
 ```
 
 - SVGが無い場合は`skipped`としてPhase 1へ進む。
-- SVGがある場合は`.github/prompts/gac-uac-gui-mode.prompt.md`に従い、既存GUIへの差分候補を生成する。
+- SVGがある場合は`.ariadne/prompts/gac-uac-gui-mode.prompt.md`に従い、既存GUIへの差分候補を生成する。
 - `aiwfctl gui validate`が`pass`になるまで通常実装へ進まない。
 - generated配下は既存Widgetとの接続点、追加Panel、signal/slot、影響範囲をreviewし、必要部分だけを取り込む。
-- Web画面向けSVGは`WEB_FEAT_*.svg`として配置し、Next.js Webapp Implementation Prep後に`.github/prompts/web-svg-layout-mode.prompt.md`に従って`web-ui/`のlayout、React候補、Playwright候補を生成する。
+- Web画面向けSVGは`WEB_FEAT_*.svg`として配置し、Next.js Webapp Implementation Prep後に`.ariadne/prompts/web-svg-layout-mode.prompt.md`に従って`web-ui/`のlayout、React候補、Playwright候補を生成する。
 
 ## Phase 1: Change Intent
 
@@ -214,7 +214,7 @@ PyQt / Qt GUIを含む場合:
 
 ## Phase 6.5: Next.js Webapp Implementation Preparation
 
-Next.js画面機能を含む場合、Implementation前に `.github/prompts/nextjs-webapp-implementation-prep.prompt.md` に従い、次を作成します。
+Next.js画面機能を含む場合、Implementation前に `.ariadne/prompts/nextjs-webapp-implementation-prep.prompt.md` に従い、次を作成します。
 
 ```text
 work/<採番ID>/process-report/nextjs-webapp-implementation-prep.md
@@ -236,7 +236,7 @@ Quality Gate:
 - `Implementation may start: yes` になるまでPhase 7へ進まない。
 - templateを既存sourceへ丸ごとコピーしない。
 - API契約やauth policyが未定のまま画面実装を始めない。
-- `WEB_FEAT_*.svg` がある場合は、`.github/prompts/web-svg-layout-mode.prompt.md`を実行し、`work/<採番ID>/web-ui/`のreviewとvalidateを確認してからsourceへ統合する。
+- `WEB_FEAT_*.svg` がある場合は、`.ariadne/prompts/web-svg-layout-mode.prompt.md`を実行し、`work/<採番ID>/web-ui/`のreviewとvalidateを確認してからsourceへ統合する。
 
 ## Phase 7: Implementation
 

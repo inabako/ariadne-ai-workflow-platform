@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from runtime.constants.runtime_values import SCHEMA_VERSION
 from runtime.common import (
     find_repo_root,
     load_artifact_index,
@@ -47,6 +48,51 @@ from .evaluator import (
     score_candidates,
     serialize_dataclasses,
     summarize_axis_evaluations,
+)
+from .constants import (
+    COMPARISON_KEY_POINT_LIMIT,
+    COMPARISON_RECOMMENDATION_LIMIT,
+    COUNT_DEFAULT,
+    DEFAULT_AGENT_EXTRACTION_CONFIDENCE,
+    DEFAULT_CRITICAL_MINIMUM_PROBABILITY,
+    DEFAULT_EXPECTATION_CONFIDENCE,
+    DEFAULT_FALLBACK_EXPECTATION_CONFIDENCE,
+    DEFAULT_FIXED_UI_CONFIDENCE,
+    DEFAULT_LIGHT_EXTRACTION_CONFIDENCE,
+    DEFAULT_SAMPLE_EXPECTATION_WEIGHT,
+    DEFAULT_USAGE_CONTEXT_ID,
+    EXPECTATION_AGENT_ID_WIDTH,
+    INTERACTION_CONTRACT_ID_WIDTH,
+    SAMPLE_HIGH_EVALUATION_CONFIDENCE,
+    SAMPLE_LOW_EXPECTATION_PROBABILITY,
+    SAMPLE_MULTI_AXIS_DESIGN_A_SCORES,
+    SAMPLE_MULTI_AXIS_DESIGN_B_SCORES,
+    SAMPLE_STRONG_EVALUATION_CONFIDENCE,
+    SCORE_MAX,
+    SCORE_MIN,
+    SCORE_ROUND_DECIMALS,
+    SEQUENCE_START,
+    USAGE_CONTEXT_GOAL_MAX_CHARS,
+    WEIGHT_CHANGE_FIELD_COUNT,
+    WIREFRAME_HEADER_HEIGHT,
+    WIREFRAME_HEADER_WIDTH,
+    WIREFRAME_HEADER_X,
+    WIREFRAME_HEADER_Y,
+    WIREFRAME_HEIGHT,
+    WIREFRAME_LABEL_FONT_SIZE,
+    WIREFRAME_LABEL_X,
+    WIREFRAME_LABEL_Y,
+    WIREFRAME_LEFT_PANEL_WIDTH,
+    WIREFRAME_LEFT_PANEL_X,
+    WIREFRAME_PANEL_HEIGHT,
+    WIREFRAME_PANEL_Y,
+    WIREFRAME_RIGHT_LABEL_X,
+    WIREFRAME_RIGHT_PANEL_WIDTH,
+    WIREFRAME_RIGHT_PANEL_X,
+    WIREFRAME_TITLE_FONT_SIZE,
+    WIREFRAME_TITLE_X,
+    WIREFRAME_TITLE_Y,
+    WIREFRAME_WIDTH,
 )
 from .models import CriticalExpectation, DesignCandidate, Expectation, ExpectationWeight, FeasibilityReport
 from .tradeoff_analyzer import analyze_tradeoffs, render_tradeoff_markdown
@@ -193,7 +239,7 @@ def _load_inputs(
 
 def _sample_expectation_payload() -> dict[str, Any]:
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "schema": EXPECTATION_SET_SCHEMA,
         "artifact_type": "expectation-set",
         "expectations": [
@@ -204,7 +250,7 @@ def _sample_expectation_payload() -> dict[str, Any]:
                 "success_condition": ["39:00を入力できる", "39:00を翌日15:00として解釈できる"],
                 "failure_condition": ["39:00を不正な時刻として拒否する"],
                 "source": ["user-requirement", "usage-context"],
-                "confidence": 1.0,
+                "confidence": DEFAULT_EXPECTATION_CONFIDENCE,
             }
         ],
     }
@@ -212,7 +258,7 @@ def _sample_expectation_payload() -> dict[str, Any]:
 
 def _sample_evaluation_payload() -> dict[str, Any]:
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "schema": EXPECTATION_EVALUATION_SCHEMA,
         "artifact_type": "expectation-evaluation-input",
         "candidate_evaluations": [
@@ -221,8 +267,8 @@ def _sample_evaluation_payload() -> dict[str, Any]:
                 "expectations": [
                     {
                         "expectation_id": "EXP-TIME-001",
-                        "probability": 0.2,
-                        "confidence": 0.95,
+                        "probability": SAMPLE_LOW_EXPECTATION_PROBABILITY,
+                        "confidence": SAMPLE_HIGH_EVALUATION_CONFIDENCE,
                         "evidence": ["標準時刻ピッカーは23:59までしか扱えない"],
                     }
                 ],
@@ -232,8 +278,8 @@ def _sample_evaluation_payload() -> dict[str, Any]:
                 "expectations": [
                     {
                         "expectation_id": "EXP-TIME-001",
-                        "probability": 1.0,
-                        "confidence": 0.9,
+                        "probability": SCORE_MAX,
+                        "confidence": SAMPLE_STRONG_EVALUATION_CONFIDENCE,
                         "evidence": ["自由入力は39:00を文字列として受け付けられる"],
                     }
                 ],
@@ -257,7 +303,7 @@ def _axis_values(**values: float) -> dict[str, dict[str, Any]]:
 
 def _sample_multi_axis_payload() -> dict[str, Any]:
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "schema": MULTI_AXIS_EVALUATION_SCHEMA,
         "artifact_type": "multi-axis-evaluation",
         "axis_direction": "higher-is-better",
@@ -265,29 +311,11 @@ def _sample_multi_axis_payload() -> dict[str, Any]:
         "candidate_axis_evaluations": [
             {
                 "candidate_id": "DESIGN-A",
-                "axes": _axis_values(
-                    expectation_satisfaction=0.2,
-                    usability=0.55,
-                    product_identity=0.45,
-                    delight=0.4,
-                    accessibility=0.6,
-                    implementation_cost=0.85,
-                    maintenance_cost=0.75,
-                    technical_feasibility=0.8,
-                ),
+                "axes": _axis_values(**SAMPLE_MULTI_AXIS_DESIGN_A_SCORES),
             },
             {
                 "candidate_id": "DESIGN-B",
-                "axes": _axis_values(
-                    expectation_satisfaction=1.0,
-                    usability=0.85,
-                    product_identity=0.75,
-                    delight=0.7,
-                    accessibility=0.8,
-                    implementation_cost=0.65,
-                    maintenance_cost=0.7,
-                    technical_feasibility=0.75,
-                ),
+                "axes": _axis_values(**SAMPLE_MULTI_AXIS_DESIGN_B_SCORES),
             },
         ],
     }
@@ -344,12 +372,12 @@ def _candidate_markdown(candidate: dict[str, Any]) -> str:
 def _flow_payload(candidate: dict[str, Any]) -> dict[str, Any]:
     steps = candidate.get("main_flow", [])
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "candidate-flow",
         "candidate_id": candidate.get("candidate_id", ""),
         "flow": [
-            {"step": index + 1, "description": value}
-            for index, value in enumerate(steps)
+            {"step": index, "description": value}
+            for index, value in enumerate(steps, start=SEQUENCE_START)
         ],
     }
 
@@ -380,15 +408,39 @@ def _wireframe_svg(candidate_id: str) -> str:
     title = candidate_id.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
     return "\n".join(
         [
-            '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img">',
+            (
+                f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIREFRAME_WIDTH}" '
+                f'height="{WIREFRAME_HEIGHT}" viewBox="0 0 {WIREFRAME_WIDTH} {WIREFRAME_HEIGHT}" role="img">'
+            ),
             f"  <title>{title} wireframe placeholder</title>",
-            '  <rect width="960" height="540" fill="#f8fafc"/>',
-            '  <rect x="80" y="64" width="800" height="72" fill="#e2e8f0" stroke="#64748b"/>',
-            '  <rect x="80" y="168" width="320" height="260" fill="#ffffff" stroke="#64748b"/>',
-            '  <rect x="432" y="168" width="448" height="260" fill="#ffffff" stroke="#64748b"/>',
-            f'  <text x="112" y="108" fill="#0f172a" font-family="Arial, sans-serif" font-size="24">{title}</text>',
-            '  <text x="112" y="220" fill="#334155" font-family="Arial, sans-serif" font-size="18">Concept</text>',
-            '  <text x="464" y="220" fill="#334155" font-family="Arial, sans-serif" font-size="18">Flow / Evidence</text>',
+            f'  <rect width="{WIREFRAME_WIDTH}" height="{WIREFRAME_HEIGHT}" fill="#f8fafc"/>',
+            (
+                f'  <rect x="{WIREFRAME_HEADER_X}" y="{WIREFRAME_HEADER_Y}" '
+                f'width="{WIREFRAME_HEADER_WIDTH}" height="{WIREFRAME_HEADER_HEIGHT}" '
+                'fill="#e2e8f0" stroke="#64748b"/>'
+            ),
+            (
+                f'  <rect x="{WIREFRAME_LEFT_PANEL_X}" y="{WIREFRAME_PANEL_Y}" '
+                f'width="{WIREFRAME_LEFT_PANEL_WIDTH}" height="{WIREFRAME_PANEL_HEIGHT}" '
+                'fill="#ffffff" stroke="#64748b"/>'
+            ),
+            (
+                f'  <rect x="{WIREFRAME_RIGHT_PANEL_X}" y="{WIREFRAME_PANEL_Y}" '
+                f'width="{WIREFRAME_RIGHT_PANEL_WIDTH}" height="{WIREFRAME_PANEL_HEIGHT}" '
+                'fill="#ffffff" stroke="#64748b"/>'
+            ),
+            (
+                f'  <text x="{WIREFRAME_TITLE_X}" y="{WIREFRAME_TITLE_Y}" fill="#0f172a" '
+                f'font-family="Arial, sans-serif" font-size="{WIREFRAME_TITLE_FONT_SIZE}">{title}</text>'
+            ),
+            (
+                f'  <text x="{WIREFRAME_LABEL_X}" y="{WIREFRAME_LABEL_Y}" fill="#334155" '
+                f'font-family="Arial, sans-serif" font-size="{WIREFRAME_LABEL_FONT_SIZE}">Concept</text>'
+            ),
+            (
+                f'  <text x="{WIREFRAME_RIGHT_LABEL_X}" y="{WIREFRAME_LABEL_Y}" fill="#334155" '
+                f'font-family="Arial, sans-serif" font-size="{WIREFRAME_LABEL_FONT_SIZE}">Flow / Evidence</text>'
+            ),
             "</svg>",
             "",
         ]
@@ -400,7 +452,7 @@ def _bounded_probability(value: Any, default: float) -> float:
         number = float(value)
     except (TypeError, ValueError):
         number = default
-    return max(0.0, min(1.0, number))
+    return max(SCORE_MIN, min(SCORE_MAX, number))
 
 
 def _dedupe_strings(values: Any) -> list[str]:
@@ -414,7 +466,7 @@ def _resolve_repo_path(repo_root: Path, raw: str) -> Path:
 
 def _normal_expectation_id(raw: Any, index: int) -> str:
     value = str(raw or "").strip()
-    return value or f"EXP-AGENT-{index:03d}"
+    return value or f"EXP-AGENT-{index:0{EXPECTATION_AGENT_ID_WIDTH}d}"
 
 
 _EXPECTATION_CATEGORIES = {
@@ -469,7 +521,7 @@ def _normalize_extracted_expectation(item: dict[str, Any], index: int, evidence_
         "failure_condition": failure or ["Expectation remains vague, untested, or contradicted."],
         "source": sources or ([evidence_ref] if evidence_ref else ["agent-output"]),
         "evidence_refs": evidence_refs or ([evidence_ref] if evidence_ref else ["agent-output"]),
-        "confidence": _bounded_probability(item.get("confidence"), 0.6),
+        "confidence": _bounded_probability(item.get("confidence"), DEFAULT_AGENT_EXTRACTION_CONFIDENCE),
     }
 
 
@@ -489,11 +541,11 @@ def _normalize_agent_usage_context(payload: dict[str, Any], requirement: str, ev
     if not isinstance(raw, dict):
         raw = {}
     return {
-        "id": str(raw.get("id") or "CONTEXT-001"),
+        "id": str(raw.get("id") or DEFAULT_USAGE_CONTEXT_ID),
         "actor": str(raw.get("actor") or raw.get("target_user") or "target user"),
         "situation": str(raw.get("situation") or "agent extraction from requirement text"),
-        "goal": str(raw.get("goal") or requirement[:160]),
-        "confidence": _bounded_probability(raw.get("confidence"), 0.7),
+        "goal": str(raw.get("goal") or requirement[:USAGE_CONTEXT_GOAL_MAX_CHARS]),
+        "confidence": _bounded_probability(raw.get("confidence"), DEFAULT_LIGHT_EXTRACTION_CONFIDENCE),
         "evidence_refs": _dedupe_strings(raw.get("evidence_refs") or raw.get("evidence") or [evidence_ref]),
         "extraction_mode": "agent",
         "source_agent": str(payload.get("agent") or payload.get("agent_id") or "external-agent"),
@@ -504,7 +556,7 @@ def _agent_extraction_request(repo_root: Path, base: Path, requirement: str, evi
     json_path = base / "extraction-agent-request.json"
     md_path = base / "extraction-agent-request.md"
     payload = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "expectation-agent-extraction-request",
         "status": "agent-output-required",
         "required_output": {
@@ -602,27 +654,27 @@ def init_design(args: argparse.Namespace) -> dict[str, Any]:
             ),
         )
     scaffold_payloads = [
-        (files["usage_context"], {"schema_version": "1.0", "schema": USAGE_CONTEXT_SCHEMA, "artifact_type": "usage-context", "usage_context": {}}),
+        (files["usage_context"], {"schema_version": SCHEMA_VERSION, "schema": USAGE_CONTEXT_SCHEMA, "artifact_type": "usage-context", "usage_context": {}}),
         (
             files["expectation_conflicts"],
-            {"schema_version": "1.0", "schema": EXPECTATION_CONFLICTS_SCHEMA, "artifact_type": "expectation-conflicts", "conflicts": []},
+            {"schema_version": SCHEMA_VERSION, "schema": EXPECTATION_CONFLICTS_SCHEMA, "artifact_type": "expectation-conflicts", "conflicts": []},
         ),
         (
             files["candidates"],
-            {"schema_version": "1.0", "schema": DESIGN_CANDIDATES_SCHEMA, "artifact_type": "design-candidates", "candidates": []},
+            {"schema_version": SCHEMA_VERSION, "schema": DESIGN_CANDIDATES_SCHEMA, "artifact_type": "design-candidates", "candidates": []},
         ),
         (
             files["expectations"],
-            {"schema_version": "1.0", "schema": EXPECTATION_SET_SCHEMA, "artifact_type": "expectation-set", "expectations": []},
+            {"schema_version": SCHEMA_VERSION, "schema": EXPECTATION_SET_SCHEMA, "artifact_type": "expectation-set", "expectations": []},
         ),
         (
             files["weights"],
-            {"schema_version": "1.0", "schema": EXPECTATION_WEIGHTS_SCHEMA, "artifact_type": "expectation-weights", "weights": []},
+            {"schema_version": SCHEMA_VERSION, "schema": EXPECTATION_WEIGHTS_SCHEMA, "artifact_type": "expectation-weights", "weights": []},
         ),
         (
             files["critical"],
             {
-                "schema_version": "1.0",
+                "schema_version": SCHEMA_VERSION,
                 "schema": CRITICAL_EXPECTATIONS_SCHEMA,
                 "artifact_type": "critical-expectations",
                 "critical_expectations": [],
@@ -631,7 +683,7 @@ def init_design(args: argparse.Namespace) -> dict[str, Any]:
         (
             files["evaluations"],
             {
-                "schema_version": "1.0",
+                "schema_version": SCHEMA_VERSION,
                 "schema": EXPECTATION_EVALUATION_SCHEMA,
                 "artifact_type": "expectation-evaluation-input",
                 "candidate_evaluations": [],
@@ -640,7 +692,7 @@ def init_design(args: argparse.Namespace) -> dict[str, Any]:
         (
             files["multi_axis"],
             {
-                "schema_version": "1.0",
+                "schema_version": SCHEMA_VERSION,
                 "schema": MULTI_AXIS_EVALUATION_SCHEMA,
                 "artifact_type": "multi-axis-evaluation",
                 "axis_direction": "higher-is-better",
@@ -651,7 +703,7 @@ def init_design(args: argparse.Namespace) -> dict[str, Any]:
         (
             files["tradeoffs"],
             {
-                "schema_version": "1.0",
+                "schema_version": SCHEMA_VERSION,
                 "schema": TRADE_OFF_ANALYSIS_SCHEMA,
                 "artifact_type": "trade-off-analysis",
                 "tradeoffs": [],
@@ -660,29 +712,29 @@ def init_design(args: argparse.Namespace) -> dict[str, Any]:
         (
             files["comparison_json"],
             {
-                "schema_version": "1.0",
+                "schema_version": SCHEMA_VERSION,
                 "schema": DESIGN_COMPARISON_REPORT_SCHEMA,
                 "artifact_type": "design-comparison-report",
                 "report_sections": [],
             },
         ),
-        (files["violations"], {"schema_version": "1.0", "artifact_type": "expectation-violations", "violations": []}),
+        (files["violations"], {"schema_version": SCHEMA_VERSION, "artifact_type": "expectation-violations", "violations": []}),
         (
             files["human_decision"],
-            {"schema_version": "1.0", "schema": HUMAN_DECISION_SCHEMA, "artifact_type": "human-decision", "status": "pending"},
+            {"schema_version": SCHEMA_VERSION, "schema": HUMAN_DECISION_SCHEMA, "artifact_type": "human-decision", "status": "pending"},
         ),
         (
             files["contracts"],
             {
-                "schema_version": "1.0",
+                "schema_version": SCHEMA_VERSION,
                 "schema": INTERACTION_CONTRACTS_SCHEMA,
                 "artifact_type": "interaction-contracts",
                 "interaction_contracts": [],
             },
         ),
-        (files["state_transitions"], {"schema_version": "1.0", "artifact_type": "state-transitions", "state_transitions": []}),
-        (files["verification"], {"schema_version": "1.0", "artifact_type": "expectation-verification", "expectation_verification": []}),
-        (files["feedback"], {"schema_version": "1.0", "artifact_type": "expectation-feedback", "feedback": []}),
+        (files["state_transitions"], {"schema_version": SCHEMA_VERSION, "artifact_type": "state-transitions", "state_transitions": []}),
+        (files["verification"], {"schema_version": SCHEMA_VERSION, "artifact_type": "expectation-verification", "expectation_verification": []}),
+        (files["feedback"], {"schema_version": SCHEMA_VERSION, "artifact_type": "expectation-feedback", "feedback": []}),
     ]
     for path, payload in scaffold_payloads:
         if getattr(args, "force", False) or not path.exists():
@@ -704,13 +756,13 @@ def init_design(args: argparse.Namespace) -> dict[str, Any]:
         write_json(
             files["weights"],
             {
-                "schema_version": "1.0",
+                "schema_version": SCHEMA_VERSION,
                 "schema": EXPECTATION_WEIGHTS_SCHEMA,
                 "artifact_type": "expectation-weights",
                 "weights": [
                     {
                         "expectation_id": "EXP-TIME-001",
-                        "weight": 1.0,
+                        "weight": DEFAULT_SAMPLE_EXPECTATION_WEIGHT,
                         "rationale": ["本プロダクトの中核要件"],
                         "decided_by": {"type": "ariadne-initial"},
                     }
@@ -720,13 +772,13 @@ def init_design(args: argparse.Namespace) -> dict[str, Any]:
         write_json(
             files["critical"],
             {
-                "schema_version": "1.0",
+                "schema_version": SCHEMA_VERSION,
                 "schema": CRITICAL_EXPECTATIONS_SCHEMA,
                 "artifact_type": "critical-expectations",
                 "critical_expectations": [
                     {
                         "expectation_id": "EXP-TIME-001",
-                        "minimum_probability": 1.0,
+                        "minimum_probability": DEFAULT_CRITICAL_MINIMUM_PROBABILITY,
                         "failure_action": "reject-candidate",
                         "reason": "24時超え入力はプロダクトの中核要件である",
                     }
@@ -747,7 +799,7 @@ def init_design(args: argparse.Namespace) -> dict[str, Any]:
         write_json(
             files["candidates"],
             {
-                "schema_version": "1.0",
+                "schema_version": SCHEMA_VERSION,
                 "schema": DESIGN_CANDIDATES_SCHEMA,
                 "artifact_type": "design-candidates",
                 "candidates": sample_candidates,
@@ -872,7 +924,7 @@ def init_design(args: argparse.Namespace) -> dict[str, Any]:
         ],
     )
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "expectation-design-init",
         "status": "initialized",
         "work_id": work_id,
@@ -893,7 +945,7 @@ def candidate_scaffold(args: argparse.Namespace) -> dict[str, Any]:
     candidates_path = base / "design-candidates.json"
     data = _read_structured(
         candidates_path,
-        {"schema_version": "1.0", "schema": DESIGN_CANDIDATES_SCHEMA, "artifact_type": "design-candidates", "candidates": []},
+        {"schema_version": SCHEMA_VERSION, "schema": DESIGN_CANDIDATES_SCHEMA, "artifact_type": "design-candidates", "candidates": []},
     )
     candidate_ids = _candidate_ids_from_args(args) or ["DESIGN-A", "DESIGN-B", "DESIGN-C"]
     existing = {item.get("candidate_id"): item for item in data.get("candidates", [])}
@@ -910,7 +962,7 @@ def candidate_scaffold(args: argparse.Namespace) -> dict[str, Any]:
         write_json(
             cdir / "feasibility-report.json",
             {
-                "schema_version": "1.0",
+                "schema_version": SCHEMA_VERSION,
                 "schema": DESIGN_FEASIBILITY_REPORT_SCHEMA,
                 "artifact_type": "design-feasibility-report",
                 **feasibility,
@@ -938,7 +990,7 @@ def candidate_scaffold(args: argparse.Namespace) -> dict[str, Any]:
     )
     _append_event(base, "design_candidate_scaffolded", {"work_id": work_id, "candidate_ids": candidate_ids})
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "design-candidate-scaffold",
         "status": "scaffolded",
         "work_id": work_id,
@@ -979,7 +1031,7 @@ def feasibility_design(args: argparse.Namespace) -> dict[str, Any]:
         cdir = _candidate_dir(base, candidate_id)
         cdir.mkdir(parents=True, exist_ok=True)
         payload = {
-            "schema_version": "1.0",
+            "schema_version": SCHEMA_VERSION,
             "schema": DESIGN_FEASIBILITY_REPORT_SCHEMA,
             "artifact_type": "design-feasibility-report",
             **report,
@@ -1002,7 +1054,7 @@ def feasibility_design(args: argparse.Namespace) -> dict[str, Any]:
     artifact_index = _register_artifacts(repo_root, work_dir, work_id, artifacts) if artifacts else ""
     _append_event(base, "design_candidate_feasibility_checked", {"work_id": work_id, "candidate_ids": candidate_ids})
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "design-feasibility-run",
         "status": "feasibility-ready",
         "work_id": work_id,
@@ -1039,7 +1091,7 @@ def extract_design(args: argparse.Namespace) -> dict[str, Any]:
         )
         event_path = _append_event(base, "expectation_extraction_agent_requested", {"work_id": work_id, "source": evidence_ref})
         return {
-            "schema_version": "1.0",
+            "schema_version": SCHEMA_VERSION,
             "artifact_type": "expectation-extraction",
             "status": "human-check-required",
             "reason": "agent_extraction_output_required",
@@ -1058,17 +1110,17 @@ def extract_design(args: argparse.Namespace) -> dict[str, Any]:
         usage_context = _normalize_agent_usage_context(agent_payload, requirement, agent_evidence_ref)
         expectations = [
             _normalize_extracted_expectation(item, index, agent_evidence_ref)
-            for index, item in enumerate(_agent_extraction_items(agent_payload), start=1)
+            for index, item in enumerate(_agent_extraction_items(agent_payload), start=SEQUENCE_START)
         ]
         if not expectations:
             raise ValueError("--agent-output did not contain expectations")
     else:
         usage_context = {
-            "id": "CONTEXT-001",
+            "id": DEFAULT_USAGE_CONTEXT_ID,
             "actor": "target user",
             "situation": "lightweight extraction from requirement text",
-            "goal": requirement[:160],
-            "confidence": 0.6,
+            "goal": requirement[:USAGE_CONTEXT_GOAL_MAX_CHARS],
+            "confidence": DEFAULT_AGENT_EXTRACTION_CONFIDENCE,
             "evidence_refs": [evidence_ref],
             "extraction_mode": "light",
         }
@@ -1084,7 +1136,7 @@ def extract_design(args: argparse.Namespace) -> dict[str, Any]:
                     "failure_condition": ["39:00 is rejected or silently converted incorrectly"],
                     "source": [evidence_ref],
                     "evidence_refs": [evidence_ref],
-                    "confidence": 0.7,
+                    "confidence": DEFAULT_LIGHT_EXTRACTION_CONFIDENCE,
                 }
             )
         if "accessibility" in lowered or "a11y" in lowered:
@@ -1097,7 +1149,7 @@ def extract_design(args: argparse.Namespace) -> dict[str, Any]:
                     "failure_condition": ["Accessibility is traded away without Human Gate approval"],
                     "source": [evidence_ref],
                     "evidence_refs": [evidence_ref],
-                    "confidence": 0.65,
+                    "confidence": DEFAULT_FIXED_UI_CONFIDENCE,
                 }
             )
         if not expectations:
@@ -1110,16 +1162,16 @@ def extract_design(args: argparse.Namespace) -> dict[str, Any]:
                     "failure_condition": ["Expectation remains vague or untestable"],
                     "source": [evidence_ref],
                     "evidence_refs": [evidence_ref],
-                    "confidence": 0.5,
+                    "confidence": DEFAULT_FALLBACK_EXPECTATION_CONFIDENCE,
                 }
             )
     usage_path = base / "usage-context.json"
     expectation_path = base / "expectation-set.json"
-    write_json(usage_path, {"schema_version": "1.0", "schema": USAGE_CONTEXT_SCHEMA, "artifact_type": "usage-context", "usage_context": usage_context})
+    write_json(usage_path, {"schema_version": SCHEMA_VERSION, "schema": USAGE_CONTEXT_SCHEMA, "artifact_type": "usage-context", "usage_context": usage_context})
     write_json(
         expectation_path,
         {
-            "schema_version": "1.0",
+            "schema_version": SCHEMA_VERSION,
             "schema": EXPECTATION_SET_SCHEMA,
             "artifact_type": "expectation-set",
             "expectations": expectations,
@@ -1136,7 +1188,7 @@ def extract_design(args: argparse.Namespace) -> dict[str, Any]:
     )
     event_path = _append_event(base, "expectation_extracted", {"work_id": work_id, "mode": "agent" if agent_output else "light", "expectation_ids": [item["id"] for item in expectations]})
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "expectation-extraction",
         "status": "extracted",
         "work_id": work_id,
@@ -1158,7 +1210,7 @@ def evaluate_design(args: argparse.Namespace) -> dict[str, Any]:
     scores, violations = score_candidates(evaluations, weights, critical, expectations)
     tradeoffs = analyze_tradeoffs(scores, evaluations, axes, violations)
     result = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "schema": EXPECTATION_EVALUATION_SCHEMA,
         "artifact_type": "expectation-design-evaluation",
         "status": "evaluated",
@@ -1191,7 +1243,7 @@ def evaluate_design(args: argparse.Namespace) -> dict[str, Any]:
     write_json(
         violations_output,
         {
-            "schema_version": "1.0",
+            "schema_version": SCHEMA_VERSION,
             "schema": EXPECTATION_EVALUATION_SCHEMA,
             "artifact_type": "expectation-violations",
             "violations": result["violations"],
@@ -1201,7 +1253,7 @@ def evaluate_design(args: argparse.Namespace) -> dict[str, Any]:
     write_json(
         tradeoffs_output,
         {
-            "schema_version": "1.0",
+            "schema_version": SCHEMA_VERSION,
             "schema": TRADE_OFF_ANALYSIS_SCHEMA,
             "artifact_type": "trade-off-analysis",
             "tradeoffs": result["tradeoffs"],
@@ -1216,7 +1268,9 @@ def evaluate_design(args: argparse.Namespace) -> dict[str, Any]:
         {
             "work_id": work_id,
             "candidate_scores": result["candidate_scores"],
-            "critical_violations": sum(item.get("critical_violation_count", 0) for item in result["candidate_scores"]),
+            "critical_violations": sum(
+                item.get("critical_violation_count", COUNT_DEFAULT) for item in result["candidate_scores"]
+            ),
         },
     )
     result["events"] = relative_to_repo(repo_root, event_path)
@@ -1267,7 +1321,7 @@ def _candidate_ids(result: dict[str, Any]) -> list[str]:
 def _axis_score(axis_results: dict[str, list[dict[str, Any]]], candidate_id: str, axis: str) -> float | None:
     for item in axis_results.get(candidate_id, []):
         if item.get("axis") == axis:
-            return float(item.get("score", 0) or 0)
+            return float(item.get("score", SCORE_MIN) or SCORE_MIN)
     return None
 
 
@@ -1289,7 +1343,7 @@ def _parse_weight_changes(values: list[str]) -> list[dict[str, Any]]:
     changes: list[dict[str, Any]] = []
     for value in values:
         parts = [part.strip() for part in value.split(":")]
-        if len(parts) != 3:
+        if len(parts) != WEIGHT_CHANGE_FIELD_COUNT:
             raise ValueError("--weight-change must use expectation_id:before:after")
         changes.append(
             {
@@ -1316,8 +1370,10 @@ def _comparison_report_packet(result: dict[str, Any]) -> dict[str, Any]:
         if item.get("severity") == "unverified"
     ]
     recommendable = [item for item in scores if item.get("recommendable")]
-    recommended = sorted(recommendable, key=lambda item: item.get("expectation_score", 0), reverse=True)[:1]
-    recommended_candidate = recommended[0].get("candidate_id", "") if recommended else ""
+    recommended = sorted(recommendable, key=lambda item: item.get("expectation_score", SCORE_MIN), reverse=True)[
+        :COMPARISON_RECOMMENDATION_LIMIT
+    ]
+    recommended_candidate = recommended[COUNT_DEFAULT].get("candidate_id", "") if recommended else ""
 
     candidate_overviews: list[dict[str, Any]] = []
     implementation_costs: list[dict[str, Any]] = []
@@ -1333,17 +1389,17 @@ def _comparison_report_packet(result: dict[str, Any]) -> dict[str, Any]:
         candidate_overviews.append(
             {
                 "candidate_id": candidate_id,
-                "expectation_score": float(score.get("expectation_score", 0) or 0),
+                "expectation_score": float(score.get("expectation_score", SCORE_MIN) or SCORE_MIN),
                 "recommendable": bool(score.get("recommendable", False)),
-                "critical_violation_count": int(score.get("critical_violation_count", 0) or 0),
-                "axis_average": float(summary.get("axis_average", 0) or 0),
+                "critical_violation_count": int(score.get("critical_violation_count", COUNT_DEFAULT) or COUNT_DEFAULT),
+                "axis_average": float(summary.get("axis_average", SCORE_MIN) or SCORE_MIN),
                 "summary": (
                     "Recommendable candidate for Human Gate review."
                     if score.get("recommendable")
                     else "Candidate has blocking or unresolved expectation risk."
                 ),
-                "key_strengths": gained[:3],
-                "key_risks": lost[:3],
+                "key_strengths": gained[:COMPARISON_KEY_POINT_LIMIT],
+                "key_risks": lost[:COMPARISON_KEY_POINT_LIMIT],
             }
         )
         implementation_costs.append(
@@ -1370,8 +1426,8 @@ def _comparison_report_packet(result: dict[str, Any]) -> dict[str, Any]:
         {
             "candidate_id": item.get("candidate_id", ""),
             "reason": "Alternative to compare during Human Gate.",
-            "expectation_score": item.get("expectation_score", 0),
-            "critical_violation_count": item.get("critical_violation_count", 0),
+            "expectation_score": item.get("expectation_score", SCORE_MIN),
+            "critical_violation_count": item.get("critical_violation_count", COUNT_DEFAULT),
         }
         for item in scores
         if item.get("candidate_id") != recommended_candidate
@@ -1394,7 +1450,7 @@ def _comparison_report_packet(result: dict[str, Any]) -> dict[str, Any]:
         "human_decision_items",
     ]
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "schema": DESIGN_COMPARISON_REPORT_SCHEMA,
         "artifact_type": "design-comparison-report",
         "status": "comparison-ready",
@@ -1472,8 +1528,8 @@ def _review_council_feedback_markdown(feedback: dict[str, Any]) -> str:
         f"Review ID: {feedback.get('review_id', '')}",
         f"Status: {feedback.get('status', '')}",
         f"Verdict: {snapshot.get('verdict', '') or 'not-decided'}",
-        f"Open issues: {snapshot.get('open_issue_count', 0)}",
-        f"Blocking issues: {snapshot.get('blocking_issue_count', 0)}",
+        f"Open issues: {snapshot.get('open_issue_count', COUNT_DEFAULT)}",
+        f"Blocking issues: {snapshot.get('blocking_issue_count', COUNT_DEFAULT)}",
         "",
         "## Findings",
     ]
@@ -1505,7 +1561,9 @@ def _comparison_markdown(result: dict[str, Any]) -> str:
     report_packet = result.get("comparison_report") or _comparison_report_packet(result)
     scores = result.get("candidate_scores", [])
     recommendable = [item for item in scores if item.get("recommendable")]
-    recommended = sorted(recommendable, key=lambda item: item.get("expectation_score", 0), reverse=True)[:1]
+    recommended = sorted(recommendable, key=lambda item: item.get("expectation_score", SCORE_MIN), reverse=True)[
+        :COMPARISON_RECOMMENDATION_LIMIT
+    ]
     expectations = {item.get("expectation_id"): item for item in result.get("expectations", [])}
     weights = {item.get("expectation_id"): item for item in result.get("weights", [])}
     critical = {item.get("expectation_id"): item for item in result.get("critical_expectations", [])}
@@ -1531,8 +1589,8 @@ def _comparison_markdown(result: dict[str, Any]) -> str:
         "# Expectation-Driven Design Comparison",
         "",
         f"Work ID: {result.get('work_id', '')}",
-        f"Expectations: {result.get('expectation_count', 0)}",
-        f"Candidates: {result.get('candidate_count', 0)}",
+        f"Expectations: {result.get('expectation_count', COUNT_DEFAULT)}",
+        f"Candidates: {result.get('candidate_count', COUNT_DEFAULT)}",
         f"Critical Violations: {len(critical_violations)}",
         "",
         "## Usage Context",
@@ -1555,14 +1613,14 @@ def _comparison_markdown(result: dict[str, Any]) -> str:
     )
     if expectations:
         for expectation_id, expectation in sorted(expectations.items()):
-            weight = weights.get(expectation_id, {}).get("weight", 0)
+            weight = weights.get(expectation_id, {}).get("weight", SCORE_MIN)
             is_critical = "yes" if expectation_id in critical else "no"
             lines.append(
                 "| {id} | {weight:.6f} | {critical} | {confidence:.2f} | {statement} |".format(
                     id=expectation_id,
-                    weight=float(weight or 0),
+                    weight=float(weight or SCORE_MIN),
                     critical=is_critical,
-                    confidence=float(expectation.get("confidence", 0) or 0),
+                    confidence=float(expectation.get("confidence", SCORE_MIN) or SCORE_MIN),
                     statement=expectation.get("statement", ""),
                 )
             )
@@ -1582,7 +1640,7 @@ def _comparison_markdown(result: dict[str, Any]) -> str:
             lines.append(
                 "| {id} | {minimum:.2f} | {action} | {reason} |".format(
                     id=expectation_id,
-                    minimum=float(item.get("minimum_probability", 0) or 0),
+                    minimum=float(item.get("minimum_probability", SCORE_MIN) or SCORE_MIN),
                     action=item.get("failure_action", ""),
                     reason=item.get("reason", ""),
                 )
@@ -1645,7 +1703,7 @@ def _comparison_markdown(result: dict[str, Any]) -> str:
         by_axis = {item.get("axis"): item for item in items}
         summary = axis_summary.get(candidate_id, {})
         values = [
-            float(by_axis.get(axis, {}).get("score", 0) or 0)
+            float(by_axis.get(axis, {}).get("score", SCORE_MIN) or SCORE_MIN)
             for axis in DEFAULT_DESIGN_AXES
         ]
         missing = ", ".join(summary.get("missing_axes", [])) or "none"
@@ -1653,7 +1711,7 @@ def _comparison_markdown(result: dict[str, Any]) -> str:
             "| {candidate} | {values[0]:.2f} | {values[1]:.2f} | {values[2]:.2f} | {values[3]:.2f} | {values[4]:.2f} | {values[5]:.2f} | {values[6]:.2f} | {values[7]:.2f} | {average:.2f} | {missing} |".format(
                 candidate=candidate_id,
                 values=values,
-                average=float(summary.get("axis_average", 0) or 0),
+                average=float(summary.get("axis_average", SCORE_MIN) or SCORE_MIN),
                 missing=missing,
             )
         )
@@ -1718,9 +1776,9 @@ def _comparison_markdown(result: dict[str, Any]) -> str:
         lines.append(
             "| {candidate} | {implementation_cost:.2f} | {maintenance_cost:.2f} | {technical_feasibility:.2f} | {implementation_impact} | {future_impact} |".format(
                 candidate=item.get("candidate_id", ""),
-                implementation_cost=float(implementation_cost or 0),
-                maintenance_cost=float(maintenance_cost or 0),
-                technical_feasibility=float(technical_feasibility or 0),
+                implementation_cost=float(implementation_cost or SCORE_MIN),
+                maintenance_cost=float(maintenance_cost or SCORE_MIN),
+                technical_feasibility=float(technical_feasibility or SCORE_MIN),
                 implementation_impact=item.get("implementation_impact", ""),
                 future_impact=item.get("future_impact", ""),
             )
@@ -1731,16 +1789,16 @@ def _comparison_markdown(result: dict[str, Any]) -> str:
     for candidate_id, items in sorted(evaluations.items()):
         score = scores_by_id.get(candidate_id, {})
         lines.append(
-            f"- {candidate_id}: evidence warnings={score.get('evidence_warning_count', 0)}, "
-            f"unverified={score.get('unverified_count', 0)}"
+            f"- {candidate_id}: evidence warnings={score.get('evidence_warning_count', COUNT_DEFAULT)}, "
+            f"unverified={score.get('unverified_count', COUNT_DEFAULT)}"
         )
         for item in items:
             evidence = item.get("evidence_refs", [])
             evidence_text = "; ".join(evidence) if evidence else "Evidenceなし"
             validation = "requires validation" if item.get("requires_validation") else "validated or evidenced"
             lines.append(
-                f"  - {item.get('expectation_id', '')}: P={item.get('probability', 0):.2f}, "
-                f"confidence={item.get('confidence', 0):.2f}, "
+                f"  - {item.get('expectation_id', '')}: P={item.get('probability', SCORE_MIN):.2f}, "
+                f"confidence={item.get('confidence', SCORE_MIN):.2f}, "
                 f"quality={item.get('evidence_quality', '')}, {validation}. {evidence_text}"
             )
     lines.extend(["", "## Expectation Violations", ""])
@@ -1771,15 +1829,15 @@ def _comparison_markdown(result: dict[str, Any]) -> str:
         )
     lines.extend(["", "## Recommendation", ""])
     if recommended:
-        item = recommended[0]
+        item = recommended[COUNT_DEFAULT]
         lines.append(f"{item.get('candidate_id')} を推奨候補として提示できます。")
         lines.append("")
         lines.extend(
             [
                 "理由:",
                 "- Critical Expectation違反がありません。",
-                f"- 期待充足スコアが推奨可能候補の中で最も高いです: {item.get('expectation_score', 0):.6f}",
-                f"- 未検証項目は {item.get('unverified_count', 0)} 件です。",
+                f"- 期待充足スコアが推奨可能候補の中で最も高いです: {item.get('expectation_score', SCORE_MIN):.6f}",
+                f"- 未検証項目は {item.get('unverified_count', COUNT_DEFAULT)} 件です。",
                 "",
                 "ただし、最終決定はHuman Gateで行います。",
             ]
@@ -1787,15 +1845,19 @@ def _comparison_markdown(result: dict[str, Any]) -> str:
         lines.append("- Multi-axis evaluation must be reviewed before Human Gate approval.")
     else:
         lines.append("Critical Violationがない推奨候補はありません。期待集合または候補評価の見直しが必要です。")
-    alternatives = [item for item in scores if not recommended or item.get("candidate_id") != recommended[0].get("candidate_id")]
+    alternatives = [
+        item
+        for item in scores
+        if not recommended or item.get("candidate_id") != recommended[COUNT_DEFAULT].get("candidate_id")
+    ]
     lines.extend(["", "## Alternatives", ""])
     if not alternatives:
         lines.append("- なし")
     for item in alternatives:
-        reason = "Critical Violationあり" if item.get("critical_violation_count", 0) else "推奨候補との比較対象"
+        reason = "Critical Violationあり" if item.get("critical_violation_count", COUNT_DEFAULT) else "推奨候補との比較対象"
         lines.append(
-            f"- {item.get('candidate_id', '')}: score={item.get('expectation_score', 0):.6f}, "
-            f"{reason}, unverified={item.get('unverified_count', 0)}"
+            f"- {item.get('candidate_id', '')}: score={item.get('expectation_score', SCORE_MIN):.6f}, "
+            f"{reason}, unverified={item.get('unverified_count', COUNT_DEFAULT)}"
         )
     lines.extend(
         [
@@ -1825,8 +1887,8 @@ def _comparison_markdown(result: dict[str, Any]) -> str:
                 f"- Review ID: {review_feedback.get('review_id', '')}",
                 f"- Status: {review_feedback.get('status', '')}",
                 f"- Verdict: {snapshot.get('verdict', '') or 'not-decided'}",
-                f"- Open issues: {snapshot.get('open_issue_count', 0)}",
-                f"- Blocking issues: {snapshot.get('blocking_issue_count', 0)}",
+                f"- Open issues: {snapshot.get('open_issue_count', COUNT_DEFAULT)}",
+                f"- Blocking issues: {snapshot.get('blocking_issue_count', COUNT_DEFAULT)}",
                 "",
                 "| Type | ID | Severity | Claim |",
                 "| --- | --- | --- | --- |",
@@ -1873,7 +1935,9 @@ def _human_gate_summary_markdown(decision: dict[str, Any], comparison: dict[str,
     if not weight_changes:
         lines.append("- none")
     for item in weight_changes:
-        lines.append(f"- {item.get('expectation_id', '')}: {item.get('before', 0)} -> {item.get('after', 0)}")
+        lines.append(
+            f"- {item.get('expectation_id', '')}: {item.get('before', SCORE_MIN)} -> {item.get('after', SCORE_MIN)}"
+        )
     lines.extend(["", "## Decision Items"])
     decision_items = decision.get("decision_items", [])
     if not decision_items:
@@ -1899,7 +1963,7 @@ def _refinement_plan(decision: dict[str, Any], comparison: dict[str, Any]) -> di
         if item.get("candidate_id") == selected
     ]
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "design-refinement-plan",
         "status": "ready-for-refinement",
         "selected_candidate": selected,
@@ -1995,7 +2059,11 @@ def gate_design(args: argparse.Namespace) -> dict[str, Any]:
     weight_changes = _parse_weight_changes(list(getattr(args, "weight_change", []) or []))
     decision_items = list(getattr(args, "decision_item", []) or [])
     if not approved:
-        event_path = _append_event(base, "design_human_gate_required", {"work_id": work_id, "candidate_count": comparison.get("candidate_count", 0)})
+        event_path = _append_event(
+            base,
+            "design_human_gate_required",
+            {"work_id": work_id, "candidate_count": comparison.get("candidate_count", COUNT_DEFAULT)},
+        )
         required = [
             "Select candidate",
             "Combine candidates",
@@ -2024,7 +2092,7 @@ def gate_design(args: argparse.Namespace) -> dict[str, Any]:
     if decision_action in {"regenerate", "revise-expectations", "investigate", "defer"} and not decision_items:
         decision_items = [f"Human Gate requested {decision_action} before final design refinement."]
     decision = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "schema": HUMAN_DECISION_SCHEMA,
         "artifact_type": "human-decision",
         "status": "approved",
@@ -2097,7 +2165,7 @@ def gate_design(args: argparse.Namespace) -> dict[str, Any]:
 def multi_axis_design(args: argparse.Namespace) -> dict[str, Any]:
     result = evaluate_design(args)
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "multi-axis-design-evaluation",
         "status": "evaluated",
         "work_id": result.get("work_id", ""),
@@ -2133,7 +2201,7 @@ def review_design(args: argparse.Namespace) -> dict[str, Any]:
         findings.append({"severity": "major", "expectation_id": "", "check": "critical-expectation", "message": "Critical expectations are not defined."})
     status = "ready-for-human-check" if findings else "reviewed"
     payload = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "schema": EXPECTATION_REVIEW_REPORT_SCHEMA,
         "artifact_type": "expectation-review-report",
         "status": status,
@@ -2158,7 +2226,7 @@ def review_design(args: argparse.Namespace) -> dict[str, Any]:
             _artifact(repo_root, json_path, artifact_id="EDD-EXPECTATION-REVIEW", title="Expectation Review Report", artifact_type="report", status=status, summary="Expectation observability, weights, conflict, and UI-means review.", now=utc_now_iso()),
         ],
     )
-    return {"schema_version": "1.0", "artifact_type": "expectation-review", "status": status, "work_id": work_id, "review_report": relative_to_repo(repo_root, json_path), "artifact_index": artifact_index}
+    return {"schema_version": SCHEMA_VERSION, "artifact_type": "expectation-review", "status": status, "work_id": work_id, "review_report": relative_to_repo(repo_root, json_path), "artifact_index": artifact_index}
 
 
 def refine_design(args: argparse.Namespace) -> dict[str, Any]:
@@ -2180,7 +2248,7 @@ def refine_design(args: argparse.Namespace) -> dict[str, Any]:
     spec_path = base / "selected-design" / "design-specification.md"
     payload_path = base / "selected-design" / "design-refinement-result.json"
     payload = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "selected-design-refinement",
         "status": "refined",
         "selected_candidate": selected,
@@ -2214,7 +2282,7 @@ def refine_design(args: argparse.Namespace) -> dict[str, Any]:
             _artifact(repo_root, payload_path, artifact_id="EDD-DESIGN-REFINEMENT-RESULT", title="Design Refinement Result", summary="Structured selected design refinement result.", now=utc_now_iso()),
         ],
     )
-    return {"schema_version": "1.0", "artifact_type": "selected-design-refinement", "status": "refined", "work_id": work_id, "selected_candidate": selected, "selected_spec": relative_to_repo(repo_root, spec_path), "refinement_result": relative_to_repo(repo_root, payload_path), "artifact_index": artifact_index}
+    return {"schema_version": SCHEMA_VERSION, "artifact_type": "selected-design-refinement", "status": "refined", "work_id": work_id, "selected_candidate": selected, "selected_spec": relative_to_repo(repo_root, spec_path), "refinement_result": relative_to_repo(repo_root, payload_path), "artifact_index": artifact_index}
 
 
 def contracts_design(args: argparse.Namespace) -> dict[str, Any]:
@@ -2224,10 +2292,10 @@ def contracts_design(args: argparse.Namespace) -> dict[str, Any]:
     base = expectation_dir(work_dir)
     expectations = [Expectation.from_mapping(item) for item in _read_structured(base / "expectation-set.json", {"expectations": []}).get("expectations", [])]
     contracts = []
-    for index, expectation in enumerate(expectations, start=1):
+    for index, expectation in enumerate(expectations, start=SEQUENCE_START):
         contracts.append(
             {
-                "id": f"CONTRACT-{index:03d}",
+                "id": f"CONTRACT-{index:0{INTERACTION_CONTRACT_ID_WIDTH}d}",
                 "related_expectations": [expectation.expectation_id],
                 "given": {"expectation": expectation.statement, "sources": list(expectation.sources)},
                 "when": {"action": "execute-selected-design-flow"},
@@ -2237,9 +2305,9 @@ def contracts_design(args: argparse.Namespace) -> dict[str, Any]:
             }
         )
     path = base / "selected-design" / "interaction-contracts.json"
-    write_json(path, {"schema_version": "1.0", "schema": INTERACTION_CONTRACTS_SCHEMA, "artifact_type": "interaction-contracts", "interaction_contracts": contracts})
+    write_json(path, {"schema_version": SCHEMA_VERSION, "schema": INTERACTION_CONTRACTS_SCHEMA, "artifact_type": "interaction-contracts", "interaction_contracts": contracts})
     artifact_index = _register_artifacts(repo_root, work_dir, work_id, [_artifact(repo_root, path, artifact_id="EDD-INTERACTION-CONTRACTS", title="Interaction Contracts", summary="Given/When/Then/Must Not contracts generated from expectations.", now=utc_now_iso())])
-    return {"schema_version": "1.0", "artifact_type": "interaction-contract-generation", "status": "generated", "work_id": work_id, "contracts": relative_to_repo(repo_root, path), "contract_count": len(contracts), "artifact_index": artifact_index}
+    return {"schema_version": SCHEMA_VERSION, "artifact_type": "interaction-contract-generation", "status": "generated", "work_id": work_id, "contracts": relative_to_repo(repo_root, path), "contract_count": len(contracts), "artifact_index": artifact_index}
 
 
 def verify_design(args: argparse.Namespace) -> dict[str, Any]:
@@ -2256,7 +2324,7 @@ def verify_design(args: argparse.Namespace) -> dict[str, Any]:
             {
                 "expectation_id": item.get("expectation_id", ""),
                 "candidate_id": selected,
-                "design_probability": item.get("probability", 0),
+                "design_probability": item.get("probability", SCORE_MIN),
                 "verified_result": None,
                 "verification_method": ["pending-test", "pending-review"],
                 "test_evidence": [],
@@ -2265,9 +2333,9 @@ def verify_design(args: argparse.Namespace) -> dict[str, Any]:
             }
         )
     path = base / "verification" / "expectation-verification.json"
-    write_json(path, {"schema_version": "1.0", "schema": EXPECTATION_VERIFICATION_SCHEMA, "artifact_type": "expectation-verification", "expectation_verification": records})
+    write_json(path, {"schema_version": SCHEMA_VERSION, "schema": EXPECTATION_VERIFICATION_SCHEMA, "artifact_type": "expectation-verification", "expectation_verification": records})
     artifact_index = _register_artifacts(repo_root, work_dir, work_id, [_artifact(repo_root, path, artifact_id="EDD-EXPECTATION-VERIFICATION", title="Expectation Verification", summary="Design probability separated from post-implementation verification values.", now=utc_now_iso())])
-    return {"schema_version": "1.0", "artifact_type": "expectation-verification-run", "status": "verification-ready", "work_id": work_id, "verification": relative_to_repo(repo_root, path), "record_count": len(records), "artifact_index": artifact_index}
+    return {"schema_version": SCHEMA_VERSION, "artifact_type": "expectation-verification-run", "status": "verification-ready", "work_id": work_id, "verification": relative_to_repo(repo_root, path), "record_count": len(records), "artifact_index": artifact_index}
 
 
 def feedback_design(args: argparse.Namespace) -> dict[str, Any]:
@@ -2279,23 +2347,23 @@ def feedback_design(args: argparse.Namespace) -> dict[str, Any]:
     feedback = []
     for item in verification:
         observed = item.get("verified_result")
-        predicted = item.get("design_probability", 0)
+        predicted = item.get("design_probability", SCORE_MIN)
         feedback.append(
             {
                 "candidate_id": item.get("candidate_id", ""),
                 "expectation_id": item.get("expectation_id", ""),
                 "predicted_probability": predicted,
                 "observed_probability": observed,
-                "delta": None if observed is None else round(float(observed) - float(predicted), 6),
+                "delta": None if observed is None else round(float(observed) - float(predicted), SCORE_ROUND_DECIMALS),
                 "cause": [],
                 "action": ["Collect observed evidence before knowledge capture."],
                 "knowledge_candidate": True,
             }
         )
     path = base / "verification" / "expectation-feedback.json"
-    write_json(path, {"schema_version": "1.0", "schema": EXPECTATION_FEEDBACK_SCHEMA, "artifact_type": "expectation-feedback", "feedback": feedback})
+    write_json(path, {"schema_version": SCHEMA_VERSION, "schema": EXPECTATION_FEEDBACK_SCHEMA, "artifact_type": "expectation-feedback", "feedback": feedback})
     artifact_index = _register_artifacts(repo_root, work_dir, work_id, [_artifact(repo_root, path, artifact_id="EDD-EXPECTATION-FEEDBACK", title="Expectation Feedback", summary="Predicted vs observed expectation feedback for knowledge capture.", now=utc_now_iso())])
-    return {"schema_version": "1.0", "artifact_type": "expectation-feedback-run", "status": "feedback-ready", "work_id": work_id, "feedback": relative_to_repo(repo_root, path), "feedback_count": len(feedback), "artifact_index": artifact_index}
+    return {"schema_version": SCHEMA_VERSION, "artifact_type": "expectation-feedback-run", "status": "feedback-ready", "work_id": work_id, "feedback": relative_to_repo(repo_root, path), "feedback_count": len(feedback), "artifact_index": artifact_index}
 
 
 def _review_summary_from_session(session: dict[str, Any]) -> dict[str, Any]:
@@ -2310,7 +2378,7 @@ def _review_summary_from_session(session: dict[str, Any]) -> dict[str, Any]:
         }
     )
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "review-council-summary",
         "status": "summarized",
         "review_id": session.get("review_id", ""),
@@ -2363,12 +2431,12 @@ def _normalize_review_feedback(summary: dict[str, Any], source: dict[str, str]) 
     snapshot = summary.get("snapshot", {}) if isinstance(summary.get("snapshot"), dict) else {}
     findings = [item for item in summary.get("findings", []) if isinstance(item, dict)]
     issues = [item for item in summary.get("issues", []) if isinstance(item, dict)]
-    blocking = int(snapshot.get("blocking_issue_count", 0) or 0)
-    open_issues = int(snapshot.get("open_issue_count", 0) or 0)
+    blocking = int(snapshot.get("blocking_issue_count", COUNT_DEFAULT) or COUNT_DEFAULT)
+    open_issues = int(snapshot.get("open_issue_count", COUNT_DEFAULT) or COUNT_DEFAULT)
     missing_reviewers = snapshot.get("missing_reviewers", [])
     status = "review-blocked" if blocking or open_issues or missing_reviewers else "synced"
     feedback = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "expectation-review-council-feedback",
         "status": status,
         "review_id": summary.get("review_id", ""),
@@ -2416,7 +2484,7 @@ def council_sync_design(args: argparse.Namespace) -> dict[str, Any]:
         ],
     )
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "expectation-review-council-sync",
         "status": feedback.get("status", "synced"),
         "work_id": work_id,
@@ -2493,7 +2561,7 @@ def dispatch_design(args: argparse.Namespace) -> dict[str, Any]:
         f"{reviewer_args} {evidence_args}"
     ).strip()
     packet = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "schema": EXPECTATION_DESIGN_DISPATCH_SCHEMA,
         "artifact_type": "expectation-design-dispatch",
         "status": "ready-for-review-council",
@@ -2515,7 +2583,7 @@ def dispatch_design(args: argparse.Namespace) -> dict[str, Any]:
     write_json(path, packet)
     artifact_index = _register_artifacts(repo_root, work_dir, work_id, [_artifact(repo_root, path, artifact_id="EDD-REVIEW-COUNCIL-DISPATCH", title="Review Council Dispatch", summary="Expectation design context filtered for Review Council reviewers.", now=utc_now_iso())])
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "expectation-design-dispatch",
         "status": "ready-for-review-council",
         "work_id": work_id,

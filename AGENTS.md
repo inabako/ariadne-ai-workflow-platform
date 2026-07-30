@@ -27,11 +27,21 @@ Ariadne は、AI Agent が迷わず作業を進めるために、workflow の入
 ## Directory Roles
 
 ```text
-.github/
+.ariadne/
   agents/      role-based Agent prompts
   prompts/     slash command style workflow prompts
   schemas/     JSON Schema contracts for Agent-to-Agent data sharing
   shared/      common rules, principles, handoff guidance
+
+.github/
+  workflows/   GitHub Actions workflows
+  ISSUE_TEMPLATE/
+  PULL_REQUEST_TEMPLATE/
+  copilot-instructions.md
+               thin VS Code Copilot bridge into AGENTS.md and .ariadne/
+  instructions/
+               thin VS Code Copilot custom instruction bridge
+  prompts/     thin VS Code Copilot prompt stubs only
 
 knowledge-inbox/
   investigations/

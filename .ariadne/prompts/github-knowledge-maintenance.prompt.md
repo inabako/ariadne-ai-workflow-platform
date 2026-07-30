@@ -1,4 +1,4 @@
----
+﻿---
 name: github-knowledge-maintenance
 description: Maintain a GitHub repository as a reusable knowledge asset without erasing Git history or changing commit source.
 argument-hint: "<target-repository> <scan-mode> <repair-mode> [rag]"
@@ -9,11 +9,11 @@ agent: agent
 
 ## Output Language
 
-既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.ariadne/shared/output-language-policy.md` に従って日本語で作成してください。
 
 ## Runtime Entrypoint
 
-Follow `.github/shared/runtime-entrypoint-policy.md`. Use `aiwfctl` / `runtime/ctl/ctl.py` as the official entrypoint for Context First, Human Check, GitHub knowledge maintenance, close archive, and self-improvement operations.
+Follow `.ariadne/shared/runtime-entrypoint-policy.md`. Use `aiwfctl` / `runtime/ctl/ctl.py` as the official entrypoint for Context First, Human Check, GitHub knowledge maintenance, close archive, and self-improvement operations.
 
 On Windows 11, start from `.\runtime\windows-ps1\aiwf.ps1 ctl ...`; the PS1 runtime handles PowerShell/UTF-8/path normalization and then delegates to `aiwfctl`.
 
@@ -42,13 +42,13 @@ Semantic commit subject quality is mandatory for commit repair. The subject show
 
 Use the agents in this order:
 
-1. `.github/agents/repository-discovery-agent.prompt.md`
-2. `.github/agents/github-metadata-collector-agent.prompt.md`
-3. `.github/agents/knowledge-asset-discovery-agent.prompt.md`
-4. `.github/agents/narrative-analyzer-agent.prompt.md`
-5. `.github/agents/documentation-repair-agent.prompt.md`
-6. `.github/agents/github-documentation-sync-agent.prompt.md`
-7. `.github/agents/knowledge-db-registrar-agent.prompt.md`
+1. `.ariadne/agents/repository-discovery-agent.prompt.md`
+2. `.ariadne/agents/github-metadata-collector-agent.prompt.md`
+3. `.ariadne/agents/knowledge-asset-discovery-agent.prompt.md`
+4. `.ariadne/agents/narrative-analyzer-agent.prompt.md`
+5. `.ariadne/agents/documentation-repair-agent.prompt.md`
+6. `.ariadne/agents/github-documentation-sync-agent.prompt.md`
+7. `.ariadne/agents/knowledge-db-registrar-agent.prompt.md`
 
 ## Runtime Helpers
 
@@ -231,7 +231,7 @@ work/<work-id>/context/github-knowledge-analysis.json
 Schema:
 
 ```text
-.github/schemas/github-knowledge-analysis.schema.json
+.ariadne/schemas/github-knowledge-analysis.schema.json
 ```
 
 ## Workflow

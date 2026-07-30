@@ -11,6 +11,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag.cleanup_guard import assert_safe_clean_output_target  # noqa: E402
 from runtime.constants.paths import GENERATED_JSONIZED, KNOWLEDGE_SOURCE_RAG  # noqa: E402
@@ -73,7 +74,7 @@ def jsonize_file(repo_root: Path, rag_dir: Path, output_dir: Path, source: Path)
     output_path = output_dir / f"{artifact_id}.json"
     source_format, payload, text = source_payload(source)
     artifact = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_id": artifact_id,
         "artifact_type": "rag-jsonized-source",
         "source_path": rel_source,

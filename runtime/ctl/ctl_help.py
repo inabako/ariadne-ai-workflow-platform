@@ -5,6 +5,16 @@ from pathlib import Path
 from typing import Any
 
 from runtime.common import registry_store, relative_to_repo
+from runtime.ctl.help_constants import (
+    BLOB_ALL_TERMS_BASE_SCORE,
+    BLOB_TERM_MATCH_SCORE,
+    EMPTY_QUERY_SCORE,
+    EXPLICIT_TERM_ALL_TERMS_SCORE,
+    EXPLICIT_TERM_EXACT_MATCH_SCORE,
+    EXPLICIT_TERM_PARTIAL_MATCH_SCORE,
+    EXPLICIT_TERM_SINGLE_MATCH_SCORE,
+    MIN_SEARCH_MATCH_SCORE,
+)
 
 
 ANSI_YELLOW = "\033[33m"
@@ -100,21 +110,21 @@ def explicit_search_terms(item: dict[str, Any]) -> list[str]:
 def search_score(item: dict[str, Any], keywords: list[str]) -> int:
     terms = [normalize_search_value(term) for term in keywords if term.strip()]
     if not terms:
-        return 1
+        return EMPTY_QUERY_SCORE
     query = normalize_search_value(" ".join(terms))
     blob = text_blob(item)
     score = 0
     if all(term in blob for term in terms):
-        score += 40 + (10 * len(terms))
+        score += BLOB_ALL_TERMS_BASE_SCORE + (BLOB_TERM_MATCH_SCORE * len(terms))
     for search_term in explicit_search_terms(item):
         if search_term == query:
-            score += 120
+            score += EXPLICIT_TERM_EXACT_MATCH_SCORE
         elif query and (query in search_term or search_term in query):
-            score += 90
+            score += EXPLICIT_TERM_PARTIAL_MATCH_SCORE
         elif all(term in search_term for term in terms):
-            score += 75
+            score += EXPLICIT_TERM_ALL_TERMS_SCORE
         else:
-            score += 25 * sum(1 for term in terms if term in search_term)
+            score += EXPLICIT_TERM_SINGLE_MATCH_SCORE * sum(1 for term in terms if term in search_term)
     return score
 
 
@@ -124,7 +134,7 @@ def search_commands(registry: dict[str, Any], keywords: list[str]) -> list[dict[
     matches: list[tuple[int, dict[str, Any]]] = []
     for command in registry.get("commands", []):
         score = search_score(command, keywords)
-        if score > 0:
+        if score > MIN_SEARCH_MATCH_SCORE:
             matches.append((score, command))
     return [item for _, item in sorted(matches, key=lambda entry: (-entry[0], command_key(entry[1])))]
 
@@ -135,7 +145,7 @@ def search_extensions(registry: dict[str, Any], keywords: list[str]) -> list[dic
     matches: list[tuple[int, dict[str, Any]]] = []
     for extension in registry.get("extensions", []):
         score = search_score(extension, keywords)
-        if score > 0:
+        if score > MIN_SEARCH_MATCH_SCORE:
             matches.append((score, extension))
     return [item for _, item in sorted(matches, key=lambda entry: (-entry[0], extension_key(entry[1])))]
 

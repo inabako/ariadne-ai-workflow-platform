@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from runtime.constants.runtime_values import SCHEMA_VERSION
 from runtime.common import read_json, relative_to_repo, write_json
 from runtime.constants.workspace import (
     context_dir_for_work_dir,
@@ -51,7 +52,7 @@ class ReviewStore:
         )
         index.update(
             {
-                "schema_version": "1.0",
+                "schema_version": SCHEMA_VERSION,
                 "artifact_type": "review-council-index",
                 "work_id": work_id,
                 "latest_review_id": review_id,

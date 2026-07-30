@@ -93,7 +93,9 @@ C:\Users\User\.codex\skills\knowledge-capture
   -> C:\github\ariadne-ai-workflow-platform\skills\knowledge-capture
 ```
 
-VS Code Copilot Chat の `/` 候補は `.ariadne/prompts/*.prompt.md`、Codex Skill 候補は `C:\Users\User\.codex\skills` を主に見ます。
+`.ariadne/` は Ariadne AI workflow assets の source of truth です。
+Codex の repository guidance は `AGENTS.md` を入口にし、Codex Skill 候補は `C:\Users\User\.codex\skills` を主に見ます。
+VS Code Copilot Chat の常時参照は `.github/copilot-instructions.md`、`/` prompt候補は `.github/prompts/*.prompt.md` の薄いbridgeから `.ariadne/prompts/` を参照します。
 
 ## Corrective Action Report Rule
 

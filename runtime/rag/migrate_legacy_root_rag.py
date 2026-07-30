@@ -11,6 +11,7 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
+from runtime.constants.runtime_values import FILE_HASH_CHUNK_BYTES  # noqa: E402
 from runtime.constants.paths import LEGACY_ROOT_RAG_PREFIX, KNOWLEDGE_SOURCE_REPO, KNOWLEDGE_SOURCE_RAG  # noqa: E402
 
 
@@ -37,7 +38,7 @@ def resolve_repo_path(repo_root: Path, value: str) -> Path:
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+        for chunk in iter(lambda: handle.read(FILE_HASH_CHUNK_BYTES), b""):
             digest.update(chunk)
     return digest.hexdigest()
 

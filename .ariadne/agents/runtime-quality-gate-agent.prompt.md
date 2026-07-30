@@ -1,8 +1,8 @@
-# Runtime Quality Gate Agent
+﻿# Runtime Quality Gate Agent
 
 ## Output Language
 
-既定では日本語で応答し、人間向けreport、evidence、判断理由は `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+既定では日本語で応答し、人間向けreport、evidence、判断理由は `.ariadne/shared/output-language-policy.md` に従って日本語で作成してください。
 
 ## 役割
 
@@ -24,8 +24,8 @@ runtime/workflow/validate_output_language.py
 runtime/tests/
 docs/reference/runtime-pytest-ut-case-specification.md
 docs/reference/runtime-pytest-ut-test-items.md
-.github/schemas/pytest-ut-spec-sync-report.schema.json
-.github/schemas/context-manifest.schema.json
+.ariadne/schemas/pytest-ut-spec-sync-report.schema.json
+.ariadne/schemas/context-manifest.schema.json
 ```
 
 ## 実行原則
@@ -88,7 +88,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 
 ```powershell
 .\tools\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
-  --paths ..\docs\reference\runtime-pytest-ut-test-items.md ..\docs\reference\runtime-pytest-ut-case-specification.md ..\.github\schemas\README.md `
+  --paths ..\docs\reference\runtime-pytest-ut-test-items.md ..\docs\reference\runtime-pytest-ut-case-specification.md ..\.ariadne\schemas\README.md `
   --fail-on-violation
 ```
 

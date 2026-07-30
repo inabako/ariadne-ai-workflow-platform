@@ -9,7 +9,16 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import gate_restart, find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
+from runtime.constants.cli_defaults import (  # noqa: E402
+    RAG_CHUNK_OVERLAP_DEFAULT,
+    RAG_CHUNK_SIZE_DEFAULT,
+    RAG_EMBEDDING_DIMENSIONS_DEFAULT,
+    RAG_STANDARDIZE_RANDOM_LENGTH_DEFAULT,
+    RAG_STANDARDIZE_RANDOM_LENGTH_MAX_EXCLUSIVE,
+    RAG_STANDARDIZE_RANDOM_LENGTH_MIN,
+)
 from runtime.constants.paths import (  # noqa: E402
     DUCKDB_INGESTION_EVIDENCE_DIR,
     DUCKDB_MIGRATION_EVIDENCE,
@@ -25,6 +34,7 @@ from runtime.constants.paths import (  # noqa: E402
 from runtime.constants.schemas import RAG_BUILD_RUN_SCHEMA, RAG_DUCKDB_MIGRATION_SCHEMA  # noqa: E402
 from runtime.constants.workspace import resolve_work_dir as workspace_resolve_work_dir  # noqa: E402
 from runtime.rag import build_index, chunk_documents, duckdb_store, embed_chunks, ingestion_optimizer, normalize_documents  # noqa: E402
+from runtime.rag.scoring_constants import AVERAGE_OPTIMIZATION_SCORE_DEFAULT  # noqa: E402
 from runtime.rag import standardize_corrective_report_names  # noqa: E402
 from runtime.workflow.context_first import register_context  # noqa: E402
 
@@ -82,7 +92,7 @@ def build_run_artifact(
         human_check_reasons.append("source report filenames may be standardized before normalization.")
     status = "completed"
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "rag-build-run",
         "architecture": "context-first",
         "created_at": utc_now_iso(),
@@ -112,7 +122,7 @@ def build_run_artifact(
             "rewritten_chunk_count": optimization_result.get("rewritten_chunk_count", 0),
             "human_check_required_count": optimization_result.get("human_check_required_count", 0),
             "rejected_chunk_count": optimization_result.get("rejected_chunk_count", 0),
-            "average_optimization_score": optimization_result.get("average_optimization_score", 0.0),
+            "average_optimization_score": optimization_result.get("average_optimization_score", AVERAGE_OPTIMIZATION_SCORE_DEFAULT),
             "ingestion_evidence_dir": optimization_result.get("evidence_dir", ""),
             "ingestion_summary": optimization_result.get("ingestion_summary", ""),
             "embedding_count": embedding_result.get("embedding_count", 0),
@@ -194,7 +204,7 @@ def write_duckdb_migration_evidence(
     rag_build_run_path: Path,
 ) -> dict[str, Any]:
     payload = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "rag-duckdb-migration",
         "created_at": utc_now_iso(),
         "status": migration_result.get("status", "unknown"),
@@ -371,14 +381,19 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--branch", default="")
     parser.add_argument("--commit", default="")
     parser.add_argument("--status", default="draft")
-    parser.add_argument("--chunk-size", type=int, default=1800)
-    parser.add_argument("--chunk-overlap", type=int, default=180)
-    parser.add_argument("--embedding-dimensions", type=int, default=768)
+    parser.add_argument("--chunk-size", type=int, default=RAG_CHUNK_SIZE_DEFAULT)
+    parser.add_argument("--chunk-overlap", type=int, default=RAG_CHUNK_OVERLAP_DEFAULT)
+    parser.add_argument("--embedding-dimensions", type=int, default=RAG_EMBEDDING_DIMENSIONS_DEFAULT)
     parser.add_argument("--clean-output", action="store_true")
     parser.add_argument("--standardize-filenames", action="store_true")
     parser.add_argument("--skip-standardize", action="store_true")
     parser.add_argument("--replace-references", action="store_true")
-    parser.add_argument("--random-length", type=int, default=8, choices=range(5, 9))
+    parser.add_argument(
+        "--random-length",
+        type=int,
+        default=RAG_STANDARDIZE_RANDOM_LENGTH_DEFAULT,
+        choices=range(RAG_STANDARDIZE_RANDOM_LENGTH_MIN, RAG_STANDARDIZE_RANDOM_LENGTH_MAX_EXCLUSIVE),
+    )
     return parser
 
 

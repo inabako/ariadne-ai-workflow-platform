@@ -14,6 +14,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import gate_restart  # noqa: E402
 from runtime.common import env_value, find_repo_root, load_env, local_timestamp, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.constants.paths import (  # noqa: E402
@@ -1044,7 +1045,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     status = github_auth_status(checks)
     result = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "environment-preflight",
         "profile": args.profile,
         "created_at": utc_now_iso(),

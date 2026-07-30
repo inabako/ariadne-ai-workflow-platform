@@ -25,6 +25,7 @@ def test_oss_release_foundation_files_exist() -> None:
     root = repo_root()
     required = [
         "CITATION.cff",
+        "AGENTS.md",
         "LICENSES/AGPL-3.0-or-later.txt",
         "REUSE.toml",
         "CHANGELOG.md",
@@ -55,6 +56,9 @@ def test_oss_release_foundation_files_exist() -> None:
         "docs/legal/evidence/license-boundary-report.json",
         "docs/legal/evidence/release-license-check.json",
         "docs/legal/evidence/reuse-lint-local-rehearsal.md",
+        ".github/copilot-instructions.md",
+        ".github/instructions/ariadne.instructions.md",
+        ".github/prompts/ariadne-workflows.prompt.md",
         ".github/PULL_REQUEST_TEMPLATE.md",
         ".github/ISSUE_TEMPLATE/bug_report.yml",
         ".github/ISSUE_TEMPLATE/feature_request.yml",
@@ -66,6 +70,29 @@ def test_oss_release_foundation_files_exist() -> None:
     ]
     missing = [path for path in required if not (root / path).exists()]
     assert missing == []
+
+
+def test_ariadne_assets_do_not_point_to_legacy_github_ai_asset_paths() -> None:
+    root = repo_root()
+    forbidden = [
+        ".github/agents",
+        ".github/prompts/",
+        ".github/schemas",
+        ".github/shared",
+        ".github\\agents",
+        ".github\\prompts",
+        ".github\\schemas",
+        ".github\\shared",
+    ]
+    offenders: list[str] = []
+    for path in (root / ".ariadne").rglob("*"):
+        if not path.is_file() or path.suffix.lower() not in {".md", ".json"}:
+            continue
+        text = path.read_text(encoding="utf-8")
+        if any(token in text for token in forbidden):
+            offenders.append(path.relative_to(root).as_posix())
+
+    assert offenders == []
 
 
 def test_validate_release_reports_current_repo_as_pass_with_warnings() -> None:

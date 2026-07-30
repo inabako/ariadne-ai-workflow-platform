@@ -1,8 +1,8 @@
-# Ariadne Workflow
+﻿# Ariadne Workflow
 
 ## Output Language
 
-既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.ariadne/shared/output-language-policy.md` に従って日本語で作成してください。
 
 このディレクトリは、Localty の Ariadne Workflow を定義します。
 
@@ -136,7 +136,7 @@ Completion は、人間レビューで OK が出た後に `work/requirements/` �
 
 ## Relation To Agents
 
-この workflow は `.github/agents` の prompt と組み合わせて使います。
+この workflow は `.ariadne/agents` の prompt と組み合わせて使います。
 
 標準的な流れ:
 

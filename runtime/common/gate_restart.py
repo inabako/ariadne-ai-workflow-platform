@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from runtime.constants.runtime_values import SCHEMA_VERSION
+
+
 from typing import Any
 
 NEXT_ON_PASS_RETURN_TO_WORKFLOW = "return-to-calling-workflow-after-gate"
@@ -36,7 +39,7 @@ def build_gate_restart(
     if repair_available and not repair_command:
         raise ValueError("repair_command is required when repair_available is true.")
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "gate-restart",
         "gate": gate,
         "restart_from": restart_from or gate,

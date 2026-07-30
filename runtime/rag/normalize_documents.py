@@ -11,6 +11,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo, slugify, utc_now_iso, write_json  # noqa: E402
 from runtime.rag.cleanup_guard import assert_safe_clean_output_target  # noqa: E402
 from runtime.constants.paths import GENERATED_NORMALIZED, SOURCE_CORRECTIVE_ACTION_REPORTS  # noqa: E402
@@ -190,7 +191,7 @@ def normalize_document(
     metadata["front_matter"] = front_matter
 
     normalized = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "document_id": document_id,
         "legacy_document_id": legacy_document_id,
         "source_path": relative_to_repo(repo_root, source),

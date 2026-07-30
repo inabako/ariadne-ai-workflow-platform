@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Sequence
 
+from runtime.constants.runtime_values import SCHEMA_VERSION
 from runtime.common.common import relative_to_repo, utc_now_iso
 from runtime.constants.encoding import MOJIBAKE_MARKERS, SOURCE_ENCODINGS
 
@@ -150,7 +151,7 @@ def scan_text_boundary(repo_root: Path, paths: Sequence[str], extensions: set[st
         file_result, _text = file_findings(repo_root, path)
         findings.extend(file_result)
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "text-boundary-scan",
         "generated_at": utc_now_iso(),
         "status": "finding" if findings else "ok",
@@ -227,7 +228,7 @@ def repair_text_boundary(
 
     post_scan = scan_text_boundary(repo_root, paths, extensions)
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "text-boundary-repair",
         "generated_at": utc_now_iso(),
         "status": "repaired" if repairs and not post_scan["findings"] else "remaining-findings" if post_scan["findings"] else "ok",

@@ -2,14 +2,21 @@ from __future__ import annotations
 
 from typing import Any
 
-
-SEVERITY_RANK = {"critical": 5, "high": 4, "medium": 3, "low": 2, "info": 1}
+from runtime.review.constants import (
+    DEFAULT_REVIEW_ISSUE_SEVERITY,
+    REVIEW_ISSUE_ID_WIDTH,
+    REVIEW_ISSUE_SEVERITY_RANK,
+    REVIEW_ISSUE_SEVERITY_RANK_DEFAULT,
+)
 
 
 def issue_severity(findings: list[dict[str, Any]]) -> str:
     if not findings:
-        return "info"
-    return max((str(item.get("severity", "info")) for item in findings), key=lambda value: SEVERITY_RANK.get(value, 0))
+        return DEFAULT_REVIEW_ISSUE_SEVERITY
+    return max(
+        (str(item.get("severity", DEFAULT_REVIEW_ISSUE_SEVERITY)) for item in findings),
+        key=lambda value: REVIEW_ISSUE_SEVERITY_RANK.get(value, REVIEW_ISSUE_SEVERITY_RANK_DEFAULT),
+    )
 
 
 def build_review_issues(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -29,7 +36,7 @@ def build_review_issues(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
         blocking = any(bool(item.get("blocking")) for item in grouped_findings)
         issues.append(
             {
-                "issue_id": f"RI-{index:03d}",
+                "issue_id": f"RI-{index:0{REVIEW_ISSUE_ID_WIDTH}d}",
                 "category": category,
                 "claim": claim,
                 "severity": severity,

@@ -9,6 +9,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso  # noqa: E402
 
 
@@ -134,7 +135,7 @@ def scan_files(repo_root: Path, paths: Sequence[str], extensions: set[str]) -> d
             bom_files.append({"path": rel_path, "size_bytes": len(raw)})
 
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "utf8-bom-scan",
         "generated_at": utc_now_iso(),
         "status": "finding" if bom_files else "ok",
@@ -183,7 +184,7 @@ def strip_files(args: argparse.Namespace) -> dict[str, Any]:
         stripped.append(record)
 
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "utf8-bom-strip",
         "generated_at": utc_now_iso(),
         "status": "stripped" if args.write and stripped else ("candidate" if stripped else "ok"),

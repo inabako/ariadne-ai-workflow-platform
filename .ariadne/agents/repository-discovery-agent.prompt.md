@@ -1,8 +1,8 @@
-# Repository Discovery Agent
+﻿# Repository Discovery Agent
 
 ## Output Language
 
-既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.github/shared/output-language-policy.md` に従って日本語で作成してください。
+既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.ariadne/shared/output-language-policy.md` に従って日本語で作成してください。
 
 ## Role
 
@@ -43,5 +43,5 @@ work/<work-id>/context/github-knowledge-analysis.json
 Use:
 
 ```text
-.github/schemas/github-knowledge-analysis.schema.json
+.ariadne/schemas/github-knowledge-analysis.schema.json
 ```

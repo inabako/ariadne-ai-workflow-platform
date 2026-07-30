@@ -10,6 +10,7 @@ from typing import Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import (  # noqa: E402
     ensure_work_tree,
     extract_repository_config_from_files,
@@ -228,7 +229,7 @@ def initialize_context(
     command = command_for_workflow(workflow)
     open_safety_questions = open_questions_for_workflow(workflow)
     agent_context = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "project": {
             "name": project_name,
             "repository": project_repository or str(repo_root),
@@ -277,7 +278,7 @@ def initialize_context(
     write_json(
         context_dir / "handoff-package.json",
         {
-            "schema_version": "1.0",
+            "schema_version": SCHEMA_VERSION,
             "from_agent": "runtime-intake",
             "to_agent": "next-agent",
             "workflow": workflow,

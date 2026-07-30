@@ -34,6 +34,7 @@ from runtime.ctl.ctl_self_improvement_adapter import run_self_improvement
 from runtime.ctl.ctl_tools_adapter import run_tools
 from runtime.ctl.ctl_work_adapter import run_work_cleanup
 from runtime.ctl.ctl_workflow_adapter import run_workflow
+from runtime.constants.workflow_limits import CTL_WARNING_PATH_PREVIEW_LIMIT
 from runtime.release import manifest as release_manifest
 from runtime.release import validation as release_validation
 
@@ -1180,7 +1181,7 @@ def _handle_doctor(args: argparse.Namespace, repo_root: Path, registry: dict[str
                     f"    message: {warning.get('message', '')}",
                 ]
             )
-            for path in warning.get("paths", [])[:10]:
+            for path in warning.get("paths", [])[:CTL_WARNING_PATH_PREVIEW_LIMIT]:
                 lines.append(f"    path: {path}")
     else:
         lines.extend(["", "Warnings", "  - なし"])
@@ -1297,4 +1298,3 @@ def run_impl(args: argparse.Namespace, *, helpers: HelperModule, color: bool = F
     if handler is None:
         return 1, f"Unknown command: {command}\n"
     return handler(args, repo_root, registry, helpers, color)
-

@@ -24,6 +24,7 @@ from runtime.common import (  # noqa: E402
     write_markdown_bom,
 )
 from runtime.constants.schemas import ARTIFACT_INDEX_SCHEMA  # noqa: E402
+from runtime.constants.workflow_limits import SELF_IMPROVEMENT_EVENT_PREVIEW_LIMIT  # noqa: E402
 from runtime.constants.workspace import (  # noqa: E402
     context_dir_for_work_dir,
     process_report_dir_for_work_dir,
@@ -265,7 +266,7 @@ def render_runtime_problem_events(events: list[dict[str, Any]]) -> str:
     if not events:
         return "- None"
     lines: list[str] = []
-    for event in events[:10]:
+    for event in events[:SELF_IMPROVEMENT_EVENT_PREVIEW_LIMIT]:
         payload = event.get("payload", {})
         output = payload.get("output", {}) if isinstance(payload.get("output", {}), dict) else {}
         lines.append(

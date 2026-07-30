@@ -10,6 +10,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import (  # noqa: E402
     default_github_owner,
     find_repo_root,
@@ -96,7 +97,7 @@ def prepare_repository(args: argparse.Namespace) -> dict[str, Any]:
     branch = target_branch if args.dry_run else current_branch(source_dir)
     commit = "dry-run" if args.dry_run else current_commit(source_dir)
     state = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "work_id": args.work_id,
         "repository": repository,
         "repository_source": "cli" if args.repository else "requirements",

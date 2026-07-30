@@ -14,9 +14,26 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo, utc_now_iso, write_json  # noqa: E402
 from runtime.rag import duckdb_store  # noqa: E402
+from runtime.constants.cli_defaults import RAG_RETRIEVE_MAX_CHARS_DEFAULT, RAG_RETRIEVE_TOP_K_DEFAULT  # noqa: E402
 from runtime.constants.paths import CHUNKS_INDEX, EMBEDDINGS_INDEX, GENERATED_RETRIEVAL, RAG_EMBED_SCRIPT  # noqa: E402
+from runtime.rag.scoring_constants import (  # noqa: E402
+    FALLBACK_SELECTED_UNIT_COUNT,
+    HEADING_MATCH_BONUS,
+    HYBRID_SEMANTIC_WEIGHT,
+    KEYWORD_CONTAINS_BONUS,
+    LONG_TEXT_BLOCK_CHARS,
+    MIN_CONTEXT_REMAINING_CHARS,
+    MIN_PER_CHUNK_CONTEXT_BUDGET,
+    SCORE_MIN,
+    SECTION_SEPARATOR_CHARS,
+    SEMANTIC_SCORE_SCALE,
+    SPARSE_EMBEDDING_HASH_BYTES,
+    TOKEN_ESTIMATE_CHARS_PER_TOKEN,
+    TRUNCATION_RESERVED_CHARS,
+)
 
 
 WORD_RE = re.compile(r"[A-Za-z0-9_.:-]+|[\u3040-\u30ff\u3400-\u9fff]+")
@@ -31,8 +48,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--chunks-index", default=str(CHUNKS_INDEX))
     parser.add_argument("--embeddings-index", default=str(EMBEDDINGS_INDEX))
     parser.add_argument("--output-dir", default=str(GENERATED_RETRIEVAL))
-    parser.add_argument("--top-k", type=int, default=8)
-    parser.add_argument("--max-chars", type=int, default=6000)
+    parser.add_argument("--top-k", type=int, default=RAG_RETRIEVE_TOP_K_DEFAULT)
+    parser.add_argument("--max-chars", type=int, default=RAG_RETRIEVE_MAX_CHARS_DEFAULT)
     parser.add_argument("--search-mode", default="hybrid", choices=["keyword", "semantic", "hybrid"])
     parser.add_argument("--backend", default="file", choices=["file", "duckdb"])
     parser.add_argument("--duckdb-path", default=str(duckdb_store.DEFAULT_DB_PATH))
@@ -117,7 +134,7 @@ def duckdb_filters_from_args(args: argparse.Namespace) -> duckdb_store.SearchFil
         workflow=str(arg_value(args, "workflow", "")),
         min_reliability=arg_value(args, "min_reliability", None),
         min_freshness=arg_value(args, "min_freshness", None),
-        limit=int(arg_value(args, "top_k", 8)),
+        limit=int(arg_value(args, "top_k", RAG_RETRIEVE_TOP_K_DEFAULT)),
     )
 
 
@@ -140,9 +157,9 @@ def duckdb_result_to_chunk(row: dict[str, Any]) -> dict[str, Any]:
         "retrieved_at": row.get("updated_at", ""),
         "verify_before_use": False,
         "sources": [],
-        "_score": row.get("final_score", 0),
-        "_keyword_score": row.get("keyword_match_score", 0),
-        "_semantic_score": row.get("semantic_hint_score", 0),
+        "_score": row.get("final_score", SCORE_MIN),
+        "_keyword_score": row.get("keyword_match_score", SCORE_MIN),
+        "_semantic_score": row.get("semantic_hint_score", SCORE_MIN),
         "_rerank_method": "duckdb",
         "_duckdb_scores": row.get("scores", {}),
     }
@@ -155,7 +172,7 @@ def retrieve_duckdb(repo_root: Path, args: argparse.Namespace) -> tuple[list[dic
     selected = [duckdb_result_to_chunk(row) for row in search_result.get("results", [])]
     dropped: list[dict[str, Any]] = []
     if not selected:
-        dropped.append({"chunk_id": "", "score": 0, "reason": "no-duckdb-query-match"})
+        dropped.append({"chunk_id": "", "score": SCORE_MIN, "reason": "no-duckdb-query-match"})
     return selected, dropped, search_result, duckdb_path.resolve()
 
 
@@ -172,22 +189,22 @@ def score_row(row: dict[str, Any], query_terms: list[str]) -> float:
     ]
     text = "\n".join(text_parts).lower()
     token_counts = Counter(tokenize(text))
-    score = 0.0
+    score = SCORE_MIN
     for term in query_terms:
         if not term:
             continue
         score += token_counts.get(term, 0)
         if term in text:
-            score += 2.0
+            score += KEYWORD_CONTAINS_BONUS
     if row.get("heading_path"):
         heading_text = " ".join(row.get("heading_path", [])).lower()
-        score += sum(3.0 for term in query_terms if term in heading_text)
+        score += sum(HEADING_MATCH_BONUS for term in query_terms if term in heading_text)
     return score
 
 
 def stable_dimension(token: str, dimensions: int) -> int:
     digest = hashlib.sha256(token.encode("utf-8")).digest()
-    return int.from_bytes(digest[:8], "big") % dimensions
+    return int.from_bytes(digest[:SPARSE_EMBEDDING_HASH_BYTES], "big") % dimensions
 
 
 def sparse_embedding(text: str, dimensions: int) -> dict[str, float]:
@@ -195,7 +212,7 @@ def sparse_embedding(text: str, dimensions: int) -> dict[str, float]:
     values: dict[int, float] = {}
     for token, count in counts.items():
         index = stable_dimension(token, dimensions)
-        values[index] = values.get(index, 0.0) + float(count)
+        values[index] = values.get(index, SCORE_MIN) + float(count)
     norm = math.sqrt(sum(value * value for value in values.values()))
     if norm == 0:
         return {}
@@ -204,10 +221,10 @@ def sparse_embedding(text: str, dimensions: int) -> dict[str, float]:
 
 def cosine_similarity(left: dict[str, float], right: dict[str, float]) -> float:
     if not left or not right:
-        return 0.0
+        return SCORE_MIN
     if len(left) > len(right):
         left, right = right, left
-    return sum(float(value) * float(right.get(index, 0.0)) for index, value in left.items())
+    return sum(float(value) * float(right.get(index, SCORE_MIN)) for index, value in left.items())
 
 
 def read_embeddings(path: Path) -> tuple[dict[str, dict[str, Any]], int]:
@@ -240,7 +257,7 @@ def retrieve(
 
     for row in rows:
         if not filter_row(row, args):
-            dropped.append({"chunk_id": row.get("chunk_id", ""), "score": 0, "reason": "filtered"})
+            dropped.append({"chunk_id": row.get("chunk_id", ""), "score": SCORE_MIN, "reason": "filtered"})
             continue
         keyword_score = score_row(row, query_terms)
         embedding_row = embeddings.get(str(row.get("chunk_id", "")), {})
@@ -248,10 +265,10 @@ def retrieve(
         if args.search_mode == "keyword":
             score = keyword_score
         elif args.search_mode == "semantic":
-            score = semantic_score * 100.0
+            score = semantic_score * SEMANTIC_SCORE_SCALE
         else:
-            score = keyword_score + (semantic_score * 35.0)
-        if score <= 0:
+            score = keyword_score + (semantic_score * HYBRID_SEMANTIC_WEIGHT)
+        if score <= SCORE_MIN:
             dropped.append({"chunk_id": row.get("chunk_id", ""), "score": score, "reason": "no-query-match"})
             continue
         scored.append(
@@ -264,10 +281,10 @@ def retrieve(
             }
         )
 
-    scored.sort(key=lambda row: (-float(row.get("_score", 0)), int(row.get("chunk_index", 0))))
+    scored.sort(key=lambda row: (-float(row.get("_score", SCORE_MIN)), int(row.get("chunk_index", 0))))
     selected = scored[: args.top_k]
     for row in scored[args.top_k :]:
-        dropped.append({"chunk_id": row.get("chunk_id", ""), "score": row.get("_score", 0), "reason": "below-top-k"})
+        dropped.append({"chunk_id": row.get("chunk_id", ""), "score": row.get("_score", SCORE_MIN), "reason": "below-top-k"})
     return selected, dropped
 
 
@@ -277,7 +294,7 @@ def split_units(content: str) -> list[str]:
         block = block.strip()
         if not block:
             continue
-        if len(block) <= 700:
+        if len(block) <= LONG_TEXT_BLOCK_CHARS:
             units.append(block)
             continue
         lines = [line.strip() for line in block.splitlines() if line.strip()]
@@ -297,17 +314,17 @@ def compress_chunk(row: dict[str, Any], query_terms: list[str], max_chars: int) 
             selected_units.append(unit)
 
     if not selected_units:
-        selected_units = split_units(content)[:3]
+        selected_units = split_units(content)[:FALLBACK_SELECTED_UNIT_COUNT]
 
     compressed = "\n\n".join(selected_units).strip()
     if len(compressed) <= max_chars:
         return compressed
-    return compressed[: max_chars - 20].rstrip() + "\n\n[truncated]"
+    return compressed[: max_chars - TRUNCATION_RESERVED_CHARS].rstrip() + "\n\n[truncated]"
 
 
 def estimate_tokens(text: str) -> int:
     # Conservative local estimate for mixed Japanese/English text.
-    return max(1, int(len(text) / 2.5))
+    return max(1, int(len(text) / TOKEN_ESTIMATE_CHARS_PER_TOKEN))
 
 
 def build_context(selected: list[dict[str, Any]], args: argparse.Namespace) -> tuple[str, list[dict[str, Any]]]:
@@ -317,19 +334,22 @@ def build_context(selected: list[dict[str, Any]], args: argparse.Namespace) -> t
     sources: list[dict[str, Any]] = []
 
     for row in selected:
-        if remaining <= 200:
+        if remaining <= MIN_CONTEXT_REMAINING_CHARS:
             break
         heading = " > ".join(str(item) for item in row.get("heading_path", []) if str(item).strip())
         source_header = f"Source: {row.get('source_path', '')}"
         if heading:
             source_header += f"\nHeading: {heading}"
-        per_chunk_budget = max(300, min(remaining, int(args.max_chars / max(1, min(len(selected), args.top_k)))))
+        per_chunk_budget = max(
+            MIN_PER_CHUNK_CONTEXT_BUDGET,
+            min(remaining, int(args.max_chars / max(1, min(len(selected), args.top_k)))),
+        )
         compressed = compress_chunk(row, query_terms, per_chunk_budget)
         section = f"## {row.get('chunk_id')}\n\n{source_header}\n\n{compressed}".strip()
         if len(section) > remaining:
-            section = section[: remaining - 20].rstrip() + "\n\n[truncated]"
+            section = section[: remaining - TRUNCATION_RESERVED_CHARS].rstrip() + "\n\n[truncated]"
         sections.append(section)
-        remaining -= len(section) + 2
+        remaining -= len(section) + SECTION_SEPARATOR_CHARS
         sources.append(
             {
                 "chunk_id": row.get("chunk_id", ""),
@@ -337,7 +357,7 @@ def build_context(selected: list[dict[str, Any]], args: argparse.Namespace) -> t
                 "source_path": row.get("source_path", ""),
                 "chunk_path": row.get("chunk_path", ""),
                 "heading_path": row.get("heading_path", []),
-                "score": row.get("_score", row.get("score", 0)),
+                "score": row.get("_score", row.get("score", SCORE_MIN)),
                 "source_type": row.get("source_type", ""),
                 "category": row.get("category", ""),
                 "topic": row.get("topic", ""),
@@ -414,7 +434,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         {
             "chunk_id": row.get("chunk_id", ""),
             "document_id": row.get("document_id", ""),
-            "score": row.get("_score", 0),
+            "score": row.get("_score", SCORE_MIN),
             "source_path": row.get("source_path", ""),
             "chunk_path": row.get("chunk_path", ""),
             "heading_path": row.get("heading_path", []),
@@ -426,14 +446,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "verify_before_use": row.get("verify_before_use", False),
             "sources": row.get("sources", []),
             "reason": "query-match",
-            "keyword_score": row.get("_keyword_score", 0),
-            "semantic_score": row.get("_semantic_score", 0),
+            "keyword_score": row.get("_keyword_score", SCORE_MIN),
+            "semantic_score": row.get("_semantic_score", SCORE_MIN),
             "rerank_method": row.get("_rerank_method", args.search_mode),
         }
         for row in selected
     ]
     retrieval_result = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "rag-retrieval-result",
         "retrieval_id": retrieval_id,
         "context_pack_id": context_pack_id,
@@ -465,7 +485,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "duckdb_search": duckdb_search if backend == "duckdb" else {},
     }
     context_pack = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "rag-context-pack",
         "context_pack_id": context_pack_id,
         "retrieval_id": retrieval_id,

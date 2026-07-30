@@ -12,6 +12,7 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import DURATION_SECONDS_DEFAULT, SCHEMA_VERSION  # noqa: E402
 from runtime.common import (  # noqa: E402
     find_repo_root,
     load_artifact_index,
@@ -22,6 +23,12 @@ from runtime.common import (  # noqa: E402
     utc_now_iso,
     write_json,
     write_markdown_bom,
+)
+from runtime.constants.cli_defaults import (  # noqa: E402
+    TASK_RUNNER_DURATION_DECIMALS,
+    TASK_RUNNER_MAX_WORKERS_DEFAULT,
+    TASK_RUNNER_MIN_WORKERS,
+    TASK_RUNNER_POLL_TIMEOUT_SECONDS,
 )
 from runtime.constants.workspace import context_dir_for_work_dir, process_report_dir_for_work_dir, work_dir_for_id, work_path_pattern  # noqa: E402
 
@@ -57,7 +64,7 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["auto", "sequential", "parallel"],
         help="Execution mode. auto uses task plan execution.mode or parallel by default.",
     )
-    parser.add_argument("--max-workers", type=int, default=4)
+    parser.add_argument("--max-workers", type=int, default=TASK_RUNNER_MAX_WORKERS_DEFAULT)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--stop-on-failure", action="store_true")
     return parser
@@ -128,7 +135,7 @@ def run_one_task(
             status="planned" if dry_run else "skipped",
             started_at=started_iso,
             ended_at=ended_iso,
-            duration_seconds=round(time.perf_counter() - started, 3),
+            duration_seconds=round(time.perf_counter() - started, TASK_RUNNER_DURATION_DECIMALS),
             outputs=list(task.get("outputs", [])),
             error=None if dry_run else "No command defined; task was treated as documentation/planning only.",
         )
@@ -174,7 +181,7 @@ def run_one_task(
         status=status,
         started_at=started_iso,
         ended_at=ended_iso,
-        duration_seconds=round(time.perf_counter() - started, 3),
+        duration_seconds=round(time.perf_counter() - started, TASK_RUNNER_DURATION_DECIMALS),
         returncode=returncode,
         stdout_path=relative_to_repo(repo_root, stdout_path),
         stderr_path=relative_to_repo(repo_root, stderr_path),
@@ -191,7 +198,7 @@ def blocked_result(task: dict[str, Any], reason: str) -> TaskResult:
         status="blocked",
         started_at=now,
         ended_at=now,
-        duration_seconds=0.0,
+        duration_seconds=DURATION_SECONDS_DEFAULT,
         error=reason,
         outputs=list(task.get("outputs", [])),
     )
@@ -252,7 +259,7 @@ def run_parallel(
     result_by_id: dict[str, TaskResult] = {}
     stopped = False
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, max_workers)) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max(TASK_RUNNER_MIN_WORKERS, max_workers)) as executor:
         while pending or running:
             ready_ids: list[str] = []
             if not stopped:
@@ -287,7 +294,7 @@ def run_parallel(
 
             done, _ = concurrent.futures.wait(
                 running,
-                timeout=0.1,
+                timeout=TASK_RUNNER_POLL_TIMEOUT_SECONDS,
                 return_when=concurrent.futures.FIRST_COMPLETED,
             )
             for future in done:
@@ -342,7 +349,7 @@ def write_reports(
         "blocked": sum(1 for item in results if item.status == "blocked"),
     }
     result_data = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "run_id": run_id,
         "task_file": relative_to_repo(repo_root, task_file),
         "execution_mode": mode,

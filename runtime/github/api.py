@@ -7,6 +7,7 @@ from urllib import error, request
 from urllib.parse import quote
 
 from runtime.common import env_value
+from runtime.constants.runtime_values import GITHUB_API_TIMEOUT_SECONDS
 
 
 def github_api_base_url(settings: dict[str, str]) -> str:
@@ -65,7 +66,7 @@ def github_api_json(
         method=method,
     )
     try:
-        with request.urlopen(http_request, timeout=30) as response:
+        with request.urlopen(http_request, timeout=GITHUB_API_TIMEOUT_SECONDS) as response:
             response_body = response.read().decode("utf-8")
             return json.loads(response_body) if response_body else {}
     except error.HTTPError as exc:
@@ -98,7 +99,7 @@ def github_graphql_json(
         method="POST",
     )
     try:
-        with request.urlopen(http_request, timeout=30) as response:
+        with request.urlopen(http_request, timeout=GITHUB_API_TIMEOUT_SECONDS) as response:
             response_body = response.read().decode("utf-8")
             parsed = json.loads(response_body) if response_body else {}
     except error.HTTPError as exc:

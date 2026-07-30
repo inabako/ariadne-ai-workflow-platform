@@ -12,6 +12,11 @@ from typing import Any, Sequence
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import (  # noqa: E402
+    MILLISECONDS_PER_SECOND,
+    NON_NEGATIVE_INT_DEFAULT,
+    SCHEMA_VERSION,
+)
 from runtime.common import gate_restart, registry_store  # noqa: E402
 from runtime.ctl.ctl_help import (  # noqa: E402
     command_key,
@@ -355,7 +360,7 @@ def select_environment(registry: dict[str, Any], target: str) -> dict[str, Any]:
 def environment_selection_record(registry: dict[str, Any], target: str) -> dict[str, Any]:
     selection = select_environment(registry, target)
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "workflow-environment-selection",
         "created_at": utc_now_iso(),
         **selection,
@@ -416,7 +421,7 @@ def format_public_environment_detail(registry: dict[str, Any], environment: dict
     notes = "\n".join(f"  - {item}" for item in environment.get("notes", [])) or "  - なし"
     docs = "\n".join(f"  - {item}" for item in profile.get("docs", [])) or "  - なし"
     context_example = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "selected_at": "...",
         "selected_by": "dispatcher",
         "selection_mode": "manual",
@@ -569,7 +574,7 @@ def environment_context_record(
     status = str(record.get("status", ""))
     mode = "human-check" if record.get("human_check_required") else selection_mode
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "environment-selection-context",
         "selected_at": record.get("created_at", utc_now_iso()),
         "selected_by": selected_by,
@@ -968,7 +973,7 @@ def _run_impl(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
 
 
 def _elapsed_ms(started: float) -> int:
-    return max(int((perf_counter() - started) * 1000), 0)
+    return max(int((perf_counter() - started) * MILLISECONDS_PER_SECOND), NON_NEGATIVE_INT_DEFAULT)
 
 
 def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:

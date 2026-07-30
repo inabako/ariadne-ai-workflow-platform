@@ -10,6 +10,11 @@ import tomllib
 from datetime import datetime, timezone
 from pathlib import Path
 
+if __package__ in {None, ""}:
+    sys.path.append(str(Path(__file__).resolve().parents[2]))
+
+from runtime.constants.runtime_values import FILE_HASH_CHUNK_BYTES  # noqa: E402
+
 
 def detect_license(repo_root: Path) -> str:
     license_path = repo_root / "LICENSE"
@@ -47,7 +52,7 @@ def read_project_version(repo_root: Path) -> str:
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+        for chunk in iter(lambda: handle.read(FILE_HASH_CHUNK_BYTES), b""):
             digest.update(chunk)
     return digest.hexdigest()
 

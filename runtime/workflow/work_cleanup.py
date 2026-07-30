@@ -10,6 +10,7 @@ if __package__ in {None, ""}:
 
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
 from runtime.constants.workspace import work_dir_for_id  # noqa: E402
 from runtime.workflow.work_cleanup_hint import artifact_index_evidence  # noqa: E402
@@ -171,7 +172,7 @@ def cleanup_check(args: argparse.Namespace) -> dict[str, Any]:
         blockers.append("no child workflow directories found")
     ready = bool(checks) and not blockers
     return {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
         "artifact_type": "work-cleanup-check",
         "work_id": args.work_id,
         "target": relative_to_repo(repo_root, target),

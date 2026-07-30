@@ -94,7 +94,8 @@ ARIADNEの構成は、prompt、agent、schema、runtime、workflow document、te
 ## Repository Map
 
 ```text
-.github/    prompts, agents, schemas, shared rules
+.ariadne/   prompts, agents, schemas, shared rules
+.github/    GitHub templates, workflows, and thin Copilot bridge files
 docs/       workflow guides and reference docs
 db/rag/     generated local RAG read models and retrieval artifacts
 runtime/    workflow helper CLI
