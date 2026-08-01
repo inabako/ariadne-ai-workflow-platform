@@ -1,19 +1,23 @@
 # Summary
 
-## Intent
+<!--
+Describe the summary of this pull request.
 
-## Scope
+Example:
+This PR reflects the v0.0.3 improvements into `main`.
 
-## Decision
+This version improves post-OSS-publication operations and Runtime UX for Ariadne AI Workflow Platform,
+including Runtime, aiwfctl, workflow, doctor, help, documentation, tests, evidence, and knowledge.
+-->
 
-## Impact
+# Changes
 
-## Evidence
+* <!-- List the main changes -->
 
-- [ ] Tests were run and results are included.
-- [ ] Documentation was updated or confirmed unchanged.
-- [ ] Release impact was reviewed.
-- [ ] Security and private-data impact was reviewed.
-- [ ] Human Gate decisions are linked when required.
+# Verification
 
-## Notes for Reviewers
+* <!-- List tests, checks, reviews, and evidence -->
+
+# Related Issue
+
+Closes #

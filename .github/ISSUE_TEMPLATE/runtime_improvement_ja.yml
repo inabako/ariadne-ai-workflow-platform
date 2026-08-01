@@ -1,0 +1,94 @@
+name: Runtime改善
+description: Runtime、aiwfctl、Doctor、Helpの改善を管理します。
+title: "[Runtime改善] "
+labels: ["enhancement"]
+body:
+  - type: checkboxes
+    id: parent-version
+    attributes:
+      label: 親Issue
+      description: 対象バージョンの改善フローIssueを確認してください。
+      options:
+        - label: 対象バージョンの改善フローIssueと関連付けます。
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      value: v0.0.3
+    validations:
+      required: true
+  - type: textarea
+    id: intent
+    attributes:
+      label: Intent
+      description: この改善で何を良くしたいですか？
+    validations:
+      required: true
+  - type: textarea
+    id: current-problem
+    attributes:
+      label: Current Problem
+      description: 現在の困りごと、分かりにくさ、運用上の摩擦を記載してください。
+    validations:
+      required: true
+  - type: textarea
+    id: expected-ux
+    attributes:
+      label: Expected UX
+      description: 改善後に、利用者やAgentがどう迷わず進めるべきかを記載してください。
+    validations:
+      required: true
+  - type: checkboxes
+    id: affected-area
+    attributes:
+      label: Affected Area
+      options:
+        - label: Runtime
+          required: false
+        - label: aiwfctl
+          required: false
+        - label: Doctor
+          required: false
+        - label: Help
+          required: false
+        - label: Workflow
+          required: false
+        - label: Tests
+          required: false
+        - label: Documentation
+          required: false
+  - type: textarea
+    id: affected-commands
+    attributes:
+      label: Affected Commands
+      description: 影響するコマンド、entrypoint、workflowがあれば記載してください。
+      value: |
+        - 
+    validations:
+      required: false
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: 実施すべき確認、Unit Test、Runtime Health Check、手動確認を記載してください。
+      value: |
+        - [ ] Unit Tests pass
+        - [ ] Runtime Health Check pass
+        - [ ] Documentation updated
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: 関連するlog、test output、artifact、Development Notesを記載してください。
+    validations:
+      required: false
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks / Open QA
+      description: リスク、未確認事項、Human Gateが必要な判断を記載してください。
+    validations:
+      required: false

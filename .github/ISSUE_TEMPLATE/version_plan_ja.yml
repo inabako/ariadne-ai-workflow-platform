@@ -1,0 +1,73 @@
+name: バージョン改善フロー
+description: ARIADNEのバージョン単位の改善計画と完了条件を管理します。
+title: "[改善フロー] Ariadne AI Workflow Platform v0.0.3 - OSS公開後の運用安定化とRuntime UXを改善する"
+labels: ["enhancement"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      value: v0.0.3
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      value: |
+        本バージョンで予定している改善を管理する。
+    validations:
+      required: true
+  - type: input
+    id: development-notes
+    attributes:
+      label: Development Notes
+      value: docs/development-notes/v0.0.3.md
+    validations:
+      required: true
+  - type: checkboxes
+    id: objectives
+    attributes:
+      label: Objectives
+      options:
+        - label: Runtime
+          required: false
+        - label: aiwfctl
+          required: false
+        - label: Workflow
+          required: false
+        - label: Doctor
+          required: false
+        - label: Help
+          required: false
+        - label: Documentation
+          required: false
+        - label: Unit Test
+          required: false
+        - label: Evidence
+          required: false
+        - label: Knowledge
+          required: false
+  - type: textarea
+    id: pull-requests
+    attributes:
+      label: Pull Requests
+      value: |
+        - (to be added)
+    validations:
+      required: false
+  - type: checkboxes
+    id: completion-criteria
+    attributes:
+      label: Completion Criteria
+      options:
+        - label: Unit Tests pass
+          required: false
+        - label: Runtime Health Check pass
+          required: false
+        - label: Documentation updated
+          required: false
+        - label: Development Notes completed
+          required: false
+        - label: Knowledge captured
+          required: false

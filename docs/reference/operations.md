@@ -48,6 +48,26 @@ chore: update workflow skill index
 - perf
 - revert
 
+Commit message は `.gitmessage` を標準テンプレートとして使います。
+
+```powershell
+git config commit.template .gitmessage
+```
+
+標準形式:
+
+```text
+<type>(<scope>): <summary>
+
+Intent: <この変更で達成したい目的>
+
+Scope: <変更対象の範囲>
+
+Decision: <今回の実装・設計判断>
+
+Impact: <影響範囲、互換性、運用上の注意点>
+```
+
 ## Environment Preflight
 
 必要tool、Python module、MSYS2 package、support repositoryが不足している場合は、install listを作って止まります。installは人間承認後にだけ行います。

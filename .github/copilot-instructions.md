@@ -1,22 +1,22 @@
-# Ariadne Copilot Instructions
+# Ariadne Copilot 指示
 
-このファイルは VS Code Copilot Chat 向けのbridgeです。
-Ariadne AI workflow の source of truth は `.ariadne/` と `skills/` にあります。
+このファイルは、VS Code Copilot Chat 向けの薄いbridgeです。
+Ariadne AI workflow の source of truth は `AGENTS.md`、`.ariadne/`、`skills/` にあります。
 
 作業前に `AGENTS.md` をrepository guidanceとして確認してください。
 
-## Ariadne Asset Locations
+## Ariadne Asset配置
 
-- Workflow prompt: `.ariadne/prompts/*.prompt.md`
-- Specialist agent prompt: `.ariadne/agents/*.prompt.md`
-- Structured contract: `.ariadne/schemas/*.schema.json`
-- Shared policy: `.ariadne/shared/*.md`
-- Codex Skill entrypoint: `skills/<workflow>/SKILL.md`
+- Workflow prompts: `.ariadne/prompts/*.prompt.md`
+- Agent prompts: `.ariadne/agents/*.prompt.md`
+- Schemas: `.ariadne/schemas/*.schema.json`
+- Shared policies: `.ariadne/shared/*.md`
+- Skill entrypoints: `skills/<workflow>/SKILL.md`
 
 `.github/` 配下は GitHub native files と Copilot integration bridge の置き場です。
-`.github/prompts/` にあるprompt fileは薄い入口として扱い、workflow本体を `.ariadne/prompts/` から読んでください。
+`.github/prompts/` にあるprompt fileは薄い入口として扱い、workflow本体は `.ariadne/prompts/` から読んでください。
 
-## Working Rules
+## 作業ルール
 
 - 人間向けreport、docs、review、evidence、RAG source Markdownは既定で日本語にします。
 - 実装前に Intent、Decision、Reason、Evidence、Risk、Human Gate を確認します。

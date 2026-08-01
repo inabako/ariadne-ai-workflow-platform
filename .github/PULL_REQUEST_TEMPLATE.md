@@ -1,27 +1,23 @@
-# 概要
+# Summary
 
-## Intent
+<!--
+このPRの概要を記載してください。
 
-このPRで達成したい目的を記載してください。
+例:
+v0.0.3 の改善成果を `main` に反映します。
 
-## Scope
+本バージョンでは、Ariadne AI Workflow Platform のOSS公開後の運用安定化とRuntime UX改善に向けて、
+Runtime、aiwfctl、workflow、doctor、help、documentation、test、evidence、knowledgeを整備しました。
+-->
 
-変更対象の範囲を記載してください。
+# Changes
 
-## Decision
+* <!-- 主な変更点を記載してください -->
 
-今回の実装・設計判断を記載してください。
+# Verification
 
-## Impact
+* <!-- 実施したテスト、確認、レビュー、evidenceを記載してください -->
 
-影響範囲、互換性、運用上の注意点を記載してください。
+# Related Issue
 
-## Evidence
-
-- [ ] テストを実行し、結果を記載しました。
-- [ ] ドキュメントを更新した、または更新不要であることを確認しました。
-- [ ] releaseへの影響を確認しました。
-- [ ] securityおよびprivate dataへの影響を確認しました。
-- [ ] 必要なHuman Gate decisionをリンクしました。
-
-## レビュアー向けメモ
+Closes #

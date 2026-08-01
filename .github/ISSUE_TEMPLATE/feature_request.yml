@@ -1,11 +1,16 @@
----
-# yamllint disable rule:line-length
-name: Feature request
+name: Feature Request
 description: Propose a workflow, runtime, documentation, or platform improvement.
-title: "feat: "
-labels:
-  - enhancement
+title: "[Feature]: "
+labels: ["enhancement"]
 body:
+  - type: checkboxes
+    id: existing-issue
+    attributes:
+      label: Is there an existing issue for this?
+      description: Please search existing issues and discussions before opening a new request.
+      options:
+        - label: I have searched existing issues and discussions.
+          required: true
   - type: textarea
     id: intent
     attributes:
@@ -14,24 +19,30 @@ body:
     validations:
       required: true
   - type: textarea
-    id: current
+    id: current-behavior
     attributes:
-      label: Current behavior
+      label: Current Behavior
+      description: What is difficult, missing, or unclear today?
+    validations:
+      required: false
   - type: textarea
-    id: proposed
+    id: proposed-behavior
     attributes:
-      label: Proposed behavior
+      label: Proposed Behavior
+      description: Describe the workflow, runtime, documentation, or platform change you want.
     validations:
       required: true
   - type: textarea
-    id: evidence
+    id: evidence-and-context
     attributes:
-      label: Evidence and context
-      description: Link related docs, artifacts, or workflow outputs.
+      label: Evidence and Context
+      description: Link related docs, artifacts, workflow outputs, or prior discussions.
+    validations:
+      required: false
   - type: checkboxes
-    id: review
+    id: review-gates
     attributes:
-      label: Review gates
+      label: Review Gates
       options:
         - label: This may affect release, security, license, or Human Gate policy.
           required: false
