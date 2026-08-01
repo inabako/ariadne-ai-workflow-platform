@@ -33,3 +33,10 @@ allow-licenses:
   - Unicode-3.0
   - Unlicense
   - Zlib
+
+allow-dependencies-licenses:
+  # typing-extensions follows the CPython license family, but GitHub
+  # Dependency Review currently reports a composite SPDX expression that
+  # includes GPL-1.0-or-later. Keep this as a package-scoped exception
+  # instead of allowing GPL-1.0-or-later globally.
+  - pkg:pypi/typing-extensions@4.16.0
