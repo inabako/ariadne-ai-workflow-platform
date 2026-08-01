@@ -17,6 +17,7 @@ REQUIREMENTS_DIR_NAME = "requirements"
 SOURCE_DIR_NAME = "source"
 TARGET_REPOSITORY_RELATIVE = Path(SOURCE_DIR_NAME) / "repository"
 TEST_EVIDENCE_DIR_NAME = "test-evidence"
+TEST_SPECIFICATIONS_DIR_NAME = "test-specifications"
 TEST_ENVIRONMENT_DIR_NAME = "test-environment"
 IMPLEMENTATION_DIR_NAME = "implementation"
 GIT_WORKTREE_DIR_NAME = "git-worktree"
@@ -64,6 +65,10 @@ def git_worktree_path_pattern(branch: str = "<target-branch>") -> str:
 
 def work_dir_for_id(repo_root: Path, work_id: str) -> Path:
     return repo_root / WORK_ROOT / work_id
+
+
+def work_root_for_repo(repo_root: Path) -> Path:
+    return repo_root / WORK_ROOT
 
 
 def svg_input_dir(repo_root: Path) -> Path:
@@ -119,6 +124,10 @@ def target_repository_dir_for_work_dir(work_dir: Path) -> Path:
 
 def test_evidence_dir_for_work_dir(work_dir: Path) -> Path:
     return work_dir / TEST_EVIDENCE_DIR_NAME
+
+
+def test_specifications_dir_for_work_dir(work_dir: Path) -> Path:
+    return work_dir / TEST_SPECIFICATIONS_DIR_NAME
 
 
 def test_environment_dir_for_work_dir(work_dir: Path) -> Path:

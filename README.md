@@ -97,7 +97,7 @@ ARIADNEの構成は、prompt、agent、schema、runtime、workflow document、te
 .ariadne/   prompts, agents, schemas, shared rules
 .github/    GitHub templates, workflows, and thin Copilot bridge files
 docs/       workflow guides and reference docs
-db/rag/     generated local RAG read models and retrieval artifacts
+db/rag/     generated DuckDB RAG read model and local evidence
 runtime/    workflow helper CLI
 skills/     Codex Skill entrypoints
 templates/  requirement, design, report, test templates

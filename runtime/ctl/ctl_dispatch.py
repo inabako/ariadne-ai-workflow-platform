@@ -426,9 +426,27 @@ def _handle_rag(args: argparse.Namespace, repo_root: Path, registry: dict[str, A
             "  aiwfctl rag chunk --input-dir <normalized> --output-dir <chunks>\n"
             "  aiwfctl rag index --normalized-dir <normalized> --chunks-dir <chunks> --output-dir <indexes>\n"
             "  aiwfctl rag embed --chunks-index <chunks.jsonl> --output <embeddings.jsonl>\n"
+            "  aiwfctl rag duckdb rebuild --source-repo work/db/ariadne-knowledge-platform --reset\n"
+            "  aiwfctl rag duckdb verify --query workflow --query runtime\n"
             "  aiwfctl rag jsonize --rag-dir <rag-dir> --output-dir <jsonized-dir>\n"
             "  aiwfctl rag migrate-legacy-root --legacy-dir <legacy-root-rag-dir>\n"
         )
+    if rag_command == "duckdb":
+        duckdb_command = getattr(args, "rag_duckdb_command", None)
+        if duckdb_command is None:
+            return 1, (
+                "RAG DuckDB Runtime\n\n"
+                "Usage:\n"
+                "  aiwfctl rag duckdb rebuild --source-repo work/db/ariadne-knowledge-platform --reset\n"
+                "  aiwfctl rag duckdb verify --query workflow --query runtime\n"
+            )
+        try:
+            result = run_knowledge(args, repo_root, duckdb_command)
+        except Exception as exc:
+            return 1, f"RAG DuckDB command failed: {exc}\n"
+        if getattr(args, "json", False):
+            return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        return 0, format_knowledge_result(result)
     try:
         result = run_rag(args, repo_root, rag_command)
     except KeyError:
@@ -1159,12 +1177,13 @@ def _handle_doctor(args: argparse.Namespace, repo_root: Path, registry: dict[str
     code = 1 if result.get("status") == "fail" else 0
     if getattr(args, "json", False):
         return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    repairs = result.get("repairs", [])
     lines = [
         "Workflow Doctor",
         "",
         f"Status        : {result.get('status', '')}",
         f"Warning Count : {result.get('warning_count', 0)}",
-        f"Repair Count  : {sum(len(item.get('repairs', [])) for item in result.get('repairs', []))}",
+        f"Repair Count  : {sum(len(item.get('repairs', [])) for item in repairs if isinstance(item, dict))}",
     ]
     gate_restart = result.get("gate_restart", {})
     if isinstance(gate_restart, dict):
@@ -1185,6 +1204,26 @@ def _handle_doctor(args: argparse.Namespace, repo_root: Path, registry: dict[str
                 lines.append(f"    path: {path}")
     else:
         lines.extend(["", "Warnings", "  - なし"])
+    if repairs:
+        lines.extend(["", "Repairs"])
+        for repair in repairs:
+            if not isinstance(repair, dict):
+                continue
+            repair_items = repair.get("repairs", [])
+            lines.extend(
+                [
+                    f"  - {repair.get('artifact_type', 'repair')}",
+                    f"    status: {repair.get('status', '')}",
+                    f"    repaired: {len(repair_items) if isinstance(repair_items, list) else 0}",
+                ]
+            )
+            if isinstance(repair_items, list):
+                for item in repair_items[:CTL_WARNING_PATH_PREVIEW_LIMIT]:
+                    if not isinstance(item, dict):
+                        continue
+                    detail = item.get("node_id") or item.get("path") or item.get("case_id") or item.get("kinds", "")
+                    if detail:
+                        lines.append(f"    item: {detail}")
     return code, "\n".join(lines).rstrip() + "\n"
 
 

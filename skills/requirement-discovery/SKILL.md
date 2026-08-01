@@ -1,4 +1,4 @@
-﻿---
+---
 name: requirement-discovery
 description: Create a completed target-system requirement document from a human bullet-list draft in work/requirements/draft by inspecting it, asking blocking clarification questions, using optional RAG context, preparing a review draft, and saving the final document to work/requirements only after human OK. Use when the user selects /requirement-discovery or asks to create requirements from draft bullets.
 ---

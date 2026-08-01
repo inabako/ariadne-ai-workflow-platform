@@ -41,13 +41,13 @@ Ariadne では、RAG の元データと生成済みDBを分けて扱います。
 標準 RAG source から DuckDB read model を再構築する場合は、次を使います。
 
 ```powershell
-.\runtime\windows-script\aiwfctl.cmd knowledge rebuild --reset
+.\runtime\windows-script\aiwfctl.cmd rag duckdb rebuild --reset
 ```
 
 参照検索の疎通確認は、次を使います。
 
 ```powershell
-.\runtime\windows-script\aiwfctl.cmd knowledge verify
+.\runtime\windows-script\aiwfctl.cmd rag duckdb verify
 ```
 
 `ARIADNE_KNOWLEDGE_REPOSITORY` が指定されている場合、runtime は `work/db/<repository-name>/rag/` を知識ソースとして扱います。未指定時の既定は `work/db/ariadne-knowledge-platform/rag/` です。

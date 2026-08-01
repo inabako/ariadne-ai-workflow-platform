@@ -1,4 +1,4 @@
-﻿# Runtime Health Check
+# Runtime Health Check
 
 `/runtime-health-check` は、Ariadne AI Workflow Platform 自身の健全性を確認する自己診断workflowです。
 
@@ -71,6 +71,21 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
   --repo-root .. `
   --fail-on-warning
 
+UT仕様書のcase scaffold不足や安全に修復可能なtext boundary findingをまとめて修復する場合:
+
+```powershell
+cd C:\github\ariadne-ai-workflow-platform
+
+.\runtime\windows-script\aiwfctl.cmd doctor `
+  --repair-spec-index `
+  --repair-encoding `
+  --fail-on-warning
+```
+
+`--repair-spec-index` は pytest collection に存在するが `docs/reference/runtime-pytest-ut/cases/*.md` に未登録の node id に対して、最小限の case block を生成します。生成後は必ず内容を読み、Confirm / Input / Expected が人間に伝わる粒度になっているか確認してください。stale case の削除や意味のある説明文への書き換えは自動では行いません。
+
+`--repair-encoding` は BOM 除去や安全に復元可能な文字境界findingのみを書き換えます。repair後も `aiwfctl doctor --json --fail-on-warning` を再実行し、`warning_count: 0` を確認してください。
+
 .\windows-script\uv.cmd run --project . --group dev python ctl.py `
   --repo-root .. `
   doctor `
@@ -108,6 +123,7 @@ local evidence:
 - `order_matches` が `true` である。
 - `workflow_doctor --fail-on-warning` がpassする。
 - `aiwfctl doctor --json --fail-on-warning` がpassする。
+- 必要に応じて `aiwfctl doctor --repair-spec-index --repair-encoding --fail-on-warning` を実行し、repair結果を確認済みである。
 - Context First manifestに `test-evidence` が登録される。
 - 日本語Markdown品質ガードがpassする。
 

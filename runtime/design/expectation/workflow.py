@@ -930,7 +930,7 @@ def init_design(args: argparse.Namespace) -> dict[str, Any]:
         "work_id": work_id,
         "base_dir": relative_to_repo(repo_root, base),
         "artifact_index": artifact_index,
-        "context_manifest": relative_to_repo(repo_root, work_dir / "context" / "context-manifest.json"),
+        "context_manifest": relative_to_repo(repo_root, context_file(work_dir, "context-manifest.json")),
         "manifest_context_count": len(manifest.get("contexts", [])),
         "sample": bool(getattr(args, "sample", False)),
     }

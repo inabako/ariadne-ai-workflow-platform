@@ -1,4 +1,4 @@
-﻿# Agent Inventory
+# Agent Inventory
 
 このページは、既存Agentの責務、RAG利用、外部Web RAG利用、専門性の不足を棚卸しするための一覧です。
 

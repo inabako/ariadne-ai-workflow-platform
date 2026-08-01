@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 52 |
+| cases | 54 |
 
 ## ケース一覧
 
@@ -712,25 +712,15 @@ runtime/tests/test_ctl_help.py::test_registry_store_builds_search_terms_table_wi
 ```text
 runtime/tests/test_ctl_help.py::test_registry_store_ensure_builds_missing_duckdb_from_source_backup
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1488`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: Placeholder; pytest assertion defines the expected result.
 
-
-- 遒ｺ隱榊・螳ｹ: registry DuckDB read model縺梧ｬ關ｽ譎ゅ↓backup JSON source縺九ｉ閾ｪ蜍募・讒九〒縺阪ｋ縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+- Confirm: `test_registry_store_ensure_builds_missing_duckdb_from_source_backup` ? pytest assertion ???runtime???????????
+- Input:
+  - pytest node: above node id
   - source: `runtime/tests/test_ctl_help.py`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: missing DuckDB縺後～built` action縺ｧ逕滓・縺輔ｌ縲√Ξ繧ｸ繧ｹ繝医Μcount縺瑚ｿ斐ｋ縲・
-
+  - fixture/arg: pytest function signature ???
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: pytest assertion defines the expected result.
 #### RT-UT-CASE-CTL-029D
 
 - pytest node id:
@@ -738,25 +728,15 @@ runtime/tests/test_ctl_help.py::test_registry_store_ensure_builds_missing_duckdb
 ```text
 runtime/tests/test_ctl_help.py::test_registry_load_auto_builds_missing_duckdb_from_default_source_backup
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1506`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: Placeholder; pytest assertion defines the expected result.
 
-
-- 遒ｺ隱榊・螳ｹ: workflow help / environment registry load譎ゅ↓DuckDB縺後↑縺代ｌ縺ｰdefault source backup縺九ｉ閾ｪ蜍募・讒九☆繧九％縺ｨ繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+- Confirm: `test_registry_load_auto_builds_missing_duckdb_from_default_source_backup` ? pytest assertion ???runtime???????????
+- Input:
+  - pytest node: above node id
   - source: `runtime/tests/test_ctl_help.py`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: load蜃ｦ逅・後↓ `db/registries/registry.duckdb` 縺悟ｭ伜惠縺励∵､懃ｴ｢隱槭→environment縺瑚ｪｭ縺ｿ蜿悶ｌ繧九・
-
+  - fixture/arg: pytest function signature ???
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: pytest assertion defines the expected result.
 #### RT-UT-CASE-CTL-029D2
 
 - pytest node id:
@@ -781,25 +761,15 @@ runtime/tests/test_ctl_help.py::test_registry_load_auto_builds_missing_duckdb_fr
 ```text
 runtime/tests/test_ctl_help.py::test_registry_store_ensure_skips_when_source_backup_is_incomplete
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1520`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: Placeholder; pytest assertion defines the expected result.
 
-
-- 遒ｺ隱榊・螳ｹ: registry source backup縺御ｸ榊ｮ悟・譎ゅ↓荳ｭ騾泌濠縺ｮDuckDB繧剃ｽ懈・縺帙★skip縺吶ｋ縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+- Confirm: `test_registry_store_ensure_skips_when_source_backup_is_incomplete` ? pytest assertion ???runtime???????????
+- Input:
+  - pytest node: above node id
   - source: `runtime/tests/test_ctl_help.py`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: `missing-source` action縺ｨmissing source list縺瑚ｿ斐ｊ縲．uckDB file縺ｯ逕滓・縺輔ｌ縺ｪ縺・・
-
+  - fixture/arg: pytest function signature ???
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: pytest assertion defines the expected result.
 #### RT-UT-CASE-CTL-029F
 
 - pytest node id:

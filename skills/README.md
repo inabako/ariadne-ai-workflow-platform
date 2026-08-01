@@ -1,4 +1,4 @@
-﻿# Workflow Skills
+# Workflow Skills
 
 このディレクトリは、Ariadne workflow を開始するための Skill entrypoint を格納します。
 

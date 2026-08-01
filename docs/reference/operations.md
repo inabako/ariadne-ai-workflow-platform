@@ -1,4 +1,4 @@
-﻿# Operations
+# Operations
 
 このページは、workflow運用で迷いやすい共通ルールをまとめます。
 

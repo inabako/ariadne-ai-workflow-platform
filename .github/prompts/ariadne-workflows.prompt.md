@@ -4,10 +4,10 @@ description: Ariadne workflow assets under .ariadne を参照して作業を開�
 
 # Ariadne Workflow Bridge
 
-このpromptは VS Code Copilot Chat の `/` prompt候補向けbridgeです。
-workflow本体は `.ariadne/prompts/`、agent promptは `.ariadne/agents/`、schemaは `.ariadne/schemas/` にあります。
+この prompt は、VS Code Copilot Chat の `/` prompt 候補に表示するための bridge です。
 
-まず `AGENTS.md` と `.github/copilot-instructions.md` の方針を優先してください。
+workflow 本体は `.ariadne/prompts/`、agent prompt は `.ariadne/agents/`、schema は `.ariadne/schemas/` にあります。
+作業前に `AGENTS.md` と `.github/copilot-instructions.md` の方針を確認してください。
 
 ## References
 
@@ -22,5 +22,5 @@ workflow本体は `.ariadne/prompts/`、agent promptは `.ariadne/agents/`、sch
 
 ## Task
 
-ユーザーの依頼内容から該当workflowを選び、必要な `.ariadne/prompts/<workflow>.prompt.md` と `skills/<workflow>/SKILL.md` を読んでください。
-該当workflowが曖昧な場合は、候補を短く提示して確認してください。
+ユーザーの依頼内容から該当 workflow を選び、必要な `.ariadne/prompts/<workflow>.prompt.md` と `skills/<workflow>/SKILL.md` を読んでください。
+該当 workflow が明確でない場合は、候補を短く提示して確認してください。

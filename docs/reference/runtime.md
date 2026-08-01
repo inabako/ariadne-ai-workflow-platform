@@ -1,4 +1,4 @@
-﻿# Runtime
+# Runtime
 
 `runtime/` は、workflow を実行・補助するための処理機能を置く場所です。
 
@@ -121,6 +121,28 @@ GitHub passwordをENVに保存しません。GitHub CLI/API と git remote の�
 .\runtime\windows-script\aiwf.cmd ctl tools bom-scan --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --fail-on-finding
 .\runtime\windows-script\aiwf.cmd ctl tools bom-strip --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --write
 ```
+
+## Workflow Doctor Repair
+
+`aiwfctl doctor` は workflow repository 自身のhealth checkを行います。通常は検出のみを行い、warningが残る場合は `--fail-on-warning` で非ゼロ終了できます。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd doctor --json --fail-on-warning
+```
+
+修復可能な項目は、明示的にrepair optionを付けた場合だけ書き換えます。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd doctor `
+  --repair-spec-index `
+  --repair-encoding `
+  --fail-on-warning
+```
+
+- `--repair-spec-index`: pytest collectionに存在するがUT仕様書に未登録のnode idについて、`docs/reference/runtime-pytest-ut/cases/*.md` にcase scaffoldを追加します。
+- `--repair-encoding`: UTF-8 BOMや安全に復元可能なtext-boundary findingを修復します。
+
+通常表示では `Repair Count` と `Repairs` セクションに、どのrepair artifactが何件処理したかを表示します。JSON出力では `repairs[]` に詳細が残ります。
 
 ## Environment Files
 

@@ -9,6 +9,7 @@ from runtime.constants.workspace import (
     context_dir_for_work_dir,
     process_report_dir_for_work_dir,
     resolve_work_dir,
+    work_root_for_repo,
 )
 
 
@@ -78,7 +79,7 @@ class ReviewStore:
                 raise FileNotFoundError(f"Review session index does not exist for work_id: {work_id}")
             return self.load(review_id=str(index["latest_review_id"]), work_id=work_id, work_dir=work_dir)
         if review_id:
-            matches = list((self.repo_root / "work").glob(f"**/{REVIEW_DIR_NAME}/{review_id}.json"))
+            matches = list(work_root_for_repo(self.repo_root).glob(f"**/{REVIEW_DIR_NAME}/{review_id}.json"))
             if len(matches) != 1:
                 raise FileNotFoundError(f"Review session does not resolve uniquely: {review_id}")
             data = read_json(matches[0])

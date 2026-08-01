@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 29 |
+| cases | 35 |
 
 ## ケース一覧
 
@@ -128,6 +128,23 @@ runtime/tests/test_workflow_doctor.py::test_human_gate_registry_findings_accepts
 - 期待結果: 未配置またはvalid registryは不要なwarningを出さない。
 
 #### RT-UT-CASE-DOCTOR-007
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_registry_seed_findings_reports_incomplete_template_source
+```
+
+- Confirm: workflow doctor reports incomplete `templates/registries` bootstrap seed files before registry auto-build fails.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_workflow_doctor.py:122`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=none case=none
+  - inline input: missing template directory, complete JSON objects, missing `search_terms.json`, invalid JSON shape, invalid JSON syntax
+- Expected: missing template source, missing seed file, invalid JSON object shape, and invalid JSON syntax are reported as registry seed findings.
+
+#### RT-UT-CASE-DOCTOR-007A
 
 - pytest node id:
 
@@ -345,6 +362,23 @@ runtime/tests/test_workflow_doctor.py::test_path_constant_literal_findings_ignor
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 許可されたconstants / tests配置ではpath-constant-literal warningが発生しない。
 
+#### RT-UT-CASE-AUTO-001
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_git_attributes_and_uv_startup_findings
+```
+
+- Confirm: `test_git_attributes_and_uv_startup_findings` runtime contract is covered by pytest assertions.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_workflow_doctor.py:437`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: pytest assertion defines the expected result.
+
 #### RT-UT-CASE-DOCTOR-020
 
 - pytest node id:
@@ -429,6 +463,23 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_repair_encoding_clea
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: repair 後の `gate_restart` は `restart_from=doctor-gate` と `next_on_pass=return-to-calling-workflow-after-gate` を返す。
+
+#### RT-UT-CASE-AUTO-002
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_workflow_doctor_repair_spec_index_scaffolds_missing_cases
+```
+
+- Confirm: `test_workflow_doctor_repair_spec_index_scaffolds_missing_cases` runtime contract is covered by pytest assertions.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_workflow_doctor.py:656`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: pytest assertion defines the expected result.
 
 #### RT-UT-CASE-DOCTOR-023
 

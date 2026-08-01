@@ -1,4 +1,4 @@
-﻿# 実行環境選択
+# 実行環境選択
 
 AI workflowを実行する前に、OS、shell、runtime、toolの違いによる失敗を避けるため、`aiwfctl env` で実行環境を選択します。
 

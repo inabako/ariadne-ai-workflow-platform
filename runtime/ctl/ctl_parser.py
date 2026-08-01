@@ -464,6 +464,39 @@ def _add_rag_retrieve_arguments(command: argparse.ArgumentParser) -> None:
     command.add_argument("--json", action="store_true")
 
 
+def _add_duckdb_rebuild_arguments(command: argparse.ArgumentParser) -> None:
+    command.add_argument("--source", action="append", default=[])
+    command.add_argument("--source-repo", default="")
+    command.add_argument("--source-repo-url", default=duckdb_store.DEFAULT_SOURCE_REPO_URL)
+    command.add_argument("--policy", default=str(duckdb_store.ingestion_optimizer.DEFAULT_POLICY_PATH))
+    command.add_argument("--error-log", default=str(duckdb_store.DEFAULT_ERROR_LOG))
+    command.add_argument("--reset", action="store_true")
+    command.add_argument("--json", action="store_true")
+
+
+def _add_duckdb_verify_arguments(command: argparse.ArgumentParser) -> None:
+    command.add_argument("--query", action="append", default=[])
+    command.add_argument("--min-results", type=int, default=DUCKDB_VERIFY_MIN_RESULTS_DEFAULT)
+    command.add_argument("--limit", type=int, default=DUCKDB_VERIFY_LIMIT_DEFAULT)
+    command.add_argument("--output", default=str(duckdb_store.DEFAULT_REFERENCE_CHECK_OUTPUT))
+    command.add_argument("--work-id", default="")
+    command.add_argument("--work-dir", default="")
+    command.add_argument("--source-repo", default="")
+    command.add_argument("--json", action="store_true")
+
+
+def _add_rag_duckdb_arguments(rag_sub: Any) -> None:
+    duckdb = rag_sub.add_parser("duckdb", help="Alias for generated DuckDB RAG read model operations.")
+    duckdb.add_argument("--db", default=str(duckdb_store.DEFAULT_DB_PATH), help="Generated DuckDB file path.")
+    duckdb_sub = duckdb.add_subparsers(dest="rag_duckdb_command")
+
+    rebuild = duckdb_sub.add_parser("rebuild", help="Rebuild DuckDB read model from standard RAG JSON sources.")
+    _add_duckdb_rebuild_arguments(rebuild)
+
+    verify = duckdb_sub.add_parser("verify", help="Verify DuckDB reference searches and write evidence.")
+    _add_duckdb_verify_arguments(verify)
+
+
 def _add_rag_stage_arguments(rag_sub: Any) -> None:
     normalize = rag_sub.add_parser("normalize", help="Normalize source RAG markdown documents.")
     normalize.add_argument("--source-dir", required=True)
@@ -1011,13 +1044,7 @@ def build_parser() -> argparse.ArgumentParser:
     knowledge_source.add_argument("--json", action="store_true")
 
     knowledge_rebuild = knowledge_sub.add_parser("rebuild", help="Rebuild DuckDB read model from standard RAG JSON sources.")
-    knowledge_rebuild.add_argument("--source", action="append", default=[])
-    knowledge_rebuild.add_argument("--source-repo", default="")
-    knowledge_rebuild.add_argument("--source-repo-url", default=duckdb_store.DEFAULT_SOURCE_REPO_URL)
-    knowledge_rebuild.add_argument("--policy", default=str(duckdb_store.ingestion_optimizer.DEFAULT_POLICY_PATH))
-    knowledge_rebuild.add_argument("--error-log", default=str(duckdb_store.DEFAULT_ERROR_LOG))
-    knowledge_rebuild.add_argument("--reset", action="store_true")
-    knowledge_rebuild.add_argument("--json", action="store_true")
+    _add_duckdb_rebuild_arguments(knowledge_rebuild)
 
     knowledge_ingest = knowledge_sub.add_parser("ingest", help="Register one JSON RAG record.")
     knowledge_ingest.add_argument("--file", required=True)
@@ -1035,14 +1062,7 @@ def build_parser() -> argparse.ArgumentParser:
     knowledge_export.add_argument("--json", action="store_true")
 
     knowledge_verify = knowledge_sub.add_parser("verify", help="Verify DuckDB reference searches and write evidence.")
-    knowledge_verify.add_argument("--query", action="append", default=[])
-    knowledge_verify.add_argument("--min-results", type=int, default=DUCKDB_VERIFY_MIN_RESULTS_DEFAULT)
-    knowledge_verify.add_argument("--limit", type=int, default=DUCKDB_VERIFY_LIMIT_DEFAULT)
-    knowledge_verify.add_argument("--output", default=str(duckdb_store.DEFAULT_REFERENCE_CHECK_OUTPUT))
-    knowledge_verify.add_argument("--work-id", default="")
-    knowledge_verify.add_argument("--work-dir", default="")
-    knowledge_verify.add_argument("--source-repo", default="")
-    knowledge_verify.add_argument("--json", action="store_true")
+    _add_duckdb_verify_arguments(knowledge_verify)
 
     rag_cmd = sub.add_parser("rag", help="Build, load, retrieve, and maintain file-based RAG artifacts.")
     rag_sub = rag_cmd.add_subparsers(dest="rag_command")
@@ -1056,6 +1076,7 @@ def build_parser() -> argparse.ArgumentParser:
     rag_retrieve = rag_sub.add_parser("retrieve", help="Retrieve one RAG context pack for a query.")
     _add_rag_retrieve_arguments(rag_retrieve)
 
+    _add_rag_duckdb_arguments(rag_sub)
     _add_rag_stage_arguments(rag_sub)
 
     workflow_cmd = sub.add_parser("workflow", help="Run workflow support helpers through the official runtime entrypoint.")
@@ -1650,6 +1671,7 @@ def build_parser() -> argparse.ArgumentParser:
     doctor_cmd.add_argument("--fail-on-warning", action="store_true", help="Return non-zero when warnings are found.")
     doctor_cmd.add_argument("--skip-ut-spec-sync", action="store_true", help="Skip pytest UT specification sync check.")
     doctor_cmd.add_argument("--repair-encoding", action="store_true", help="Repair safe text-boundary findings before returning doctor status.")
+    doctor_cmd.add_argument("--repair-spec-index", action="store_true", help="Scaffold missing pytest UT specification cases before returning doctor status.")
     doctor_cmd.add_argument("--encoding-paths", nargs="+", default=None, help="Text-boundary paths to scan or repair.")
     doctor_cmd.add_argument("--encoding-extensions", nargs="+", default=None, help="Text extensions included in text-boundary scan or repair.")
     return parser

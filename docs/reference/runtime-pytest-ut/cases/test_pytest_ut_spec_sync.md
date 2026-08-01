@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 21 |
+| cases | 22 |
 
 ## ケース一覧
 
@@ -245,6 +245,23 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_check_spec_accepts_ascii_case_fi
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - Expected: check result is `ok` and confirm/input/expected counts are each 1.
+#### RT-UT-CASE-AUTO-001
+
+- pytest node id:
+
+```text
+runtime/tests/test_pytest_ut_spec_sync.py::test_scaffold_missing_cases_creates_ordered_split_case_blocks
+```
+
+- Confirm: `test_scaffold_missing_cases_creates_ordered_split_case_blocks` runtime contract is covered by pytest assertions.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_pytest_ut_spec_sync.py:379`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - parameter: names=none case=none
+  - inline input: `text`
+- Expected: pytest assertion defines the expected result.
+
 #### RT-UT-CASE-265
 
 - pytest node id:

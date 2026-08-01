@@ -31,6 +31,7 @@ Ariadne AI Workflow Platform 自身の runtime health を確認する自己診�
 6. `aiwfctl doctor` を実行する。
 7. 日本語Markdown品質ガードを実行する。
 8. 結果を人間と後続Agentが読める形で報告する。
+9. repair optionを使った場合は、生成/修復された成果物を確認し、再度doctorを実行する。
 
 ## 成功条件
 
@@ -38,6 +39,7 @@ Ariadne AI Workflow Platform 自身の runtime health を確認する自己診�
 - UT仕様書同期チェックが `status: ok` を返す。
 - `workflow_doctor --fail-on-warning` がpassする。
 - `aiwfctl doctor --json --fail-on-warning` がpassする。
+- 必要に応じて `aiwfctl doctor --repair-spec-index --repair-encoding --fail-on-warning` を実行し、repair結果を確認済みである。
 - `pytest-ut-spec-sync-report.json` と `pytest-ut-spec-sync-report.md` が生成される。
 - Context First manifestに `test-evidence` が登録される。
 - 日本語Markdown品質ガードがpassする。
@@ -54,10 +56,10 @@ Ariadne AI Workflow Platform 自身の runtime health を確認する自己診�
 ```powershell
 cd C:\github\ariadne-ai-workflow-platform\runtime
 
-.\tools\uv.cmd run --project . --group dev pytest tests -q
+.\windows-script\uv.cmd run --project . --group dev pytest tests -q
 
-.\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py `
-  --spec ..\docs\reference\runtime-pytest-ut-case-specification.md `
+.\windows-script\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py `
+  --spec ..\docs\reference\runtime-pytest-ut\case-specification.md `
   --runtime-root . `
   check `
   --repo-root .. `
@@ -67,17 +69,28 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
   --register-context `
   --required-context
 
-.\tools\uv.cmd run --project . --group dev python workflow\workflow_doctor.py `
+.\windows-script\uv.cmd run --project . --group dev python workflow\workflow_doctor.py `
   --repo-root .. `
   --fail-on-warning
 
-.\tools\uv.cmd run --project . --group dev python ctl.py `
+.\windows-script\uv.cmd run --project . --group dev python ctl.py `
   --repo-root .. `
   doctor `
   --json `
   --fail-on-warning
 
-.\tools\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
-  --paths ..\docs\reference\runtime-pytest-ut-test-items.md ..\docs\reference\runtime-pytest-ut-case-specification.md ..\.ariadne\schemas\README.md ..\.ariadne\agents\runtime-quality-gate-agent.prompt.md `
+.\windows-script\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
+  --paths ..\docs\reference\runtime-pytest-ut\test-items.md ..\docs\reference\runtime-pytest-ut\case-specification.md ..\.ariadne\schemas\README.md ..\.ariadne\agents\runtime-quality-gate-agent.prompt.md `
   --fail-on-violation
+```
+
+修復可能なwarningがある場合だけ、次を明示的に実行します。
+
+```powershell
+cd C:\github\ariadne-ai-workflow-platform
+
+.\runtime\windows-script\aiwfctl.cmd doctor `
+  --repair-spec-index `
+  --repair-encoding `
+  --fail-on-warning
 ```

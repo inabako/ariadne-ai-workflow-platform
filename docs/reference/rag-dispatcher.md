@@ -1,4 +1,4 @@
-﻿# RAG Dispatcher Design Notes
+# RAG Dispatcher Design Notes
 
 この文書は、RAG dispatcher の設計思想、Agent間で共有するノウハウ、運用上の判断基準をまとめます。
 

@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 36 |
+| cases | 41 |
 
 ## ケース一覧
 
@@ -49,24 +49,31 @@ runtime/tests/test_preflight.py::test_basic_checks_report_detected_state
 ```text
 runtime/tests/test_preflight.py::test_preflight_parser_accepts_runtime_dev_profile
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:77`
-  - fixture/arg: なし
-  - parameter: names=なし, case=なし
-  - inline input: `args`
-- Expected: Placeholder; pytest assertion defines the expected result.
 
-
-- 遒ｺ隱榊・螳ｹ: preflight parser縺・`runtime-dev` profile繧貞女縺大叙繧後ｋ縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+- Confirm: `test_preflight_parser_accepts_runtime_dev_profile` ? pytest assertion ???runtime???????????
+- Input:
+  - pytest node: above node id
   - source: `runtime/tests/test_preflight.py`
-  - fixture/arg: 縺ｪ縺・
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: `--profile runtime-dev` 縺後ヱ繝ｼ繧ｹ縺輔ｌ繧九・
+  - fixture/arg: pytest function signature ???
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: pytest assertion defines the expected result.
+#### RT-UT-CASE-227S
+
+- pytest node id:
+
+```text
+runtime/tests/test_preflight.py::test_preflight_parser_accepts_scancode_audit_profile
+```
+
+- Confirm: The preflight parser accepts the `scancode-audit` profile.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_preflight.py:83`
+  - fixture/arg: none
+  - parameter: names=none case=none
+  - inline input: `args`
+- Expected: Parsed arguments keep `profile` as `scancode-audit`.
 
 #### RT-UT-CASE-227A
 
@@ -75,25 +82,15 @@ runtime/tests/test_preflight.py::test_preflight_parser_accepts_runtime_dev_profi
 ```text
 runtime/tests/test_preflight.py::test_uv_runtime_check_uses_repo_local_wrapper_when_uv_is_not_on_path
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:128`
-  - fixture/arg: `monkeypatch` (environment / function monkeypatch)
-  - parameter: names=なし, case=なし
-  - inline input: `calls`
-- Expected: Placeholder; pytest assertion defines the expected result.
 
-
-- 遒ｺ隱榊・螳ｹ: PATH荳翫↓uv縺後↑縺・ｴ蜷医〒繧・repo-local `runtime/windows-script/uv.cmd` 繧呈､懷・縺ｧ縺阪ｋ縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+- Confirm: `test_uv_runtime_check_uses_repo_local_wrapper_when_uv_is_not_on_path` ? pytest assertion ???runtime???????????
+- Input:
+  - pytest node: above node id
   - source: `runtime/tests/test_preflight.py`
-  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: `exe:uv` check縺後Ξ繝昴・繝医Μwrapper繧呈､懷・縺吶ｋ縲・
-
+  - fixture/arg: pytest function signature ???
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: pytest assertion defines the expected result.
 #### RT-UT-CASE-227B
 
 - pytest node id:
@@ -101,25 +98,15 @@ runtime/tests/test_preflight.py::test_uv_runtime_check_uses_repo_local_wrapper_w
 ```text
 runtime/tests/test_preflight.py::test_windows_aiwf_cmd_wraps_powershell_with_process_bypass
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:99`
-  - fixture/arg: なし
-  - parameter: names=なし, case=なし
-  - inline input: `text`
-- Expected: Placeholder; pytest assertion defines the expected result.
 
-
-- 遒ｺ隱榊・螳ｹ: Windows runtime wrapper縺梧律譁ｰ荳譎ゅ・process-scoped ExecutionPolicy Bypass縺ｧPS1 runtime縺ｫ蟋碑ｭｲ縺吶ｋ縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+- Confirm: `test_windows_aiwf_cmd_wraps_powershell_with_process_bypass` ? pytest assertion ???runtime???????????
+- Input:
+  - pytest node: above node id
   - source: `runtime/tests/test_preflight.py`
-  - fixture/arg: 縺ｪ縺・
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: `root`, `wrapper`, `tools_shim`
-- 譛溷ｾ・ｵ先棡: `runtime/windows-script/aiwf.cmd` 縺・Bypass蜻ｼ縺ｳ蜃ｺ縺励～runtime/windows-script/aiwf.cmd` 縺ｯshim縺ｨ縺励※蟋碑ｭｲ縺吶ｋ縲・
-
+  - fixture/arg: pytest function signature ???
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: pytest assertion defines the expected result.
 #### RT-UT-CASE-227C
 
 - pytest node id:
@@ -161,25 +148,15 @@ runtime/tests/test_preflight.py::test_python_module_check_uses_current_interpret
 ```text
 runtime/tests/test_preflight.py::test_runtime_pytest_check_uses_uv_project_command
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:144`
-  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
-  - parameter: names=なし, case=なし
-  - inline input: `calls`
-- Expected: Placeholder; pytest assertion defines the expected result.
 
-
-- 遒ｺ隱榊・螳ｹ: runtime pytest check縺・uv project / dev group繧剃ｽｿ縺｣縺ｦpytest version繧堤｢ｺ隱阪☆繧九％縺ｨ繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+- Confirm: `test_runtime_pytest_check_uses_uv_project_command` ? pytest assertion ???runtime???????????
+- Input:
+  - pytest node: above node id
   - source: `runtime/tests/test_preflight.py`
-  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: `calls`
-- 譛溷ｾ・ｵ先棡: `uv run --project runtime --group dev pytest --version` 縺梧悄蠕・command縺ｨ縺励※螳溯｡後＆繧後ｋ縲・
-
+  - fixture/arg: pytest function signature ???
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: pytest assertion defines the expected result.
 #### RT-UT-CASE-228
 
 - pytest node id:
@@ -213,6 +190,40 @@ runtime/tests/test_preflight.py::test_docker_compose_check_reports_compose_error
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
+
+#### RT-UT-CASE-229A
+
+- pytest node id:
+
+```text
+runtime/tests/test_preflight.py::test_act_cli_check_reports_missing_and_detected
+```
+
+- Confirm: The act CLI preflight check reports both missing and detected states.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_preflight.py:203`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch)
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: Missing act CLI is reported as missing, and detected act CLI returns ready metadata.
+
+#### RT-UT-CASE-229B
+
+- pytest node id:
+
+```text
+runtime/tests/test_preflight.py::test_docker_daemon_check_warns_when_not_running
+```
+
+- Confirm: Docker daemon check warns when the daemon is not reachable.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_preflight.py:226`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch)
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: Docker daemon is reported as a warning with a start-Docker remediation hint.
 
 #### RT-UT-CASE-230A
 
@@ -425,24 +436,48 @@ runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[
 ```text
 runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[vscode-environment-expected_ids3]
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:449`
-  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
-  - parameter: names=`profile`, `expected_ids`, case=`vscode-environment-expected_ids3`
-  - inline input: `args`
-- Expected: Placeholder; pytest assertion defines the expected result.
 
-
-- 遒ｺ隱榊・螳ｹ: pytest case `build checks profiles add expected checks[vscode-environment-expected_ids3]` 縺ｫ蟇ｾ蠢懊☆繧脚untime縺ｮ蜊倅ｽ捺険繧玖・縺・∝｢・阜譚｡莉ｶ縲‘rror boundary繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+- Confirm: `test_build_checks_profiles_add_expected_checks` ? pytest assertion ???runtime???????????
+- Input:
+  - pytest node: above node id
   - source: `runtime/tests/test_preflight.py`
+  - fixture/arg: pytest function signature ???
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: pytest assertion defines the expected result.
+#### RT-UT-CASE-239S
+
+- pytest node id:
+
+```text
+runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[scancode-audit-expected_ids4]
+```
+
+- Confirm: The `scancode-audit` preflight profile adds all expected license-audit rehearsal checks.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_preflight.py:498`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
-  - parameter: names=`profile`, `expected_ids`, case=`vscode-environment-expected_ids3`
+  - parameter: names=`profile`, `expected_ids`, case=`scancode-audit-expected_ids4`
   - inline input: `args`
-- 譛溷ｾ・ｵ先棡: 隧ｲ蠖田ase縺継ass縺励∝ｯｾ雎｡runtime縺ｮ豁｣蟶ｸ邉ｻ縺ｾ縺溘・蠅・阜譚｡莉ｶ縺御ｻ墓ｧ倥←縺翫ｊ縺ｫ遒ｺ隱阪＆繧後ｋ縲・
+- Expected: Generated checks include the expected act CLI, Docker daemon, ScanCode workflow, and REUSE lint workflow checks.
+
+#### RT-UT-CASE-239T
+
+- pytest node id:
+
+```text
+runtime/tests/test_preflight.py::test_scancode_audit_profile_declares_optional_local_rehearsal_checks
+```
+
+- Confirm: ScanCode audit preflight marks local rehearsal checks as optional guidance.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_preflight.py:532`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - parameter: names=none case=none
+  - inline input: `args`
+- Expected: ScanCode and REUSE lint local rehearsal checks are declared optional, while required runtime checks remain strict.
 
 #### RT-UT-CASE-239A
 

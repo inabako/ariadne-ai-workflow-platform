@@ -1,4 +1,4 @@
-﻿# Skill Discovery
+# Skill Discovery
 
 このrepoでは、VS Code / GitHub Copilot Chat の slash prompt、Codex Skill、`aiwfctl help` の候補表示を分けて扱います。
 

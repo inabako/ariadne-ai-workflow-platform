@@ -1,4 +1,4 @@
-﻿# Workflow Help CLI
+# Workflow Help CLI
 
 この文書は、AI workflow prompt command のヘルプをターミナルから確認するための `aiwfctl` 入口を説明します。
 

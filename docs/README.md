@@ -1,4 +1,4 @@
-﻿# Documentation Guide
+# Documentation Guide
 
 この `docs/` は、Ariadne AI Workflow Platform を運用するための日本語ドキュメント置き場です。
 

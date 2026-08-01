@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 48 |
+| cases | 50 |
 
 ## ケース一覧
 
@@ -49,25 +49,15 @@ runtime/tests/test_github_knowledge_maintenance.py::test_repository_name_and_def
 ```text
 runtime/tests/test_github_knowledge_maintenance.py::test_status_reports_package_execution_and_next_action
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:231`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: Placeholder; pytest assertion defines the expected result.
 
-
-- 遒ｺ隱榊・螳ｹ: github-knowledge status縺後ヱ繝・こ繝ｼ繧ｸ螳溯｡後迥ｶ諷九→谺｡action繧定ｿ斐☆縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+- Confirm: `test_status_reports_package_execution_and_next_action` ? pytest assertion ???runtime???????????
+- Input:
+  - pytest node: above node id
   - source: `runtime/tests/test_github_knowledge_maintenance.py`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: package execution count縺ｨlatest package縲∵欠螳壽欠遉ｺ縺瑚ｿ斐ｋ縲・
-
+  - fixture/arg: pytest function signature ???
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: pytest assertion defines the expected result.
 #### RT-UT-CASE-131B
 
 - pytest node id:
@@ -75,25 +65,15 @@ runtime/tests/test_github_knowledge_maintenance.py::test_status_reports_package_
 ```text
 runtime/tests/test_github_knowledge_maintenance.py::test_next_action_prefers_reuse_worktree_when_replay_worktree_exists
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:275`
-  - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch)
-  - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: Placeholder; pytest assertion defines the expected result.
 
-
-- 遒ｺ隱榊・螳ｹ: replay worktree縺悟ｭ伜惠縺吶ｋ蝣ｴ蜷医↓next-action縺・reuse-worktree繧貞━蜈医☆繧九％縺ｨ繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+- Confirm: `test_next_action_prefers_reuse_worktree_when_replay_worktree_exists` ? pytest assertion ???runtime???????????
+- Input:
+  - pytest node: above node id
   - source: `runtime/tests/test_github_knowledge_maintenance.py`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: next action縺後◎縺ｮ縺ｾ縺ｾreuse縺吶∋縺肴欠遉ｺ縺吶ｋ縲・
-
+  - fixture/arg: pytest function signature ???
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: pytest assertion defines the expected result.
 #### RT-UT-CASE-131B-1
 
 - pytest node id:
@@ -153,25 +133,15 @@ runtime/tests/test_github_knowledge_maintenance.py::test_resume_blocks_push_pack
 ```text
 runtime/tests/test_github_knowledge_maintenance.py::test_verify_remote_compares_expected_sha_from_package
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:370`
-  - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch)
-  - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: Placeholder; pytest assertion defines the expected result.
 
-
-- 遒ｺ隱榊・螳ｹ: verify-remote縺御ｿ晏ｭ倥＆繧後◆package縺ｮexpected SHA縺ｨactual remote SHA繧呈ｯ碑ｼ・〒縺阪ｋ縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+- Confirm: `test_verify_remote_compares_expected_sha_from_package` ? pytest assertion ???runtime???????????
+- Input:
+  - pytest node: above node id
   - source: `runtime/tests/test_github_knowledge_maintenance.py`
-  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: expected / actual remote SHA縺悟粋閾ｴ縺吶ｋ縺薙→繧堤､ｺ縺吶・
-
+  - fixture/arg: pytest function signature ???
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: pytest assertion defines the expected result.
 #### RT-UT-CASE-131D
 
 - pytest node id:
@@ -179,25 +149,15 @@ runtime/tests/test_github_knowledge_maintenance.py::test_verify_remote_compares_
 ```text
 runtime/tests/test_github_knowledge_maintenance.py::test_cleanup_worktree_requires_force_before_removal
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:413`
-  - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch)
-  - parameter: names=なし, case=なし
-  - inline input: `calls`
-- Expected: Placeholder; pytest assertion defines the expected result.
 
-
-- 遒ｺ隱榊・螳ｹ: cleanup-worktree縺・force譛ｪ謖・ｮ壽凾縺ｯ蜑企勁縺帙★縲√謖・ｮ壽凾縺縺代Ξ繝励Ξ繧､worktree繧貞炎髯､縺吶ｋ縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+- Confirm: `test_cleanup_worktree_requires_force_before_removal` ? pytest assertion ???runtime???????????
+- Input:
+  - pytest node: above node id
   - source: `runtime/tests/test_github_knowledge_maintenance.py`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: force譛ｪ謖・ｮ壽凾縺ｯblocked縲、force謖・ｮ壽凾縺ｯremoved縺ｫ縺ｪ繧九・
-
+  - fixture/arg: pytest function signature ???
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: pytest assertion defines the expected result.
 #### RT-UT-CASE-132
 
 - pytest node id:

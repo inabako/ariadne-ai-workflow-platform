@@ -1,4 +1,4 @@
-﻿---
+---
 name: github-knowledge-maintenance
 description: Maintain a GitHub repository as a long-lived knowledge asset without erasing Git history. Use when the user selects /github-knowledge-maintenance or asks to preserve GitHub Issues, PRs, docs, CARs, commit-source, commit-message, semantic-subject, Knowledge DB, or RAG candidates as reusable repository knowledge.
 ---

@@ -1,4 +1,4 @@
-﻿# Data Model
+# Data Model
 
 このworkflow repoでは、Agent間共有dataをJSON Schemaとfile-based contextで扱います。
 

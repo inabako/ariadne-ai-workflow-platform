@@ -1,4 +1,4 @@
-﻿{
+{
   "registry_version": "1.0",
   "description": "AI workflow prompt command help registry. aiwfctl help reads this file to show searchable terminal help.",
   "commands": [

@@ -11,6 +11,7 @@ from typing import Iterable
 
 
 REQUIRED_FILES = [
+    ".gitattributes",
     "CITATION.cff",
     "AGENTS.md",
     "LICENSE",
@@ -31,9 +32,15 @@ REQUIRED_FILES = [
     "docs/citation/citation-guide.md",
     "docs/security/scancode-github-actions.md",
     "docs/legal/evidence/reuse-lint-local-rehearsal.md",
+]
+
+COPILOT_BRIDGE_FILES = [
     ".github/copilot-instructions.md",
     ".github/instructions/ariadne.instructions.md",
     ".github/prompts/ariadne-workflows.prompt.md",
+]
+
+GITHUB_NATIVE_FILES = [
     ".github/workflows/reuse-lint.yml",
 ]
 
@@ -118,7 +125,7 @@ def validate(repo_root: Path, expected_license: str | None = None) -> tuple[list
     errors: list[Finding] = []
     warnings: list[Finding] = []
 
-    for rel_path in [*REQUIRED_FILES, *REQUIRED_ARCHITECTURE_DOCS]:
+    for rel_path in [*REQUIRED_FILES, *COPILOT_BRIDGE_FILES, *GITHUB_NATIVE_FILES, *REQUIRED_ARCHITECTURE_DOCS]:
         if not (repo_root / rel_path).exists():
             errors.append(Finding("required-file-missing", "error", f"Required file is missing: {rel_path}", rel_path))
 

@@ -13,7 +13,6 @@ if __package__ in {None, ""}:
 
 from runtime.common import gate_restart, registry_store, text_boundary  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
-from runtime.constants.paths import REGISTRY_DB_PATH  # noqa: E402
 from runtime.constants.schemas import (  # noqa: E402
     CONTEXT_MANIFEST_SCHEMA,
     CORRECTIVE_ACTION_REPORT_SCHEMA,
@@ -117,7 +116,6 @@ def missing_required_files(repo_root: Path) -> list[str]:
         ".ariadne/agents/runtime-quality-gate-agent.prompt.md",
         "docs/workflows/runtime-health-check.md",
         "db/registries/README.md",
-        REGISTRY_DB_PATH.as_posix(),
         HUMAN_GATES_SCHEMA,
         WORKFLOW_HELP_SCHEMA,
         GATE_RESTART_SCHEMA,
@@ -148,6 +146,31 @@ def missing_required_files(repo_root: Path) -> list[str]:
         "runtime/tests/test_ctl_help.py",
     ]
     return [path for path in required if not (repo_root / path).exists()]
+
+
+def registry_seed_findings(repo_root: Path) -> list[str]:
+    source_dir = repo_root / registry_store.DEFAULT_TEMPLATE_JSON_SOURCE_DIR
+    if not source_dir.exists():
+        return [f"missing:{registry_store.DEFAULT_TEMPLATE_JSON_SOURCE_DIR.as_posix()}"]
+    expected_files = (
+        *registry_store.REQUIRED_REGISTRY_SOURCE_FILES,
+        registry_store.SEARCH_TERMS_REGISTRY_FILE,
+    )
+    findings: list[str] = []
+    for name in dict.fromkeys(expected_files):
+        path = source_dir / name
+        relative = relative_to_repo(repo_root, path)
+        if not path.is_file():
+            findings.append(f"missing:{relative}")
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8-sig"))
+        except json.JSONDecodeError as exc:
+            findings.append(f"{relative}: invalid JSON: {exc.msg}")
+            continue
+        if not isinstance(data, dict):
+            findings.append(f"{relative}: must be a JSON object")
+    return findings
 
 
 def pytest_runtime_boundary_findings(repo_root: Path) -> list[str]:
@@ -268,6 +291,45 @@ def vscode_utf8_first_findings(repo_root: Path) -> list[str]:
     return findings
 
 
+def git_attributes_findings(repo_root: Path) -> list[str]:
+    path = repo_root / ".gitattributes"
+    if not path.exists():
+        return [".gitattributes"]
+    text = path.read_text(encoding="utf-8-sig")
+    required_snippets = [
+        "* text=auto eol=lf",
+        "*.cmd text eol=crlf",
+        "*.bat text eol=crlf",
+    ]
+    return [f".gitattributes:{snippet}" for snippet in required_snippets if snippet not in text]
+
+
+def uv_startup_findings(repo_root: Path) -> list[str]:
+    findings: list[str] = []
+    uv_wrapper = repo_root / "runtime" / "windows-script" / "uv.cmd"
+    aiwfctl_cmd = repo_root / "runtime" / "windows-script" / "aiwfctl.cmd"
+    aiwf_ps1 = repo_root / "runtime" / "windows-script" / "aiwf.ps1"
+    register_uv = repo_root / "runtime" / "windows-script" / "register-uv-path.cmd"
+    if not uv_wrapper.exists():
+        findings.append("runtime/windows-script/uv.cmd")
+    if not register_uv.exists():
+        findings.append("runtime/windows-script/register-uv-path.cmd")
+    if not aiwfctl_cmd.exists():
+        findings.append("runtime/windows-script/aiwfctl.cmd")
+    else:
+        text = aiwfctl_cmd.read_text(encoding="utf-8-sig")
+        if "uv.cmd" not in text or "uv.cmd\" run --project" not in text:
+            findings.append("runtime/windows-script/aiwfctl.cmd:uv-wrapper-dispatch")
+    if not aiwf_ps1.exists():
+        findings.append("runtime/windows-script/aiwf.ps1")
+    else:
+        text = aiwf_ps1.read_text(encoding="utf-8-sig")
+        for snippet in ["function Get-AiwfUvPath", "windows-script/uv.cmd", "Invoke-AiwfUv"]:
+            if snippet not in text:
+                findings.append(f"runtime/windows-script/aiwf.ps1:{snippet}")
+    return findings
+
+
 def duckdb_read_model_findings(repo_root: Path) -> list[str]:
     source_repo = (repo_root / duckdb_store.DEFAULT_SOURCE_REPO_PATH).resolve()
     if not source_repo.exists():
@@ -282,7 +344,7 @@ def duckdb_read_model_findings(repo_root: Path) -> list[str]:
     return [
         f"missing:{relative_to_repo(repo_root, db_path)}",
         f"source:{relative_to_repo(repo_root, source_repo)}",
-        f"rebuild:aiwfctl knowledge rebuild --source-repo {duckdb_store.DEFAULT_SOURCE_REPO_PATH.as_posix()} --reset",
+        f"rebuild:aiwfctl rag duckdb rebuild --source-repo {duckdb_store.DEFAULT_SOURCE_REPO_PATH.as_posix()} --reset",
     ]
 
 
@@ -352,12 +414,32 @@ def ut_spec_sync_findings(repo_root: Path) -> list[str]:
     return findings
 
 
+def repair_ut_spec_index(repo_root: Path) -> dict[str, Any]:
+    spec_path = repo_root / "docs" / "reference" / "runtime-pytest-ut" / "case-specification.md"
+    runtime_root = repo_root / "runtime"
+    if not runtime_root.exists():
+        return {
+            "status": "blocked",
+            "repairs": [],
+            "remaining_findings": [relative_to_repo(repo_root, runtime_root)],
+        }
+    result = pytest_ut_spec_sync.scaffold_missing_cases(spec_path, runtime_root)
+    return {
+        "schema_version": "1.0",
+        "artifact_type": "pytest-ut-spec-index-repair",
+        "status": result.get("status", "unknown"),
+        "repairs": result.get("repairs", []),
+        "remaining_findings": ut_spec_sync_findings(repo_root),
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run lightweight workflow repository health checks.")
     parser.add_argument("--repo-root", default="")
     parser.add_argument("--fail-on-warning", action="store_true")
     parser.add_argument("--skip-ut-spec-sync", action="store_true", help="Skip pytest UT specification sync check.")
     parser.add_argument("--repair-encoding", action="store_true", help="Repair safe text-boundary findings before returning doctor status.")
+    parser.add_argument("--repair-spec-index", action="store_true", help="Scaffold missing pytest UT specification cases before returning doctor status.")
     parser.add_argument(
         "--encoding-paths",
         nargs="+",
@@ -407,6 +489,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "paths": registry_findings,
             }
         )
+    registry_seed_issues = registry_seed_findings(repo_root)
+    if registry_seed_issues:
+        warnings.append(
+            {
+                "id": "runtime-registry-bootstrap-source",
+                "message": "templates/registries bootstrap seed is incomplete. Fresh checkout registry auto-build may fail.",
+                "paths": registry_seed_issues,
+            }
+        )
     close_findings = close_archive_findings(repo_root)
     if close_findings:
         warnings.append({"id": "incomplete-close-archive", "message": "標準8ファイルが揃っていないclose archiveがあります。", "paths": close_findings})
@@ -417,6 +508,24 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "id": "vscode-utf8-first",
                 "message": "VSCode workspace UTF-8 first settings are incomplete.",
                 "paths": utf8_findings,
+            }
+        )
+    gitattributes_issues = git_attributes_findings(repo_root)
+    if gitattributes_issues:
+        warnings.append(
+            {
+                "id": "git-line-ending-policy",
+                "message": "Git line ending policy is incomplete. Add .gitattributes so LF/CRLF behavior is stable across machines.",
+                "paths": gitattributes_issues,
+            }
+        )
+    uv_startup_issues = uv_startup_findings(repo_root)
+    if uv_startup_issues:
+        warnings.append(
+            {
+                "id": "uv-startup-route",
+                "message": "Runtime uv startup route is incomplete. Keep uv.cmd and aiwfctl wrappers aligned so local doctor/rehearsal commands are reproducible.",
+                "paths": uv_startup_issues,
             }
         )
     duckdb_findings = duckdb_read_model_findings(repo_root)
@@ -446,6 +555,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "paths": path_constant_findings,
             }
         )
+    if getattr(args, "repair_spec_index", False) and not getattr(args, "skip_ut_spec_sync", False):
+        repairs.append(repair_ut_spec_index(repo_root))
     if not getattr(args, "skip_ut_spec_sync", False):
         sync_findings = ut_spec_sync_findings(repo_root)
         if sync_findings:
@@ -487,7 +598,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "doctor-gate",
             restart_reason="failed-doctor-gate" if repairs else "normal-doctor-gate",
             repair_available=True,
-            repair_command="aiwfctl doctor --repair-encoding --fail-on-warning",
+            repair_command="aiwfctl doctor --repair-encoding --repair-spec-index --fail-on-warning",
             status_after_restart=status,
         ),
     }

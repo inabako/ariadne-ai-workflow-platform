@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import runpy
@@ -57,6 +57,16 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     assert release_manifest_args.command == "release"
     assert release_manifest_args.release_command == "manifest"
     assert release_manifest_args.artifact == ["LICENSE"]
+    rag_duckdb_rebuild_args = parser.parse_args(["rag", "duckdb", "rebuild", "--reset"])
+    assert rag_duckdb_rebuild_args.command == "rag"
+    assert rag_duckdb_rebuild_args.rag_command == "duckdb"
+    assert rag_duckdb_rebuild_args.rag_duckdb_command == "rebuild"
+    assert rag_duckdb_rebuild_args.reset is True
+    rag_duckdb_verify_args = parser.parse_args(["rag", "duckdb", "verify", "--query", "workflow"])
+    assert rag_duckdb_verify_args.command == "rag"
+    assert rag_duckdb_verify_args.rag_command == "duckdb"
+    assert rag_duckdb_verify_args.rag_duckdb_command == "verify"
+    assert rag_duckdb_verify_args.query == ["workflow"]
     publish_args = parser.parse_args(
         [
             "github-knowledge",
@@ -399,6 +409,26 @@ def test_ctl_knowledge_usage_and_search_export_context(tmp_path: Path) -> None:
     assert "Source Repo     : work/db/ariadne-knowledge-platform" in output
     assert "Registered" in output
 
+    alias_db = root / "db" / "rag" / "alias.duckdb"
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "rag",
+            "duckdb",
+            "--db",
+            str(alias_db),
+            "rebuild",
+            "--source-repo",
+            "work/db/ariadne-knowledge-platform",
+            "--reset",
+        ]
+    )
+    code, output = ctl.run(args)
+    assert code == 0
+    assert "Knowledge Rebuild" in output
+    assert alias_db.exists()
+
     args = ctl.build_parser().parse_args(
         [
             "--repo-root",
@@ -422,6 +452,27 @@ def test_ctl_knowledge_usage_and_search_export_context(tmp_path: Path) -> None:
     manifest = json.loads((root / "db" / "rag" / "evidence" / "context" / "context-manifest.json").read_text(encoding="utf-8"))
     assert manifest["work_id"] == "duckdb-reference-check"
     assert "rag-duckdb-reference-check" in {item["type"] for item in manifest["contexts"]}
+
+    alias_output = root / "db" / "rag" / "evidence" / "alias-reference-check.json"
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "rag",
+            "duckdb",
+            "--db",
+            str(alias_db),
+            "verify",
+            "--query",
+            "DuckDB context",
+            "--output",
+            str(alias_output),
+        ]
+    )
+    code, output = ctl.run(args)
+    assert code == 0
+    assert "Knowledge Reference Check" in output
+    assert alias_output.exists()
 
 
 def test_ctl_github_knowledge_sync_apply_dry_run_updates_analysis(tmp_path: Path) -> None:
@@ -1204,7 +1255,23 @@ def test_ctl_doctor_runs_workflow_doctor(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
         ctl.workflow_doctor,
         "run",
-        lambda args: {"status": "pass", "warning_count": 0, "warnings": []},
+        lambda args: {
+            "status": "pass",
+            "warning_count": 0,
+            "warnings": [],
+            "repairs": [
+                {
+                    "artifact_type": "pytest-ut-spec-index-repair",
+                    "status": "repaired",
+                    "repairs": [
+                        {
+                            "node_id": "runtime/tests/test_sample.py::test_new",
+                            "path": "docs/reference/runtime-pytest-ut/cases/test_sample.md",
+                        }
+                    ],
+                }
+            ],
+        },
     )
 
     args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "doctor"])
@@ -1213,6 +1280,10 @@ def test_ctl_doctor_runs_workflow_doctor(monkeypatch, tmp_path: Path) -> None:
     assert code == 0
     assert "Workflow Doctor" in output
     assert "Warning Count : 0" in output
+    assert "Repair Count  : 1" in output
+    assert "Repairs" in output
+    assert "pytest-ut-spec-index-repair" in output
+    assert "runtime/tests/test_sample.py::test_new" in output
 
     args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "doctor", "--json"])
     code, output = ctl.run(args)

@@ -1,4 +1,4 @@
-﻿# Context First Architecture
+# Context First Architecture
 
 Context First Architecture は、Workflow / Agent が毎回 Environment、Tool、Runtime を推論する状態を避けるための設計方針です。
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import ast
 import json
+import os
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -23,11 +24,12 @@ from runtime.workflow import context_first
 
 
 CASE_HEADING_PREFIX = "#### RT-UT-CASE-"
-CONFIRM_PREFIX = "- 確認内容:"
-INPUT_PREFIX = "- 入力値:"
-EXPECTED_PREFIX = "- 期待結果:"
+CONFIRM_PREFIX = "- \u78ba\u8a8d\u5185\u5bb9:"
+INPUT_PREFIX = "- \u5165\u529b\u5024:"
+EXPECTED_PREFIX = "- \u671f\u5f85\u7d50\u679c:"
 TEXT_FENCE = "```text"
 REPORT_SCHEMA = PYTEST_UT_SPEC_SYNC_REPORT_SCHEMA
+PYTEST_DISABLE_PLUGIN_AUTOLOAD_ENV = "PYTEST_DISABLE_PLUGIN_AUTOLOAD"
 CONFIRM_PREFIXES = (CONFIRM_PREFIX, "- Confirm:")
 INPUT_PREFIXES = (INPUT_PREFIX, "- Input:")
 EXPECTED_PREFIXES = (EXPECTED_PREFIX, "- Expected:")
@@ -78,12 +80,15 @@ def normalize_collected_node(node_id: str) -> str:
 
 def collect_pytest_nodes(runtime_dir: Path) -> list[str]:
     command = [sys.executable, "-m", "pytest", "--collect-only", "-q", "tests"]
+    env = os.environ.copy()
+    env[PYTEST_DISABLE_PLUGIN_AUTOLOAD_ENV] = "1"
     completed = subprocess.run(
         command,
         cwd=runtime_dir,
         text=True,
         capture_output=True,
         check=False,
+        env=env,
     )
     if completed.returncode != 0:
         raise RuntimeError(completed.stderr.strip() or completed.stdout.strip())
@@ -129,6 +134,11 @@ def spec_part_paths(spec_path: Path) -> list[Path]:
     if case_dir.exists():
         paths.extend(sorted(path for path in case_dir.glob("*.md") if path.is_file()))
     return paths
+
+
+def case_file_path_for_node(spec_path: Path, node_id: str) -> Path:
+    path_part, _, _ = split_node(node_id)
+    return spec_case_dir(spec_path) / f"{path_part.stem}.md"
 
 
 def read_spec_text(spec_path: Path) -> str:
@@ -258,14 +268,14 @@ def function_info(runtime_root: Path, node_id: str) -> FunctionInfo:
 def _code_list(values: Iterable[str]) -> str:
     values = tuple(values)
     if not values:
-        return "なし"
+        return "none"
     return ", ".join(f"`{value}`" for value in values)
 
 
 def _fixture_detail(arguments: tuple[str, ...], parametrize_names: tuple[str, ...]) -> str:
     fixtures = tuple(arg for arg in arguments if arg not in parametrize_names)
     if not fixtures:
-        return "なし"
+        return "none"
     descriptions = []
     for fixture in fixtures:
         meaning = FIXTURE_MEANINGS.get(fixture)
@@ -277,13 +287,13 @@ def input_lines_for_node(runtime_root: Path, node_id: str) -> list[str]:
     info = function_info(runtime_root, node_id)
     _, _, parameter_id = split_node(node_id)
     parameter_names = _code_list(info.parametrize_names)
-    parameter_case = f"`{parameter_id}`" if parameter_id else "なし"
+    parameter_case = f"`{parameter_id}`" if parameter_id else "none"
     inline_inputs = _code_list(info.inline_inputs)
-    if inline_inputs == "なし":
-        inline_inputs = "test関数内で生成される固定入力、mock入力、または一時ファイル"
+    if inline_inputs == "none":
+        inline_inputs = "test-local fixtures and assertions"
     return [
         INPUT_PREFIX,
-        "  - pytest node: 上記コードブロックのnode id",
+        "  - pytest node: above node id",
         f"  - source: `{info.source_path.as_posix()}:{info.line_no}`",
         f"  - fixture/arg: {_fixture_detail(info.arguments, info.parametrize_names)}",
         f"  - parameter: names={parameter_names}, case={parameter_case}",
@@ -356,6 +366,144 @@ def check_spec(spec_path: Path, runtime_root: Path) -> dict[str, object]:
     }
 
 
+def _case_count_line(count: int) -> str:
+    return f"| cases | {count} |"
+
+
+def _ensure_case_file_header(case_path: Path, source_file: str) -> str:
+    if case_path.exists():
+        return case_path.read_text(encoding="utf-8-sig")
+    return (
+        f"# {source_file}\n\n"
+        f"This file records pytest node ids for `runtime/tests/{source_file}`.\n\n"
+        "| Item | Value |\n"
+        "| --- | ---: |\n"
+        "| cases | 0 |\n\n"
+        "## Cases\n"
+    )
+
+
+def _update_case_count(text: str) -> str:
+    count = len(parse_spec_cases(text))
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        if line.startswith("| cases |"):
+            lines[index] = _case_count_line(count)
+            return "\n".join(lines).rstrip() + "\n"
+    return text.rstrip() + f"\n\n| Item | Value |\n| --- | ---: |\n{_case_count_line(count)}\n"
+
+
+def _case_block_for_node(node_id: str, case_id: str, runtime_root: Path) -> str:
+    info = function_info(runtime_root, node_id)
+    _, function_name, parameter_id = split_node(node_id)
+    parameter_case = f"`{parameter_id}`" if parameter_id else "none"
+    parameter_names = _code_list(info.parametrize_names) if info.parametrize_names else "none"
+    fixture_values = tuple(arg for arg in info.arguments if arg not in info.parametrize_names)
+    fixture_detail = _fixture_detail(info.arguments, info.parametrize_names) if fixture_values else "none"
+    inline_inputs = _code_list(info.inline_inputs) if info.inline_inputs else "test-local fixtures and assertions"
+    return f"""
+#### {case_id}
+
+- pytest node id:
+
+```text
+{node_id}
+```
+
+- Confirm: `{function_name}` runtime contract is covered by pytest assertions.
+- Input:
+  - pytest node: above node id
+  - source: `{info.source_path.as_posix()}:{info.line_no}`
+  - fixture/arg: {fixture_detail}
+  - parameter: names={parameter_names} case={parameter_case}
+  - inline input: {inline_inputs}
+- Expected: pytest assertion defines the expected result."""
+
+def _case_block_bounds(text: str, node_id: str) -> tuple[int, int] | None:
+    node_index = text.find(node_id)
+    if node_index == -1:
+        return None
+    start = text.rfind("\n#### ", 0, node_index)
+    if start == -1:
+        start = text.find("#### ")
+        if start == -1 or start > node_index:
+            return None
+    else:
+        start += 1
+    next_start = text.find("\n#### ", node_index)
+    end = len(text) if next_start == -1 else next_start + 1
+    return start, end
+
+
+def _insert_case_block(text: str, block: str, *, before_node: str | None = None, after_node: str | None = None) -> str:
+    normalized_block = block.strip() + "\n\n"
+    if before_node:
+        bounds = _case_block_bounds(text, before_node)
+        if bounds:
+            start, _ = bounds
+            return text[:start] + normalized_block + text[start:]
+    if after_node:
+        bounds = _case_block_bounds(text, after_node)
+        if bounds:
+            _, end = bounds
+            return text[:end].rstrip() + "\n\n" + normalized_block + text[end:]
+    return text.rstrip() + "\n\n" + normalized_block
+
+
+def scaffold_missing_cases(spec_path: Path, runtime_root: Path) -> dict[str, object]:
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    if not spec_path.exists():
+        spec_path.write_text("# Runtime pytest UT case specification\n", encoding="utf-8")
+    check = check_spec(spec_path, runtime_root)
+    missing = list(check.get("missing_in_spec", []))
+    if not missing:
+        return {"status": "ok", "repairs": [], "check": check}
+
+    pytest_nodes = collect_pytest_nodes(runtime_root)
+    spec_nodes = [case.node_id for case in parse_spec_cases(read_spec_text(spec_path))]
+    repairs: list[dict[str, Any]] = []
+    existing_nodes = set(spec_nodes)
+    case_counters: dict[Path, int] = {}
+
+    for node_id in missing:
+        path_part, _, _ = split_node(node_id)
+        case_path = case_file_path_for_node(spec_path, node_id)
+        text = _ensure_case_file_header(case_path, path_part.name)
+        case_counters[case_path] = case_counters.get(case_path, 0) + 1
+        case_id = f"RT-UT-CASE-AUTO-{case_counters[case_path]:03d}"
+        node_index = pytest_nodes.index(node_id)
+        previous_node = next(
+            (
+                candidate
+                for candidate in reversed(pytest_nodes[:node_index])
+                if candidate in existing_nodes and case_file_path_for_node(spec_path, candidate) == case_path
+            ),
+            None,
+        )
+        next_node = next(
+            (
+                candidate
+                for candidate in pytest_nodes[node_index + 1 :]
+                if candidate in existing_nodes and case_file_path_for_node(spec_path, candidate) == case_path
+            ),
+            None,
+        )
+        text = _insert_case_block(
+            text,
+            _case_block_for_node(node_id, case_id, runtime_root),
+            before_node=next_node,
+            after_node=previous_node,
+        )
+        text = _update_case_count(text)
+        case_path.parent.mkdir(parents=True, exist_ok=True)
+        case_path.write_text(text, encoding="utf-8", newline="\n")
+        existing_nodes.add(node_id)
+        repairs.append({"node_id": node_id, "path": case_path.as_posix(), "case_id": case_id})
+
+    post_check = check_spec(spec_path, runtime_root)
+    return {"status": "repaired" if post_check.get("status") == "ok" else "remaining-findings", "repairs": repairs, "check": post_check}
+
+
 def resolve_repo_root(value: str | Path | None) -> Path:
     if value:
         return Path(value).resolve()
@@ -393,7 +541,7 @@ def build_report_payload(
                 "pytest node missing from UT specification",
                 "stale pytest node in UT specification",
                 "pytest collection order mismatch",
-                "確認内容 / 入力値 / 期待結果の位置ずれ",
+                "Confirm / Input / Expected field order mismatch",
             ],
         },
         "inputs": {
@@ -419,7 +567,7 @@ def render_report_markdown(payload: dict[str, Any]) -> str:
     status = payload.get("status", "unknown")
 
     def list_or_none(values: list[Any]) -> str:
-        return "\n".join(f"- `{value}`" for value in values) if values else "- なし"
+        return "\n".join(f"- `{value}`" for value in values) if values else "- none"
 
     return f"""# Pytest UT Spec Sync Report
 
@@ -456,7 +604,8 @@ def render_report_markdown(payload: dict[str, Any]) -> str:
 
 ## Context First
 
-このreportは `test-evidence` contextとして `context-manifest.json` に登録できます。後続workflowはmanifestからこのreportを読み、pytest実体とUT仕様書の同期状態を判断できます。
+This report can be registered as `test-evidence` in `context-manifest.json`.
+Follow-up workflows can read the manifest to inspect sync status between pytest collection and the UT specification.
 """
 
 
@@ -506,6 +655,7 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--register-context", action="store_true", help="Register the sync report as Context First test-evidence.")
     check.add_argument("--required-context", action="store_true", help="Mark the registered test-evidence context as required.")
     subparsers.add_parser("fix-inputs", help="Regenerate input sections from pytest function signatures and AST metadata.")
+    subparsers.add_parser("scaffold-missing", help="Create scaffold UT spec case blocks for pytest nodes missing from the spec.")
     return parser
 
 
@@ -522,6 +672,10 @@ def main(argv: list[str] | None = None) -> int:
             replaced += part_replaced
         print(json.dumps({"status": "ok", "updated_input_sections": replaced}, ensure_ascii=False, indent=2))
         return 0
+    if args.command == "scaffold-missing":
+        result = scaffold_missing_cases(spec_path, runtime_root)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result["status"] in {"ok", "repaired"} else 1
     result = check_spec(spec_path, runtime_root)
     if args.report or args.register_context:
         repo_root = resolve_repo_root(args.repo_root)

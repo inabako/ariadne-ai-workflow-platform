@@ -101,15 +101,15 @@ Optional DuckDB read model:
 ```powershell
 .\runtime\windows-script\aiwf.cmd ctl knowledge init
 .\runtime\windows-script\aiwf.cmd ctl knowledge migrate --source work/db/ariadne-knowledge-platform/rag/optimized-chunks
-.\runtime\windows-script\aiwf.cmd ctl knowledge rebuild --reset
+.\runtime\windows-script\aiwf.cmd ctl rag duckdb rebuild --reset
 .\runtime\windows-script\aiwf.cmd ctl knowledge search --query "PyQt GUI smoke test" --limit 10
 .\runtime\windows-script\aiwf.cmd ctl knowledge export-context --query "PyQt GUI smoke test" --output work/issue-123/context/knowledge.json
-.\runtime\windows-script\aiwf.cmd ctl knowledge verify --query workflow --query runtime --query RAG --work-dir db/rag/evidence --work-id duckdb-reference-check
+.\runtime\windows-script\aiwf.cmd ctl rag duckdb verify --query workflow --query runtime --query RAG --work-dir db/rag/evidence --work-id duckdb-reference-check
 ```
 
 `db/rag/ariadne-knowledge.duckdb` は生成物です。Git管理せず、必要なタイミングで再生成します。
 
-ただし、生成物であっても運用上のread model実体です。`db/rag/` はcleanup対象にしないでください。欠落した場合は `workflow_doctor` / `aiwfctl doctor` が警告し、`aiwfctl knowledge rebuild --source-repo work/db/ariadne-knowledge-platform --reset` で再生成します。
+ただし、生成物であっても運用上のread model実体です。`db/rag/` はcleanup対象にしないでください。欠落した場合は `workflow_doctor` / `aiwfctl doctor` が警告し、`aiwfctl rag duckdb rebuild --source-repo work/db/ariadne-knowledge-platform --reset` で再生成します。
 
 `aiwfctl` から呼ぶ場合:
 
@@ -117,10 +117,10 @@ Optional DuckDB read model:
 aiwfctl knowledge source clone
 aiwfctl knowledge source status
 aiwfctl knowledge source import-local --clean
-aiwfctl knowledge rebuild --source-repo work/db/ariadne-knowledge-platform --reset
+aiwfctl rag duckdb rebuild --source-repo work/db/ariadne-knowledge-platform --reset
 aiwfctl knowledge search --query "PyQt GUI smoke test" --limit 10
 aiwfctl knowledge export-context --query "PyQt GUI smoke test" --output work/issue-123/context/knowledge.json
-aiwfctl knowledge verify --query workflow --query runtime --query RAG --source-repo work/db/ariadne-knowledge-platform --work-dir db/rag/evidence --work-id duckdb-reference-check
+aiwfctl rag duckdb verify --query workflow --query runtime --query RAG --source-repo work/db/ariadne-knowledge-platform --work-dir db/rag/evidence --work-id duckdb-reference-check
 ```
 
 `source clone` は `inabako/ariadne-knowledge-platform.git` を `work/db/ariadne-knowledge-platform` にcloneします。`source import-local --clean` は、既存のローカル `work/db/ariadne-knowledge-platform/rag/chunks`、`work/db/ariadne-knowledge-platform/rag/jsonized`、`work/db/ariadne-knowledge-platform/rag/normalized` などをknowledge repo cloneへコピーします。

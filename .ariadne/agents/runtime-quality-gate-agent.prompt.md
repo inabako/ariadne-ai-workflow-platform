@@ -22,8 +22,8 @@ runtime/workflow/workflow_doctor.py
 runtime/workflow/context_first.py
 runtime/workflow/validate_output_language.py
 runtime/tests/
-docs/reference/runtime-pytest-ut-case-specification.md
-docs/reference/runtime-pytest-ut-test-items.md
+docs/reference/runtime-pytest-ut/case-specification.md
+docs/reference/runtime-pytest-ut/test-items.md
 .ariadne/schemas/pytest-ut-spec-sync-report.schema.json
 .ariadne/schemas/context-manifest.schema.json
 ```
@@ -48,14 +48,14 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 ### 1. runtime pytest
 
 ```powershell
-.\tools\uv.cmd run --project . --group dev pytest tests -q
+.\windows-script\uv.cmd run --project . --group dev pytest tests -q
 ```
 
 ### 2. UT仕様書同期チェック
 
 ```powershell
-.\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py `
-  --spec ..\docs\reference\runtime-pytest-ut-case-specification.md `
+.\windows-script\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py `
+  --spec ..\docs\reference\runtime-pytest-ut\case-specification.md `
   --runtime-root . `
   check `
   --repo-root .. `
@@ -69,7 +69,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 ### 3. workflow doctor
 
 ```powershell
-.\tools\uv.cmd run --project . --group dev python workflow\workflow_doctor.py `
+.\windows-script\uv.cmd run --project . --group dev python workflow\workflow_doctor.py `
   --repo-root .. `
   --fail-on-warning
 ```
@@ -77,18 +77,29 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 ### 4. aiwfctl doctor
 
 ```powershell
-.\tools\uv.cmd run --project . --group dev python ctl.py `
+.\windows-script\uv.cmd run --project . --group dev python ctl.py `
   --repo-root .. `
   doctor `
   --json `
   --fail-on-warning
 ```
 
+repair可能なwarningに限り、明示的にrepair optionを指定してから再度doctorを実行します。
+
+```powershell
+cd C:\github\ariadne-ai-workflow-platform
+
+.\runtime\windows-script\aiwfctl.cmd doctor `
+  --repair-spec-index `
+  --repair-encoding `
+  --fail-on-warning
+```
+
 ### 5. 日本語Markdown品質チェック
 
 ```powershell
-.\tools\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
-  --paths ..\docs\reference\runtime-pytest-ut-test-items.md ..\docs\reference\runtime-pytest-ut-case-specification.md ..\.ariadne\schemas\README.md `
+.\windows-script\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
+  --paths ..\docs\reference\runtime-pytest-ut\test-items.md ..\docs\reference\runtime-pytest-ut\case-specification.md ..\.ariadne\schemas\README.md `
   --fail-on-violation
 ```
 
@@ -102,6 +113,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 - `confirm_count`, `input_count`, `expected_count` がpytest収集件数と一致する。
 - `workflow_doctor --fail-on-warning` がpassする。
 - `aiwfctl doctor --json --fail-on-warning` がpassする。
+- repair optionを使った場合は `Repair Count` / `repairs[]` を確認し、生成されたUT仕様case scaffoldやencoding修復結果を人間が読める状態にする。
 - `pytest-ut-spec-sync-report.json` と `pytest-ut-spec-sync-report.md` が生成される。
 - Context First manifestに `test-evidence` contextが登録される。
 - 日本語Markdown品質チェックがpassする。
@@ -138,6 +150,8 @@ Workflow Doctor:
 aiwfctl Doctor:
   status:
   warning_count:
+  repair_count:
+  repairs:
 
 Language Guard:
   status:
@@ -155,12 +169,15 @@ Next Action:
 - `確認内容 / 入力値 / 期待結果` の位置ずれが出た。
 - Context First manifestへ `test-evidence` を登録できなかった。
 - `workflow_doctor --fail-on-warning` が失敗した。
+- repair後も `aiwfctl doctor --fail-on-warning` が失敗した。
 - 日本語Markdown品質チェックが失敗した。
 
 ## 修復方針
 
 - pytest nodeが増減した場合は、UT仕様書をpytest収集順で更新します。
-- 入力値欄が古い場合は `pytest_ut_spec_sync.py fix-inputs` を使って再生成します。
+- pytest nodeがUT仕様書に存在しない場合は、`aiwfctl doctor --repair-spec-index` で最小限のcase scaffoldを生成してから内容をレビューします。
+- 入力値欄が古い場合は `pytest_ut_spec_sync.py fix-inputs` または必要な手修正で再生成します。
+- encoding境界の安全な修復だけが必要な場合は、`aiwfctl doctor --repair-encoding` を使います。
 - runtime挙動が変わった場合は、該当pytest、UT仕様書、docs/referenceの順に同期します。
 - Context First manifest登録に失敗した場合は、`context_first.register_context`、schema path、report pathを確認します。
 - GitHub Actions workflowを追加して解決しようとしてはいけません。
