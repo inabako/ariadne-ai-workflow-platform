@@ -36,6 +36,7 @@ SUBCOMMAND_ATTRIBUTES = (
     "iac_template_command",
     "integration_command",
     "integration_emulator_command",
+    "trace_command",
 )
 
 

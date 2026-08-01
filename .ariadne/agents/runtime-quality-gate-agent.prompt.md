@@ -41,66 +41,61 @@ docs/reference/runtime-pytest-ut/test-items.md
 
 作業起点:
 
-```powershell
-cd C:\github\ariadne-ai-workflow-platform\runtime
+`<repository-root>` は現在の Ariadne repository checkout root を指します。
+`<uv-command>` は、Windows では `runtime/windows-script/uv.cmd`、macOS / Linux / WSL では PATH 上の `uv` を指します。
+
+```shell
+cd <repository-root>
+```
+
+### 0. workflow execution trace
+
+```shell
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . trace begin --workflow /runtime-health-check
 ```
 
 ### 1. runtime pytest
 
-```powershell
-.\windows-script\uv.cmd run --project . --group dev pytest tests -q
+```shell
+<uv-command> run --project runtime --group dev pytest -c runtime/pytest.ini runtime/tests -q
 ```
 
 ### 2. UT仕様書同期チェック
 
-```powershell
-.\windows-script\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py `
-  --spec ..\docs\reference\runtime-pytest-ut\case-specification.md `
-  --runtime-root . `
-  check `
-  --repo-root .. `
-  --work-dir runtime\.pytest_cache\context-first-agent-quality-gate `
-  --report .pytest_cache\pytest-ut-spec-sync-report.json `
-  --markdown .pytest_cache\pytest-ut-spec-sync-report.md `
-  --register-context `
-  --required-context
+```shell
+<uv-command> run --project runtime --group dev python runtime/tools/pytest_ut_spec_sync.py --spec docs/reference/runtime-pytest-ut/case-specification.md --runtime-root runtime check --repo-root . --work-dir runtime/.pytest_cache/context-first-agent-quality-gate --report runtime/.pytest_cache/pytest-ut-spec-sync-report.json --markdown runtime/.pytest_cache/pytest-ut-spec-sync-report.md --register-context --required-context
 ```
 
 ### 3. workflow doctor
 
-```powershell
-.\windows-script\uv.cmd run --project . --group dev python workflow\workflow_doctor.py `
-  --repo-root .. `
-  --fail-on-warning
+```shell
+<uv-command> run --project runtime --group dev python runtime/workflow/workflow_doctor.py --repo-root . --fail-on-warning
 ```
 
 ### 4. aiwfctl doctor
 
-```powershell
-.\windows-script\uv.cmd run --project . --group dev python ctl.py `
-  --repo-root .. `
-  doctor `
-  --json `
-  --fail-on-warning
+```shell
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . doctor --json --fail-on-warning
 ```
 
 repair可能なwarningに限り、明示的にrepair optionを指定してから再度doctorを実行します。
 
-```powershell
-cd C:\github\ariadne-ai-workflow-platform
+```shell
+cd <repository-root>
 
-.\runtime\windows-script\aiwfctl.cmd doctor `
-  --repair-spec-index `
-  --repair-encoding `
-  --fail-on-warning
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . doctor --repair-spec-index --repair-encoding --fail-on-warning
 ```
 
 ### 5. 日本語Markdown品質チェック
 
-```powershell
-.\windows-script\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
-  --paths ..\docs\reference\runtime-pytest-ut\test-items.md ..\docs\reference\runtime-pytest-ut\case-specification.md ..\.ariadne\schemas\README.md `
-  --fail-on-violation
+```shell
+<uv-command> run --project runtime --group dev python runtime/workflow/validate_output_language.py --paths docs/reference/runtime-pytest-ut/test-items.md docs/reference/runtime-pytest-ut/case-specification.md .ariadne/schemas/README.md --fail-on-violation
+```
+
+### 6. workflow execution trace終了
+
+```shell
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . trace end
 ```
 
 ## 成功条件
@@ -152,6 +147,7 @@ aiwfctl Doctor:
   warning_count:
   repair_count:
   repairs:
+  trace_id:
 
 Language Guard:
   status:

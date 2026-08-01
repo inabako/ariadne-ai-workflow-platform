@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 19 |
+| cases | 22 |
 
 ## ケース一覧
 
@@ -126,6 +126,40 @@ runtime/tests/test_observability_metrics.py::test_runtime_event_logger_writes_pi
   - parameter: names=なし, case=なし
   - inline input: `payload`
 - 期待結果: `logs/runtime/runtime-events.log` に同一traceの連番イベントが保存され、JSON payload の機密値が `***` へmaskされる。
+
+#### RT-UT-CASE-AUTO-001
+
+- pytest node id:
+
+```text
+runtime/tests/test_observability_metrics.py::test_active_runtime_trace_state_is_used_by_default
+```
+
+- Confirm: active runtime trace state が存在する場合、`RuntimeEventLogger` が既定で同じ trace id を使うことを確認します。
+- Input:
+  - pytest node: 上記 node id
+  - source: `runtime/tests/test_observability_metrics.py:108`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: `active-trace.json` の trace id が `runtime-events.log` に使われ、trace end 後は active trace id が空になる。
+
+#### RT-UT-CASE-AUTO-002
+
+- pytest node id:
+
+```text
+runtime/tests/test_observability_metrics.py::test_active_runtime_trace_begin_blocks_existing_trace_without_force
+```
+
+- Confirm: active trace が残っている状態で別 workflow trace を誤って開始しないよう、`--force` なしの begin が blocked になることを確認します。
+- Input:
+  - pytest node: 上記 node id
+  - source: `runtime/tests/test_observability_metrics.py:123`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=none case=none
+  - inline input: test-local fixtures and assertions
+- Expected: 既存 active trace がある場合は blocked になり、`--force` 指定時だけ新しい workflow trace state へ置き換わる。
 
 #### RT-UT-CASE-212B
 

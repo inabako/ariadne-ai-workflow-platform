@@ -37,6 +37,39 @@ logs/runtime-metrics-YYYYMM.jsonl
 
 ## Runtime Event Log
 
+### Workflow Execution Trace
+
+`aiwfctl trace begin` で active trace を開始すると、`logs/runtime/active-trace.json` に `trace_id` と `last_sequence` が保存されます。以後の `aiwfctl` 実行は、`trace end` まで同じ trace id を使い、runtime event の sequence も workflow 全体で `00001` から連番になります。
+
+runtime command 単体ではなく、1つの workflow 実行全体を同じ trace id で追跡したい場合は、workflow 開始時に active trace を作成します。
+
+```powershell
+aiwfctl trace begin --workflow /runtime-health-check
+```
+
+`logs/runtime/active-trace.json` が存在する間、後続の `aiwfctl` 実行は同じ trace id を使って `logs/runtime/runtime-events.log` へ記録されます。
+
+workflow が完了したら active trace を終了します。
+
+```powershell
+aiwfctl trace end
+```
+
+途中状態を確認する場合:
+
+```powershell
+aiwfctl trace status --json
+```
+
+trace id の優先順位は次のとおりです。
+
+1. `RuntimeEventLogger` に明示指定された trace id。
+2. 環境変数 `AIWF_TRACE_ID`。
+3. `logs/runtime/active-trace.json` の active trace id。
+4. command 単位で自動生成される trace id。
+
+このため、prompt workflow では `trace begin` から `trace end` までを1つの workflow execution として扱います。`AIWF_TRACE_ID` を明示した場合は、active trace より環境変数が優先されます。
+
 Runtime Event Log は、runtime の実行順序を人間と AI Agent が追跡するための時系列ログです。
 
 保存先:

@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 54 |
+| cases | 55 |
 
 ## ケース一覧
 
@@ -92,6 +92,23 @@ runtime/tests/test_ctl_help.py::test_ctl_run_writes_runtime_event_log_for_each_c
   - parameter: names=なし, case=なし
   - inline input: `args`, `started`, `completed`
 - 期待結果: `logs/runtime/runtime-events.log` に同一trace idで `runtime_command_started` と `runtime_command_completed` が `00001`、`00002` の順に保存される。
+
+#### RT-UT-CASE-AUTO-001
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_trace_lifecycle_keeps_one_trace_id_for_workflow_commands
+```
+
+- Confirm: `aiwfctl trace begin` から `trace end` までの複数 runtime command が、1つの workflow execution trace id にまとまることを確認します。
+- Input:
+  - pytest node: 上記 node id
+  - source: `runtime/tests/test_ctl_help.py:235`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=none case=none
+  - inline input: `args`
+- Expected: begin / help / status / end の event は同じ trace id で記録され、end 後の command は新しい trace id で記録される。
 
 #### RT-UT-CASE-CTL-002A
 

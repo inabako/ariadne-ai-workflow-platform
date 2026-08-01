@@ -24,7 +24,9 @@ from runtime.constants.runtime_values import (
 LOGGER = logging.getLogger(__name__)
 DEFAULT_RUNTIME_EVENT_LOG_DIR = Path("logs") / "runtime"
 DEFAULT_RUNTIME_EVENT_LOG_FILE = "runtime-events.log"
+DEFAULT_ACTIVE_RUNTIME_TRACE_FILE = "active-trace.json"
 DEFAULT_RUNTIME_EVENT_SCHEMA_VERSION = SCHEMA_VERSION
+AIWF_TRACE_ID_ENV = "AIWF_TRACE_ID"
 SENSITIVE_KEYS = ("secret", "token", "password", "credential", "apikey", "api_key", "private_key")
 
 
@@ -93,8 +95,131 @@ def runtime_event_log_path(repo_root: Path, log_dir: Path | None = None) -> Path
     return directory / DEFAULT_RUNTIME_EVENT_LOG_FILE
 
 
+def active_runtime_trace_path(repo_root: Path, log_dir: Path | None = None) -> Path:
+    directory = log_dir or repo_root / DEFAULT_RUNTIME_EVENT_LOG_DIR
+    return directory / DEFAULT_ACTIVE_RUNTIME_TRACE_FILE
+
+
 def generate_trace_id() -> str:
     return secrets.token_hex(DEFAULT_RUNTIME_TRACE_ID_BYTES)
+
+
+def load_active_runtime_trace(repo_root: Path, log_dir: Path | None = None) -> dict[str, Any]:
+    path = active_runtime_trace_path(repo_root, log_dir=log_dir)
+    if not path.exists():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(payload, dict):
+        return {}
+    trace_id = str(payload.get("trace_id", "") or "")
+    if not trace_id:
+        return {}
+    return payload
+
+
+def active_runtime_trace_id(repo_root: Path, log_dir: Path | None = None) -> str:
+    return str(load_active_runtime_trace(repo_root, log_dir=log_dir).get("trace_id", "") or "")
+
+
+def _coerce_runtime_event_sequence(value: Any) -> int:
+    try:
+        sequence = int(value)
+    except (TypeError, ValueError):
+        return RUNTIME_EVENT_INITIAL_SEQUENCE
+    return max(sequence, RUNTIME_EVENT_INITIAL_SEQUENCE)
+
+
+def active_runtime_trace_last_sequence(repo_root: Path, log_dir: Path | None = None) -> int:
+    trace = load_active_runtime_trace(repo_root, log_dir=log_dir)
+    return _coerce_runtime_event_sequence(trace.get("last_sequence", RUNTIME_EVENT_INITIAL_SEQUENCE))
+
+
+def begin_active_runtime_trace(
+    repo_root: Path,
+    *,
+    workflow: str,
+    trace_id: str = "",
+    force: bool = False,
+    initial_sequence: int = RUNTIME_EVENT_INITIAL_SEQUENCE,
+    log_dir: Path | None = None,
+) -> dict[str, Any]:
+    path = active_runtime_trace_path(repo_root, log_dir=log_dir)
+    existing = load_active_runtime_trace(repo_root, log_dir=log_dir)
+    if existing and not force:
+        return {
+            "status": "blocked",
+            "reason": "active-trace-exists",
+            "trace_id": existing.get("trace_id", ""),
+            "workflow": existing.get("workflow", ""),
+            "last_sequence": _coerce_runtime_event_sequence(
+                existing.get("last_sequence", RUNTIME_EVENT_INITIAL_SEQUENCE)
+            ),
+            "path": str(path),
+        }
+    payload = {
+        "schema_version": DEFAULT_RUNTIME_EVENT_SCHEMA_VERSION,
+        "artifact_type": "active-runtime-trace",
+        "status": "active",
+        "trace_id": trace_id or generate_trace_id(),
+        "workflow": workflow,
+        "started_at": _now_local().isoformat(timespec="milliseconds"),
+        "updated_at": _now_local().isoformat(timespec="milliseconds"),
+        "last_sequence": _coerce_runtime_event_sequence(initial_sequence),
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {
+        **payload,
+        "path": str(path),
+    }
+
+
+def advance_active_runtime_trace_sequence(
+    repo_root: Path,
+    *,
+    trace_id: str,
+    minimum_sequence: int,
+    log_dir: Path | None = None,
+) -> int:
+    path = active_runtime_trace_path(repo_root, log_dir=log_dir)
+    payload = load_active_runtime_trace(repo_root, log_dir=log_dir)
+    if str(payload.get("trace_id", "") or "") != trace_id:
+        return minimum_sequence
+
+    last_sequence = _coerce_runtime_event_sequence(payload.get("last_sequence", RUNTIME_EVENT_INITIAL_SEQUENCE))
+    next_sequence = max(last_sequence + 1, _coerce_runtime_event_sequence(minimum_sequence))
+    payload["last_sequence"] = next_sequence
+    payload["updated_at"] = _now_local().isoformat(timespec="milliseconds")
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    except OSError as exc:
+        LOGGER.warning("active runtime trace sequence update failed: %s", exc)
+        return minimum_sequence
+    return next_sequence
+
+
+def end_active_runtime_trace(repo_root: Path, log_dir: Path | None = None) -> dict[str, Any]:
+    path = active_runtime_trace_path(repo_root, log_dir=log_dir)
+    existing = load_active_runtime_trace(repo_root, log_dir=log_dir)
+    if not existing:
+        return {
+            "status": "not-active",
+            "reason": "active-trace-missing",
+            "trace_id": "",
+            "workflow": "",
+            "path": str(path),
+        }
+    path.unlink(missing_ok=True)
+    return {
+        **existing,
+        "status": "ended",
+        "ended_at": _now_local().isoformat(timespec="milliseconds"),
+        "path": str(path),
+    }
 
 
 def _is_sensitive_key(key: str) -> bool:
@@ -204,17 +329,27 @@ class RuntimeEventLogger:
         workflow: str = "",
         trace_id: str | None = None,
         log_dir: Path | None = None,
+        use_active_trace: bool = True,
         max_bytes: int = DEFAULT_RUNTIME_EVENT_MAX_BYTES,
         backup_count: int = DEFAULT_RUNTIME_EVENT_BACKUP_COUNT,
     ) -> None:
         self.repo_root = repo_root
         self.component = component
         self.workflow = workflow
-        self.trace_id = trace_id or os.environ.get("AIWF_TRACE_ID") or generate_trace_id()
+        self.log_dir = log_dir
+        self.use_active_trace = use_active_trace
+        env_trace_id = os.environ.get(AIWF_TRACE_ID_ENV)
+        active_trace = load_active_runtime_trace(repo_root, log_dir=log_dir) if use_active_trace else {}
+        state_trace_id = str(active_trace.get("trace_id", "") or "")
+        self.trace_id = trace_id or env_trace_id or state_trace_id or generate_trace_id()
         self.log_path = runtime_event_log_path(repo_root, log_dir=log_dir)
         self.max_bytes = max_bytes
         self.backup_count = backup_count
-        self.sequence = RUNTIME_EVENT_INITIAL_SEQUENCE
+        self.sequence = (
+            _coerce_runtime_event_sequence(active_trace.get("last_sequence", RUNTIME_EVENT_INITIAL_SEQUENCE))
+            if state_trace_id == self.trace_id
+            else RUNTIME_EVENT_INITIAL_SEQUENCE
+        )
         self.write_warnings: list[dict[str, Any]] = []
 
     def emit(
@@ -231,7 +366,17 @@ class RuntimeEventLogger:
         output: dict[str, Any] | None = None,
         **metadata: Any,
     ) -> dict[str, Any]:
-        self.sequence += 1
+        minimum_sequence = self.sequence + 1
+        self.sequence = (
+            advance_active_runtime_trace_sequence(
+                self.repo_root,
+                trace_id=self.trace_id,
+                minimum_sequence=minimum_sequence,
+                log_dir=self.log_dir,
+            )
+            if self.use_active_trace
+            else minimum_sequence
+        )
         payload = {
             **metadata,
             "schema_version": DEFAULT_RUNTIME_EVENT_SCHEMA_VERSION,

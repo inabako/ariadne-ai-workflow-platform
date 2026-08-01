@@ -57,6 +57,16 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     assert release_manifest_args.command == "release"
     assert release_manifest_args.release_command == "manifest"
     assert release_manifest_args.artifact == ["LICENSE"]
+    trace_begin_args = parser.parse_args(["trace", "begin", "--workflow", "/runtime-health-check", "--trace-id", "traceabc"])
+    assert trace_begin_args.command == "trace"
+    assert trace_begin_args.trace_command == "begin"
+    assert trace_begin_args.workflow == "/runtime-health-check"
+    assert trace_begin_args.trace_id == "traceabc"
+    trace_status_args = parser.parse_args(["trace", "status", "--json"])
+    assert trace_status_args.trace_command == "status"
+    assert trace_status_args.json is True
+    trace_end_args = parser.parse_args(["trace", "end"])
+    assert trace_end_args.trace_command == "end"
     rag_duckdb_rebuild_args = parser.parse_args(["rag", "duckdb", "rebuild", "--reset"])
     assert rag_duckdb_rebuild_args.command == "rag"
     assert rag_duckdb_rebuild_args.rag_command == "duckdb"
@@ -220,6 +230,55 @@ def test_ctl_run_writes_runtime_event_log_for_each_command(tmp_path: Path) -> No
     assert completed["output"]["reason"] == "completed"
     assert isinstance(completed["output"]["duration_ms"], int)
     assert completed["output"]["duration_ms"] >= 0
+
+
+def test_ctl_trace_lifecycle_keeps_one_trace_id_for_workflow_commands(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+    registry = tmp_path / "runtime" / "registries"
+    registry.mkdir(parents=True)
+    (registry / "workflow_help.json").write_text('{"commands": [], "extensions": []}', encoding="utf-8")
+
+    args = ctl.build_parser().parse_args(
+        ["--repo-root", str(tmp_path), "trace", "begin", "--workflow", "/runtime-health-check", "--trace-id", "wftrace"]
+    )
+    code, output = ctl.run(args)
+
+    assert code == 0
+    assert "Trace ID : wftrace" in output
+    active_trace = tmp_path / "logs" / "runtime" / "active-trace.json"
+    active_payload = json.loads(active_trace.read_text(encoding="utf-8"))
+    assert active_payload["trace_id"] == "wftrace"
+    assert active_payload["last_sequence"] == 2
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "help", "list"])
+    code, output = ctl.run(args)
+    assert code == 0
+    assert "## Workflow Commands" in output
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "trace", "status", "--json"])
+    code, output = ctl.run(args)
+    assert code == 0
+    assert json.loads(output)["trace_id"] == "wftrace"
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "trace", "end"])
+    code, output = ctl.run(args)
+    assert code == 0
+    assert "Status   : ended" in output
+    assert not active_trace.exists()
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "help", "list"])
+    code, output = ctl.run(args)
+    assert code == 0
+
+    log_path = tmp_path / "logs" / "runtime" / "runtime-events.log"
+    prefixes = [line.split(" | ", 3) for line in log_path.read_text(encoding="utf-8").splitlines()]
+    trace_ids = [prefix[1] for prefix in prefixes]
+    sequences = [prefix[2] for prefix in prefixes]
+    assert trace_ids[:8] == ["wftrace"] * 8
+    assert trace_ids[8] != "wftrace"
+    assert trace_ids[9] == trace_ids[8]
+    assert sequences[:8] == [f"{index:05d}" for index in range(1, 9)]
+    assert sequences[8:] == ["00001", "00002"]
 
 
 def test_runtime_diagnostics_for_blocked_command_include_next_action() -> None:

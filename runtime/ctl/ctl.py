@@ -979,9 +979,19 @@ def _elapsed_ms(started: float) -> int:
 def run(args: argparse.Namespace, color: bool = False) -> tuple[int, str]:
     repo_root = repo_root_from_args(args)
     event_context = RuntimeCommandEventContext.from_args(args, repo_root)
-    event_logger = RuntimeEventLogger(repo_root=repo_root, component="ctl", workflow=event_context.workflow)
+    begin_trace = args.command == "trace" and getattr(args, "trace_command", "") == "begin"
+    trace_id = str(getattr(args, "trace_id", "") or "") if begin_trace else ""
+    event_logger = RuntimeEventLogger(
+        repo_root=repo_root,
+        component="ctl",
+        workflow=event_context.workflow,
+        trace_id=trace_id or None,
+        use_active_trace=not (begin_trace and bool(getattr(args, "force", False))),
+    )
+    setattr(args, "_runtime_trace_id", event_logger.trace_id)
     started = perf_counter()
-    event_context.emit_started(event_logger)
+    started_event = event_context.emit_started(event_logger)
+    setattr(args, "_runtime_sequence", started_event.get("sequence", 0))
     try:
         code, output = _run_impl(args, color=color)
     except Exception as exc:

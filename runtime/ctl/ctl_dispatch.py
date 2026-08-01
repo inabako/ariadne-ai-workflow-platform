@@ -35,6 +35,7 @@ from runtime.ctl.ctl_tools_adapter import run_tools
 from runtime.ctl.ctl_work_adapter import run_work_cleanup
 from runtime.ctl.ctl_workflow_adapter import run_workflow
 from runtime.constants.workflow_limits import CTL_WARNING_PATH_PREVIEW_LIMIT
+from runtime.observability import logger as runtime_event_logger
 from runtime.release import manifest as release_manifest
 from runtime.release import validation as release_validation
 
@@ -115,6 +116,58 @@ def _handle_env(args: argparse.Namespace, repo_root: Path, registry: dict[str, A
             output += "\n### Written Artifacts\n\n" + "\n".join(f"- `{path}`" for path in written) + "\n"
         return (0 if not record.get("human_check_required") else 2), output
     return 1, f"Unknown env command: {env_command}\n"
+
+
+def _format_trace_result(result: dict[str, Any]) -> str:
+    return "\n".join(
+        [
+            "Runtime Trace",
+            "",
+            f"Status   : {result.get('status', '')}",
+            f"Trace ID : {result.get('trace_id', '')}",
+            f"Workflow : {result.get('workflow', '')}",
+            f"Last Seq : {result.get('last_sequence', 0)}",
+            f"Path     : {result.get('path', '')}",
+            f"Reason   : {result.get('reason', '')}",
+        ]
+    ).rstrip() + "\n"
+
+
+def _handle_trace(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    trace_command = getattr(args, "trace_command", None)
+    if trace_command is None:
+        return 1, (
+            "Runtime Trace\n\n"
+            "Usage:\n"
+            "  aiwfctl trace begin --workflow /runtime-health-check\n"
+            "  aiwfctl trace status\n"
+            "  aiwfctl trace end\n"
+        )
+    if trace_command == "begin":
+        result = runtime_event_logger.begin_active_runtime_trace(
+            repo_root,
+            workflow=str(getattr(args, "workflow", "") or ""),
+            trace_id=str(getattr(args, "_runtime_trace_id", "") or getattr(args, "trace_id", "") or ""),
+            force=bool(getattr(args, "force", False)),
+            initial_sequence=int(getattr(args, "_runtime_sequence", 0) or 0),
+        )
+        code = 0 if result.get("status") == "active" else 2
+    elif trace_command == "status":
+        active = runtime_event_logger.load_active_runtime_trace(repo_root)
+        result = {
+            **active,
+            "status": active.get("status", "not-active") if active else "not-active",
+            "path": str(runtime_event_logger.active_runtime_trace_path(repo_root)),
+        }
+        code = 0 if active else 2
+    elif trace_command == "end":
+        result = runtime_event_logger.end_active_runtime_trace(repo_root)
+        code = 0 if result.get("status") == "ended" else 2
+    else:
+        return 1, f"Unknown trace command: {trace_command}\n"
+    if getattr(args, "json", False):
+        return code, json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    return code, _format_trace_result(result)
 
 
 def _handle_context(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
@@ -1296,6 +1349,7 @@ def _handle_release(args: argparse.Namespace, repo_root: Path, registry: dict[st
 
 COMMAND_HANDLERS: dict[str, CommandHandler] = {
     "env": _handle_env,
+    "trace": _handle_trace,
     "context": _handle_context,
     "human-gate": _handle_human_gate,
     "design": _handle_design,

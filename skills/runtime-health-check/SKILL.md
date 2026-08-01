@@ -33,58 +33,49 @@ GitHub Actions workflow は作成しません。
 
 特に指定がない限り、repository root から開始します。
 
-```powershell
-cd C:\github\ariadne-ai-workflow-platform\runtime
+`<repository-root>` は現在の Ariadne repository checkout root を指します。
+`<uv-command>` は、Windows では `runtime/windows-script/uv.cmd`、macOS / Linux / WSL では PATH 上の `uv` を指します。
+
+```shell
+cd <repository-root>
+```
+
+workflow execution trace を開始します。
+
+```shell
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . trace begin --workflow /runtime-health-check
 ```
 
 runtime pytest を実行します。
 
-```powershell
-.\windows-script\uv.cmd run --project . --group dev pytest tests -q
+```shell
+<uv-command> run --project runtime --group dev pytest -c runtime/pytest.ini runtime/tests -q
 ```
 
 UT仕様書同期チェックを実行し、Context First test evidence として登録します。
 
-```powershell
-.\windows-script\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py `
-  --spec ..\docs\reference\runtime-pytest-ut\case-specification.md `
-  --runtime-root . `
-  check `
-  --repo-root .. `
-  --work-dir runtime\.pytest_cache\runtime-health-check `
-  --report .pytest_cache\pytest-ut-spec-sync-report.json `
-  --markdown .pytest_cache\pytest-ut-spec-sync-report.md `
-  --register-context `
-  --required-context
+```shell
+<uv-command> run --project runtime --group dev python runtime/tools/pytest_ut_spec_sync.py --spec docs/reference/runtime-pytest-ut/case-specification.md --runtime-root runtime check --repo-root . --work-dir runtime/.pytest_cache/runtime-health-check --report runtime/.pytest_cache/pytest-ut-spec-sync-report.json --markdown runtime/.pytest_cache/pytest-ut-spec-sync-report.md --register-context --required-context
 ```
 
 workflow doctor を実行します。
 
-```powershell
-.\windows-script\uv.cmd run --project . --group dev python workflow\workflow_doctor.py `
-  --repo-root .. `
-  --fail-on-warning
+```shell
+<uv-command> run --project runtime --group dev python runtime/workflow/workflow_doctor.py --repo-root . --fail-on-warning
 ```
 
 aiwfctl doctor を実行します。
 
-```powershell
-.\windows-script\uv.cmd run --project . --group dev python ctl.py `
-  --repo-root .. `
-  doctor `
-  --json `
-  --fail-on-warning
+```shell
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . doctor --json --fail-on-warning
 ```
 
 warning が明示的に修復可能な場合だけ、repair option を指定して実行します。
 
-```powershell
-cd C:\github\ariadne-ai-workflow-platform
+```shell
+cd <repository-root>
 
-.\runtime\windows-script\aiwfctl.cmd doctor `
-  --repair-spec-index `
-  --repair-encoding `
-  --fail-on-warning
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . doctor --repair-spec-index --repair-encoding --fail-on-warning
 ```
 
 `--repair-spec-index` は、pytest collection には存在するが `docs/reference/runtime-pytest-ut/cases/*.md` に未登録の node id に対して、最小限の UT仕様 case scaffold を生成します。health check 完了扱いにする前に、生成された Confirm / Input / Expected の内容を必ず確認してください。
@@ -93,10 +84,14 @@ cd C:\github\ariadne-ai-workflow-platform
 
 日本語 Markdown ガードを実行します。
 
-```powershell
-.\windows-script\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
-  --paths ..\docs\reference\runtime-pytest-ut\test-items.md ..\docs\reference\runtime-pytest-ut\case-specification.md ..\.ariadne\schemas\README.md ..\.ariadne\agents\runtime-quality-gate-agent.prompt.md `
-  --fail-on-violation
+```shell
+<uv-command> run --project runtime --group dev python runtime/workflow/validate_output_language.py --paths docs/reference/runtime-pytest-ut/test-items.md docs/reference/runtime-pytest-ut/case-specification.md .ariadne/schemas/README.md .ariadne/agents/runtime-quality-gate-agent.prompt.md --fail-on-violation
+```
+
+すべての確認が終わったら、workflow execution trace を終了します。
+
+```shell
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . trace end
 ```
 
 ## 停止条件
@@ -130,6 +125,7 @@ cd C:\github\ariadne-ai-workflow-platform
 - doctor ステータス
 - aiwfctl doctor ステータス
 - repair option を使った場合の repair count と修復 artifact 概要
+- workflow execution trace id
 - Context First `test-evidence` path
 - 残 warning がある場合は、その内容
 
@@ -142,7 +138,7 @@ AI workflow 実行中に再利用可能な摩擦や改善候補を見つけた�
 新しい report を作成する場合は、既存 helper を使います。
 
 ```powershell
-uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
+<uv-command> run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
   --target-workflow "<slash-command>" `
   --reporter "AI workflow" `
   --situation "<what was happening>" `
@@ -151,4 +147,4 @@ uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvemen
   --proposed-improvement "<candidate improvement>"
 ```
 
-初期 `Review Status` は `Proposed` のままにします。この workflow の中で `/self-improvement` を自動実行しません。`/self-improvement` は、feedback が蓄積し、人間が Accepted / Rejected / Deferred の判断を行う準備ができてから実行します。
+初期 `Review Status` は `Proposed` のままにします。この workflow の中で `/self-improvement` を自動実行しません。Do not run `/self-improvement` automatically. `/self-improvement` は、feedback が蓄積し、人間が Accepted / Rejected / Deferred の判断を行う準備ができてから実行します。

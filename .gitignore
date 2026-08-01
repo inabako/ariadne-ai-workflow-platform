@@ -34,7 +34,14 @@ coverage.xml
 htmlcov/
 runtime/.coverage_html/
 runtime/.coverage.json
-logs/
+logs/*
+!logs/README.md
+!logs/runtime/
+logs/runtime/*
+!logs/runtime/README.md
+!logs/test/
+logs/test/*
+!logs/test/README.md
 runtime/logs/
 scancode-output/
 reuse-lint-output/

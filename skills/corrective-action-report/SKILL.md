@@ -35,7 +35,7 @@ If the user explicitly requests another language, use the requested language.
 Write the report to:
 
 ```text
-C:\github\ariadne-ai-workflow-platform\work\db\ariadne-knowledge-platform\rag\corrective-action-report
+<repository-root>/work/db/ariadne-knowledge-platform/rag/corrective-action-report
 ```
 
 Recommended filename:
@@ -223,14 +223,10 @@ Create or update a Feedback report when you observe ambiguity, repeated checks, 
 
 Use the existing helper when creating a new report:
 
-```powershell
-uv run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback `
-  --target-workflow "<slash-command>" `
-  --reporter "AI workflow" `
-  --situation "<what was happening>" `
-  --friction "<observed friction>" `
-  --impact "<impact on quality, speed, or safety>" `
-  --proposed-improvement "<candidate improvement>"
+`<uv-command>` は、Windows では `runtime/windows-script/uv.cmd`、macOS / Linux / WSL では PATH 上の `uv` を指します。
+
+```shell
+<uv-command> run --project runtime python runtime/ctl/ctl.py --repo-root . self-improvement create-feedback --target-workflow "<slash-command>" --reporter "AI workflow" --situation "<what was happening>" --friction "<observed friction>" --impact "<impact on quality, speed, or safety>" --proposed-improvement "<candidate improvement>"
 ```
 
 Keep the initial `Review Status` as `Proposed`. Do not run `/self-improvement` automatically inside this workflow; `/self-improvement` is executed later when feedback has accumulated and a human is ready to review Accepted / Rejected / Deferred decisions.

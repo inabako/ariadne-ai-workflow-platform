@@ -51,51 +51,38 @@ pass / fail 報告
 
 ## 標準コマンド
 
-```powershell
-cd C:\github\ariadne-ai-workflow-platform\runtime
+`<repository-root>` は現在の Ariadne repository checkout root を指します。
+`<uv-command>` は、Windows では `runtime/windows-script/uv.cmd`、macOS / Linux / WSL では PATH 上の `uv` を指します。
 
-.\windows-script\uv.cmd run --project . --group dev pytest tests -q
+```shell
+cd <repository-root>
 
-.\windows-script\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py `
-  --spec ..\docs\reference\runtime-pytest-ut\case-specification.md `
-  --runtime-root . `
-  check `
-  --repo-root .. `
-  --work-dir runtime\.pytest_cache\runtime-health-check `
-  --report .pytest_cache\pytest-ut-spec-sync-report.json `
-  --markdown .pytest_cache\pytest-ut-spec-sync-report.md `
-  --register-context `
-  --required-context
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . trace begin --workflow /runtime-health-check
 
-.\windows-script\uv.cmd run --project . --group dev python workflow\workflow_doctor.py `
-  --repo-root .. `
-  --fail-on-warning
+<uv-command> run --project runtime --group dev pytest -c runtime/pytest.ini runtime/tests -q
+
+<uv-command> run --project runtime --group dev python runtime/tools/pytest_ut_spec_sync.py --spec docs/reference/runtime-pytest-ut/case-specification.md --runtime-root runtime check --repo-root . --work-dir runtime/.pytest_cache/runtime-health-check --report runtime/.pytest_cache/pytest-ut-spec-sync-report.json --markdown runtime/.pytest_cache/pytest-ut-spec-sync-report.md --register-context --required-context
+
+<uv-command> run --project runtime --group dev python runtime/workflow/workflow_doctor.py --repo-root . --fail-on-warning
+
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . doctor --json --fail-on-warning
+
+<uv-command> run --project runtime --group dev python runtime/workflow/validate_output_language.py --paths docs/reference/runtime-pytest-ut/test-items.md docs/reference/runtime-pytest-ut/case-specification.md .ariadne/schemas/README.md .ariadne/agents/runtime-quality-gate-agent.prompt.md --fail-on-violation
+
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . trace end
+```
 
 UT仕様書のcase scaffold不足や安全に修復可能なtext boundary findingをまとめて修復する場合:
 
-```powershell
-cd C:\github\ariadne-ai-workflow-platform
+```shell
+cd <repository-root>
 
-.\runtime\windows-script\aiwfctl.cmd doctor `
-  --repair-spec-index `
-  --repair-encoding `
-  --fail-on-warning
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . doctor --repair-spec-index --repair-encoding --fail-on-warning
 ```
 
 `--repair-spec-index` は pytest collection に存在するが `docs/reference/runtime-pytest-ut/cases/*.md` に未登録の node id に対して、最小限の case block を生成します。生成後は必ず内容を読み、Confirm / Input / Expected が人間に伝わる粒度になっているか確認してください。stale case の削除や意味のある説明文への書き換えは自動では行いません。
 
 `--repair-encoding` は BOM 除去や安全に復元可能な文字境界findingのみを書き換えます。repair後も `aiwfctl doctor --json --fail-on-warning` を再実行し、`warning_count: 0` を確認してください。
-
-.\windows-script\uv.cmd run --project . --group dev python ctl.py `
-  --repo-root .. `
-  doctor `
-  --json `
-  --fail-on-warning
-
-.\windows-script\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
-  --paths ..\docs\reference\runtime-pytest-ut\test-items.md ..\docs\reference\runtime-pytest-ut\case-specification.md ..\.ariadne\schemas\README.md ..\.ariadne\agents\runtime-quality-gate-agent.prompt.md `
-  --fail-on-violation
-```
 
 ## 出力
 

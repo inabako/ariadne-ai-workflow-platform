@@ -827,6 +827,21 @@ def build_parser() -> argparse.ArgumentParser:
     markdown.add_argument("--output", default="work/help/ai-workflow-help.md")
     markdown.add_argument("--query", action="append", default=[], help="Filter markdown by keyword. Can be repeated.")
 
+    trace_cmd = sub.add_parser("trace", help="Manage one trace id for a workflow execution.")
+    trace_sub = trace_cmd.add_subparsers(dest="trace_command")
+
+    trace_begin = trace_sub.add_parser("begin", help="Start a workflow execution trace.")
+    trace_begin.add_argument("--workflow", required=True, help="Workflow name, for example /runtime-health-check.")
+    trace_begin.add_argument("--trace-id", default="", help="Optional explicit trace id. Defaults to generated id.")
+    trace_begin.add_argument("--force", action="store_true", help="Replace an existing active workflow trace.")
+    trace_begin.add_argument("--json", action="store_true", help="Print trace state as JSON.")
+
+    trace_status = trace_sub.add_parser("status", help="Show the active workflow execution trace.")
+    trace_status.add_argument("--json", action="store_true", help="Print trace state as JSON.")
+
+    trace_end = trace_sub.add_parser("end", help="End the active workflow execution trace.")
+    trace_end.add_argument("--json", action="store_true", help="Print ended trace state as JSON.")
+
     env_cmd = sub.add_parser("env", help="Select workflow execution environment.")
     env_sub = env_cmd.add_subparsers(dest="env_command")
 
