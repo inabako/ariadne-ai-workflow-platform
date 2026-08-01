@@ -183,12 +183,14 @@ aiwfctl help markdown --output work/help/ai-workflow-help.md
 db/registries/registry.duckdb
 ```
 
-DuckDB read modelのsource JSONは次です。
+DuckDB read modelのbootstrap source JSONは次です。
 
 ```text
-work/db/ariadne-knowledge-platform/registries/workflow_help.json
-work/db/ariadne-knowledge-platform/registries/search_terms.json
+templates/registries/workflow_help.json
+templates/registries/search_terms.json
 ```
+
+運用中にknowledge workspaceへmirror / backupする場合は、`work/db/ariadne-knowledge-platform/registries/` を使います。
 
 `workflow_help.json` はcommand / extension本体だけを持ちます。各項目の `id` は `/ariadne-new-system` なら `ariadne_new_system` のように、prompt commandやextension名をsnake_case化した機能IDにします。
 
@@ -209,8 +211,8 @@ work/db/ariadne-knowledge-platform/registries/search_terms.json
 
 workflow prompt commandを追加、削除、引数変更した場合は、次を更新します。
 
-1. `work/db/ariadne-knowledge-platform/registries/workflow_help.json`
-2. `work/db/ariadne-knowledge-platform/registries/search_terms.json`
+1. `templates/registries/workflow_help.json`
+2. `templates/registries/search_terms.json`
 3. `db/registries/registry.duckdb`
 4. `.ariadne/schemas/workflow-help.schema.json` / `.ariadne/schemas/search-terms.schema.json` が必要なら更新
 5. `docs/reference/workflow-help.md`

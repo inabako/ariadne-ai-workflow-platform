@@ -17,6 +17,7 @@ from runtime.constants.paths import (  # noqa: E402
     KNOWLEDGE_SOURCE_REGISTRIES,
     REGISTRY_DB_PATH,
     SEARCH_TERMS_REGISTRY_FILE,
+    TEMPLATE_REGISTRIES,
     TOOL_CANDIDATES_REGISTRY_FILE,
     WORKFLOW_ENVIRONMENT_PROFILES_REGISTRY_FILE,
     WORKFLOW_HELP_REGISTRY_FILE,
@@ -24,6 +25,7 @@ from runtime.constants.paths import (  # noqa: E402
 
 
 DEFAULT_LEGACY_JSON_SOURCE_DIR = KNOWLEDGE_SOURCE_REGISTRIES
+DEFAULT_TEMPLATE_JSON_SOURCE_DIR = TEMPLATE_REGISTRIES
 REQUIRED_REGISTRY_SOURCE_FILES = (
     WORKFLOW_HELP_REGISTRY_FILE,
     TOOL_CANDIDATES_REGISTRY_FILE,
@@ -41,6 +43,9 @@ def legacy_registry_dir(repo_root: Path) -> Path:
 
 
 def default_source_dir(repo_root: Path) -> Path:
+    template_source = repo_root / DEFAULT_TEMPLATE_JSON_SOURCE_DIR
+    if source_registry_available(template_source):
+        return template_source
     return repo_root / DEFAULT_LEGACY_JSON_SOURCE_DIR
 
 
@@ -681,10 +686,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--db", default=str(REGISTRY_DB_PATH))
     sub = parser.add_subparsers(dest="command", required=True)
     build = sub.add_parser("build")
-    build.add_argument("--source-dir", default=str(DEFAULT_LEGACY_JSON_SOURCE_DIR))
+    build.add_argument("--source-dir", default="")
     build.set_defaults(handler=run_build)
     ensure = sub.add_parser("ensure")
-    ensure.add_argument("--source-dir", default=str(DEFAULT_LEGACY_JSON_SOURCE_DIR))
+    ensure.add_argument("--source-dir", default="")
     ensure.add_argument("--rebuild", action="store_true")
     ensure.set_defaults(handler=run_ensure)
     sub.add_parser("summary").set_defaults(handler=run_summary)
@@ -698,18 +703,20 @@ def resolve_repo_path(repo_root: Path, value: str) -> Path:
 
 def run_build(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    source_dir = resolve_repo_path(repo_root, args.source_dir) if args.source_dir else default_source_dir(repo_root)
     return build_registry_read_model(
         repo_root,
-        resolve_repo_path(repo_root, args.source_dir),
+        source_dir,
         resolve_repo_path(repo_root, args.db),
     )
 
 
 def run_ensure(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    source_dir = resolve_repo_path(repo_root, args.source_dir) if args.source_dir else None
     return ensure_registry_read_model(
         repo_root,
-        resolve_repo_path(repo_root, args.source_dir),
+        source_dir,
         resolve_repo_path(repo_root, args.db),
         rebuild=bool(args.rebuild),
     )

@@ -757,6 +757,23 @@ runtime/tests/test_ctl_help.py::test_registry_load_auto_builds_missing_duckdb_fr
   - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
 - 譛溷ｾ・ｵ先棡: load蜃ｦ逅・後↓ `db/registries/registry.duckdb` 縺悟ｭ伜惠縺励∵､懃ｴ｢隱槭→environment縺瑚ｪｭ縺ｿ蜿悶ｌ繧九・
 
+#### RT-UT-CASE-CTL-029D2
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_registry_load_auto_builds_missing_duckdb_from_template_source
+```
+
+- Confirm: registry load can auto-build the missing DuckDB read model from `templates/registries`.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_ctl_help.py:1588`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=none case=none
+  - inline input: temporary repository with complete `templates/registries` JSON seed files
+- Expected: `db/registries/registry.duckdb` is created from the template source, and workflow help / environment profiles can be loaded.
+
 #### RT-UT-CASE-CTL-029E
 
 - pytest node id:

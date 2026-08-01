@@ -1,0 +1,942 @@
+{
+  "registry_version": "1.0",
+  "description": "Search terms for workflow_help registry. Each term links to workflow_help.json by owner_id.",
+  "terms": [
+    {
+      "id": "1a6bdfff-ffa5-5e51-a720-c5d4a885be0a",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_new_system",
+      "term": "新しく作る",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "8fbf5ba5-5912-53f1-8ac3-78e9cbf4ddc3",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_new_system",
+      "term": "新規に作る",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "090fda51-f826-56df-a147-546736eaba34",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_new_system",
+      "term": "新しいシステムを作る",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "cfb4db04-4ed6-5868-9787-4a3611e0685e",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_new_system",
+      "term": "新規開発",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "00818042-1241-55bc-8a7a-51ab543d99b4",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_new_system",
+      "term": "新システム",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "63e7ac66-b5e3-5b30-b3fc-212e600c66bc",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_new_system",
+      "term": "新規システム",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "4edf7065-fa88-53a4-89f3-d7da474a341d",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_new_system",
+      "term": "立ち上げる",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "d8e21e82-b521-5692-8319-2c4a74b6c91b",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_new_system",
+      "term": "create new system",
+      "locale": "en",
+      "kind": "intent"
+    },
+    {
+      "id": "1d110d77-e558-556c-b49b-10591937513d",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "vscode_environment",
+      "term": "workspace as code",
+      "locale": "en",
+      "kind": "synonym"
+    },
+    {
+      "id": "9b6063e5-3e79-5edc-a45a-6a2bda5b53c1",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "requirement_discovery",
+      "term": "要件をまとめる",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "e8e584be-6ad3-5608-b5c1-f7d5b978f92d",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "requirement_discovery",
+      "term": "要件定義を作る",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "885258ac-183b-5bbe-86d0-4640362d094a",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "requirement_discovery",
+      "term": "草案を整理する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "a3ec66ae-3306-5b81-909a-b18a22c8f944",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "requirement_discovery",
+      "term": "仕様を聞き出す",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "b8e2d173-d500-5f24-8027-c539a93b6773",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "requirement_discovery",
+      "term": "不明点を質問する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "4e8a50a2-dd38-5a8d-96b4-08d3aa15bf6a",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "requirement_discovery",
+      "term": "要件の曖昧さを減らす",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "697491d3-1c2c-5c70-bf9b-82df22f3dde4",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "system_integration_quality",
+      "term": "統合品質を確認する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "874b73ae-4b31-508e-aa20-716bb4787f94",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "system_integration_quality",
+      "term": "既存システムになじませる",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "47f21a0c-4127-59d9-9c4d-dfa9557ed07c",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "system_integration_quality",
+      "term": "結合試験を整理する",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "aac9d549-fda5-5d9b-aba0-a332a4b0a894",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "system_integration_quality",
+      "term": "エミュレータで検証する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "a5532a40-9b68-51b8-86fb-67b43d9499cb",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "system_integration_quality",
+      "term": "実装の違和感を確認する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "433ef669-77f2-5c39-bb64-c5915f786ca7",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "system_integration_quality",
+      "term": "統合テスト計画を作る",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "76b2852b-d201-5314-b825-28808749e1bb",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "flutter_multiplatform",
+      "term": "Flutter対応を整理する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "367b2d0f-1869-55fd-b8c8-cd3c425215a7",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "flutter_multiplatform",
+      "term": "複数プラットフォーム対応",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "b45f2cec-b36e-54bb-8282-7fac844fb001",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "flutter_multiplatform",
+      "term": "アプリのビルド計画",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "750687ae-b2ca-5361-8e35-1624b4f6ee72",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "flutter_multiplatform",
+      "term": "モバイルとWebを確認する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "6afb5ad7-1699-5963-af17-0bed00cbecdd",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "flutter_multiplatform",
+      "term": "Flutterテストを計画する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "4cb1071b-92b4-5819-80c5-aa0b372ca9c8",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "flutter_multiplatform",
+      "term": "対象OSを選ぶ",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "ddc69028-bf8a-523a-a92a-50f0846de319",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_new_system_iac",
+      "term": "新システムとインフラをつなぐ",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "9ef804c1-1ff6-5225-a174-4d107a270057",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_new_system_iac",
+      "term": "Shared Artifactsを検証する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "59c3fc4c-516b-5f23-bca6-f9c2004b1e6e",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_new_system_iac",
+      "term": "IaCへ引き渡す",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "f6982180-a406-5fa3-b2a9-648b925268aa",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_new_system_iac",
+      "term": "リアルタイム基盤に渡す",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "311c592b-79de-5c7f-9ece-dd7032d95a60",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_new_system_iac",
+      "term": "通信設計を固定する",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "64a2e8d3-dcbd-5a09-b35e-39bc35f5cb9f",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_new_system_iac",
+      "term": "インフラ設計へ進める",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "1d26b954-b19a-52d4-a612-48144dfe4544",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_feature_maintenance",
+      "term": "既存システムを直す",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "4cfecdda-a295-5911-8ac3-0dd393bc42e0",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_feature_maintenance",
+      "term": "機能追加を始める",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "d9a05e1e-93bd-5857-97a0-d1a0e3d96003",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_feature_maintenance",
+      "term": "保守開発を進める",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "da06cadc-4aa1-5116-a025-0445ce170c77",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_feature_maintenance",
+      "term": "バグ修正を始める",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "90661894-1707-57b1-b095-c9c1a1d2b598",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_feature_maintenance",
+      "term": "運用改善を行う",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "f1490e81-07dd-5ff3-a2f6-6f9d6dabc2af",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "ariadne_feature_maintenance",
+      "term": "既存機能を変更する",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "0b72dfe4-c85b-5679-888c-a9da322cf4c4",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "corrective_action_report",
+      "term": "改善点を洗い出す",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "0aea5c7d-0672-5266-b23b-f873967f2fc6",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "corrective_action_report",
+      "term": "リポジトリを診断する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "c1b9d7cf-ce4e-54a8-bb58-4b1491815f31",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "corrective_action_report",
+      "term": "現状分析レポート",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "e4098a58-e6ea-53c3-be04-5ad083acf1d8",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "corrective_action_report",
+      "term": "リスクを整理する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "d1315402-d323-56b2-be3c-71f217d27e30",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "corrective_action_report",
+      "term": "テスト不足を探す",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "39c05d69-ad59-54e9-8fb2-4a058ce5749d",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "corrective_action_report",
+      "term": "ドキュメント不足を探す",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "3b1e8a6b-6d07-5acd-9968-69f1b0d83171",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "corrective_action_fix",
+      "term": "改善を実装する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "0aec82e5-03db-54f5-b3af-b81087ca817c",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "corrective_action_fix",
+      "term": "改善レポートから修正する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "285a720d-b702-509d-9056-631ccddb7ffa",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "corrective_action_fix",
+      "term": "Issueを作って修正する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "f4e2a77d-64d5-588a-8798-9bd0510c8268",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "corrective_action_fix",
+      "term": "ブランチを作って直す",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "47c2fd65-a508-5f1e-bf65-999aeb19b83f",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "corrective_action_fix",
+      "term": "テストしてpushする",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "01f10a18-4b84-5b06-86b1-69b5ef95f0a8",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "corrective_action_fix",
+      "term": "指摘事項を修正する",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "56a63daa-a7ec-53f9-9c96-d92162a0f621",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "docs_sync",
+      "term": "docsを同期する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "e81b4b1c-10a5-5cea-a4b2-bfca2d10a03e",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "docs_sync",
+      "term": "ドキュメント差分を直す",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "2267303e-1d34-5b91-aae8-3568d1066dd4",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "docs_sync",
+      "term": "実装とdocsのずれ",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "d8a67f71-6676-5342-982f-87449fcb97e1",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "docs_sync",
+      "term": "docsだけ修正する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "413355e1-f355-5841-8eed-abe1e4a2ee4b",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "docs_sync",
+      "term": "仕様書を更新する",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "2a98263d-e1ea-5ad9-89c1-bb74f64d4658",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "docs_sync",
+      "term": "ドキュメントを追随させる",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "977e9fa1-e821-5623-bbcf-108dd206a112",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "self_improvement",
+      "term": "workflowの改善を集める",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "ed7ee3a9-0036-5578-82c0-78b901ab9be7",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "self_improvement",
+      "term": "FeedbackをIssue化する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "975f50b4-26e0-5845-b32c-219de691f03b",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "self_improvement",
+      "term": "使いづらさを改善する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "c6d0f8ae-af2e-59e0-8cf0-e98d4edacba8",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "self_improvement",
+      "term": "AIの迷いを記録する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "e1aa8d7e-8abe-5ac8-8ea6-1c53bc297330",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "self_improvement",
+      "term": "改善候補をレビューする",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "80535d08-29cb-514e-820e-428730c9a826",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "self_improvement",
+      "term": "運用ノイズを減らす",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "c8120064-e0ec-5ac8-a405-20e026967af4",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "github_knowledge_maintenance",
+      "term": "GitHub履歴を知識化する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "9153bf01-0cc0-5b00-8d21-a620a5c3a2d8",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "github_knowledge_maintenance",
+      "term": "IssueとPRを整理する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "0c4f1647-6cd5-578b-82b5-9ca19eaadb39",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "github_knowledge_maintenance",
+      "term": "コミット履歴を整える",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "782ac99e-9b8f-59e8-99f1-b030bbaa087a",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "github_knowledge_maintenance",
+      "term": "GitHub情報を保守する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "0c42d14f-9ab7-5469-9be5-23bf9b952550",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "github_knowledge_maintenance",
+      "term": "リポジトリ知識を残す",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "43482698-30a7-5727-9813-1695a6eba566",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "github_knowledge_maintenance",
+      "term": "rebase候補を確認する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "89a9e139-07e6-537b-9a62-5458a6effdea",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "vscode_environment",
+      "term": "VSCode環境を整える",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "277af1f4-4d10-5185-85a0-e4334bf3b74a",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "vscode_environment",
+      "term": "開発環境を標準化する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "4f131e23-4674-5dda-a27c-2ba20ffaef7e",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "vscode_environment",
+      "term": "ターミナル設定をそろえる",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "11c698cc-fe69-542a-bae3-0f9a1fa9f8ac",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "vscode_environment",
+      "term": "VSCodeタスクを作る",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "bceafd86-c4e4-5f02-aa43-1de10f110159",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "vscode_environment",
+      "term": "AI実行環境を再現する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "70c5f12b-8295-5cb6-8598-fd65f64ac0d3",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "realtime_iac",
+      "term": "インフラをコード化する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "aa178e5d-0083-546a-8bac-ea6bf5c55316",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "realtime_iac",
+      "term": "Docker構成を作る",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "ced975e7-50f6-58c2-8544-463543bee6ec",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "realtime_iac",
+      "term": "監視基盤を設計する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "e615e654-56bf-511a-b408-7debbd1123ea",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "realtime_iac",
+      "term": "リアルタイム通信基盤",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "c609f057-1acf-588e-8c3f-1832921f2725",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "realtime_iac",
+      "term": "reverse proxyを設計する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "149465ee-8ed0-5049-a3cd-1d6976f84dad",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "realtime_iac",
+      "term": "systemd設定を作る",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "ed3d4974-e5ba-5bac-aad8-6490b6b85943",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "knowledge_capture",
+      "term": "完了作業を知識化する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "3b630cc6-f07e-5cab-95f8-48b343043ba1",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "knowledge_capture",
+      "term": "PR材料を作る",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "dec62c66-0af8-549a-b3b3-ab75cb6190a7",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "knowledge_capture",
+      "term": "RAG候補を抽出する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "9a4ef609-db98-50b2-8061-5302fec9e36f",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "knowledge_capture",
+      "term": "完了Issueを整理する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "7a179202-c0c5-5209-b710-456956f5a918",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "knowledge_capture",
+      "term": "archive準備をする",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "85dbf382-c80a-5712-87d4-8c7b8221380f",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "knowledge_capture",
+      "term": "docs証跡を確認する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "a5ae8ef2-79a1-5a95-85c9-f6212f336f49",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "rag_build",
+      "term": "RAGを作る",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "8a2807eb-f2e0-5907-b053-67c4bfe8eb51",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "rag_build",
+      "term": "レポートを知識化する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "26aae487-07ca-5b94-91a4-871f3fd44c07",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "rag_build",
+      "term": "Markdownをchunk化する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "ee098ec2-08e5-564c-85fb-6a0b9a5f3d1a",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "rag_build",
+      "term": "検索インデックスを作る",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "cf8b8862-0128-54d9-bedb-68add3d74625",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "rag_build",
+      "term": "knowledge DBを更新する",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "3e036571-f2f8-5e68-a1a6-c5fdc285870e",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "rag_build",
+      "term": "RAG生成物を作成する",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "c4e8f82b-3343-5a7c-92e0-f7f030ce0a06",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "rag_load",
+      "term": "RAGを読む",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "d66eeacd-6fc0-5f7d-99c1-36016d7fa6ac",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "rag_load",
+      "term": "過去知見を探す",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "ad2de498-8ef7-53c2-90b9-aa476cf186d3",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "rag_load",
+      "term": "開発前に文脈を読む",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "5055a982-46f7-555c-84b9-3baff7df74d4",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "rag_load",
+      "term": "context packを作る",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "72ad6129-385e-56be-9c5c-b4ff638421f7",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "rag_load",
+      "term": "関連知識を検索する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "2a9579c2-1e1e-5129-8a86-b6e278c48f27",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "rag_load",
+      "term": "RAG検索を実行する",
+      "locale": "ja",
+      "kind": "synonym"
+    },
+    {
+      "id": "0d310c16-c1d0-5023-9ddb-b60bf58ec92b",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "runtime_health_check",
+      "term": "runtimeを診断する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "db136239-b607-5ff1-b687-f007ac8dfac7",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "runtime_health_check",
+      "term": "テスト仕様を同期する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "7048d042-a011-5f83-9124-c9a6e4427fc0",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "runtime_health_check",
+      "term": "workflow doctorを実行する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "a30f2a83-37ee-5d7e-9d87-daa7c07c28ce",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "runtime_health_check",
+      "term": "基盤品質を確認する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "a0a41195-248b-5bc5-950e-913a8fef9e3e",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "runtime_health_check",
+      "term": "commit前に検査する",
+      "locale": "ja",
+      "kind": "intent"
+    },
+    {
+      "id": "7df8ca2b-986a-539a-b2c4-01eaeed33694",
+      "owner_registry": "workflow_help",
+      "owner_type": "command",
+      "owner_id": "runtime_health_check",
+      "term": "pytestを確認する",
+      "locale": "ja",
+      "kind": "intent"
+    }
+  ]
+}

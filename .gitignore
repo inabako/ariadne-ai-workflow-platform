@@ -21,6 +21,7 @@ rag/**
 
 # Generated database read models
 db/rag/**
+!db/rag/README.md
 db/registries/registry.duckdb
 
 # Python cache

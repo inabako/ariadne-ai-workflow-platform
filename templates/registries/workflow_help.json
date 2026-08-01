@@ -1,0 +1,1077 @@
+﻿{
+  "registry_version": "1.0",
+  "description": "AI workflow prompt command help registry. aiwfctl help reads this file to show searchable terminal help.",
+  "commands": [
+    {
+      "command": "/requirement-discovery",
+      "aliases": [],
+      "workflow": "requirement-discovery",
+      "skill": "requirement-discovery",
+      "skill_path": "skills/requirement-discovery/SKILL.md",
+      "prompt_path": ".ariadne/prompts/requirement-discovery.prompt.md",
+      "overview": "箇条書き草案から完成版の要件定義書を作成する。",
+      "prerequisites": [
+        "人間が作成した草案が work/requirements/draft/ にある。",
+        "SDKプログラムを使う場合は work/requirements/sdk/ に配置する。無い場合はSDK事前解析をスキップする。",
+        "完成版保存前に人間レビューとOKを得る前提で進める。",
+        "Critical項目が不明な場合は推測で確定しない。"
+      ],
+      "arguments": [
+        {
+          "name": "draft",
+          "required": false,
+          "description": "通常は引数なし。草案は work/requirements/draft/ に置く。対象を明示する場合は草案ファイル名またはpathを指定する。",
+          "examples": [
+            "work/requirements/draft/robot-ui.txt"
+          ]
+        }
+      ],
+      "details": [
+        "work/requirements/draft/ の人間作成草案を読む。",
+        "Noise Reductionで不明ワード、曖昧表現、Critical項目不足を抽出する。",
+        "work/requirements/sdk/ があれば aiwfctl sdk analyze --work-id <work-id> を実行し、SDK解析contextと要件追記候補を作成する。",
+        "aiwfctl sdk discover --work-id <work-id> を実行し、公式docs、package registry、release notes、security advisory確認用の外部discovery contextを作成する。",
+        "AWS/GCP SDKはcloud metadata、Stripe SDKはpayment metadataとして、専用のHuman Check項目を要件定義へ引き継ぐ。",
+        "SDK採用可否、license、vendor lock-in、credential管理、production network、cost、deprecated / unsupported status、security不明点は人間確認なしで確定しない。",
+        "必要な質問を作成し、人間回答なしで完成版を確定しない。",
+        "レビュー草案を作成し、人間OK後に work/requirements/ へ完成版を保存する。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/requirement-discovery"
+      ],
+      "related_runtime": [
+        "runtime/workflow/noise_reduction.py",
+        "runtime/workflow/sdk_analysis.py"
+      ],
+      "docs": [
+        "docs/workflows/requirement-discovery.md",
+        "docs/workflows/noise-reduction-phase.md"
+      ],
+      "id": "requirement_discovery"
+    },
+    {
+      "command": "/system-integration-quality",
+      "aliases": [
+        "/integration-quality"
+      ],
+      "workflow": "system-integration-quality",
+      "skill": "system-integration-quality",
+      "skill_path": "skills/system-integration-quality/SKILL.md",
+      "prompt_path": ".ariadne/prompts/system-integration-quality.prompt.md",
+      "overview": "生成・改修したコードを対象システムへ自然に統合できているか確認し、必要なエミュレータ候補、Integration Test、Human Check、Knowledge化対象を整理する。",
+      "prerequisites": [
+        "対象作業の work/<work-id>/ が存在する。",
+        "対象repositoryは通常 work/<work-id>/source/repository に配置する。別パスの場合は --target-repo で指定する。",
+        "SDKや外部サービスを使う場合は、可能な範囲で aiwfctl sdk analyze / discover のcontextを先に生成する。",
+        "本番credential、本番クラウド、本番決済、production networkはHuman Checkなしで実行しない。"
+      ],
+      "arguments": [
+        {
+          "name": "work-id",
+          "required": true,
+          "description": "統合品質確認を行う作業ID。work/<work-id>/reports と work/<work-id>/context に成果物を保存する。",
+          "examples": [
+            "issue-123"
+          ]
+        },
+        {
+          "name": "with-emulator",
+          "required": false,
+          "description": "クラウドエミュレータやサービス固有test helperの候補と再現可否区分を含める。",
+          "examples": [
+            "--with-emulator"
+          ]
+        }
+      ],
+      "details": [
+        "work/<work-id>/context/sdk-analysis-context.json と sdk-external-discovery.json があれば読み、cloud / payment metadataを統合品質確認へ引き継ぐ。",
+        "対象repositoryのpackage、tests、docs/evidence、設定ファイル、Adapter / Port候補を静的に確認する。",
+        "AWS/GCPなどのcloud metadataからLocalStack、Google Cloud emulator、service-specific test double候補を整理する。",
+        "Stripeなどの外部サービスSDKはStripe CLI / test modeなど、専用test helper候補として整理する。",
+        "エミュレータ構築が必要な場合は templates/boilerplates/integration/cloud-emulators/ から work/<work-id>/test-environment/emulator/ へコピーし、コピー先だけを編集する。",
+        "aiwfctl integration emulator prepare --work-id <work-id> で候補templateをwork配下へ展開し、work/<work-id>/context/emulator-context.json を生成する。",
+        "aiwfctl integration emulator health --work-id <work-id> で展開済みtemplate、evidence directory、Docker CLI前提を起動前に確認し、work/<work-id>/context/emulator-health-context.json と health-summary.md を生成する。",
+        "aiwfctl integration test-plan --work-id <work-id> でIntegration Testの実行順序、Human Check、証跡期待値をrunbook化し、work/<work-id>/context/integration-test-plan-context.json と integration-test-runbook.md を生成する。",
+        "aiwfctl integration finalize --work-id <work-id> でIntegration Test後のEvidence、違和感、完了条件、Knowledge化対象を整理し、work/<work-id>/context/integration-finalization-context.json と system-integration-final-report.md を生成する。",
+        "emulator_verified、real_cloud_verification_required、unsupported_by_emulatorで再現可否を区分する。",
+        "実クラウドやDockerを無条件に起動せず、親workflowまたはHuman Checkで実行判断する。",
+        "Context First manifestへ system-integration contextを登録し、後続workflowが統合品質結果を読めるようにする。",
+        "統合時の摩擦、エミュレータ構築不足、Knowledge不足、Human Check集中があれば work/feedback/ に Proposed feedbackを保存する。通常workflowの中から /self-improvement を自動実行しない。"
+      ],
+      "examples": [
+        "aiwfctl integration analyze --work-id issue-123",
+        "aiwfctl integration verify --work-id issue-123",
+        "aiwfctl integration verify --work-id issue-123 --with-emulator",
+        "aiwfctl integration emulator prepare --work-id issue-123",
+        "aiwfctl integration emulator health --work-id issue-123",
+        "aiwfctl integration test-plan --work-id issue-123",
+        "aiwfctl integration finalize --work-id issue-123"
+      ],
+      "related_runtime": [
+        "runtime/workflow/system_integration.py",
+        "runtime/workflow/sdk_analysis.py",
+        "runtime/workflow/context_first.py"
+      ],
+      "docs": [
+        "docs/workflows/system-integration-quality.md"
+      ],
+      "id": "system_integration_quality"
+    },
+    {
+      "command": "/flutter-multiplatform",
+      "aliases": [
+        "/flutter"
+      ],
+      "workflow": "flutter-multiplatform",
+      "skill": "flutter-multiplatform",
+      "skill_path": "skills/flutter-multiplatform/SKILL.md",
+      "prompt_path": ".ariadne/prompts/flutter-multiplatform.prompt.md",
+      "overview": "Flutterアプリの対象platform、開発環境、boilerplate、静的解析、test、platform別build計画、evidence、Knowledge化対象を整理する。",
+      "prerequisites": [
+        "対象work-idがある。通常は親workflowのissue work directoryを使う。",
+        "対象platformは work/<work-id>/requirements/flutter-targets.yaml または --targets で明示する。未指定時に全platform対応とは扱わない。",
+        "iOS/macOS build、署名、Store配布、実機試験、Platform Channel追加はHuman Check対象。",
+        "実buildや配布は親workflowまたはHuman Check後に行う。実試験を自動実行する場合は --execute を明示する。"
+      ],
+      "arguments": [
+        {
+          "name": "work-id",
+          "required": true,
+          "description": "Flutter対象選択、Context、Evidence、Reportを保存する作業ID。",
+          "examples": [
+            "issue-123"
+          ]
+        },
+        {
+          "name": "targets",
+          "required": false,
+          "description": "対象Flutter platform。android, ios, web, windows, macos, linux から必要なものだけをcomma separatedで指定する。",
+          "examples": [
+            "android,web,windows"
+          ]
+        },
+        {
+          "name": "mode",
+          "required": false,
+          "description": "build mode。debug / profile / release。releaseはHuman Check対象。",
+          "examples": [
+            "debug",
+            "release"
+          ]
+        }
+      ],
+      "details": [
+        "work/<work-id>/requirements/flutter-targets.yaml を読み、対象platformを確定する。CLI --targets があればそれを優先する。",
+        "対象platform未指定時はHuman Checkで止め、全platform対応とは推測しない。",
+        "Environment Dispatcher profileは aiwfctl env select flutter で確認する。",
+        "Android/WebはWindows/macOS/Linux、iOS/macOSはmacOS、WindowsはWindows、LinuxはLinuxとしてbuild環境を判定する。",
+        "templates/boilerplates/apps/flutter-app-template/ からFlutter boilerplateをwork/<work-id>/implementation/flutter-projectへ展開できる。",
+        "dart format、flutter analyze、flutter test、flutter test integration_test の検証計画を作る。--execute 指定時は実行し、stdout/stderr/summaryをevidenceへ保存する。",
+        "Web targetのIntegration Testは flutter drive -d chrome を使う。chromedriver/WebDriverが無い場合は build-environment-required として分類する。",
+        "flutter build apk/ios/web/windows/macos/linux のbuild dispatchをtarget別に生成する。--execute 指定時は実行可能targetだけ実行し、target別evidenceへ保存する。",
+        "aiwfctl flutter finalize --work-id <work-id> でverify/build/evidenceを読み、完了判定を生成する。",
+        "work/<work-id>/context/flutter-development-context.json と context-manifest.json にContext First artifactを登録する。",
+        "work/<work-id>/reports/flutter-multiplatform-report.md と work/<work-id>/evidence/flutter/ に証跡を保存する。",
+        "Platform差分、build条件、test方法、エラー解決はKnowledge化対象として後続workflowへ渡す。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/flutter-multiplatform --work-id issue-123",
+        "aiwfctl flutter analyze --work-id issue-123",
+        "aiwfctl flutter init --work-id issue-123 --targets android,web,windows",
+        "aiwfctl flutter verify --work-id issue-123 --execute",
+        "aiwfctl flutter build --work-id issue-123 --targets web --mode debug --execute",
+        "aiwfctl flutter build --work-id issue-123 --targets android,web,windows --mode release --execute --human-check approved",
+        "aiwfctl flutter run-workflow --work-id issue-123 --targets android,web,windows --execute",
+        "aiwfctl flutter finalize --work-id issue-123"
+      ],
+      "related_runtime": [
+        "runtime/workflow/flutter_multiplatform.py",
+        "runtime/workflow/context_first.py",
+        "runtime/environment/preflight.py"
+      ],
+      "docs": [
+        "docs/workflows/flutter-multiplatform.md",
+        "docs/reference/environment-selection.md"
+      ],
+      "id": "flutter_multiplatform"
+    },
+    {
+      "command": "/ariadne-new-system",
+      "aliases": [
+        "/ariadne-new-system-development"
+      ],
+      "workflow": "ariadne-new-system-development",
+      "skill": "ariadne-new-system",
+      "skill_path": "skills/ariadne-new-system/SKILL.md",
+      "prompt_path": ".ariadne/prompts/ariadne-new-system.prompt.md",
+      "overview": "新しい対象システム、runtime、remote operation、device integrationを開始する。",
+      "prerequisites": [
+        "work/requirements/ に完成版要件定義書が1件だけある。",
+        "Repository Control、target repository、branch方針が要件定義書で確認できる。",
+        "安全、STOP、communication lossなどのCritical項目が未解決なら開始しない。"
+      ],
+      "arguments": [
+        {
+          "name": "requirement",
+          "required": false,
+          "description": "通常は work/requirements/ の完成版要件定義書を1件だけ置く。明示する場合は要件定義書pathを指定する。",
+          "examples": [
+            "work/requirements/localty-new-runtime.md"
+          ]
+        }
+      ],
+      "details": [
+        "完成版要件定義書が1件だけ存在することを確認する。",
+        "intakeで work/<receipt-id>/ を作成する。",
+        "必要に応じて SYS_*.svg をGUI modeへdispatchする。",
+        "RAG loadで過去知見を読み、設計、実装、test、docsへ進む。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/ariadne-new-system"
+      ],
+      "related_runtime": [
+        "runtime/intake/intake_requirements.py",
+        "runtime/workflow/gui_mode.py",
+        "runtime/rag/rag_dispatcher.py"
+      ],
+      "docs": [
+        "docs/workflows/ariadne-new-system.md",
+        "docs/workflows/gui-mode.md"
+      ],
+      "id": "ariadne_new_system"
+    },
+    {
+      "command": "/ariadne-new-system-iac",
+      "aliases": [],
+      "workflow": "ariadne-new-system-iac",
+      "skill": "ariadne-new-system-iac",
+      "skill_path": "skills/ariadne-new-system-iac/SKILL.md",
+      "prompt_path": ".ariadne/prompts/ariadne-new-system-iac.prompt.md",
+      "overview": "新システム開発からShared Artifacts検証、realtime IaC連携まで進める。",
+      "prerequisites": [
+        "work/requirements/ に完成版要件定義書が1件だけある。",
+        "通信仕様、port定義、network boundary、安全traceabilityの材料がある。",
+        "IaCへ渡す前にShared Artifactsの不足をHuman Gateで止められる。",
+        "Realtime IaCへ渡す前に execution-plan.json と realtime-iac-handoff.json を作成できる。"
+      ],
+      "arguments": [
+        {
+          "name": "requirement",
+          "required": false,
+          "description": "通常は work/requirements/ の完成版要件定義書を1件だけ置く。IaC連携に必要な通信、port、network、safety情報を含める。",
+          "examples": [
+            "work/requirements/remote-gateway-system.md"
+          ]
+        }
+      ],
+      "details": [
+        "新システムworkflowの入力を受け付ける。",
+        "Shared Artifactsを作成し、IaC readinessを検証する。",
+        "realtime-iac workflowへ渡す前に不足QAを止める。",
+        "runtime/workflow/iac_handoff_context.py で execution-plan と realtime-iac-handoff をContext Manifestへ登録する。",
+        "Docker、systemd、network、security、observabilityの設計へ接続する。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/ariadne-new-system-iac"
+      ],
+      "related_runtime": [
+        "runtime/intake/intake_requirements.py",
+        "runtime/workflow/workflow_state.py",
+        "runtime/workflow/iac_handoff_context.py",
+        "runtime/workflow/context_first.py"
+      ],
+      "docs": [
+        "docs/workflows/ariadne-new-system-iac.md",
+        "docs/workflows/realtime-iac.md"
+      ],
+      "id": "ariadne_new_system_iac"
+    },
+    {
+      "command": "/ariadne-feature-maintenance",
+      "aliases": [
+        "/ariadne-feature-maintenance-development"
+      ],
+      "workflow": "ariadne-feature-maintenance-development",
+      "skill": "ariadne-feature-maintenance",
+      "skill_path": "skills/ariadne-feature-maintenance/SKILL.md",
+      "prompt_path": ".ariadne/prompts/ariadne-feature-maintenance-development.prompt.md",
+      "overview": "既存対象システムの新機能追加、bug fix、保守開発を開始する。",
+      "prerequisites": [
+        "work/requirements/ に完成版要件定義書が1件だけある。",
+        "対象repository、target branch、変更目的、受け入れ条件が明確である。",
+        "既存対象システムへの影響範囲と安全上の未解決QAを確認できる。"
+      ],
+      "arguments": [
+        {
+          "name": "requirement",
+          "required": false,
+          "description": "通常は work/requirements/ に完成版要件定義書を1件置く。対象repository、branch、変更目的、受け入れ条件を含める。",
+          "examples": [
+            "work/requirements/gui-maintenance.md"
+          ]
+        }
+      ],
+      "details": [
+        "既存repositoryへの変更意図を確認する。",
+        "intake、repository準備、Issue作成、branch作成へ進む。",
+        "FEAT_*.svg があればGUI modeへdispatchする。",
+        "RAG loadで過去のtest gap、risk、architecture concernを読む。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/ariadne-feature-maintenance"
+      ],
+      "related_runtime": [
+        "runtime/intake/intake_requirements.py",
+        "runtime/scm/prepare_repository.py",
+        "runtime/workflow/gui_mode.py"
+      ],
+      "docs": [
+        "docs/workflows/ariadne-feature-maintenance.md"
+      ],
+      "id": "ariadne_feature_maintenance"
+    },
+    {
+      "command": "/corrective-action-report",
+      "aliases": [],
+      "workflow": "corrective-action-report",
+      "skill": "corrective-action-report",
+      "skill_path": "skills/corrective-action-report/SKILL.md",
+      "prompt_path": ".ariadne/prompts/corrective-action-report.prompt.md",
+      "overview": "対象repository / branchをread-onlyで調査し、改善レポートを作成する。",
+      "prerequisites": [
+        "調査対象repositoryとbranchが指定されている。",
+        "このflowでは実装修正やpushなどの副作用を行わない。",
+        "高リスク判断はcurrent repository evidenceを根拠にする。"
+      ],
+      "arguments": [
+        {
+          "name": "repository",
+          "required": true,
+          "description": "調査対象repository。owner/repo、repository名、またはlocal pathを指定する。",
+          "examples": [
+            "localty-system-gui",
+            "owner/localty-system-gui",
+            "C:/github/localty-system-gui"
+          ]
+        },
+        {
+          "name": "branch",
+          "required": true,
+          "description": "調査対象branch。現状確認したいbase branchを指定する。",
+          "examples": [
+            "develop",
+            "main"
+          ]
+        }
+      ],
+      "details": [
+        "現状をread-onlyで確認し、実装修正は行わない。",
+        "改善点、risk、missing docs、test gap、architecture concernを抽出する。",
+        "レポートはRAG候補として保存する。",
+        "不明領域がある場合は外部Web RAGや専門reviewを補助参照する。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/corrective-action-report localty-system-gui develop"
+      ],
+      "related_runtime": [
+        "runtime/rag/rag_dispatcher.py",
+        "runtime/workflow/corrective_action_report.py"
+      ],
+      "docs": [
+        "docs/workflows/corrective-action-report.md"
+      ],
+      "id": "corrective_action_report"
+    },
+    {
+      "command": "/corrective-action-fix",
+      "aliases": [],
+      "workflow": "corrective-action-fix",
+      "skill": "corrective-action-fix",
+      "skill_path": "skills/corrective-action-fix/SKILL.md",
+      "prompt_path": ".ariadne/prompts/corrective-action-fix.prompt.md",
+      "overview": "改善レポートからIssue、branch、修正、test、push、knowledge captureまで進める。",
+      "prerequisites": [
+        "改善対象repositoryとbase branchが指定されている。",
+        "/corrective-action-report の出力レポート、またはこのflow内で作成する同等のCorrective Action Reportを起点にする。",
+        "GitHub Issue作成、branch作成、pushなどはHuman Gateに従う。",
+        "RAG build/loadで過去知見を確認してから実装修正へ入る。"
+      ],
+      "arguments": [
+        {
+          "name": "repository",
+          "required": true,
+          "description": "改善対象repository。owner/repo、repository名、またはlocal pathを指定する。",
+          "examples": [
+            "localty-system-gui"
+          ]
+        },
+        {
+          "name": "branch",
+          "required": true,
+          "description": "改善元branch。通常は develop または main。",
+          "examples": [
+            "develop"
+          ]
+        },
+        {
+          "name": "report",
+          "required": false,
+          "description": "/corrective-action-report で作成済みのMarkdownレポートを使う場合に指定する。未指定の場合、このflow内でCorrective Action Reportを作成する。",
+          "examples": [
+            "rag/corrective-action-report/260704120000_ABC12345_localty-system-gui.md"
+          ]
+        }
+      ],
+      "details": [
+        "report引数が指定された場合は、/corrective-action-report の出力レポートとして読み込む。",
+        "report引数が未指定の場合は、先に/corrective-action-report 相当のread-only調査を行い、Corrective Action Reportを作成する。",
+        "RAG build/loadを行い、過去知見を取り込む。",
+        "GitHub Issue作成、feature/issue-XXX branch作成を人間承認境界で進める。",
+        "FIX_*.svg があればGUI modeへdispatchする。",
+        "修正後にtest、docs、PR材料、knowledge captureを作成する。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/corrective-action-fix localty-system-gui develop"
+      ],
+      "related_runtime": [
+        "runtime/workflow/init_corrective_action_fix.py",
+        "runtime/github/issue_manager.py",
+        "runtime/scm/create_issue_branch.py",
+        "runtime/workflow/knowledge_capture.py"
+      ],
+      "docs": [
+        "docs/workflows/corrective-action-fix.md"
+      ],
+      "id": "corrective_action_fix"
+    },
+    {
+      "command": "/docs-sync",
+      "aliases": [],
+      "workflow": "docs-sync",
+      "skill": "docs-sync",
+      "skill_path": "skills/docs-sync/SKILL.md",
+      "prompt_path": ".ariadne/prompts/docs-sync.prompt.md",
+      "overview": "実装とdocsの差分を検出し、docsだけを同期する。",
+      "prerequisites": [
+        "対象repositoryとbranchが指定されている。",
+        "このflowでは実装コードを変更しない。",
+        "docs変更のIssue作成、branch作成、pushはHuman Gateに従う。"
+      ],
+      "arguments": [
+        {
+          "name": "repository",
+          "required": true,
+          "description": "docs同期対象repository。owner/repo、repository名、またはlocal path。",
+          "examples": [
+            "localty-system-gui"
+          ]
+        },
+        {
+          "name": "branch",
+          "required": true,
+          "description": "比較対象branch。通常は develop または main。",
+          "examples": [
+            "develop"
+          ]
+        }
+      ],
+      "details": [
+        "実装とdocsの差分を分析する。",
+        "docs drift analysis JSONを作成する。",
+        "Issue作成、feature/issue-XXX branch作成、docs修正、pushを人間承認境界で進める。",
+        "実装コードは変更しない。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/docs-sync localty-system-gui develop"
+      ],
+      "related_runtime": [
+        "runtime/workflow/docs_sync.py"
+      ],
+      "docs": [
+        "docs/workflows/docs-sync.md"
+      ],
+      "id": "docs_sync"
+    },
+    {
+      "command": "/self-improvement",
+      "aliases": [],
+      "workflow": "self-improvement",
+      "skill": "self-improvement",
+      "skill_path": "skills/self-improvement/SKILL.md",
+      "prompt_path": ".ariadne/prompts/self-improvement.prompt.md",
+      "overview": "workflow実行中の摩擦をFeedback reportへ保存し、人間レビューで採用判断して改善Issueへつなぐ。",
+      "prerequisites": [
+        "Ariadne AI Workflow Platform repository上で実行する。",
+        "Feedback reportは work/feedback/ 直下に保存し、細かいinbox/processed等のサブディレクトリは作らない。",
+        "Issue化する前にFeedback reportへAcceptedのHuman Review結果が追記されている。",
+        "GitHub Issue作成、branch作成、push、PR作成、RAG登録、close archive準備は個別Human Checkに従う。"
+      ],
+      "arguments": [
+        {
+          "name": "feedback",
+          "required": false,
+          "description": "既存Feedback reportを扱う場合に path を指定する。新規作成時はruntime helperで work/feedback/ に保存する。",
+          "examples": [
+            "work/feedback/20260710_120000-docs-sync-feedback.md"
+          ]
+        }
+      ],
+      "details": [
+        "workflow実行中に見つけた摩擦、ノイズ、改善候補をFeedback reportとして作成する。",
+        "Human ReviewでAccepted、Rejected、Deferredを同じFeedback reportへ追記する。",
+        "AcceptedのFeedbackだけIssue bodyへ変換する。",
+        "Issue titleは[改善フロー] prefixを使い、branch名は feature/issue-<issue-number> に統一する。",
+        "work/<work-id>/process-report/self-improvement/ と test-evidence/self-improvement/ を作り、artifact-index.jsonへ登録する。",
+        "GitHub / SCM mutationは既存runtime helperへ委譲する。",
+        "Review Proposed Feedback reports accumulated under work/feedback/; normal workflows should not auto-run /self-improvement."
+      ],
+      "examples": [
+        "/self-improvement",
+        "python runtime/workflow/self_improvement.py create-feedback --target-workflow \"/docs-sync\" --situation \"docs整備中\" --friction \"参照docsが不明\"",
+        "python runtime/workflow/self_improvement.py review-feedback --feedback work/feedback/<feedback>.md --decision accepted --reviewer Human --reason \"改善価値がある\"",
+        "python runtime/workflow/self_improvement.py issue-body --feedback work/feedback/<feedback>.md"
+      ],
+      "related_runtime": [
+        "runtime/workflow/self_improvement.py"
+      ],
+      "docs": [
+        "docs/workflows/self-improvement.md",
+        "docs/governance/ariadne/platform-fit-check.md",
+        "docs/reference/workflow-feedback.md"
+      ],
+      "id": "self_improvement"
+    },
+    {
+      "command": "/github-knowledge-maintenance",
+      "aliases": [],
+      "workflow": "github-knowledge-maintenance",
+      "skill": "github-knowledge-maintenance",
+      "skill_path": "skills/github-knowledge-maintenance/SKILL.md",
+      "prompt_path": ".ariadne/prompts/github-knowledge-maintenance.prompt.md",
+      "overview": "GitHub Issue、PR、docs、CARを長期知識資産として保守する。",
+      "prerequisites": [
+        "対象GitHub repositoryが指定されている。",
+        "原則read-only収集から開始する。",
+        "GitHub mutationやhistory rewriteは個別承認なしで実行しない。"
+      ],
+      "arguments": [
+        {
+          "name": "repository",
+          "required": true,
+          "description": "知識保守対象のGitHub repository。owner/repoを推奨する。",
+          "examples": [
+            "owner/localty-system-gui"
+          ]
+        }
+      ],
+      "details": [
+        "GitHub metadataをread-only中心に収集する。",
+        "Issue、PR、docs、CAR間の知識gapやnarrative gapを検出する。",
+        "repair proposal、documentation sync plan、RAG candidateを作る。",
+        "GitHub mutationやhistory rewriteは個別承認なしで実行しない。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/github-knowledge-maintenance owner/localty-system-gui"
+      ],
+      "related_runtime": [
+        "runtime/workflow/github_knowledge_maintenance.py"
+      ],
+      "docs": [
+        "docs/workflows/github-knowledge-maintenance.md"
+      ],
+      "id": "github_knowledge_maintenance"
+    },
+    {
+      "command": "/vscode-environment",
+      "aliases": [],
+      "workflow": "vscode-environment",
+      "skill": "vscode-environment",
+      "skill_path": "skills/vscode-environment/SKILL.md",
+      "prompt_path": ".ariadne/prompts/vscode-environment.prompt.md",
+      "overview": "VSCode workspace as codeを整備する。",
+      "prerequisites": [
+        "引数なしの場合はself-provision modeとしてcurrent repositoryを対象にする。",
+        "target workspace pathを指定した場合はtarget-workspace modeとして対象repoを読む。",
+        "特殊なterminal、Docker、extension、launch、local path、multi-root要件がある場合はcustom-design modeとして扱い、草案またはHuman質問で補う。",
+        "既存 .vscode 設定を無条件に上書きしない。",
+        "repo-local command toolがある場合は、tools directoryをVSCode統合ターミナルのPATHへ追加する。",
+        "runtime-context.json でterminal、tool path、検証コマンド、Human Check条件を確認する。",
+        "不足toolのinstallは人間承認後に行う。",
+        "日本語Markdown、prompt、workflow docsを扱う場合は、VSCode provisioningでUTF-8 firstを宣言する。"
+      ],
+      "arguments": [
+        {
+          "name": "target_workspace",
+          "required": false,
+          "description": "対象workspace path。省略時はself-provision modeとしてcurrent repositoryを対象にする。特殊設計はcustom-design modeとして草案またはHuman質問で補う。",
+          "examples": [
+            "C:/github/localty-system-gui"
+          ]
+        }
+      ],
+      "details": [
+        "引数なしはself-provision modeとして、このAI workflow repository自身をAIさんが実行しやすいVSCode環境にする。",
+        "path指定ありはtarget-workspace modeとして、対象repoを読んで安全な既定値を推定する。",
+        "特殊要件はcustom-design modeとして、work/requirements/devlop-edit-draft/ の草案またはHuman質問で補う。",
+        "settings、tasks、launch、extensions、terminal profilesを設計する。",
+        "既存設定を無条件に上書きしない。",
+        "runtime/windows-script/*.cmd などのrepo-local command scriptがある場合、terminal.integrated.env.windows.Pathへ追加する。",
+        "work/<work-id>/context/runtime-context.json にterminal scope、tool path、verification commandを記録する。",
+        "長いinline PowerShellではなくrepo-local helperを優先する。",
+        "検証結果とevidenceを保存する。",
+        "UTF-8 first: files.encoding=utf8、files.autoGuessEncoding=false、PYTHONUTF8=1、PYTHONIOENCODING=utf-8、PowerShell Input/OutputEncoding、chcp 65001を標準設計に含める。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/vscode-environment",
+        "/vscode-environment C:/github/localty-system-gui",
+        "/vscode-environment --custom-design"
+      ],
+      "related_runtime": [
+        "runtime/workflow/vscode_environment.py",
+        "runtime/workflow/context_first.py",
+        "runtime/workflow/validate_vscode_workspace.py"
+      ],
+      "docs": [
+        "docs/workflows/vscode-environment.md",
+        "docs/reference/vscode-environment.md",
+        "docs/reference/environment-selection.md"
+      ],
+      "id": "vscode_environment"
+    },
+    {
+      "command": "/realtime-iac",
+      "aliases": [],
+      "workflow": "realtime-iac",
+      "skill": "realtime-iac",
+      "skill_path": "skills/realtime-iac/SKILL.md",
+      "prompt_path": ".ariadne/prompts/realtime-iac.prompt.md",
+      "overview": "リアルタイムシステム向けIaC、platform infrastructure、database infrastructure、Redis middleware infrastructure、OpenLDAP identity infrastructure、OpenTelemetry Collector infrastructureを設計、生成、レビュー、検証、文書化する。",
+      "prerequisites": [
+        "aiwfctl env select docker --work-id <work-id> を実行し、environment-selection.environment が docker である。",
+        "通信仕様、port定義、network boundary、ADR、安全traceability、platform / database / middleware / identity / collector component inventoryなどのShared Artifactsがある。",
+        "secretや.env実値は生成しない前提で進める。",
+        "外部I/O、実機、network影響がある検証はHuman Gateに従う。"
+      ],
+      "arguments": [
+        {
+          "name": "shared_artifacts",
+          "required": false,
+          "description": "通信仕様、port定義、network boundary、ADR、安全traceability、platform / database / middleware / identity / collector component inventoryなどのShared Artifactsが入ったwork directory。",
+          "examples": [
+            "work/issue-12/shared-artifacts/"
+          ]
+        }
+      ],
+      "details": [
+        "IaC設計前に Context First gate で docker environment-selection を検証する。",
+        "requirements、network/security、runtime、observability、platform / database / middleware / identity / collector component selectionを設計する。",
+        "realtime gateway infrastructureには microservice-infra-template、開発・CI/CD・監視platformには platform-infra-template、PostgreSQL / MySQL基盤には database-infra-template、Redis基盤には middleware-infra-template、OpenLDAP基盤には identity-infra-template、OpenTelemetry Collector基盤には opentelemetry-collector-template を候補にする。",
+        "Terraform、Docker Compose、systemd、firewall、reverse proxy、logrotateなどを生成する。",
+        "Docker Desktop、Linux runtime、integration testを検証する。",
+        "secretや.env実値は生成しない。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/realtime-iac work/issue-12/shared-artifacts/"
+      ],
+      "related_runtime": [
+        "runtime/workflow/context_first.py",
+        "runtime/workflow/iac_template.py",
+        "runtime/workflow/workflow_state.py"
+      ],
+      "docs": [
+        "docs/workflows/realtime-iac.md"
+      ],
+      "id": "realtime_iac"
+    },
+    {
+      "command": "/knowledge-capture",
+      "aliases": [],
+      "workflow": "knowledge-capture",
+      "skill": "knowledge-capture",
+      "skill_path": "skills/knowledge-capture/SKILL.md",
+      "prompt_path": ".ariadne/prompts/knowledge-capture.prompt.md",
+      "overview": "完了IssueからPR材料、RAG候補、docs候補、archive準備を作る。",
+      "prerequisites": [
+        "対象issue work directoryが完了状態に近い。",
+        "実装変更は行わず、PR材料、docs証跡、RAG候補、archive準備を作る。",
+        "RAG登録やarchive pruneは人間承認後に行う。"
+      ],
+      "arguments": [
+        {
+          "name": "issue",
+          "required": true,
+          "description": "完了対象のissue work id。issue-11 の形式を推奨する。",
+          "examples": [
+            "issue-11"
+          ]
+        },
+        {
+          "name": "repository",
+          "required": false,
+          "description": "対象repository。work contextから解決できない場合に指定する。",
+          "examples": [
+            "localty-system-gui"
+          ]
+        },
+        {
+          "name": "branch",
+          "required": false,
+          "description": "対象branch。work contextから解決できない場合に指定する。",
+          "examples": [
+            "feature/issue-11"
+          ]
+        }
+      ],
+      "details": [
+        "PR title、PR description、merge commentを作成する。",
+        "docs evidence配置を確認する。",
+        "RAG/docs candidateを抽出する。",
+        "archive readinessを確認するが、実装変更は行わない。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/knowledge-capture issue-11",
+        "/knowledge-capture --issue issue-11 --repository localty-system-gui --branch feature/issue-11"
+      ],
+      "related_runtime": [
+        "runtime/workflow/knowledge_capture.py",
+        "runtime/workflow/close_archive.py"
+      ],
+      "docs": [
+        "docs/workflows/knowledge-capture.md"
+      ],
+      "id": "knowledge_capture"
+    },
+    {
+      "command": "/rag-build",
+      "aliases": [],
+      "workflow": "rag-build",
+      "skill": "rag-build",
+      "skill_path": "skills/rag-build/SKILL.md",
+      "prompt_path": ".ariadne/prompts/rag-build.prompt.md",
+      "overview": "Markdown reportをfile-based RAG artifactへ変換する。",
+      "prerequisites": [
+        "RAG化対象のMarkdown reportがrag配下または指定sourceにある。",
+        "RAG生成物はGit追跡しない。",
+        "既存source削除やRAG登録扱いは人間承認後に行う。"
+      ],
+      "arguments": [
+        {
+          "name": "source",
+          "required": false,
+          "description": "通常は rag/corrective-action-report/ など既定sourceを使う。対象source dirを明示したい場合に指定する。",
+          "examples": [
+            "rag/corrective-action-report"
+          ]
+        }
+      ],
+      "details": [
+        "source MarkdownをUUID JSON documentへ正規化する。",
+        "chunk、index、local sparse embeddingを生成する。",
+        "corrective action report名を標準化する。",
+        "RAG生成物はgit追跡対象にしない。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/rag-build"
+      ],
+      "related_runtime": [
+        "runtime/rag/rag_build.py",
+        "runtime/rag/normalize_documents.py",
+        "runtime/rag/chunk_documents.py",
+        "runtime/rag/build_index.py",
+        "runtime/rag/embed_chunks.py"
+      ],
+      "docs": [
+        "docs/workflows/rag-build-load.md",
+        "docs/reference/rag.md"
+      ],
+      "id": "rag_build"
+    },
+    {
+      "command": "/rag-load",
+      "aliases": [],
+      "workflow": "rag-load",
+      "skill": "rag-load",
+      "skill_path": "skills/rag-load/SKILL.md",
+      "prompt_path": ".ariadne/prompts/rag-load.prompt.md",
+      "overview": "開発前にRAGを検索し、圧縮済みcontext packを読み込む。",
+      "prerequisites": [
+        "rag/indexes/chunks.jsonl と rag/embeddings/chunks-embeddings.jsonl が存在する。",
+        "検索対象のtask、repository、branch、queryのいずれかが説明できる。",
+        "RAGは補助contextであり、current repository evidenceやHuman answerを上書きしない。"
+      ],
+      "arguments": [
+        {
+          "name": "query",
+          "required": false,
+          "description": "明示query。省略時はtask、repository、branch、work contextからdispatch planを生成する。",
+          "examples": [
+            "workflow doctor human gate registry"
+          ]
+        },
+        {
+          "name": "repository",
+          "required": false,
+          "description": "検索を特定repositoryに絞るfilter。",
+          "examples": [
+            "ariadne-ai-workflow-platform"
+          ]
+        },
+        {
+          "name": "branch",
+          "required": false,
+          "description": "検索を特定branchに絞るfilter。",
+          "examples": [
+            "develop"
+          ]
+        }
+      ],
+      "details": [
+        "rag-dispatch-planを生成または再利用する。",
+        "retrieve_context.pyをqueryごとに並列実行する。",
+        "rag-context-packを集約してrag-load-dispatchを作る。",
+        "後続Agentはdispatch planを読み、なぜ検索したかを確認する。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/rag-load",
+        "/rag-load --query \"workflow doctor human gate registry\""
+      ],
+      "related_runtime": [
+        "runtime/rag/rag_dispatcher.py",
+        "runtime/rag/retrieve_context.py"
+      ],
+      "docs": [
+        "docs/workflows/rag-build-load.md",
+        "docs/reference/rag.md",
+        "docs/reference/rag-dispatcher.md"
+      ],
+      "id": "rag_load"
+    },
+    {
+      "command": "/runtime-health-check",
+      "aliases": [
+        "/self-health-check",
+        "/runtime-quality-gate"
+      ],
+      "workflow": "runtime-health-check",
+      "skill": "runtime-health-check",
+      "skill_path": "skills/runtime-health-check/SKILL.md",
+      "prompt_path": ".ariadne/prompts/runtime-health-check.prompt.md",
+      "overview": "Ariadne AI Workflow Platform自身のruntime、pytest、UT仕様書、Context First、aiwfctl、docs品質を自己診断する。",
+      "prerequisites": [
+        "Ariadne AI Workflow Platform repository上で実行する。",
+        "GitHub Actionsではなく、Runtime Quality Gate Agentが明示的に実行する。",
+        "runtimeのuv dev dependency groupでpytestとcoverageを利用できる。",
+        "生成reportは原則 runtime/.pytest_cache/ に置き、Git管理しない。"
+      ],
+      "arguments": [
+        {
+          "name": "work_id",
+          "required": false,
+          "description": "Context First test-evidence登録用work id。未指定時は runtime-health-check 相当の一時work idを使う。",
+          "examples": [
+            "runtime-health-check",
+            "context-first-agent-quality-gate"
+          ]
+        },
+        {
+          "name": "report_dir",
+          "required": false,
+          "description": "JSON / Markdown report出力先。通常は runtime/.pytest_cache/ を使う。",
+          "examples": [
+            "runtime/.pytest_cache"
+          ]
+        }
+      ],
+      "details": [
+        "runtime pytestを実行する。",
+        "pytest収集結果と docs/reference/runtime-pytest-ut/case-specification.md を同期チェックする。",
+        "pytest-ut-spec-sync-report.json と pytest-ut-spec-sync-report.md を生成する。",
+        "Context First manifestへ test-evidence として登録する。",
+        "workflow_doctor.py と aiwfctl doctor を実行する。",
+        "日本語Markdown品質ガードを実行する。",
+        "GitHub Actions workflowは作成しない。",
+        "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
+      ],
+      "examples": [
+        "/runtime-health-check",
+        "/runtime-health-check --work-id runtime-health-check"
+      ],
+      "related_runtime": [
+        "runtime/tools/pytest_ut_spec_sync.py",
+        "runtime/workflow/workflow_doctor.py",
+        "runtime/workflow/context_first.py",
+        "runtime/workflow/validate_output_language.py",
+        "runtime/ctl/ctl.py"
+      ],
+      "docs": [
+        "docs/workflows/runtime-health-check.md",
+        "docs/reference/runtime-pytest-ut/test-items.md",
+        "docs/reference/runtime-pytest-ut/case-specification.md"
+      ],
+      "id": "runtime_health_check"
+    }
+  ],
+  "extensions": [
+    {
+      "name": "gac-uac-gui-mode",
+      "aliases": [
+        "gui-mode",
+        "svg-gui",
+        "pyqt-svg-layout"
+      ],
+      "standalone_command": false,
+      "overview": "SVGをSemantic Layout、PyQt6候補、QTest候補へ変換する親workflow内のGUI拡張。",
+      "prerequisites": [
+        "親workflowのIssue作業領域が作成済みである。",
+        "work/requirements/svg-input/ に SYS_、FEAT_、FIX_ のいずれかのSVGがある。",
+        "生成候補はreview対象であり、target sourceへ自動コピーしない。"
+      ],
+      "trigger": "work/requirements/svg-input/{SYS,FEAT,FIX}_*.svg",
+      "input_directory": "work/requirements/svg-input",
+      "output": "work/<issue-id>/gac-uac/",
+      "prefixes": [
+        "SYS_",
+        "FEAT_",
+        "FIX_"
+      ],
+      "parent_workflows": [
+        "ariadne-new-system",
+        "ariadne-feature-maintenance",
+        "corrective-action-fix"
+      ],
+      "details": [
+        "Issue作業領域作成後に、対象prefixのSVGをclaimする。",
+        "SVG構造を解析し、Semantic Layout Graph、Widget Mapping、Layout Specを作る。",
+        "PyQt6候補とQTest候補をgenerated artifactとして作る。",
+        "実行環境は aiwfctl env select gui-mode で windows-msys2-gui を確認する。",
+        "生成候補はtarget sourceへ自動コピーしない。親workflowのreview後に採用する。",
+        "SVGが無い場合はskippedとして親workflowへ戻る。"
+      ],
+      "examples": [
+        "work/requirements/svg-input/SYS_main_window.svg",
+        "work/requirements/svg-input/FEAT_dashboard_panel.svg",
+        "work/requirements/svg-input/FIX_status_dialog.svg",
+        "aiwfctl help show gui-mode"
+      ],
+      "related_runtime": [
+        "runtime/workflow/gui_mode.py"
+      ],
+      "docs": [
+        "docs/workflows/gui-mode.md",
+        "docs/reference/environment-selection.md"
+      ],
+      "id": "gac_uac_gui_mode"
+    },
+    {
+      "name": "web-svg-layout-mode",
+      "aliases": [
+        "web-svg",
+        "svg-web",
+        "web-ui-svg-layout"
+      ],
+      "standalone_command": false,
+      "overview": "Web画面向けSVGをlayout map、React候補、Playwright候補へ変換する親workflow内のWeb UI拡張。",
+      "prerequisites": [
+        "親workflowのIssue作業領域が作成済みである。",
+        "work/requirements/svg-input/ に WEB_SYS_、WEB_FEAT_、WEB_FIX_ のいずれかのSVGがある。",
+        "生成候補はreview対象であり、既存Web画面へ自動コピーしない。"
+      ],
+      "trigger": "work/requirements/svg-input/{WEB_SYS,WEB_FEAT,WEB_FIX}_*.svg",
+      "input_directory": "work/requirements/svg-input",
+      "output": "work/<issue-id>/web-ui/",
+      "prefixes": [
+        "WEB_SYS_",
+        "WEB_FEAT_",
+        "WEB_FIX_"
+      ],
+      "parent_workflows": [
+        "ariadne-new-system",
+        "ariadne-feature-maintenance",
+        "corrective-action-fix"
+      ],
+      "details": [
+        "Issue作業領域作成後に、WEB_* prefixのSVGをclaimする。",
+        "SVGからroute layout map、component mapping、responsive layout specを作る。",
+        "React候補とPlaywright候補をgenerated artifactとして作る。",
+        "実行環境は aiwfctl env select web-svg で wsl-ubuntu-web を確認する。",
+        "既存画面への最小修正候補としてreviewし、無条件コピーしない。",
+        "WEB_* SVGが無い場合はskippedとして親workflowへ戻る。"
+      ],
+      "examples": [
+        "work/requirements/svg-input/WEB_SYS_admin_dashboard.svg",
+        "work/requirements/svg-input/WEB_FEAT_monitoring_panel.svg",
+        "work/requirements/svg-input/WEB_FIX_login_layout.svg",
+        "aiwfctl help show web-svg"
+      ],
+      "related_runtime": [
+        "runtime/workflow/web_svg_layout_mode.py"
+      ],
+      "docs": [
+        "docs/workflows/web-svg-layout-mode.md",
+        "docs/reference/environment-selection.md"
+      ],
+      "id": "web_svg_layout_mode"
+    },
+    {
+      "name": "mcp-server-group-implementation",
+      "aliases": [
+        "mcp-group",
+        "mcp-boilerplate",
+        "mcp-server-group"
+      ],
+      "standalone_command": true,
+      "overview": "MCP Server, reusable MCP Client, AI Agent Runtime, and Discord Gateway boilerplates are selected, boundary-checked, and staged under work/<work-id>/implementation/mcp-server-group/.",
+      "prerequisites": [
+        "A parent workflow work id exists or has been chosen.",
+        "The intended MCP components are known: local-model-mcp-server, mcp-client, local-ai-agent-runtime, discord-gateway.",
+        "Service ownership boundaries are reviewed before generated templates are copied into target source."
+      ],
+      "trigger": "MCP server group implementation using repo-local boilerplates",
+      "input_directory": "templates/boilerplates/mcp",
+      "output": "work/<work-id>/implementation/mcp-server-group/",
+      "prefixes": [],
+      "parent_workflows": [
+        "ariadne-new-system",
+        "ariadne-feature-maintenance",
+        "corrective-action-fix"
+      ],
+      "details": [
+        "Run analyze first to create mcp-server-group-implementation-context.json and mcp-server-group-implementation-report.md.",
+        "Run init or run-workflow to copy selected boilerplates into the work directory.",
+        "The extension stops with human-check-required for unknown components or boundary violations.",
+        "Discord Gateway, Agent Runtime, MCP Client, and MCP Server state ownership must remain separated.",
+        "Generated templates remain work artifacts until the parent workflow review accepts them."
+      ],
+      "examples": [
+        "aiwfctl mcp-group analyze --work-id <work-id>",
+        "aiwfctl mcp-group init --work-id <work-id> --components local-model-mcp-server,mcp-client",
+        "aiwfctl mcp-group run-workflow --work-id <work-id> --components local-model-mcp-server,mcp-client,local-ai-agent-runtime,discord-gateway",
+        "aiwfctl help show mcp-group"
+      ],
+      "related_runtime": [
+        "runtime/workflow/mcp_server_group.py",
+        "runtime/workflow/context_first.py",
+        "runtime/ctl/ctl.py"
+      ],
+      "docs": [
+        "docs/workflows/mcp-server-group-implementation.md",
+        "docs/reference/templates.md"
+      ],
+      "id": "mcp_server_group_implementation"
+    }
+  ]
+}

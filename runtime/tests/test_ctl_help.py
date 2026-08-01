@@ -1585,6 +1585,20 @@ def test_registry_load_auto_builds_missing_duckdb_from_default_source_backup(tmp
     assert environment_registry["environments"][0]["name"] == "local"
 
 
+def test_registry_load_auto_builds_missing_duckdb_from_template_source(tmp_path: Path) -> None:
+    source_dir = tmp_path / "templates" / "registries"
+    db_path = tmp_path / "db" / "registries" / "registry.duckdb"
+    write_registry_source(source_dir)
+
+    registry = registry_store.load_workflow_help(tmp_path)
+    environment_registry = registry_store.load_environment_profiles(tmp_path)
+
+    assert db_path.exists()
+    assert registry["commands"][0]["command"] == "/alpha"
+    assert registry["commands"][0]["_search_terms"][0]["term"] == "entrypoint maintenance"
+    assert environment_registry["environments"][0]["name"] == "local"
+
+
 def test_registry_store_ensure_skips_when_source_backup_is_incomplete(tmp_path: Path) -> None:
     source_dir = tmp_path / "work" / "db" / "ariadne-knowledge-platform" / "registries"
     source_dir.mkdir(parents=True)

@@ -51,7 +51,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_context_first.py](cases/test_context_first.md) | 34 |
 | [test_corrective_action_report.py](cases/test_corrective_action_report.md) | 7 |
 | [test_coverage_audit.py](cases/test_coverage_audit.md) | 14 |
-| [test_ctl_help.py](cases/test_ctl_help.md) | 52 |
+| [test_ctl_help.py](cases/test_ctl_help.md) | 54 |
 | [test_dispatcher_context.py](cases/test_dispatcher_context.md) | 12 |
 | [test_docs_sync_workflow.py](cases/test_docs_sync_workflow.md) | 11 |
 | [test_flutter_multiplatform.py](cases/test_flutter_multiplatform.md) | 16 |
