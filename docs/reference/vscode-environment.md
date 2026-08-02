@@ -33,7 +33,7 @@ custom-design modeでは、terminal構成、Docker、extension policy、launch�
 | --- | --- |
 | `Dispatcher PowerShell` | workflow repository rootでCodex / AI workflowを調整する |
 | `Software Workflow PowerShell` | `uv run --project runtime python`、runtime helper、RAG script、testを実行する |
-| `MSYS2 Localty MINGW64` | Localty GUI / GStreamer / PyQt smoke check用 |
+| `MSYS2 GUI MINGW64` | GUI / GStreamer / PyQt smoke check用 |
 | `IaC Workflow PowerShell` | Docker / Go / gateway / IaC作業用 |
 | `Docker Test PowerShell` | Docker Desktop検証用 |
 | `Evidence PowerShell` | logs、reports、human-check notes用 |
@@ -159,7 +159,7 @@ workflow:vscode-preflight
 workflow:aiwfctl-path-shell
 test:vscode-json
 test:vscode-helper-help
-test:msys2-localty-smoke
+test:msys2-gui-smoke
 test:docker-version
 test:go-version
 ```

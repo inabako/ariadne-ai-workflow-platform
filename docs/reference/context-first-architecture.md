@@ -112,7 +112,7 @@ aiwfctl context init `
   --tool gh:read-only:GitHub metadata collection `
   --required-context workflow-selection `
   --required-context tool-selection `
-  --next-command "/docs-sync localty-system-gui develop"
+  --next-command "/docs-sync target-system develop"
 ```
 
 生成物:

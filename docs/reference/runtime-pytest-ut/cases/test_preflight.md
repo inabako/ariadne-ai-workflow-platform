@@ -1,10 +1,10 @@
-# test_preflight.py
+﻿# test_preflight.py
 
 このファイルは `runtime/tests/test_preflight.py` のpytest node id単位UT仕様です。
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 41 |
+| cases | 42 |
 
 ## ケース一覧
 
@@ -276,74 +276,6 @@ runtime/tests/test_preflight.py::test_main_gh_login_from_env_requires_human_appr
   - inline input: `output`
 - 期待結果: return code 1となり、stderrに `--gh-login-from-env requires --human-check approved` が出力される。
 
-#### RT-UT-CASE-230
-
-- pytest node id:
-
-```text
-runtime/tests/test_preflight.py::test_localty_protocol_check_uses_msys2_python_when_available
-```
-
-- 確認内容: pytest case `localty protocol check uses msys2 python when available` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:304`
-  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
-  - parameter: names=なし, case=なし
-  - inline input: `calls`, `args`
-- 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
-
-#### RT-UT-CASE-231
-
-- pytest node id:
-
-```text
-runtime/tests/test_preflight.py::test_localty_protocol_check_uses_fallback_repository
-```
-
-- 確認内容: pytest case `localty protocol check uses fallback repository` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:325`
-  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
-  - parameter: names=なし, case=なし
-  - inline input: `args`
-- 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
-
-#### RT-UT-CASE-232
-
-- pytest node id:
-
-```text
-runtime/tests/test_preflight.py::test_localty_protocol_check_reports_missing_without_work_id
-```
-
-- 確認内容: pytest case `localty protocol check reports missing without work id` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:344`
-  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
-  - parameter: names=なし, case=なし
-  - inline input: `args`
-- 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
-
-#### RT-UT-CASE-233
-
-- pytest node id:
-
-```text
-runtime/tests/test_preflight.py::test_localty_protocol_check_reports_missing_with_fallback_command
-```
-
-- 確認内容: pytest case `localty protocol check reports missing with fallback command` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_preflight.py:360`
-  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
-  - parameter: names=なし, case=なし
-  - inline input: `args`
-- 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
-
 #### RT-UT-CASE-234
 
 - pytest node id:
@@ -484,16 +416,16 @@ runtime/tests/test_preflight.py::test_scancode_audit_profile_declares_optional_l
 - pytest node id:
 
 ```text
-runtime/tests/test_preflight.py::test_build_checks_localty_gui_and_profiles_without_source_dir
+runtime/tests/test_preflight.py::test_build_checks_gui_pyqt_and_profiles_without_source_dir
 ```
 
-- 確認内容: pytest case `build checks localty gui and profiles without source dir` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 確認内容: pytest case `build checks gui pyqt and profiles without source dir` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_preflight.py:483`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: `gui_args`, `localty_args`, `vscode_args`, `web_args`
+  - inline input: `gui_args`, `vscode_args`, `web_args`
 - 期待結果: 該当caseがpassし、対象runtimeの正常系または境界条件が仕様どおりに確認される。
 
 #### RT-UT-CASE-240

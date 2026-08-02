@@ -231,7 +231,7 @@ target別build環境:
 .\runtime\windows-script\aiwf.cmd ctl preflight `
   --profile gui-mode `
   --work-id issue-123 `
-  --source-dir C:\github\localty-system-gui
+  --source-dir <target-system-repo-path>
 ```
 
 Webの場合:

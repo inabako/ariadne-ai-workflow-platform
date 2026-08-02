@@ -101,6 +101,7 @@ GitHub passwordをENVに保存しません。GitHub CLI/API と git remote の�
 | `runtime/workflow/web_svg_layout_mode.py` | `work/requirements/svg-input/WEB_<PREFIX>_*.svg`をIssueへ取り込み、Web layout、React候補、Playwright候補を`web-ui/`へ生成・検証する |
 | `runtime/workflow/flutter_multiplatform.py` | Flutter target宣言、host OS別build可否、boilerplate選択、静的解析/test/build計画、Flutter contextとreportを生成する |
 | `runtime/workflow/knowledge_capture.py` | PR材料、knowledge capture report、archive readinessを作り、target repository側の `docs/evidence/<issue-id>/` scaffoldを自動生成する |
+| `runtime/rag/semantic_hints.py` | project固有のsemantic hintを生成し、RAG source化、build、読み取りへ接続する |
 | `runtime/workflow/close_archive.py` | `work/close/<category>/<archive-id>`を軽量なreport-only archiveとして作成、監査、承認付きpruneする |
 | `runtime/workflow/noise_reduction.py` | 要件定義前の不明ワード、Critical項目不足、曖昧表現を抽出し、Human InterviewとReadinessを生成する |
 | `runtime/workflow/sdk_analysis.py` | 要件定義工程で `work/requirements/sdk/` のSDKプログラムを事前解析し、SDK分析context、外部関連資料discovery context、要件追記候補、Knowledge JSON候補を生成する。AWS/GCPはcloud metadata、Stripeはpayment metadataとして専用Human Checkを出す |
@@ -162,7 +163,7 @@ GITHUB_TOKEN=
 ARIADNE_KNOWLEDGE_REPOSITORY=ariadne-knowledge-platform
 ```
 
-`GITHUB_OWNER` を設定すると、`localty-system-gui` のようなrepository名だけの指定を `<GITHUB_OWNER>/localty-system-gui` として解決できます。
+`GITHUB_OWNER` を設定すると、`target-system` のようなrepository名だけの指定を `<GITHUB_OWNER>/target-system` として解決できます。
 
 案件ごとに変わるrepositoryは `.env` に置きません。要件定義書の `Repository Control` またはworkflow inputを source of truth にします。
 

@@ -186,6 +186,7 @@ def normalize_document(
         "severity_focus": ensure_list(front_matter.get("severity_focus")),
         "areas": ensure_list(front_matter.get("areas")),
         "tags": ensure_list(front_matter.get("tags")) or [document_type],
+        "semantic_hint": first_string(front_matter.get("semantic_hint")),
     }
     metadata.update(external_web_metadata(front_matter))
     metadata["front_matter"] = front_matter
@@ -200,6 +201,7 @@ def normalize_document(
         "title": title,
         "content": content.strip() + "\n",
         "summary": first_string(front_matter.get("summary")),
+        "semantic_hint": first_string(front_matter.get("semantic_hint")),
         "metadata": metadata,
         "headings": headings_from_content(content),
     }

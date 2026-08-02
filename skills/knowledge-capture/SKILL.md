@@ -18,7 +18,7 @@ This skill does not implement code changes, alter design, push branches, run RAG
 ## Slash Command
 
 ```text
-/knowledge-capture --issue issue-11 --repository localty-system-gui --branch feature/issue-11
+/knowledge-capture --issue issue-11 --repository target-system --branch feature/issue-11
 ```
 
 Minimum:

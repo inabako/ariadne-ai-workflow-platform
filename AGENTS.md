@@ -1,6 +1,6 @@
 ﻿# Ariadne AI Workflow: Agent Guide
 
-このリポジトリは、Localty の対象システム開発を Intent、Safety、Operational Learning を中心に進めるための AI workflow repository です。
+このリポジトリは、対象システム開発を Intent、Safety、Operational Learning を中心に進めるための AI workflow repository です。
 
 Agent は、単に成果物を作るだけではなく、次のAgentと人間が判断を継続できるように、context、decision、reason、evidence、risk、open QA を残してください。
 
@@ -179,7 +179,7 @@ Agent は、次のAgentが必要とする情報を schema に沿って残して�
 
 共通判断ルールは `.ariadne/shared/` を参照してください。
 
-- `localty-principles.md`
+- `ariadne-principles.md`
 - `risk-and-severity.md`
 - `artifact-management.md`
 - `agent-handoff.md`

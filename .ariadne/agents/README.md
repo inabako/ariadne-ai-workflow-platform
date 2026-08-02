@@ -1,8 +1,8 @@
-﻿# Localty Agent Prompts
+# Ariadne Agent Prompts
 
 このディレクトリには、Ariadne Workflow で利用する Agent prompt を格納します。
 
-各Agentは、Localtyの成長文化を守るために設計されています。
+各Agentは、Ariadne workflow の共通原則を守るために設計されています。
 
 - 仕組みより Intent
 - 便利さより安全
@@ -165,7 +165,7 @@ work/db/ariadne-knowledge-platform/rag/specialist-review/<domain>/
 
 ```yaml
 ---
-project: localty-system-gui
+project: target-system
 type: improvement-report
 status: draft
 created_at: 2026-05-31T00:00:00+09:00
@@ -188,4 +188,4 @@ knowledge-inbox/
 
 ## Core Principle
 
-このworkflowは、使うたびにLocaltyをより安全に、より理解しやすくするためにあります。
+このworkflowは、使うたびに対象システムとAriadne workflowをより安全に、より理解しやすくするためにあります。

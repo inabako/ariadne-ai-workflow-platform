@@ -505,78 +505,6 @@ def gh_login_from_env(repo_root: Path, *, hostname: str) -> list[dict[str, Any]]
     return executions
 
 
-def localty_protocol_check(args: argparse.Namespace, protocol_dir: Path | None, bash_path: Path) -> Check:
-    verify_code = "from localty_protocol.telemetry import UDP_PORTS; print(UDP_PORTS)"
-    use_msys2_python = args.profile in {"localty-msys2", "gui-pyqt"} and bash_path.exists()
-    if use_msys2_python:
-        env = {**os.environ, "MSYSTEM": "MINGW64", "CHERE_INVOKING": "1"}
-        completed = run_command([str(bash_path), "-lc", f"python -c '{verify_code}'"], env=env)
-        install_command = f"\"{bash_path}\" -lc \"python -m pip install 'localty-system-protocol>=0.1.0'\""
-        detected_runtime = f"MSYS2 python via {bash_path}"
-    else:
-        completed = run_command([sys.executable, "-c", verify_code])
-        install_command = f"{sys.executable} -m pip install \"localty-system-protocol>=0.1.0\""
-        detected_runtime = sys.executable
-    if completed.returncode == 0:
-        return Check(
-            id="python-package:localty-system-protocol",
-            label="localty-system-protocol package",
-            kind="python-package",
-            required=True,
-            ok=True,
-            detected=f"{detected_runtime}: {completed.stdout.strip()}",
-            install_hint="Published package is installed and localty_protocol.telemetry.UDP_PORTS is importable.",
-            install_command=install_command,
-        )
-
-    fallback_ok = bool(protocol_dir and (protocol_dir / "pyproject.toml").exists())
-    fallback_command = None
-    if args.work_id:
-        branch = args.support_branch or "develop"
-        fallback_command = (
-            f"{sys.executable} runtime/ctl/ctl.py --repo-root . scm support "
-            f"--work-id \"{args.work_id}\" "
-            "--name \"localty-system-protocol\" "
-            "--repository \"inabako/localty-system-protocol\" "
-            f"--branch \"{branch}\""
-        )
-
-    if fallback_ok:
-        return Check(
-            id="python-package:localty-system-protocol",
-            label="localty-system-protocol package",
-            kind="python-package",
-            required=True,
-            ok=True,
-            detected=f"fallback source repository: {protocol_dir}",
-            install_hint=(
-                "Published package import failed, but a local fallback source repository exists. "
-                "Prefer pip install localty-system-protocol>=0.1.0 when available."
-            ),
-            install_command=install_command,
-            fallback_command=fallback_command,
-        )
-
-    fallback_hint = " If pip cannot fetch the package, download the support repository with the fallback command."
-    if not fallback_command:
-        fallback_hint = " If pip cannot fetch the package, pass --work-id so the report can include the support repository fallback command."
-    return Check(
-        id="python-package:localty-system-protocol",
-        label="localty-system-protocol package",
-        kind="python-package",
-        required=True,
-        ok=False,
-        detected=completed.stderr.strip() or completed.stdout.strip(),
-        install_hint=(
-            "Install the published protocol package first, then verify: "
-            "python -c \"from localty_protocol.telemetry import UDP_PORTS; print(UDP_PORTS)\"."
-            f"{fallback_hint}"
-        ),
-        install_command=install_command,
-        fallback_command=fallback_command,
-    )
-
-
 def msys2_package_check(bash_path: Path, package: str, *, required: bool) -> Check:
     if not bash_path.exists():
         return Check(
@@ -605,7 +533,6 @@ def msys2_package_check(bash_path: Path, package: str, *, required: bool) -> Che
 
 def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
     source_dir = Path(args.source_dir).resolve() if args.source_dir else None
-    protocol_dir = Path(args.protocol_dir).resolve() if args.protocol_dir else (source_dir.parent / "localty-system-protocol" if source_dir else None)
     msys2_root = Path(args.msys2_root)
     bash_path = msys2_root / "usr" / "bin" / "bash.exe"
 
@@ -658,16 +585,16 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
             runtime_pytest_check(repo_root, required=True),
         ])
 
-    if args.profile in {"corrective-action-fix", "localty-msys2", "gui-pyqt"}:
+    if args.profile in {"corrective-action-fix", "gui-pyqt"}:
         checks.append(path_check(
             bash_path,
             check_id="path:msys2-bash",
             label="MSYS2 bash.exe",
-            required=args.profile in {"localty-msys2", "gui-pyqt"},
+            required=args.profile == "gui-pyqt",
             install_hint=f"Install MSYS2 to {WINDOWS_DEFAULT_MSYS2_ROOT} or pass --msys2-root.",
         ))
 
-    if args.profile in {"localty-msys2", "gui-pyqt"}:
+    if args.profile == "gui-pyqt":
         if source_dir:
             checks.append(path_check(
                 source_dir / "pyproject.toml",
@@ -676,7 +603,6 @@ def build_checks(args: argparse.Namespace, repo_root: Path) -> list[Check]:
                 required=True,
                 install_hint="Run preflight with --source-dir pointing at the GUI repository root.",
             ))
-        checks.append(localty_protocol_check(args, protocol_dir, bash_path))
         for package in [
             "mingw-w64-x86_64-python",
             "mingw-w64-x86_64-python-pip",
@@ -979,7 +905,6 @@ def build_parser() -> argparse.ArgumentParser:
         "--profile",
         choices=[
             "corrective-action-fix",
-            "localty-msys2",
             "gui-pyqt",
             "web-nextjs",
             "docker-compose",
@@ -994,7 +919,6 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--work-id", default="")
     parser.add_argument("--source-dir", default="")
-    parser.add_argument("--protocol-dir", default="")
     parser.add_argument("--support-branch", default="develop")
     parser.add_argument("--msys2-root", default=str(WINDOWS_DEFAULT_MSYS2_ROOT))
     parser.add_argument("--repo-root", default="")

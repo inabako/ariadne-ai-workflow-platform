@@ -44,7 +44,7 @@
       "overrideName": true,
       "icon": "tools"
     },
-    "MSYS2 Localty MINGW64": {
+    "MSYS2 GUI MINGW64": {
       "path": "C:\\msys64\\usr\\bin\\bash.exe",
       "args": [
         "--login",

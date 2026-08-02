@@ -122,7 +122,7 @@ def run_helper_help(_: argparse.Namespace) -> int:
     return run_process([sys.executable, "runtime/ctl/ctl.py", "workflow", "vscode-environment", "--help"])
 
 
-def run_msys2_localty_smoke(_: argparse.Namespace) -> int:
+def run_msys2_gui_smoke(_: argparse.Namespace) -> int:
     bash_path = WINDOWS_MSYS2_BASH
     if not bash_path.exists():
         print(f"ERROR: MSYS2 bash was not found: {bash_path}", file=sys.stderr)
@@ -172,8 +172,8 @@ def build_parser() -> argparse.ArgumentParser:
     helper_help = subparsers.add_parser("helper-help", help="Show vscode_environment.py help.")
     helper_help.set_defaults(func=run_helper_help)
 
-    msys2 = subparsers.add_parser("msys2-localty-smoke", help="Run MSYS2 Python and GStreamer smoke checks.")
-    msys2.set_defaults(func=run_msys2_localty_smoke)
+    msys2 = subparsers.add_parser("msys2-gui-smoke", help="Run MSYS2 Python and GStreamer smoke checks.")
+    msys2.set_defaults(func=run_msys2_gui_smoke)
 
     docker = subparsers.add_parser("docker-version", help="Run docker version.")
     docker.set_defaults(func=run_docker_version)

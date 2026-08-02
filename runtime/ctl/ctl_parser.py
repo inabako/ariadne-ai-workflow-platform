@@ -32,7 +32,18 @@ from runtime.constants.cli_defaults import (
     TEXT_PREVIEW_MAX_BYTES_DEFAULT,
     TEXT_PREVIEW_MAX_CHARS_DEFAULT,
 )
-from runtime.constants.paths import GENERATED_JSONIZED
+from runtime.constants.paths import (
+    DUCKDB_DEFAULT_PATH,
+    EMBEDDINGS_INDEX,
+    GENERATED_CHUNKS,
+    GENERATED_INDEXES,
+    GENERATED_JSONIZED,
+    GENERATED_NORMALIZED,
+    GENERATED_OPTIMIZED_CHUNKS,
+    GENERATED_RETRIEVAL,
+    SEMANTIC_HINT_BACKUPS,
+    SOURCE_SEMANTIC_HINTS,
+)
 from runtime.constants.workspace import (
     DEFAULT_TARGET_REPO_HELP,
     DEFAULT_WORK_DIR_HELP,
@@ -63,10 +74,11 @@ def _add_preflight_arguments(sub: Any) -> None:
             "corrective-action-fix",
             "web-nextjs",
             "docker-compose",
-            "localty-system",
             "gui-mode",
+            "gui-pyqt",
             "runtime-dev",
             "vscode-environment",
+            "scancode-audit",
             "flutter",
             "github-cli",
             "github-knowledge-maintenance",
@@ -75,7 +87,6 @@ def _add_preflight_arguments(sub: Any) -> None:
     )
     preflight_cmd.add_argument("--work-id", default="")
     preflight_cmd.add_argument("--source-dir", default="")
-    preflight_cmd.add_argument("--protocol-dir", default="")
     preflight_cmd.add_argument("--support-branch", default="develop")
     preflight_cmd.add_argument("--msys2-root", default=str(preflight.WINDOWS_DEFAULT_MSYS2_ROOT))
     preflight_cmd.add_argument("--repo-root", dest="preflight_repo_root", default="")
@@ -573,6 +584,59 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     legacy.add_argument("--json", action="store_true")
 
 
+def _add_rag_semantic_hints_arguments(rag_sub: Any) -> None:
+    hints = rag_sub.add_parser("semantic-hints", help="Generate, build, and read semantic hint RAG sources.")
+    hints_sub = hints.add_subparsers(dest="semantic_hints_command")
+
+    generate = hints_sub.add_parser("generate", help="Generate RAG source Markdown from semantic hint backup JSON.")
+    generate.add_argument("--source-file", action="append", default=[])
+    generate.add_argument("--source-dir", default=str(SEMANTIC_HINT_BACKUPS))
+    generate.add_argument("--output-dir", default=str(SOURCE_SEMANTIC_HINTS))
+    generate.add_argument("--project", default="ariadne")
+    generate.add_argument("--repository", default="ariadne-ai-workflow-platform")
+    generate.add_argument("--status", default="approved")
+    generate.add_argument("--clean-output", action="store_true")
+    generate.add_argument("--json", action="store_true")
+
+    build = hints_sub.add_parser("build", help="Generate semantic hint sources and run the RAG build pipeline.")
+    build.add_argument("--source-file", action="append", default=[])
+    build.add_argument("--source-dir", default=str(SEMANTIC_HINT_BACKUPS))
+    build.add_argument("--rag-source-dir", default=str(SOURCE_SEMANTIC_HINTS))
+    build.add_argument("--document-type", default="semantic-hint")
+    build.add_argument("--normalized-dir", default=str(GENERATED_NORMALIZED))
+    build.add_argument("--chunks-dir", default=str(GENERATED_CHUNKS))
+    build.add_argument("--optimized-chunks-dir", default=str(GENERATED_OPTIMIZED_CHUNKS))
+    build.add_argument("--indexes-dir", default=str(GENERATED_INDEXES))
+    build.add_argument("--embeddings-output", default=str(EMBEDDINGS_INDEX))
+    build.add_argument("--output", default=str(GENERATED_RETRIEVAL / "semantic-hints-build-latest.json"))
+    build.add_argument("--project", default="ariadne")
+    build.add_argument("--repository", default="ariadne-ai-workflow-platform")
+    build.add_argument("--branch", default="")
+    build.add_argument("--commit", default="")
+    build.add_argument("--status", default="approved")
+    build.add_argument("--chunk-size", type=int, default=RAG_CHUNK_SIZE_DEFAULT)
+    build.add_argument("--chunk-overlap", type=int, default=RAG_CHUNK_OVERLAP_DEFAULT)
+    build.add_argument("--embedding-dimensions", type=int, default=RAG_EMBEDDING_DIMENSIONS_DEFAULT)
+    build.add_argument("--skip-optimization", action="store_true")
+    build.add_argument("--duckdb-migrate", action="store_true")
+    build.add_argument("--duckdb-path", default=str(DUCKDB_DEFAULT_PATH))
+    build.add_argument("--clean-output", action="store_true")
+    build.add_argument("--json", action="store_true")
+
+    read = hints_sub.add_parser("read", help="Read semantic hints from backups/sources or RAG retrieval.")
+    read.add_argument("--source-dir", default=str(SOURCE_SEMANTIC_HINTS))
+    read.add_argument("--backup-dir", default=str(SEMANTIC_HINT_BACKUPS))
+    read.add_argument("--query", default="")
+    read.add_argument("--semantic-hint", default="")
+    read.add_argument("--backend", choices=["source", "file", "duckdb"], default="source")
+    read.add_argument("--top-k", type=int, default=5)
+    read.add_argument("--chunks-index", default=str(GENERATED_INDEXES / "chunks.jsonl"))
+    read.add_argument("--embeddings-index", default=str(EMBEDDINGS_INDEX))
+    read.add_argument("--duckdb-path", default=str(DUCKDB_DEFAULT_PATH))
+    read.add_argument("--output-dir", default=str(GENERATED_RETRIEVAL))
+    read.add_argument("--json", action="store_true")
+
+
 def _add_workflow_docs_sync_arguments(workflow_sub: Any) -> None:
     docs = workflow_sub.add_parser("docs-sync", help="Prepare documentation sync workflow artifacts.")
     docs_sub = docs.add_subparsers(dest="workflow_action")
@@ -721,8 +785,8 @@ def _add_workflow_misc_arguments(workflow_sub: Any) -> None:
     rag = vscode_env_sub.add_parser("rag-template")
     rag.add_argument("--work-id", default="vscode-environment")
     rag.add_argument("--source-dir", default="work/db/ariadne-knowledge-platform/rag/workspace-environment")
-    rag.add_argument("--topic", default="localty-vscode-environment")
-    rag.add_argument("--repository", default="localty")
+    rag.add_argument("--topic", default="workspace-environment")
+    rag.add_argument("--repository", default="target-system")
     rag.add_argument("--target-workspace", default="")
     rag.add_argument("--mode", choices=["self-provision", "target-workspace", "custom-design"], default="self-provision")
     rag.add_argument("--status", default="draft")
@@ -1093,6 +1157,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     _add_rag_duckdb_arguments(rag_sub)
     _add_rag_stage_arguments(rag_sub)
+    _add_rag_semantic_hints_arguments(rag_sub)
 
     workflow_cmd = sub.add_parser("workflow", help="Run workflow support helpers through the official runtime entrypoint.")
     workflow_sub = workflow_cmd.add_subparsers(dest="workflow_command")

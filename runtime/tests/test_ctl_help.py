@@ -77,6 +77,11 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     assert rag_duckdb_verify_args.rag_command == "duckdb"
     assert rag_duckdb_verify_args.rag_duckdb_command == "verify"
     assert rag_duckdb_verify_args.query == ["workflow"]
+    semantic_hints_args = parser.parse_args(["rag", "semantic-hints", "read", "--semantic-hint", "gui simulator"])
+    assert semantic_hints_args.command == "rag"
+    assert semantic_hints_args.rag_command == "semantic-hints"
+    assert semantic_hints_args.semantic_hints_command == "read"
+    assert semantic_hints_args.semantic_hint == "gui simulator"
     publish_args = parser.parse_args(
         [
             "github-knowledge",

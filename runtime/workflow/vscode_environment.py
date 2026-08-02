@@ -81,8 +81,8 @@ def build_parser() -> argparse.ArgumentParser:
     rag = subparsers.add_parser("rag-template", help="Create a VSCode environment RAG source Markdown file.")
     rag.add_argument("--work-id", default="vscode-environment")
     rag.add_argument("--source-dir", default=DEFAULT_RAG_SOURCE_DIR)
-    rag.add_argument("--topic", default="localty-vscode-environment")
-    rag.add_argument("--repository", default="localty")
+    rag.add_argument("--topic", default="workspace-environment")
+    rag.add_argument("--repository", default="target-system")
     rag.add_argument("--target-workspace", default="")
     rag.add_argument("--mode", choices=["self-provision", "target-workspace", "custom-design"], default="self-provision")
     rag.add_argument("--status", default="draft")
@@ -268,7 +268,7 @@ def draft_template_text() -> str:
 
 ## 対象 Workspace
 
-- TODO: self-provision なら current repository。target-workspace / custom-design なら例 `C:\\github\\localty-system-gui`
+- TODO: self-provision なら current repository。target-workspace / custom-design なら `<target-system-repo-path>`
 
 ## 起動したい AI Workflow
 
@@ -506,9 +506,9 @@ def rag_filename(topic: str) -> str:
 def rag_template_text(args: argparse.Namespace, source_path: str) -> str:
     target_workspace = args.target_workspace or "TBD"
     return f"""---
-title: Localty VSCode 環境パターン
+title: VSCode environment pattern
 type: workspace-environment-pattern
-project: localty
+project: {args.repository}
 repository: {args.repository}
 branch: TBD
 commit: unknown
@@ -519,7 +519,7 @@ language: ja-JP
 created_at: {utc_now_iso()}
 source: {source_path}
 tags:
-  - localty
+  - workspace-environment
   - vscode-environment
   - workspace-as-code
   - ai-workflow
@@ -533,11 +533,11 @@ areas:
   - evidence
 ---
 
-# Localty VSCode 環境パターン
+# VSCode environment pattern
 
 ## 要約
 
-Localty repository では、VSCode 設定を Workspace as Code として扱います。通常は repo evidence から開始し、特殊な設計選択が必要な場合のみ任意 draft や `open-questions.md` で人間確認を行います。
+このnoteは、再利用可能な VSCode Workspace as Code パターンを記録します。repo evidence から開始し、特殊な設計選択が必要な場合のみ任意 draft や `open-questions.md` で人間確認を行います。対象repo固有の前提は semantic hint、RAG context、または repository docs に分離します。
 
 ## 範囲
 
@@ -571,10 +571,10 @@ Localty repository では、VSCode 設定を Workspace as Code として扱い�
 - `work/<work-id>/context/workspace-shared-artifact-validation.json`
 - `work/<work-id>/test-evidence/workspace-test.md`
 
-## Localty Runtime 方針
+## Target Runtime 方針
 
-- shared protocol dependency は、`localty-system-protocol>=0.1.0` のような公開済み Python package を優先する。
-- package install または import verification に失敗した場合のみ、理由を記録して support repository fallback を使う。
+- shared protocol package、simulator、device SDK、support service は、repo evidence、semantic hint、または人間の指示で明示された場合のみ必須依存として扱う。
+- target project が公開済み package を宣言している場合は package を優先し、source repository fallback は理由を記録して使う。
 - MSYS2、uv、Python、Docker、VSCode の確認は preflight evidence に明示する。
 - token、secret、個人専用 absolute path を commit 対象 workspace file に保存しない。
 
@@ -614,7 +614,7 @@ Evidence には、JSON 妥当性、task label、terminal profile 起動、launch
 
 ## RAG 保存ルール
 
-Localty VSCode 環境パターンが再利用可能になった場合、Markdown source を次の場所へ保存します。
+VSCode 環境パターンが再利用可能になった場合、Markdown source を次の場所へ保存します。
 
 ```text
 {DEFAULT_RAG_SOURCE_DIR}/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
@@ -635,7 +635,7 @@ uv run --project runtime python runtime/ctl/ctl.py --repo-root . rag normalize `
 
 ## 未解決事項
 
-- 最初の target は Localty GUI、robot、simulator、protocol、multi-root workspace のどれか。
+- 最初に対応する concrete target workspace または runtime profile はどれか。
 - 各 repository の default terminal profile はどれか。
 - 必須 task と推奨 task をどう分けるか。
 - VSCode UI 状態を CLI だけで証明できず、人間観察が必要な check はどれか。

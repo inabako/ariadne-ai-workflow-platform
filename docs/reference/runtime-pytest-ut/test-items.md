@@ -1,4 +1,4 @@
-# Runtime pytest UTテスト項目表
+﻿# Runtime pytest UTテスト項目表
 
 作成日: 2026-07-07
 
@@ -71,7 +71,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | RT-UT-017 | `runtime/tests/test_mcp_server_group_workflow.py` | 12 | 12 | `runtime/workflow/mcp_server_group.py`、`runtime/ctl/ctl.py` | MCP server/client/agent template展開、境界分離、Context First evidence、CLI route | MCP関連boilerplateを用途別に分け、安全にwork配下へ展開する |
 | RT-UT-018 | `runtime/tests/test_observability_metrics.py` | 17 | 17 | `runtime/observability/*` | monthly rotation、JSONL append、token/context/cost、evidence、Context First registration、non-fatal warning | Runtime metricsをbridge instrumentationとして観測可能にする |
 | RT-UT-018A | `runtime/tests/test_oss_release_foundation.py` | 12 | 12 | `runtime/release/*`, `.github/workflows/*`, `docs/legal/*`, `docs/security/*` | OSS release files、AGPL/REUSE metadata、ScanCode、REUSE lint、VS Code act rehearsal、release validation、release manifest | OSS公開前のrelease foundationをruntime test evidenceとして固定する |
-| RT-UT-019 | `runtime/tests/test_preflight.py` | 41 | 41 | `runtime/environment/preflight.py` | Docker、Python、MSYS2、Localty protocol、Terraform ENV path、GitHub CLI auth、install approval、Markdown report、act CLI、Docker daemon、ScanCode audit profile | 実行環境不足を作業前に検出し、人間承認なしのinstallやcredential設定を防ぐ |
+| RT-UT-019 | `runtime/tests/test_preflight.py` | 37 | 37 | `runtime/environment/preflight.py` | Docker、Python、MSYS2、Terraform ENV path、GitHub CLI auth、install approval、Markdown report、act CLI、Docker daemon、ScanCode audit profile | 実行環境不足を作業前に検出し、人間承認なしのinstallやcredential設定を防ぐ |
 | RT-UT-019A | `runtime/tests/test_preflight_ctl_runtime.py` | 2 | 2 | `runtime/ctl/ctl.py`, `runtime/ctl/ctl_preflight_adapter.py` | `aiwfctl preflight` route, JSON output preservation, process report path, runtime log command path | environment preflightを公式CTL入口へ統一し、wrapperやVSCode taskからも同じ観測経路で実行できるようにする |
 | RT-UT-020 | `runtime/tests/test_pytest_ut_spec_sync.py` | 21 | 22 | `runtime/tools/pytest_ut_spec_sync.py` | pytest収集結果とUT仕様書の同期確認、入力値抽出、差分検知、missing case scaffold、Markdown report、Context First manifest登録 | UT仕様書がpytest実体からずれたときに検出し、必要なcase scaffoldを作成してコンテキストの可観測性を保つ |
 | RT-UT-021 | `runtime/tests/test_rag_artifact_migration.py` | 19 | 19 | `runtime/rag/migrate_retrieval_artifacts.py`、`standardize_corrective_report_names.py` | retrieval artifact移行、UUID化、Markdown jsonize、report名標準化、参照更新 | RAG資産の肥大化に耐える命名・参照・移行を守る |

@@ -1,4 +1,4 @@
-# Runtime pytest 単体試験仕様
+﻿# Runtime pytest 単体試験仕様
 
 作成日: 2026-07-07
 
@@ -67,7 +67,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_mcp_server_group_workflow.py](cases/test_mcp_server_group_workflow.md) | 12 |
 | [test_observability_metrics.py](cases/test_observability_metrics.md) | 19 |
 | [test_oss_release_foundation.py](cases/test_oss_release_foundation.md) | 12 |
-| [test_preflight.py](cases/test_preflight.md) | 41 |
+| [test_preflight.py](cases/test_preflight.md) | 37 |
 | [test_preflight_ctl_runtime.py](cases/test_preflight_ctl_runtime.md) | 2 |
 | [test_pytest_ut_spec_sync.py](cases/test_pytest_ut_spec_sync.md) | 22 |
 | [test_rag_artifact_migration.py](cases/test_rag_artifact_migration.md) | 19 |

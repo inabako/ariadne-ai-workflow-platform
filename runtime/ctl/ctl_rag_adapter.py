@@ -17,6 +17,7 @@ from runtime.rag import (
     rag_build,
     rag_dispatcher,
     retrieve_context,
+    semantic_hints,
     standardize_corrective_report_names,
 )
 
@@ -34,6 +35,7 @@ RAG_RUNNERS: dict[str, Callable[[argparse.Namespace], dict[str, Any]]] = {
     "jsonize": jsonize_rag_tree.run,
     "migrate-retrieval": migrate_retrieval_artifacts.run,
     "migrate-legacy-root": migrate_legacy_root_rag.migrate_legacy_root_rag,
+    "semantic-hints": semantic_hints.run,
 }
 
 

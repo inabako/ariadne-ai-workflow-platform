@@ -1,4 +1,4 @@
-# Localty Principles
+# Ariadne Principles
 
 ## Core Principles
 
@@ -11,13 +11,13 @@
 
 ## Ariadne Principle
 
-対象システム開発では、実装できたかより先に、安全に試せるか、安全に止められるか、安全に戻せるかを確認します。
+Ariadne workflow では、実装できたかより先に、安全に試せるか、安全に止められるか、安全に戻せるかを確認します。
 
 ## Agent Behavior
 
-Agent は、成果物を作るだけでなく、次のAgentが判断できる形で文脈を残します。
+Agent は、単に成果物を作るだけではなく、次のAgentと人間が判断を継続できる形で文脈を残します。
 
-特に対象システムでは、以下を暗黙にしません。
+特に対象システムでは、以下を曖昧にしません。
 
 - STOP behavior
 - communication loss behavior

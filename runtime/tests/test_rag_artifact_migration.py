@@ -474,19 +474,19 @@ def test_standardize_report_names_renames_legacy_report_and_updates_references(
     source_root = "work/db/ariadne-knowledge-platform/rag"
     report_dir = repo / source_root / "corrective-action-report"
     report_dir.mkdir(parents=True)
-    legacy = report_dir / "20260606111000_localty-system-gui.md"
+    legacy = report_dir / "20260606111000_target-system-gui.md"
     legacy.write_text(
         "---\n"
         "created_at: 2026-06-06T11:10:00+00:00\n"
-        "repository: https://github.com/inabako/localty-system-gui.git\n"
+        "repository: https://github.com/owner/target-system-gui.git\n"
         "---\n"
-        "# 20260606111000_localty-system-gui.md\n\n"
-        f"source: {source_root}/corrective-action-report/20260606111000_localty-system-gui.md\n",
+        "# 20260606111000_target-system-gui.md\n\n"
+        f"source: {source_root}/corrective-action-report/20260606111000_target-system-gui.md\n",
         encoding="utf-8",
     )
     index = repo / source_root / "indexes" / "documents.jsonl"
     index.parent.mkdir(parents=True)
-    index.write_text(f"{source_root}/corrective-action-report/20260606111000_localty-system-gui.md\n", encoding="utf-8")
+    index.write_text(f"{source_root}/corrective-action-report/20260606111000_target-system-gui.md\n", encoding="utf-8")
     monkeypatch.setattr(standardize_corrective_report_names, "random_token", lambda length: "ABCDE")
     args = argparse.Namespace(
         repo_root=str(repo),
@@ -501,10 +501,10 @@ def test_standardize_report_names_renames_legacy_report_and_updates_references(
     new_rel = result["renames"][0]["new"]
     new_path = repo / new_rel
     assert new_path.exists()
-    assert new_path.name == "20260606111000_ABCDE_localty-system-gui.git.md"
+    assert new_path.name == "20260606111000_ABCDE_target-system-gui.git.md"
     assert STANDARD_REPORT_RE.match(new_path.name)
     assert not legacy.exists()
-    assert "20260606111000_localty-system-gui.md" not in new_path.read_text(encoding="utf-8")
+    assert "20260606111000_target-system-gui.md" not in new_path.read_text(encoding="utf-8")
     assert new_rel in index.read_text(encoding="utf-8")
     assert result["updated_reference_count"] >= 1
 
@@ -514,7 +514,7 @@ def test_standardize_report_names_skips_already_standard_and_readme(tmp_path: Pa
     report_dir = repo / "work/db/ariadne-knowledge-platform/rag" / "corrective-action-report"
     report_dir.mkdir(parents=True)
     readme = report_dir / "README.md"
-    standard = report_dir / "20260701000000_ABCDE_localty-system.md"
+    standard = report_dir / "20260701000000_ABCDE_target-system.md"
     readme.write_text("# README\n", encoding="utf-8")
     standard.write_text("# already standard\n", encoding="utf-8")
     args = argparse.Namespace(

@@ -21,7 +21,7 @@ work/requirements/draft/
 例:
 
 ```text
-work/requirements/draft/localty-gui-smoke-test.txt
+work/requirements/draft/target-system-smoke-test.txt
 ```
 
 ## Optional SDK Program Pre-Analysis

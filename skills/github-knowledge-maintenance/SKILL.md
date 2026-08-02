@@ -75,7 +75,7 @@ Keep these responsibilities separate:
 Example:
 
 ```text
-/github-knowledge-maintenance localty-system-gui recent proposal rag
+/github-knowledge-maintenance target-system recent proposal rag
 ```
 
 ## Directory Model

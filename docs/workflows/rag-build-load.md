@@ -186,3 +186,37 @@ Vector DB、provider-based embeddings、高度な semantic search、reranking mo
 skills/rag-build/SKILL.md
 skills/rag-load/SKILL.md
 ```
+
+## Semantic Hints
+
+Semantic hint は、RAG検索時に「どの知識を優先的に思い出すべきか」を補助する短い意味手がかりです。
+
+特定project向けの注意事項を `.ariadne/` の汎用prompt本文へ残さない場合は、まず knowledge platform 側へ退避します。
+
+```text
+work/db/ariadne-knowledge-platform/semantic-hints/*.json
+```
+
+退避JSONをRAG source Markdownへ変換します。
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl rag semantic-hints generate `
+  --source-dir work/db/ariadne-knowledge-platform/semantic-hints `
+  --output-dir work/db/ariadne-knowledge-platform/rag/semantic-hints
+```
+
+生成済みsemantic hintをRAG artifactへ吸収します。
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl rag semantic-hints build `
+  --skip-optimization
+```
+
+退避済みまたは生成済みsemantic hintを確認します。
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl rag semantic-hints read `
+  --semantic-hint "GUI simulator"
+```
+
+DuckDB read modelへ反映する場合は、build時に `--duckdb-migrate` を付けるか、通常のDuckDB rebuildを実行します。

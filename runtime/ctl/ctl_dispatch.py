@@ -479,6 +479,9 @@ def _handle_rag(args: argparse.Namespace, repo_root: Path, registry: dict[str, A
             "  aiwfctl rag chunk --input-dir <normalized> --output-dir <chunks>\n"
             "  aiwfctl rag index --normalized-dir <normalized> --chunks-dir <chunks> --output-dir <indexes>\n"
             "  aiwfctl rag embed --chunks-index <chunks.jsonl> --output <embeddings.jsonl>\n"
+            "  aiwfctl rag semantic-hints generate\n"
+            "  aiwfctl rag semantic-hints build --skip-optimization\n"
+            "  aiwfctl rag semantic-hints read --semantic-hint <hint>\n"
             "  aiwfctl rag duckdb rebuild --source-repo work/db/ariadne-knowledge-platform --reset\n"
             "  aiwfctl rag duckdb verify --query workflow --query runtime\n"
             "  aiwfctl rag jsonize --rag-dir <rag-dir> --output-dir <jsonized-dir>\n"
@@ -522,6 +525,9 @@ def _handle_rag(args: argparse.Namespace, repo_root: Path, registry: dict[str, A
         ("embedding_count", "Embed   "),
         ("document_count", "Docs    "),
         ("chunk_count", "Chunks# "),
+        ("source_count", "Sources "),
+        ("generated_count", "Generated"),
+        ("hint_count", "Hints   "),
         ("converted_count", "Convert "),
         ("migrated_count", "Migrate "),
         ("renamed_count", "Renamed "),

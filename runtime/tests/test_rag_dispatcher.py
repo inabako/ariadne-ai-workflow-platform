@@ -96,7 +96,7 @@ def test_dispatcher_planning_helpers_cover_context_and_explicit_paths(tmp_path: 
         task="startup shutdown operator observability",
         context_file=["context.md"],
         work_dir=str(work_dir),
-        repository="localty-system",
+        repository="target-system",
         branch="main",
         project="ariadne",
         tag=["robot", "safety"],
@@ -132,7 +132,7 @@ def test_dispatcher_planning_helpers_cover_context_and_explicit_paths(tmp_path: 
     assert "startup shutdown operator observability" in planning_context
     assert rag_dispatcher.base_filters_from_args(args) == {
         "project": "ariadne",
-        "repository": "localty-system",
+        "repository": "target-system",
         "branch": "main",
         "tags": ["robot", "safety"],
         "source_type": "internal-work",
@@ -142,13 +142,13 @@ def test_dispatcher_planning_helpers_cover_context_and_explicit_paths(tmp_path: 
 
     query_items, semantic_hints = rag_dispatcher.derive_query_items(args, repo)
     queries = [item["query"] for item in query_items]
-    assert queries[0] == "localty-system main corrective action report"
+    assert queries[0] == "target-system main corrective action report"
     assert any("architecture responsibility boundary" in query for query in queries)
     assert any("safety risk corrective action" in query for query in queries)
     assert any("documentation gap operations README corrective action" == query for query in queries)
     assert "TelemetryService" in semantic_hints
     assert "STOP" in semantic_hints
-    assert query_items[0]["filters"]["repository"] == "localty-system"
+    assert query_items[0]["filters"]["repository"] == "target-system"
 
     explicit_args = make_args(query=[" duplicate query ", "DUPLICATE QUERY", "other"], max_queries=2)
     explicit_items, explicit_hints = rag_dispatcher.derive_query_items(explicit_args, repo)

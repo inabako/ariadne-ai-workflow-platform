@@ -11,7 +11,7 @@
 例:
 
 ```text
-/docs-sync localty-system-gui develop
+/docs-sync target-system develop
 ```
 
 ## Directory Model

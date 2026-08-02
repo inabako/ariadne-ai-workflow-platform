@@ -47,6 +47,28 @@ Specialist review RAG also uses the same JSON pipeline. It is project-specific i
 
 ## CLI
 
+### Semantic Hints
+
+Project固有の注意事項を汎用prompt本文から外した場合は、semantic hintとしてknowledge platform側へ退避し、必要に応じてRAGへ吸収します。
+
+```powershell
+.\runtime\windows-script\aiwf.cmd ctl rag semantic-hints generate
+.\runtime\windows-script\aiwf.cmd ctl rag semantic-hints build --skip-optimization
+.\runtime\windows-script\aiwf.cmd ctl rag semantic-hints read --semantic-hint "GUI simulator"
+```
+
+標準入力:
+
+```text
+work/db/ariadne-knowledge-platform/semantic-hints/*.json
+```
+
+標準RAG source出力:
+
+```text
+work/db/ariadne-knowledge-platform/rag/semantic-hints/*.md
+```
+
 ### 1. Normalize Documents
 
 ```powershell
@@ -211,7 +233,7 @@ Corrective action report Markdown は、RAG build前に `aiwfctl rag standardize
 ```powershell
 .\runtime\windows-script\aiwf.cmd ctl rag load `
   --task "MainWindow 分離 責務集中" `
-  --repository "C:\github\localty-system-gui" `
+  --repository "<target-system-repo-path>" `
   --branch develop `
   --search-mode hybrid `
   --top-k 5 `

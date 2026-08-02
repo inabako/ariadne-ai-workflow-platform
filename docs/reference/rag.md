@@ -94,6 +94,28 @@ source markdown
   -> load dispatch aggregate
 ```
 
+## Semantic Hints
+
+Semantic hint は、RAG検索のqueryだけでは拾いにくいproject-specificな注意事項や過去例を、検索・rankingで使いやすい短い意味手がかりとして保存するための項目です。
+
+汎用promptから外したproject固有のhintは、まず次へ退避します。
+
+```text
+work/db/ariadne-knowledge-platform/semantic-hints/*.json
+```
+
+runtimeは、この退避JSONをRAG source Markdownへ変換し、通常のRAG build pipelineへ流します。
+
+```text
+work/db/ariadne-knowledge-platform/semantic-hints/*.json
+  -> aiwfctl rag semantic-hints generate
+  -> work/db/ariadne-knowledge-platform/rag/semantic-hints/*.md
+  -> aiwfctl rag semantic-hints build
+  -> normalized / chunks / indexes / embeddings
+```
+
+`normalize_documents.py` はMarkdown front matterの `semantic_hint` を top-level と `metadata.semantic_hint` の両方へ保持します。DuckDB read modelでは `semantic_hint` columnとして検索補助に使われます。
+
 ## Cleanup Classification
 
 `aiwfctl work cleanup-check/apply` removes temporary workflow work scopes only after long-lived Knowledge absorption is confirmed. RAG paths are classified as follows.

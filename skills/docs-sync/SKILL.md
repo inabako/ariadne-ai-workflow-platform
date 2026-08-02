@@ -23,7 +23,7 @@ Respond to the user in Japanese by default. Human-facing reports, docs, reviews,
 Example:
 
 ```text
-/docs-sync localty-system-gui develop
+/docs-sync target-system develop
 ```
 
 ## Directory Model

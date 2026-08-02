@@ -218,7 +218,7 @@
           "required": false,
           "description": "通常は work/requirements/ の完成版要件定義書を1件だけ置く。明示する場合は要件定義書pathを指定する。",
           "examples": [
-            "work/requirements/localty-new-runtime.md"
+            "work/requirements/target-system-new-runtime.md"
           ]
         }
       ],
@@ -354,9 +354,9 @@
           "required": true,
           "description": "調査対象repository。owner/repo、repository名、またはlocal pathを指定する。",
           "examples": [
-            "localty-system-gui",
-            "owner/localty-system-gui",
-            "C:/github/localty-system-gui"
+            "target-system",
+            "owner/target-system",
+            "<target-system-repo-path>"
           ]
         },
         {
@@ -377,7 +377,7 @@
         "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
       "examples": [
-        "/corrective-action-report localty-system-gui develop"
+        "/corrective-action-report target-system develop"
       ],
       "related_runtime": [
         "runtime/rag/rag_dispatcher.py",
@@ -408,7 +408,7 @@
           "required": true,
           "description": "改善対象repository。owner/repo、repository名、またはlocal pathを指定する。",
           "examples": [
-            "localty-system-gui"
+            "target-system"
           ]
         },
         {
@@ -424,7 +424,7 @@
           "required": false,
           "description": "/corrective-action-report で作成済みのMarkdownレポートを使う場合に指定する。未指定の場合、このflow内でCorrective Action Reportを作成する。",
           "examples": [
-            "rag/corrective-action-report/260704120000_ABC12345_localty-system-gui.md"
+            "rag/corrective-action-report/260704120000_ABC12345_target-system.md"
           ]
         }
       ],
@@ -438,7 +438,7 @@
         "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
       "examples": [
-        "/corrective-action-fix localty-system-gui develop"
+        "/corrective-action-fix target-system develop"
       ],
       "related_runtime": [
         "runtime/workflow/init_corrective_action_fix.py",
@@ -470,7 +470,7 @@
           "required": true,
           "description": "docs同期対象repository。owner/repo、repository名、またはlocal path。",
           "examples": [
-            "localty-system-gui"
+            "target-system"
           ]
         },
         {
@@ -490,7 +490,7 @@
         "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
       "examples": [
-        "/docs-sync localty-system-gui develop"
+        "/docs-sync target-system develop"
       ],
       "related_runtime": [
         "runtime/workflow/docs_sync.py"
@@ -568,7 +568,7 @@
           "required": true,
           "description": "知識保守対象のGitHub repository。owner/repoを推奨する。",
           "examples": [
-            "owner/localty-system-gui"
+            "owner/target-system"
           ]
         }
       ],
@@ -580,7 +580,7 @@
         "When workflow friction or an improvement candidate appears during this run, save a Proposed Feedback report under work/feedback/; run /self-improvement later after feedback accumulates."
       ],
       "examples": [
-        "/github-knowledge-maintenance owner/localty-system-gui"
+        "/github-knowledge-maintenance owner/target-system"
       ],
       "related_runtime": [
         "runtime/workflow/github_knowledge_maintenance.py"
@@ -614,7 +614,7 @@
           "required": false,
           "description": "対象workspace path。省略時はself-provision modeとしてcurrent repositoryを対象にする。特殊設計はcustom-design modeとして草案またはHuman質問で補う。",
           "examples": [
-            "C:/github/localty-system-gui"
+            "<target-system-repo-path>"
           ]
         }
       ],
@@ -633,7 +633,7 @@
       ],
       "examples": [
         "/vscode-environment",
-        "/vscode-environment C:/github/localty-system-gui",
+        "/vscode-environment <target-system-repo-path>",
         "/vscode-environment --custom-design"
       ],
       "related_runtime": [
@@ -721,7 +721,7 @@
           "required": false,
           "description": "対象repository。work contextから解決できない場合に指定する。",
           "examples": [
-            "localty-system-gui"
+            "target-system"
           ]
         },
         {
@@ -742,7 +742,7 @@
       ],
       "examples": [
         "/knowledge-capture issue-11",
-        "/knowledge-capture --issue issue-11 --repository localty-system-gui --branch feature/issue-11"
+        "/knowledge-capture --issue issue-11 --repository target-system --branch feature/issue-11"
       ],
       "related_runtime": [
         "runtime/workflow/knowledge_capture.py",

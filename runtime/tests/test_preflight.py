@@ -346,81 +346,6 @@ def test_main_gh_login_from_env_requires_human_approval(tmp_path: Path, capsys: 
     assert output["auth_executions"][0]["command"].startswith("skipped:")
 
 
-def test_localty_protocol_check_uses_msys2_python_when_available(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    bash_path = tmp_path / "usr" / "bin" / "bash.exe"
-    bash_path.parent.mkdir(parents=True)
-    bash_path.write_text("", encoding="utf-8")
-    calls: list[tuple[list[str], dict[str, str] | None]] = []
-
-    def fake_run(command, cwd=None, env=None):
-        calls.append((list(command), env))
-        return subprocess.CompletedProcess(command, 0, stdout="{\"telemetry\": 10000}\n", stderr="")
-
-    monkeypatch.setattr(preflight, "run_command", fake_run)
-    args = argparse.Namespace(profile="gui-pyqt", work_id="issue-1", support_branch="develop")
-
-    check = preflight.localty_protocol_check(args, protocol_dir=None, bash_path=bash_path)
-
-    assert check.ok is True
-    assert "MSYS2 python" in check.detected
-    assert calls[0][0][0] == str(bash_path)
-    assert calls[0][1]["MSYSTEM"] == "MINGW64"
-
-
-def test_localty_protocol_check_uses_fallback_repository(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    protocol_dir = tmp_path / "localty-system-protocol"
-    protocol_dir.mkdir()
-    (protocol_dir / "pyproject.toml").write_text("[project]\nname='localty-system-protocol'\n", encoding="utf-8")
-    monkeypatch.setattr(
-        preflight,
-        "run_command",
-        lambda command, cwd=None, env=None: subprocess.CompletedProcess(command, 1, stdout="", stderr="missing package"),
-    )
-    args = argparse.Namespace(profile="corrective-action-fix", work_id="issue-9", support_branch="main")
-
-    check = preflight.localty_protocol_check(args, protocol_dir=protocol_dir, bash_path=tmp_path / "missing-bash.exe")
-
-    assert check.ok is True
-    assert "fallback source repository" in check.detected
-    assert "runtime/ctl/ctl.py --repo-root . scm support" in (check.fallback_command or "")
-    assert "--branch \"main\"" in (check.fallback_command or "")
-
-
-def test_localty_protocol_check_reports_missing_without_work_id(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(
-        preflight,
-        "run_command",
-        lambda command, cwd=None, env=None: subprocess.CompletedProcess(command, 1, stdout="missing stdout", stderr=""),
-    )
-    args = argparse.Namespace(profile="corrective-action-fix", work_id="", support_branch="develop")
-
-    check = preflight.localty_protocol_check(args, protocol_dir=None, bash_path=tmp_path / "missing-bash.exe")
-
-    assert check.ok is False
-    assert check.fallback_command is None
-    assert "pass --work-id" in check.install_hint
-    assert check.detected == "missing stdout"
-
-
-def test_localty_protocol_check_reports_missing_with_fallback_command(
-    monkeypatch: pytest.MonkeyPatch,
-    tmp_path: Path,
-) -> None:
-    monkeypatch.setattr(
-        preflight,
-        "run_command",
-        lambda command, cwd=None, env=None: subprocess.CompletedProcess(command, 1, stdout="", stderr="missing package"),
-    )
-    args = argparse.Namespace(profile="corrective-action-fix", work_id="issue-9", support_branch="")
-
-    check = preflight.localty_protocol_check(args, protocol_dir=None, bash_path=tmp_path / "missing-bash.exe")
-
-    assert check.ok is False
-    assert check.fallback_command is not None
-    assert "--branch \"develop\"" in check.fallback_command
-    assert "download the support repository" in check.install_hint
-
-
 def test_msys2_package_check_missing_bash_and_success(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     missing = preflight.msys2_package_check(tmp_path / "missing-bash.exe", "mingw-pkg", required=True)
     assert missing.ok is False
@@ -556,20 +481,11 @@ def test_scancode_audit_profile_declares_optional_local_rehearsal_checks(
     assert by_id["docker:daemon"].required is False
 
 
-def test_build_checks_localty_gui_and_profiles_without_source_dir(
+def test_build_checks_gui_pyqt_and_profiles_without_source_dir(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
     monkeypatch.setattr(preflight.shutil, "which", lambda name: f"C:/tools/{name}.exe")
-    monkeypatch.setattr(preflight, "localty_protocol_check", lambda args, protocol_dir, bash_path: preflight.Check(
-        id="python-package:localty-system-protocol",
-        label="localty-system-protocol package",
-        kind="python-package",
-        required=True,
-        ok=True,
-        detected="ok",
-        install_hint="ok",
-    ))
     monkeypatch.setattr(preflight, "msys2_package_check", lambda bash_path, package, required: preflight.Check(
         id=f"msys2-package:{package}",
         label=package,
@@ -593,9 +509,6 @@ def test_build_checks_localty_gui_and_profiles_without_source_dir(
     gui_ids = {check.id for check in gui_checks}
     assert "path:target-pyproject" in gui_ids
     assert any(item.startswith("msys2-package:") for item in gui_ids)
-
-    localty_args = argparse.Namespace(**{**vars(gui_args), "profile": "localty-msys2", "source_dir": ""})
-    assert "path:target-pyproject" not in {check.id for check in preflight.build_checks(localty_args, tmp_path)}
 
     vscode_args = argparse.Namespace(**{**vars(gui_args), "profile": "vscode-environment", "source_dir": ""})
     assert "path:target-workspace" not in {check.id for check in preflight.build_checks(vscode_args, tmp_path)}
@@ -735,19 +648,19 @@ def test_install_missing_runs_msys2_package_with_bash(monkeypatch: pytest.Monkey
 
 def test_markdown_report_includes_fallback_command() -> None:
     result = {
-        "profile": "localty-msys2",
+        "profile": "gui-pyqt",
         "status": "install-list-required",
         "created_at": "2026-07-06T00:00:00+00:00",
         "checks": [
             preflight.Check(
-                id="python-package:localty-system-protocol",
-                label="localty-system-protocol package",
+                id="python-package:target-system-protocol",
+                label="target-system-protocol package",
                 kind="python-package",
                 required=True,
                 ok=False,
                 detected="missing",
                 install_hint="Install the published package first.",
-                install_command="python -m pip install localty-system-protocol",
+                install_command="python -m pip install target-system-protocol",
                 fallback_command="python runtime/ctl/ctl.py --repo-root . scm support --work-id issue-1",
             ).to_dict()
         ],
@@ -756,7 +669,7 @@ def test_markdown_report_includes_fallback_command() -> None:
     markdown = preflight.markdown_report(result)
 
     assert "## Missing Required" in markdown
-    assert "localty-system-protocol package" in markdown
+    assert "target-system-protocol package" in markdown
     assert "fallback:" in markdown
     assert "scm support" in markdown
 

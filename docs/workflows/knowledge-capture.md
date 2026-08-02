@@ -5,7 +5,7 @@
 ## Command
 
 ```text
-/knowledge-capture --issue issue-11 --repository localty-system-gui --branch feature/issue-11
+/knowledge-capture --issue issue-11 --repository target-system --branch feature/issue-11
 ```
 
 最小指定:

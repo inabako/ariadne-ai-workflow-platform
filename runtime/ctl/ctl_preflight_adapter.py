@@ -15,8 +15,6 @@ def _argv(args: argparse.Namespace, repo_root: Path) -> list[str]:
         values.extend(["--work-id", args.work_id])
     if getattr(args, "source_dir", ""):
         values.extend(["--source-dir", args.source_dir])
-    if getattr(args, "protocol_dir", ""):
-        values.extend(["--protocol-dir", args.protocol_dir])
     if getattr(args, "support_branch", ""):
         values.extend(["--support-branch", args.support_branch])
     if getattr(args, "msys2_root", ""):

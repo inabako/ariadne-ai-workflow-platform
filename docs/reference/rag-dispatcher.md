@@ -114,7 +114,7 @@ queryは単語の羅列ではなく、目的を持つ検索単位として扱い
   "purpose": "component test and regression risk",
   "search_mode": "hybrid",
   "filters": {
-    "repository": "localty-system-gui",
+    "repository": "target-system",
     "branch": "develop",
     "tags": ["workflow"]
   }

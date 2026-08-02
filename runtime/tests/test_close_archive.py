@@ -54,7 +54,7 @@ def test_parser_and_path_derivation_helpers(monkeypatch: pytest.MonkeyPatch, tmp
     with pytest.raises(ValueError, match="--work-id or --issue is required"):
         close_archive.resolve_work_id(argparse.Namespace(work_id="", issue=""))
 
-    assert close_archive.derive_category("github-knowledge-localty-system-robot-recent", "auto") == "github"
+    assert close_archive.derive_category("github-knowledge-target-system-robot-recent", "auto") == "github"
     assert close_archive.derive_category("vscode-environment", "auto") == "vscode"
     assert close_archive.derive_category("vscode-custom", "auto") == "vscode"
     assert close_archive.derive_category("issue-1", "new-system-dev") == "new-system-dev"
@@ -211,14 +211,14 @@ def test_rag_reference_and_candidate_discovery(tmp_path: Path) -> None:
     github_rag.mkdir(parents=True)
     vscode_rag.mkdir(parents=True)
     (github_rag / "README.md").write_text("# ignored\n", encoding="utf-8")
-    github_source = github_rag / "20260707000000_localty-system-robot.md"
-    github_source.write_text("# Robot\n\nlocalty system robot issue data\n- one\n", encoding="utf-8")
+    github_source = github_rag / "20260707000000_target-system-robot.md"
+    github_source.write_text("# Robot\n\ntarget system robot issue data\n- one\n", encoding="utf-8")
     vscode_source = vscode_rag / "vscode-environment.md"
     vscode_source.write_text("# VSCode\n\nvscode environment terminal path\n", encoding="utf-8")
-    source_work = repo / "work" / "github-knowledge-localty-system-robot-recent"
+    source_work = repo / "work" / "github-knowledge-target-system-robot-recent"
     source_work.mkdir(parents=True)
     (source_work / "note.md").write_text(
-        "ref work/db/ariadne-knowledge-platform/rag/github-knowledge/20260707000000_localty-system-robot.md",
+        "ref work/db/ariadne-knowledge-platform/rag/github-knowledge/20260707000000_target-system-robot.md",
         encoding="utf-8",
     )
     (source_work / "note.json").write_text(
@@ -233,19 +233,19 @@ def test_rag_reference_and_candidate_discovery(tmp_path: Path) -> None:
     refs = close_archive.collect_referenced_rag_sources(repo, source_work)
     assert refs == [vscode_source, github_source]
     assert close_archive.collect_referenced_rag_sources(repo, repo / "missing") == []
-    assert close_archive.significant_tokens("github-knowledge-localty-system-robot-recent", "github") == [
-        "localty",
+    assert close_archive.significant_tokens("github-knowledge-target-system-robot-recent", "github") == [
+        "target",
         "system",
         "robot",
     ]
     assert close_archive.candidate_rag_files(repo, "github") == [github_source]
-    assert close_archive.score_rag_candidate(github_source, repo, "github-knowledge-localty-system-robot-recent", "github") > 5
+    assert close_archive.score_rag_candidate(github_source, repo, "github-knowledge-target-system-robot-recent", "github") > 5
     assert close_archive.score_rag_candidate(vscode_source, repo, "vscode-environment", "vscode") > 5
 
     explicit_and_refs = close_archive.discover_rag_sources(
         repo,
         source_work,
-        "github-knowledge-localty-system-robot-recent",
+        "github-knowledge-target-system-robot-recent",
         "github",
         [f"{github_source}, {repo / 'missing.md'}"],
         auto_discovery=True,
@@ -254,7 +254,7 @@ def test_rag_reference_and_candidate_discovery(tmp_path: Path) -> None:
     explicit_only = close_archive.discover_rag_sources(
         repo,
         source_work,
-        "github-knowledge-localty-system-robot-recent",
+        "github-knowledge-target-system-robot-recent",
         "github",
         [str(github_source)],
         auto_discovery=False,
@@ -264,7 +264,7 @@ def test_rag_reference_and_candidate_discovery(tmp_path: Path) -> None:
 
 def test_defensive_specimen_rag_discovery_keeps_missing_refs_and_low_scores_out(tmp_path: Path) -> None:
     repo = make_repo(tmp_path)
-    source_work = repo / "work" / "github-knowledge-localty-system-robot-recent"
+    source_work = repo / "work" / "github-knowledge-target-system-robot-recent"
     source_work.mkdir(parents=True)
     (source_work / "missing-ref.md").write_text(
         "work/db/ariadne-knowledge-platform/rag/github-knowledge/missing.md",
@@ -273,11 +273,11 @@ def test_defensive_specimen_rag_discovery_keeps_missing_refs_and_low_scores_out(
     rag_dir = repo / "work" / "db" / "ariadne-knowledge-platform" / "rag" / "github-knowledge"
     rag_dir.mkdir(parents=True)
     low_score = rag_dir / "unrelated.md"
-    low_score.write_text("# Other\n\nlocalty appears only in text\n", encoding="utf-8")
+    low_score.write_text("# Other\n\ntarget appears only in text\n", encoding="utf-8")
 
     assert close_archive.collect_referenced_rag_sources(repo, source_work) == []
-    assert close_archive.score_rag_candidate(low_score, repo, "github-knowledge-localty-system-robot-recent", "none") == 2
-    assert close_archive.discover_rag_sources(repo, source_work, "github-knowledge-localty-system-robot-recent", "none", [], True) == []
+    assert close_archive.score_rag_candidate(low_score, repo, "github-knowledge-target-system-robot-recent", "none") == 2
+    assert close_archive.discover_rag_sources(repo, source_work, "github-knowledge-target-system-robot-recent", "none", [], True) == []
 
 
 def test_defensive_specimen_first_heading_empty_after_prefix_removal() -> None:
@@ -383,10 +383,10 @@ def test_prepare_writes_rag_enriched_report_and_metadata(tmp_path: Path) -> None
     rag_dir = repo / "work" / "db" / "ariadne-knowledge-platform" / "rag" / "github-knowledge"
     rag_dir.mkdir(parents=True)
     (rag_dir / "README.md").write_text("# README\n\n自動検出対象外です。\n", encoding="utf-8")
-    source = rag_dir / "20260704000000_DEMO_localty-system-robot.md"
+    source = rag_dir / "20260704000000_DEMO_target-system-robot.md"
     source.write_text(
-        "# localty-system-robot knowledge\n\n"
-        "github-knowledge-localty-system-robot-recent の supervisor / worker 分離を記録します。\n\n"
+        "# target-system-robot knowledge\n\n"
+        "github-knowledge-target-system-robot-recent の supervisor / worker 分離を記録します。\n\n"
         "## 要約\n\n"
         "- STOP behaviorを確認する。\n"
         "- communication lossを確認する。\n",
@@ -399,7 +399,7 @@ def test_prepare_writes_rag_enriched_report_and_metadata(tmp_path: Path) -> None
             "--repo-root",
             str(repo),
             "--work-id",
-            "github-knowledge-localty-system-robot-recent",
+            "github-knowledge-target-system-robot-recent",
             "--category",
             "github",
             "--archive-id",
@@ -416,7 +416,7 @@ def test_prepare_writes_rag_enriched_report_and_metadata(tmp_path: Path) -> None
     assert "supervisor / worker" in summary
     assert metadata["rag_source_count"] == 1
     assert metadata["rag_sources"] == [
-        "work/db/ariadne-knowledge-platform/rag/github-knowledge/20260704000000_DEMO_localty-system-robot.md"
+        "work/db/ariadne-knowledge-platform/rag/github-knowledge/20260704000000_DEMO_target-system-robot.md"
     ]
 
 

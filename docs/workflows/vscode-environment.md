@@ -30,7 +30,7 @@
 対象workspaceを明示して実行します。
 
 ```text
-/vscode-environment C:\github\localty-system-gui
+/vscode-environment <target-system-repo-path>
 ```
 
 - target: 指定された repository / workspace
@@ -239,7 +239,7 @@ $env:Path = "$PWD\runtime\windows-script;$env:Path"
 
 ## RAG Capture
 
-再利用可能なLocalty VSCode environment knowledgeは、source Markdownとして次へ保存します。
+再利用可能な VSCode environment knowledge は、source Markdownとして次へ保存します。
 
 ```text
 work/db/ariadne-knowledge-platform/rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
@@ -250,8 +250,8 @@ work/db/ariadne-knowledge-platform/rag/workspace-environment/YYYYMMDDHHMMSS_<ran
 ```powershell
 .\runtime\windows-script\aiwf.cmd ctl workflow vscode-environment rag-template `
   --work-id "vscode-environment" `
-  --topic "localty-vscode-environment" `
-  --repository "localty"
+  --topic "workspace-environment" `
+  --repository "target-system"
 ```
 
 Markdown noteはreview sourceです。最終knowledge artifactはUUID名JSONです。
@@ -261,8 +261,8 @@ Human approval後、`workspace-environment-pattern` としてnormalizeします�
 ```powershell
 .\runtime\windows-script\aiwf.cmd ctl workflow vscode-environment rag-template `
   --work-id "vscode-environment" `
-  --topic "localty-vscode-environment" `
-  --repository "localty" `
+  --topic "workspace-environment" `
+  --repository "target-system" `
   --status approved
 ```
 

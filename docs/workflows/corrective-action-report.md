@@ -11,7 +11,7 @@
 例:
 
 ```text
-/corrective-action-report localty-system-gui develop
+/corrective-action-report target-system develop
 ```
 
 ## Output
