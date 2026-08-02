@@ -69,6 +69,136 @@ PATH_CONSTANT_LITERAL_PATTERNS: tuple[tuple[str, str], ...] = (
     (r"['\"]\.ariadne/schemas/[^'\"]+\.schema\.json['\"]", "use runtime.constants.schemas constants"),
 )
 
+WARNING_GUIDANCE: dict[str, dict[str, str]] = {
+    "tracked-local-workspace-files": {
+        "cause": "Local generated work/RAG artifacts are tracked by Git.",
+        "impact": "Fresh checkout and OSS release may include machine-local or regenerable files.",
+        "next_action": "Remove generated work/RAG files from Git tracking or move durable knowledge into work/db.",
+        "repair_command": "git rm --cached <path>",
+        "ignore_condition": "Only ignore when the path is an intentional README or documented source fixture.",
+    },
+    "missing-required-files": {
+        "cause": "A required runtime, schema, skill, or documentation file is missing.",
+        "impact": "Runtime health check, workflow dispatch, or fresh checkout bootstrap may fail.",
+        "next_action": "Restore the missing required file or update the required-file contract if it is intentionally removed.",
+        "repair_command": "aiwfctl doctor --fail-on-warning",
+        "ignore_condition": "Do not ignore for release readiness unless the contract was intentionally changed with tests.",
+    },
+    "pytest-runtime-boundary": {
+        "cause": "pytest config/cache exists outside runtime/ or runtime pytest config is incomplete.",
+        "impact": "Root-level test noise can change collection behavior across tools and shells.",
+        "next_action": "Keep pytest.ini and .pytest_cache scoped under runtime/.",
+        "repair_command": "Remove root pytest.ini/.pytest_cache and rerun runtime pytest.",
+        "ignore_condition": "Only ignore in a temporary local investigation before cleanup.",
+    },
+    "human-gate-registry-responsibility-boundary": {
+        "cause": "Human gate registry payload contains schema-definition responsibilities.",
+        "impact": "Registry data and JSON Schema contracts become harder to evolve independently.",
+        "next_action": "Move schema fields to .ariadne/schemas and keep registry payload as runtime data.",
+        "repair_command": "Edit templates/registries/human_gates.json and rebuild registry DB.",
+        "ignore_condition": "Do not ignore when publishing registry seeds.",
+    },
+    "runtime-registry-bootstrap-source": {
+        "cause": "templates/registries bootstrap source is missing or invalid.",
+        "impact": "Fresh checkout may not be able to rebuild db/registries/registry.duckdb.",
+        "next_action": "Restore or fix the affected templates/registries JSON file.",
+        "repair_command": "aiwfctl doctor --fail-on-warning",
+        "ignore_condition": "Do not ignore for fresh checkout or OSS release validation.",
+    },
+    "incomplete-close-archive": {
+        "cause": "A report-only close archive has only part of the standard file set.",
+        "impact": "Completion evidence may be hard to audit or safely prune later.",
+        "next_action": "Complete the close archive standard files or remove the partial archive after review.",
+        "repair_command": "aiwfctl close-archive audit --work-id <work-id>",
+        "ignore_condition": "Only ignore while an archive is actively being prepared.",
+    },
+    "vscode-utf8-first": {
+        "cause": "VSCode UTF-8 first settings are missing or incomplete.",
+        "impact": "Japanese docs and runtime output can become mojibake across terminals.",
+        "next_action": "Restore .vscode/settings.json and .editorconfig UTF-8 settings.",
+        "repair_command": "aiwfctl doctor --repair-encoding --fail-on-warning",
+        "ignore_condition": "Only ignore outside VSCode-managed local workflows.",
+    },
+    "git-line-ending-policy": {
+        "cause": "Git line-ending policy is not fully declared.",
+        "impact": "Shell wrappers and text artifacts may change line endings across OSes.",
+        "next_action": "Add or fix .gitattributes LF/CRLF rules.",
+        "repair_command": "Edit .gitattributes, then rerun aiwfctl doctor --fail-on-warning.",
+        "ignore_condition": "Do not ignore for multi-OS support.",
+    },
+    "uv-startup-route": {
+        "cause": "uv.cmd, aiwfctl wrapper, or PATH registration route is incomplete.",
+        "impact": "Local rehearsal and VSCode tasks may not start the same runtime path.",
+        "next_action": "Restore runtime/windows-script uv and aiwfctl wrapper alignment.",
+        "repair_command": "aiwfctl preflight --profile runtime-dev",
+        "ignore_condition": "Only ignore on non-Windows validation when POSIX runtime is tested separately.",
+    },
+    "rag-duckdb-read-model-missing": {
+        "cause": "Knowledge source exists but the generated DuckDB read model is missing.",
+        "impact": "DuckDB-backed RAG search and reference checks cannot run.",
+        "next_action": "Rebuild the generated read model from the knowledge source.",
+        "repair_command": "aiwfctl rag duckdb rebuild --source-repo work/db/ariadne-knowledge-platform --reset",
+        "ignore_condition": "Ignore only when no DuckDB-backed RAG operation is required.",
+    },
+    "workspace-layout-literal": {
+        "cause": "Runtime implementation contains hard-coded work layout path literals.",
+        "impact": "Path conventions can drift and break work-id based workflows.",
+        "next_action": "Replace literals with runtime.constants.workspace helpers.",
+        "repair_command": "Edit the reported runtime file and rerun aiwfctl doctor --fail-on-warning.",
+        "ignore_condition": "Only ignore in tests or constants modules, which are excluded by the scanner.",
+    },
+    "path-constant-literal": {
+        "cause": "Runtime implementation contains hard-coded canonical path literals.",
+        "impact": "Changing .ariadne, db, or knowledge paths becomes error-prone.",
+        "next_action": "Use runtime.constants.paths or runtime.constants.schemas constants.",
+        "repair_command": "Edit the reported runtime file and rerun aiwfctl doctor --fail-on-warning.",
+        "ignore_condition": "Only ignore when defining the canonical constant itself.",
+    },
+    "pytest-ut-spec-sync": {
+        "cause": "pytest collection and runtime UT specification are out of sync.",
+        "impact": "Human-readable UT evidence no longer reflects executable tests.",
+        "next_action": "Update or scaffold the missing/stale UT specification entries.",
+        "repair_command": "aiwfctl doctor --repair-spec-index --fail-on-warning",
+        "ignore_condition": "Only ignore during active test authoring before docs sync.",
+    },
+    "text-boundary": {
+        "cause": "Text boundary scan found mojibake, BOM, or unsafe encoding markers.",
+        "impact": "Japanese docs, evidence, or runtime output may become unreadable.",
+        "next_action": "Repair safe encoding findings and manually review remaining text boundary issues.",
+        "repair_command": "aiwfctl doctor --repair-encoding --fail-on-warning",
+        "ignore_condition": "Only ignore confirmed false positives with human review evidence.",
+    },
+}
+
+
+def warning_guidance(warning_id: str, paths: list[str] | None = None) -> dict[str, str]:
+    guidance = dict(
+        WARNING_GUIDANCE.get(
+            warning_id,
+            {
+                "cause": "Doctor reported a repository health warning.",
+                "impact": "Workflow health may be degraded until this warning is reviewed.",
+                "next_action": "Review the warning message and affected paths.",
+                "repair_command": "aiwfctl doctor --fail-on-warning",
+                "ignore_condition": "Only ignore after human review confirms it is not relevant.",
+            },
+        )
+    )
+    if warning_id == "rag-duckdb-read-model-missing" and paths:
+        rebuild = next((item.split("rebuild:", 1)[1] for item in paths if item.startswith("rebuild:")), "")
+        if rebuild:
+            guidance["repair_command"] = rebuild
+    return guidance
+
+
+def enrich_warning(warning: dict[str, Any]) -> dict[str, Any]:
+    warning_id = str(warning.get("id", "") or "")
+    paths = [str(item) for item in warning.get("paths", [])] if isinstance(warning.get("paths"), list) else []
+    return {
+        **warning_guidance(warning_id, paths),
+        **warning,
+    }
+
 
 def run_git(repo_root: Path, args: list[str]) -> list[str]:
     result = subprocess.run(["git", *args], cwd=repo_root, text=True, capture_output=True, check=False)
@@ -588,6 +718,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 ],
             }
         )
+    warnings = [enrich_warning(warning) for warning in warnings]
     status = "fail" if warnings and args.fail_on_warning else "warning" if warnings else "pass"
     return {
         "status": status,

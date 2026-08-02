@@ -16,6 +16,33 @@
 
 必要な操作が `aiwfctl` に存在しない場合は、その場で握りつぶさず、まず `aiwfctl self-improvement create-feedback` でFeedback reportを作成します。Human ReviewでAcceptedになったFeedbackだけを、後続の正式な改修候補にします。active workflow内で黙って `runtime/ctl/ctl.py` を拡張してはいけません。workflow側に新しい `python runtime/workflow/*.py ...` の直叩き手順を増やしてはいけません。
 
+## Runtime Status
+
+現在のruntime状態を確認する場合は、最初に `aiwfctl status` を実行します。
+このcommandは、repository、Git状態、active trace、runtime event log、`work/`、knowledge source、DuckDB read modelを一覧化し、次に実行する候補commandを表示します。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd status
+.\runtime\windows-script\aiwfctl.cmd status --work-id issue-123
+.\runtime\windows-script\aiwfctl.cmd status --json
+```
+
+workflow実行が途中で止まった理由をtrace単位で確認する場合は、`aiwfctl trace show <trace-id>` を使います。
+`runtime-events.log` から該当traceのcommand、成功済みcommand、blocked / failed event、復帰候補を集約します。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd trace show <trace-id>
+.\runtime\windows-script\aiwfctl.cmd trace show <trace-id> --json
+```
+
+## Runtime Help Guide
+
+Runtime操作で迷った場合は、最初に `aiwfctl help runtime` を実行します。`status`、`trace show`、`doctor`、書き込み前の `--dry-run` 確認順をまとめて確認できます。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd help runtime
+```
+
 ## Windows 11 PowerShell Runtime
 
 Windows 11 で AI workflow を実行する場合は、まず PowerShell native runtime を使います。

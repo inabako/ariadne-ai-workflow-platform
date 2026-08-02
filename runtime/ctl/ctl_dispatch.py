@@ -38,6 +38,8 @@ from runtime.constants.workflow_limits import CTL_WARNING_PATH_PREVIEW_LIMIT
 from runtime.observability import logger as runtime_event_logger
 from runtime.release import manifest as release_manifest
 from runtime.release import validation as release_validation
+from runtime.workflow import runtime_status
+from runtime.workflow import runtime_trace
 
 
 HelperModule = Any
@@ -79,6 +81,32 @@ def _bind_helpers(helpers: HelperModule) -> None:
         if name.startswith("__"):
             continue
         globals()[name] = getattr(helpers, name)
+
+
+def _format_dry_run_plan(result: dict[str, Any]) -> str:
+    lines = [
+        "Dry Run Plan",
+        "",
+        f"Command : {result.get('command', '')}",
+        f"Status  : {result.get('status', '')}",
+        f"Execute : {result.get('would_run', False)}",
+    ]
+    reads = result.get("reads", [])
+    writes = result.get("writes", [])
+    if reads:
+        lines.extend(["", "Reads"])
+        for item in reads:
+            if isinstance(item, dict):
+                lines.append(f"  - {item.get('role', '')}: {item.get('path', '')}")
+    if writes:
+        lines.extend(["", "Writes"])
+        for item in writes:
+            if isinstance(item, dict):
+                lines.append(f"  - {item.get('role', '')}: {item.get('path', '')}")
+    next_action = str(result.get("next_action", "") or "")
+    if next_action:
+        lines.extend(["", f"Next   : {next_action}"])
+    return "\n".join(lines).rstrip() + "\n"
 
 
 def _handle_env(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
@@ -163,11 +191,29 @@ def _handle_trace(args: argparse.Namespace, repo_root: Path, registry: dict[str,
     elif trace_command == "end":
         result = runtime_event_logger.end_active_runtime_trace(repo_root)
         code = 0 if result.get("status") == "ended" else 2
+    elif trace_command == "show":
+        trace_id = str(getattr(args, "trace_id_option", "") or getattr(args, "trace_id", "") or "")
+        result = runtime_trace.build_trace_report(
+            repo_root,
+            trace_id=trace_id,
+            runtime_log=str(getattr(args, "runtime_log", "") or ""),
+            exclude_trace_id="" if trace_id else str(getattr(args, "_runtime_trace_id", "") or ""),
+        )
+        code = 0 if result.get("status") == "ok" else 2
     else:
         return 1, f"Unknown trace command: {trace_command}\n"
     if getattr(args, "json", False):
         return code, json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    if trace_command == "show":
+        return code, runtime_trace.format_trace_report(result)
     return code, _format_trace_result(result)
+
+
+def _handle_status(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    result = runtime_status.collect_status(repo_root, work_id=str(getattr(args, "work_id", "") or ""))
+    if getattr(args, "json", False):
+        return 0, json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    return 0, runtime_status.format_status(result)
 
 
 def _handle_context(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
@@ -463,6 +509,8 @@ def _handle_knowledge(args: argparse.Namespace, repo_root: Path, registry: dict[
         return 1, f"Knowledge command failed: {exc}\n"
     if getattr(args, "json", False):
         return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    if result.get("artifact_type") == "rag-dry-run-plan":
+        return 0, _format_dry_run_plan(result)
     return 0, format_knowledge_result(result)
 
 
@@ -502,6 +550,8 @@ def _handle_rag(args: argparse.Namespace, repo_root: Path, registry: dict[str, A
             return 1, f"RAG DuckDB command failed: {exc}\n"
         if getattr(args, "json", False):
             return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        if result.get("artifact_type") == "rag-dry-run-plan":
+            return 0, _format_dry_run_plan(result)
         return 0, format_knowledge_result(result)
     try:
         result = run_rag(args, repo_root, rag_command)
@@ -511,6 +561,8 @@ def _handle_rag(args: argparse.Namespace, repo_root: Path, registry: dict[str, A
         return 1, f"RAG runtime failed: {exc}\n"
     if getattr(args, "json", False):
         return 0, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    if result.get("artifact_type") == "rag-dry-run-plan":
+        return 0, _format_dry_run_plan(result)
     lines = ["RAG Runtime", "", f"Command : {rag_command}"]
     for key, label in [
         ("status", "Status  "),
@@ -1259,6 +1311,12 @@ def _handle_doctor(args: argparse.Namespace, repo_root: Path, registry: dict[str
                     f"    message: {warning.get('message', '')}",
                 ]
             )
+            if warning.get("next_action"):
+                lines.append(f"    next: {warning.get('next_action', '')}")
+            if warning.get("repair_command"):
+                lines.append(f"    repair: {warning.get('repair_command', '')}")
+            if warning.get("ignore_condition"):
+                lines.append(f"    ignore: {warning.get('ignore_condition', '')}")
             for path in warning.get("paths", [])[:CTL_WARNING_PATH_PREVIEW_LIMIT]:
                 lines.append(f"    path: {path}")
     else:
@@ -1354,6 +1412,7 @@ def _handle_release(args: argparse.Namespace, repo_root: Path, registry: dict[st
 
 
 COMMAND_HANDLERS: dict[str, CommandHandler] = {
+    "status": _handle_status,
     "env": _handle_env,
     "trace": _handle_trace,
     "context": _handle_context,

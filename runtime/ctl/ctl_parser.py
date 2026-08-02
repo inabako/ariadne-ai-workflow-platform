@@ -407,6 +407,7 @@ def _add_rag_build_arguments(command: argparse.ArgumentParser) -> None:
         default=RAG_STANDARDIZE_RANDOM_LENGTH_DEFAULT,
         choices=range(RAG_STANDARDIZE_RANDOM_LENGTH_MIN, RAG_STANDARDIZE_RANDOM_LENGTH_MAX_EXCLUSIVE),
     )
+    command.add_argument("--dry-run", action="store_true")
     command.add_argument("--json", action="store_true")
 
 
@@ -482,6 +483,7 @@ def _add_duckdb_rebuild_arguments(command: argparse.ArgumentParser) -> None:
     command.add_argument("--policy", default=str(duckdb_store.ingestion_optimizer.DEFAULT_POLICY_PATH))
     command.add_argument("--error-log", default=str(duckdb_store.DEFAULT_ERROR_LOG))
     command.add_argument("--reset", action="store_true")
+    command.add_argument("--dry-run", action="store_true")
     command.add_argument("--json", action="store_true")
 
 
@@ -519,6 +521,7 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     normalize.add_argument("--commit", default="")
     normalize.add_argument("--status", default="draft")
     normalize.add_argument("--clean-output", action="store_true")
+    normalize.add_argument("--dry-run", action="store_true")
     normalize.add_argument("--json", action="store_true")
 
     chunk = rag_sub.add_parser("chunk", help="Split normalized RAG documents into chunks.")
@@ -527,18 +530,21 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     chunk.add_argument("--chunk-size", type=int, default=RAG_CHUNK_SIZE_DEFAULT)
     chunk.add_argument("--chunk-overlap", type=int, default=RAG_CHUNK_OVERLAP_DEFAULT)
     chunk.add_argument("--clean-output", action="store_true")
+    chunk.add_argument("--dry-run", action="store_true")
     chunk.add_argument("--json", action="store_true")
 
     index = rag_sub.add_parser("index", help="Build document and chunk JSONL indexes.")
     index.add_argument("--normalized-dir", required=True)
     index.add_argument("--chunks-dir", required=True)
     index.add_argument("--output-dir", required=True)
+    index.add_argument("--dry-run", action="store_true")
     index.add_argument("--json", action="store_true")
 
     embed = rag_sub.add_parser("embed", help="Create local sparse embeddings for chunk index rows.")
     embed.add_argument("--chunks-index", required=True)
     embed.add_argument("--output", required=True)
     embed.add_argument("--dimensions", type=int, default=RAG_EMBEDDING_DIMENSIONS_DEFAULT)
+    embed.add_argument("--dry-run", action="store_true")
     embed.add_argument("--json", action="store_true")
 
     optimize = rag_sub.add_parser("optimize", help="Optimize chunk ingestion candidates and write evidence.")
@@ -547,6 +553,7 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     optimize.add_argument("--evidence-dir", default="db/rag/evidence/ingestion")
     optimize.add_argument("--policy", default="runtime/rag/policies/knowledge-ingestion-policy.json")
     optimize.add_argument("--clean-output", action="store_true")
+    optimize.add_argument("--dry-run", action="store_true")
     optimize.add_argument("--json", action="store_true")
 
     standardize = rag_sub.add_parser("standardize", help="Standardize corrective action report filenames.")
@@ -558,6 +565,7 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
         default=RAG_STANDARDIZE_RANDOM_LENGTH_DEFAULT,
         choices=range(RAG_STANDARDIZE_RANDOM_LENGTH_MIN, RAG_STANDARDIZE_RANDOM_LENGTH_MAX_EXCLUSIVE),
     )
+    standardize.add_argument("--dry-run", action="store_true")
     standardize.add_argument("--json", action="store_true")
 
     jsonize = rag_sub.add_parser("jsonize", help="Convert a RAG tree into standard JSON source records.")
@@ -566,6 +574,7 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     jsonize.add_argument("--include-readme", action="store_true")
     jsonize.add_argument("--delete-source", action="store_true")
     jsonize.add_argument("--clean-output", action="store_true")
+    jsonize.add_argument("--dry-run", action="store_true")
     jsonize.add_argument("--json", action="store_true")
 
     migrate = rag_sub.add_parser("migrate-retrieval", help="Migrate legacy retrieval artifacts into jsonized RAG records.")
@@ -575,12 +584,14 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     migrate.add_argument("--delete-duplicate-markdown", action="store_true")
     migrate.add_argument("--repair-from-jsonized", action="store_true")
     migrate.add_argument("--prune-legacy-migrations", action="store_true")
+    migrate.add_argument("--dry-run", action="store_true")
     migrate.add_argument("--json", action="store_true")
 
     legacy = rag_sub.add_parser("migrate-legacy-root", help="Move legacy root RAG backups into the standard RAG tree.")
     legacy.add_argument("--legacy-dir", default="")
     legacy.add_argument("--target-rag-dir", default="work/db/ariadne-knowledge-platform/rag")
     legacy.add_argument("--keep-legacy-dir", action="store_true")
+    legacy.add_argument("--dry-run", action="store_true")
     legacy.add_argument("--json", action="store_true")
 
 
@@ -596,6 +607,7 @@ def _add_rag_semantic_hints_arguments(rag_sub: Any) -> None:
     generate.add_argument("--repository", default="ariadne-ai-workflow-platform")
     generate.add_argument("--status", default="approved")
     generate.add_argument("--clean-output", action="store_true")
+    generate.add_argument("--dry-run", action="store_true")
     generate.add_argument("--json", action="store_true")
 
     build = hints_sub.add_parser("build", help="Generate semantic hint sources and run the RAG build pipeline.")
@@ -621,6 +633,7 @@ def _add_rag_semantic_hints_arguments(rag_sub: Any) -> None:
     build.add_argument("--duckdb-migrate", action="store_true")
     build.add_argument("--duckdb-path", default=str(DUCKDB_DEFAULT_PATH))
     build.add_argument("--clean-output", action="store_true")
+    build.add_argument("--dry-run", action="store_true")
     build.add_argument("--json", action="store_true")
 
     read = hints_sub.add_parser("read", help="Read semantic hints from backups/sources or RAG retrieval.")
@@ -873,10 +886,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--repo-root", default="")
     sub = parser.add_subparsers(dest="command")
 
+    status_cmd = sub.add_parser("status", help="Show repository, work, trace, log, and knowledge runtime status.")
+    status_cmd.add_argument("--work-id", default="", help="Show status for one work/<work-id> area.")
+    status_cmd.add_argument("--json", action="store_true", help="Print runtime status as JSON.")
+
     help_cmd = sub.add_parser("help", help="AI workflow prompt command help.")
     help_sub = help_cmd.add_subparsers(dest="help_command")
 
     help_sub.add_parser("list", help="List workflow prompt commands.")
+
+    help_sub.add_parser("runtime", help="Show Runtime UX command guide for status, trace, doctor, and dry-run.")
 
     show = help_sub.add_parser("show", help="Show one workflow command.")
     show.add_argument("name")
@@ -902,6 +921,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     trace_status = trace_sub.add_parser("status", help="Show the active workflow execution trace.")
     trace_status.add_argument("--json", action="store_true", help="Print trace state as JSON.")
+
+    trace_show = trace_sub.add_parser("show", help="Show runtime event log summary for one trace id.")
+    trace_show.add_argument("trace_id", nargs="?", default="", help="Trace id. Defaults to the latest trace in the runtime event log.")
+    trace_show.add_argument("--trace-id", dest="trace_id_option", default="", help="Optional named trace id argument.")
+    trace_show.add_argument("--runtime-log", default="", help="Runtime event log path. Defaults to logs/runtime/runtime-events.log.")
+    trace_show.add_argument("--json", action="store_true", help="Print trace report as JSON.")
 
     trace_end = trace_sub.add_parser("end", help="End the active workflow execution trace.")
     trace_end.add_argument("--json", action="store_true", help="Print ended trace state as JSON.")

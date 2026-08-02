@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 55 |
+| cases | 56 |
 
 ## ケース一覧
 
@@ -24,6 +24,22 @@ runtime/tests/test_ctl_help.py::test_ctl_parser_uses_aiwfctl_program_name
   - parameter: names=なし, case=なし
   - inline input: `args`, `status_args`, `verify_args`, `cleanup_args`, `work_args`, `publish_args`
 - 期待結果: parserのprogram nameが `aiwfctl` として扱われる。
+
+#### RT-UT-CASE-CTL-RUNTIME-HELP
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_help_runtime_shows_operational_command_guide
+```
+
+- 確認内容: `aiwfctl help runtime` がRuntime UX向けの操作ガイドを表示し、status、trace、doctor、dry-runの代表コマンドへ誘導できることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - inline input: minimal workflow help registry, `ctl.build_parser().parse_args(...)`
+- 期待結果: exit code が0で、`Runtime Command Guide`、`aiwfctl status`、`aiwfctl trace show`、`aiwfctl doctor`、`aiwfctl rag build --dry-run` が表示される。
 
 #### RT-UT-CASE-CTL-WINDOWS-SCRIPT
 

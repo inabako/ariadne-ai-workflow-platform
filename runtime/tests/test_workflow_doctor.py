@@ -480,6 +480,9 @@ def test_workflow_doctor_fail_on_warning_turns_warning_into_fail(monkeypatch, tm
     assert result["status"] == "fail"
     assert result["warning_count"] == 1
     assert result["warnings"][0]["id"] == "tracked-local-workspace-files"
+    assert result["warnings"][0]["next_action"] == "Remove generated work/RAG files from Git tracking or move durable knowledge into work/db."
+    assert result["warnings"][0]["repair_command"] == "git rm --cached <path>"
+    assert "ignore_condition" in result["warnings"][0]
 
 
 def test_workflow_doctor_run_reports_all_warning_types(monkeypatch, tmp_path: Path) -> None:
@@ -537,6 +540,28 @@ def test_workflow_doctor_run_reports_all_warning_types(monkeypatch, tmp_path: Pa
         "path-constant-literal",
         "pytest-ut-spec-sync",
     ]
+    for warning in result["warnings"]:
+        assert warning["cause"]
+        assert warning["impact"]
+        assert warning["next_action"]
+        assert warning["repair_command"]
+        assert warning["ignore_condition"]
+    assert result["warnings"][9]["repair_command"] == (
+        "aiwfctl rag duckdb rebuild --source-repo work/db/ariadne-knowledge-platform --reset"
+    )
+
+
+def test_warning_guidance_uses_rebuild_hint_from_duckdb_paths() -> None:
+    guidance = workflow_doctor.warning_guidance(
+        "rag-duckdb-read-model-missing",
+        [
+            "missing:db/rag/ariadne-knowledge.duckdb",
+            "source:work/db/ariadne-knowledge-platform",
+            "rebuild:aiwfctl rag duckdb rebuild --source-repo work/db/custom-knowledge --reset",
+        ],
+    )
+
+    assert guidance["repair_command"] == "aiwfctl rag duckdb rebuild --source-repo work/db/custom-knowledge --reset"
 
 
 def test_workflow_doctor_run_passes_without_warnings(monkeypatch, tmp_path: Path) -> None:

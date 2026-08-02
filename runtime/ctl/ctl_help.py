@@ -411,6 +411,44 @@ def format_help_usage_warning(color: bool = False) -> str:
     ) + "\n"
 
 
+def format_runtime_help() -> str:
+    return "\n".join(
+        [
+            "Runtime Command Guide",
+            "",
+            "まず現在地を確認する",
+            "  aiwfctl status",
+            "  aiwfctl status --work-id <work-id>",
+            "",
+            "workflow traceを開始・確認・終了する",
+            "  aiwfctl trace begin --workflow /<workflow-name>",
+            "  aiwfctl trace status",
+            "  aiwfctl trace show",
+            "  aiwfctl trace show <trace-id>",
+            "  aiwfctl trace end",
+            "",
+            "warningと復帰手順を確認する",
+            "  aiwfctl doctor",
+            "  aiwfctl doctor --json",
+            "",
+            "書き込み前に実行予定を確認する",
+            "  aiwfctl rag build --dry-run",
+            "  aiwfctl rag duckdb rebuild --source-repo work/db/ariadne-knowledge-platform --reset --dry-run",
+            "  aiwfctl rag semantic-hints build --dry-run",
+            "  aiwfctl scm prepare --work-id <work-id> --repository <owner/repo> --dry-run",
+            "  aiwfctl scm commit --work-id <work-id> --message \"type(scope): summary\" --dry-run",
+            "  aiwfctl retrieval run --plan <task-plan.json> --dry-run",
+            "",
+            "止まったときの最短確認順",
+            "  1. aiwfctl status",
+            "  2. aiwfctl trace show",
+            "  3. aiwfctl doctor",
+            "  4. 必要な書き込み系commandを --dry-run で確認",
+            "  5. 問題なければ --dry-run を外して実行",
+        ]
+    ).rstrip() + "\n"
+
+
 def format_help_list(registry: dict[str, Any]) -> str:
     rows = []
     for item in sorted(registry.get("commands", []), key=command_key):
@@ -458,6 +496,9 @@ def run_help_command(args: Any, repo_root: Path, registry: dict[str, Any], *, co
 
     if help_command == "list":
         return 0, format_help_list(registry)
+
+    if help_command == "runtime":
+        return 0, format_runtime_help()
 
     if help_command == "show":
         item_type, item = find_help_item(registry, args.name)

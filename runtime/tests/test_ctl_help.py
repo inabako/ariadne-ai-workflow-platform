@@ -21,6 +21,14 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     parser = ctl.build_parser()
 
     assert parser.prog == "aiwfctl"
+    help_runtime_args = parser.parse_args(["help", "runtime"])
+    assert help_runtime_args.command == "help"
+    assert help_runtime_args.help_command == "runtime"
+    status_root_args = parser.parse_args(["status", "--json"])
+    assert status_root_args.command == "status"
+    assert status_root_args.json is True
+    status_work_args = parser.parse_args(["status", "--work-id", "issue-1"])
+    assert status_work_args.work_id == "issue-1"
     args = parser.parse_args(["github-knowledge", "rebase-review-intake", "--work-id", "w", "--human-check", "approved"])
     assert args.github_knowledge_command == "rebase-review-intake"
     assert args.human_check == "approved"
@@ -65,13 +73,21 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     trace_status_args = parser.parse_args(["trace", "status", "--json"])
     assert trace_status_args.trace_command == "status"
     assert trace_status_args.json is True
+    trace_show_args = parser.parse_args(["trace", "show", "traceabc", "--runtime-log", "logs/runtime/runtime-events.log"])
+    assert trace_show_args.trace_command == "show"
+    assert trace_show_args.trace_id == "traceabc"
+    assert trace_show_args.runtime_log == "logs/runtime/runtime-events.log"
+    trace_show_option_args = parser.parse_args(["trace", "show", "--trace-id", "traceopt", "--json"])
+    assert trace_show_option_args.trace_id_option == "traceopt"
+    assert trace_show_option_args.json is True
     trace_end_args = parser.parse_args(["trace", "end"])
     assert trace_end_args.trace_command == "end"
-    rag_duckdb_rebuild_args = parser.parse_args(["rag", "duckdb", "rebuild", "--reset"])
+    rag_duckdb_rebuild_args = parser.parse_args(["rag", "duckdb", "rebuild", "--reset", "--dry-run"])
     assert rag_duckdb_rebuild_args.command == "rag"
     assert rag_duckdb_rebuild_args.rag_command == "duckdb"
     assert rag_duckdb_rebuild_args.rag_duckdb_command == "rebuild"
     assert rag_duckdb_rebuild_args.reset is True
+    assert rag_duckdb_rebuild_args.dry_run is True
     rag_duckdb_verify_args = parser.parse_args(["rag", "duckdb", "verify", "--query", "workflow"])
     assert rag_duckdb_verify_args.command == "rag"
     assert rag_duckdb_verify_args.rag_command == "duckdb"
@@ -82,6 +98,15 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     assert semantic_hints_args.rag_command == "semantic-hints"
     assert semantic_hints_args.semantic_hints_command == "read"
     assert semantic_hints_args.semantic_hint == "gui simulator"
+    rag_build_args = parser.parse_args(["rag", "build", "--dry-run"])
+    assert rag_build_args.rag_command == "build"
+    assert rag_build_args.dry_run is True
+    rag_jsonize_args = parser.parse_args(["rag", "jsonize", "--dry-run"])
+    assert rag_jsonize_args.rag_command == "jsonize"
+    assert rag_jsonize_args.dry_run is True
+    semantic_hints_build_args = parser.parse_args(["rag", "semantic-hints", "build", "--dry-run"])
+    assert semantic_hints_build_args.semantic_hints_command == "build"
+    assert semantic_hints_build_args.dry_run is True
     publish_args = parser.parse_args(
         [
             "github-knowledge",
@@ -100,6 +125,24 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     assert publish_args.expected_remote_sha == "abc123"
     namespace = runpy.run_path(str(Path(ctl.__file__)))
     assert namespace["build_parser"]
+
+
+def test_ctl_help_runtime_shows_operational_command_guide(tmp_path: Path) -> None:
+    registry = tmp_path / "runtime" / "registries"
+    registry.mkdir(parents=True)
+    (registry / "workflow_help.json").write_text('{"commands": [], "extensions": []}', encoding="utf-8")
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "help", "runtime"])
+
+    code, output = ctl.run(args)
+
+    assert code == 0
+    assert "Runtime Command Guide" in output
+    assert "aiwfctl status" in output
+    assert "aiwfctl trace show" in output
+    assert "aiwfctl doctor" in output
+    assert "aiwfctl rag build --dry-run" in output
+    assert "aiwfctl rag duckdb rebuild" in output
+    assert "aiwfctl retrieval run" in output
 
 
 def test_windows_script_runtime_contract() -> None:
@@ -1374,6 +1417,9 @@ def test_defensive_specimen_ctl_doctor_formats_warning_paths(monkeypatch, tmp_pa
                 {
                     "id": "defensive-specimen",
                     "message": "rare warning specimen",
+                    "next_action": "review warning specimen",
+                    "repair_command": "aiwfctl doctor --fail-on-warning",
+                    "ignore_condition": "confirmed false positive",
                     "paths": [f"path-{index}" for index in range(12)],
                 }
             ],
@@ -1387,6 +1433,9 @@ def test_defensive_specimen_ctl_doctor_formats_warning_paths(monkeypatch, tmp_pa
     assert "Warnings" in output
     assert "defensive-specimen" in output
     assert "rare warning specimen" in output
+    assert "next: review warning specimen" in output
+    assert "repair: aiwfctl doctor --fail-on-warning" in output
+    assert "ignore: confirmed false positive" in output
     assert "path-0" in output
     assert "path-9" in output
     assert "path-10" not in output

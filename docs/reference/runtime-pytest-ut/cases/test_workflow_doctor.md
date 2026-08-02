@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 35 |
+| cases | 36 |
 
 ## ケース一覧
 
@@ -412,6 +412,23 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_run_reports_all_warn
   - parameter: names=なし, case=なし
   - inline input: `args`
 - 期待結果: policy、required files、archive、UTF-8、DuckDBなどのwarningが集約される。
+
+#### RT-UT-CASE-DOCTOR-021A
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_warning_guidance_uses_rebuild_hint_from_duckdb_paths
+```
+
+- Confirm: doctor warning guidance can derive the concrete DuckDB rebuild command from warning paths.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_workflow_doctor.py:554`
+  - fixture/arg: none
+  - parameter: names=none case=none
+  - inline input: warning id `rag-duckdb-read-model-missing` and paths containing a `rebuild:` hint
+- Expected: pytest assertion defines the expected result.
 
 #### RT-UT-CASE-DOCTOR-022
 
