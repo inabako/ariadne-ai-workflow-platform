@@ -123,6 +123,92 @@ flowchart TD
   H --> I[RAG capture candidates]
 ```
 
+## Review Council Runtime
+
+```mermaid
+flowchart TD
+  A[Intent / changed files / evidence] --> B[Review plan]
+  B --> C[Review Council session]
+  C --> D[Reviewer handoff packets]
+  D --> E[Orchestrate / next action]
+  E --> F{Reviewer findings ready?}
+  F -- no --> G[Run specialist / execute specialist]
+  G --> H[Draft findings]
+  H --> I[Add finding]
+  I --> E
+  F -- yes --> J[Review issue aggregation]
+  J --> K[Challenge round]
+  K --> L{Counterexample remains?}
+  L -- yes --> M[Human gate / reinspection]
+  M --> E
+  L -- no --> N[Evidence gate]
+  N --> O{Evidence verified?}
+  O -- no --> M
+  O -- yes --> P[Verdict policy]
+  P --> Q{Approved or risk accepted?}
+  Q -- no --> M
+  Q -- yes --> R[Knowledge capture]
+  R --> S[Review Council RAG build bridge]
+```
+
+## Expectation-Driven Design Flow
+
+```mermaid
+flowchart TD
+  A[Requirement / usage note] --> B[Expectation design init]
+  B --> C[Usage context scaffold]
+  B --> D[Expectation set / weights / critical expectations]
+  B --> E[Design candidate scaffold]
+  E --> F[Candidate concept / flow / wireframe]
+  F --> G[Feasibility report]
+  C --> H[Expectation extraction]
+  D --> H
+  H --> I[Expectation review report]
+  I --> J{Human Gate required?}
+  J -- yes --> K[Revise expectations / weights / evidence]
+  K --> H
+  J -- no --> L[Candidate evaluation]
+  G --> L
+  L --> M[Multi-axis evaluation]
+  M --> N[Trade-off analysis]
+  N --> O[Design comparison report]
+  O --> P[Review Council dispatch]
+  P --> Q{Review Council feedback?}
+  Q -- blocked --> K
+  Q -- clear --> R{Human decision}
+  R -- select / combine --> S[Selected design refinement]
+  R -- revise --> K
+  S --> T[Interaction contracts]
+  T --> U[Expectation verification]
+  U --> V[Expectation feedback]
+```
+
+## Runtime Observability / Trace
+
+```mermaid
+flowchart TD
+  A[Workflow prompt starts] --> B{Workflow-wide trace needed?}
+  B -- yes --> C[aiwfctl trace begin]
+  C --> D[logs/runtime/active-trace.json]
+  D --> E[aiwfctl command 1]
+  E --> F[Runtime Event Logger]
+  F --> G[logs/runtime/runtime-events.log]
+  G --> H[sequence 00001 / 00002]
+  D --> I[aiwfctl command 2]
+  I --> F
+  F --> J[sequence continues 00003 / 00004]
+  J --> K[aiwfctl trace status]
+  K --> L[aiwfctl trace end]
+  L --> M[active trace closed]
+  M --> N[Workflow evidence / feedback analysis]
+
+  B -- no --> O[Command scoped trace]
+  O --> P[aiwfctl command]
+  P --> Q[auto trace id]
+  Q --> R[sequence 00001 / 00002]
+  R --> S[Next command gets another trace id]
+```
+
 ## Realtime IaC
 
 ```mermaid
@@ -267,13 +353,23 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  A[Markdown source reports] --> B[Normalize JSON]
-  B --> C[Chunk documents]
-  C --> D[Build JSONL indexes]
-  D --> E[Local embeddings]
-  E --> F[RAG dispatcher]
-  F --> G[Context packs]
-  G --> H[Development / review workflow]
+  A[Markdown source reports] --> B[Normalize UUID JSON]
+  B --> C[Raw chunk JSON]
+  C --> D[Ingestion optimization]
+  D --> E{Accepted chunk?}
+  E -- no --> F[Human check / reject evidence]
+  E -- yes --> G[Optimized chunks]
+  G --> H[Build JSONL indexes]
+  H --> I[Local embeddings]
+  I --> J[rag-build-run-latest.json]
+  J --> K{DuckDB migrate?}
+  K -- yes --> L[Generated DuckDB read model]
+  K -- no --> M[File-based indexes]
+  L --> N[RAG load query planning]
+  M --> N
+  N --> O[Retrieve by file or DuckDB backend]
+  O --> P[Compressed context packs]
+  P --> Q[Development / review workflow]
 ```
 
 ## External Web RAG

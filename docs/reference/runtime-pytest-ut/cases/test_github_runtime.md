@@ -33,7 +33,7 @@ runtime/tests/test_github_runtime.py::test_github_api_urls_support_dotcom_and_en
 runtime/tests/test_github_runtime.py::test_defensive_specimen_issue_body_report_path_returns_empty_without_car_artifact
 ```
 
-- 確認内容: defensive specimen issue body report path returns empty without car artifact を検証する。
+- 確認内容: corrective action report artifactが存在しない場合、Issue body report path検出が空を返すdefensive specimenを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_github_runtime.py:35`
@@ -356,14 +356,14 @@ runtime/tests/test_github_runtime.py::test_issue_body_from_args_reads_body_file
 runtime/tests/test_github_runtime.py::test_ctl_github_issue_draft_writes_record
 ```
 
-- Confirm: `aiwfctl github issue` creates a local draft Issue record without calling GitHub API.
-- Input:
+- 確認内容: `aiwfctl github issue` がGitHub APIを呼ばず、local draft Issue recordを作成することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_github_runtime.py::test_ctl_github_issue_draft_writes_record
   - source: `runtime/tests/test_github_runtime.py:331`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: work directory with `scm-state.json`, `github issue --json`
-- Expected: CTL returns draft Issue JSON, writes process-report files, and records runtime event command path `github issue`.
+- 期待結果: CTLがdraft Issue JSONを返し、process-report fileを出力し、runtime eventにcommand path `github issue` を記録する。
 
 #### RT-UT-CASE-185
 
@@ -373,14 +373,14 @@ runtime/tests/test_github_runtime.py::test_ctl_github_issue_draft_writes_record
 runtime/tests/test_github_runtime.py::test_ctl_github_pr_draft_uses_scm_branch
 ```
 
-- Confirm: `aiwfctl github pr` creates a local draft Pull Request record from persisted SCM branch state.
-- Input:
+- 確認内容: `aiwfctl github pr` が永続化済みSCM branch stateからlocal draft Pull Request recordを作成することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_github_runtime.py::test_ctl_github_pr_draft_uses_scm_branch
   - source: `runtime/tests/test_github_runtime.py:363`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: work directory with `working_branch`, `github pr --json`
-- Expected: CTL returns draft PR JSON with `head=feature/issue-1` and no GitHub API mutation.
+- 期待結果: CTLが `head=feature/issue-1` のdraft PR JSONを返し、GitHub APIへのmutationは実行しない。
 
 #### RT-UT-CASE-168
 

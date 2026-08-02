@@ -35,7 +35,7 @@ AGPL公開においても、dependency licenseの適合性はdependencyの配布
 ## 残作業
 
 - GitHub Actions上でPR作成時に `.github/workflows/dependency-review.yml` が実行されることを確認する。
-- 公開前に `workflow_dispatch` でbase ref / head refを指定し、artifactを確認する。
+- release前に `workflow_dispatch` でbase ref / head refを指定し、artifactを確認する。
 - 許可license listは、実際のdependency review結果と公開方針に応じて継続的に見直す。
 
 このファイルはreview evidenceであり、法的助言ではありません。

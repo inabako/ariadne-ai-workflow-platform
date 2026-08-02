@@ -2,6 +2,8 @@
 
 この文書は、RAGデータ管理にDuckDBを導入するPhase 1の責務境界をまとめます。
 
+この文書は DuckDB read model の生成、検索、再構築、Git管理境界を扱います。RAG全体のsource分類とcleanup分類は [RAG](../reference/rag.md)、build / load の通常手順は [RAG Build / Load](../workflows/rag-build-load.md)、吸収品質評価は [RAG Knowledge Quality Metrics](knowledge-quality-metrics.md) を参照してください。
+
 ## 基本方針
 
 DuckDBファイルはsource of truthではありません。

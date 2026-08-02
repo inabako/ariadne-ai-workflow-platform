@@ -53,7 +53,7 @@ REUSE lintのpassは、repository全体のSPDX metadataがREUSE Specification 3.
 
 ## Remaining Actions
 
-- 公開前にGitHub Actions本番の `workflow_dispatch` で `.github/workflows/reuse-lint.yml` を実行し、artifactを確認する。
+- release前にGitHub Actions本番の `workflow_dispatch` で `.github/workflows/reuse-lint.yml` を実行し、artifactを確認する。
 
 ## Resolved Items
 

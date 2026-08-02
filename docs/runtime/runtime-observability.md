@@ -70,6 +70,25 @@ trace id の優先順位は次のとおりです。
 
 このため、prompt workflow では `trace begin` から `trace end` までを1つの workflow execution として扱います。`AIWF_TRACE_ID` を明示した場合は、active trace より環境変数が優先されます。
 
+active trace を開始していない通常実行では、各 `aiwfctl` command が個別の trace id を持ちます。その場合、1 command は通常 `runtime_command_started` と `runtime_command_completed` の2イベントを出すため、sequence は command ごとに `00001` / `00002` へ戻ります。これは workflow 全体traceが壊れている状態ではなく、active trace 未開始時の command scoped trace です。
+
+active trace 配下で複数 command を実行した場合は、同じ trace id のまま次のように増加します。
+
+```text
+trace begin      -> 00001, 00002
+help list        -> 00003, 00004
+help markdown    -> 00005, 00006
+trace status     -> 00007, 00008
+trace end        -> 00009, 00010
+```
+
+この挙動は `runtime/tests/test_runtime_trace_cli_integration.py` で、複数の CLI process を起動する結合寄りUTとして確認します。ローカル確認用ログは次に出力します。
+
+```text
+logs/test/runtime-trace-cli-integration/sequence/runtime-events.log
+logs/test/runtime-trace-cli-integration/without-active/runtime-events.log
+```
+
 Runtime Event Log は、runtime の実行順序を人間と AI Agent が追跡するための時系列ログです。
 
 保存先:
@@ -89,7 +108,7 @@ timestamp | trace-id | sequence | json
 例:
 
 ```text
-2026-07-21T06:15:32.692+09:00 | 8b8d3b4c1a2d4e6f8091b3c5 | 00002 | {"schema_version":"1.0","level":"warning","component":"ctl","event":"runtime_command_completed","workflow":"self-improvement","phase":"execute","operation_id":"self-improvement:create-feedback","attempt":1,"command":"self-improvement create-feedback","diagnostics":{"recoverable":true,"next_action":"review_command_usage","resume_command":"aiwfctl self-improvement create-feedback"},"input":{"json":false,"repo_root":"C:\\github\\v0.0.2\\ariadne-ai-workflow-platform","work_id":""},"output":{"status":"blocked","exit_code":2,"duration_ms":29,"output_bytes":562,"reason":"required_argument_missing"}}
+2026-08-02T03:54:28.117+09:00 | cli-sequence-trace | 00005 | {"schema_version":"1.0","level":"info","component":"ctl","event":"runtime_command_started","workflow":"help","phase":"execute","operation_id":"help:markdown","attempt":1,"command":"help markdown","diagnostics":{"recoverable":false,"next_action":"","resume_command":""},"input":{"json":false,"repo_root":"<pytest-tmp-repo>","work_id":""},"output":{}}
 ```
 
 各項目の意味:
@@ -97,8 +116,8 @@ timestamp | trace-id | sequence | json
 | 項目 | 内容 |
 | --- | --- |
 | timestamp | local timezone付きの ISO-8601 timestamp |
-| trace-id | 1回の runtime 実行を関連付ける24桁hexの識別子。明示指定された `AIWF_TRACE_ID` は相関用にそのまま使用する |
-| sequence | 同一 trace 内のイベント順序。`00001` から始まる |
+| trace-id | runtime event を関連付ける識別子。active trace 配下では workflow 実行全体で共有し、未開始時は command 単位で自動生成する。明示指定された `AIWF_TRACE_ID` は相関用にそのまま使用する |
+| sequence | 同一 trace 内のイベント順序。active trace 配下では workflow 全体で `00001` から増加し、未開始時は command 単位で `00001` から始まる |
 | json | component、event、input、output、関連 metadata |
 
 `command` は JSON root の metadata として記録し、`input` へは重複して入れません。`input` には実行条件、`output` には終了状態、exit code、duration、出力量、共通 reason を記録します。

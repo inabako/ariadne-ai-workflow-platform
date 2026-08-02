@@ -5,11 +5,19 @@
 ## Root Directories
 
 ```text
-.github/
+.ariadne/
   agents/      role-based Agent prompt definitions
   prompts/     slash command style workflow prompts
   schemas/     JSON Schema contracts for shared Agent data
   shared/      common principles and operational rules
+
+.github/
+  workflows/   GitHub Actions workflows
+  ISSUE_TEMPLATE/
+  PULL_REQUEST_TEMPLATE/
+  copilot-instructions.md
+  instructions/
+  prompts/     thin VS Code Copilot prompt stubs only
 
 docs/
   workflows/   workflow usage guides
@@ -19,6 +27,9 @@ work/db/ariadne-knowledge-platform/
   rag/corrective-action-report/
   rag/external-web/
   rag/specialist-review/
+
+db/registries/
+  registry.duckdb
 
 db/rag/
   normalized/
@@ -45,6 +56,7 @@ skills/
   skill-index.json
 
 templates/
+  registries/
   requirements/
   design-document/
   noise-reduction/
@@ -59,6 +71,10 @@ work/
   issue-<issue-number>/
   close/
 ```
+
+`.ariadne/` は Ariadne のAI workflow資産を置く場所です。GitHub Actions、Issue template、PR template、Copilot bridge などGitHubが直接読むファイルだけを `.github/` に残します。
+
+`templates/registries/` は、fresh checkoutでも `db/registries/registry.duckdb` を再生成できるようにするbootstrap sourceです。`db/registries/registry.duckdb` はruntimeが読むread modelで、生成物として扱います。
 
 ## Work Directory Model
 

@@ -25,12 +25,15 @@
 | 既存システム保守 | Ariadne Feature Maintenance | 完成版要件定義書またはincident | repository sync、current state、impact、risk、change design、test plan、implementation | issue branch、変更、検証証跡 | 影響範囲やriskが未整理なら実装へ進まない |
 | IaC設計/生成 | Realtime IaC | 完成版要件定義書、shared artifacts | repo mode判定、RAG load、shared artifact gate、network/security/runtime/observability設計、IaC実装、検証 | IaC artifacts、検証証跡、docs | 必須shared artifacts、公開範囲、secret source、firewall policyが未定義なら停止 |
 | 改善点調査 | Corrective Action Report | target repository / branch | read-only調査、RAG load、必要時外部Web / specialist review、finding整理 | corrective action report、RAG候補 | source変更はしない |
+| 専門レビュー構造化 | Review Council Runtime | intent、変更file、evidence、review対象 | review plan、session、handoff、specialist review、finding、challenge、evidence gate、verdict、knowledge capture | Review Council session、summary、verdict、RAG候補 | blocking issue、未検証evidence、未完了challenge、Human Gate不足があれば承認扱いにしない |
+| 期待駆動設計 | Expectation-Driven Design Flow | requirement、usage note、design candidate | usage context、expectation extraction、candidate scaffold、feasibility、review、multi-axis、trade-off、comparison、Human Gate、refinement、contracts、verification、feedback | expectation artifacts、design comparison report、selected design、interaction contracts、verification / feedback | confidence / evidence_refs不足、Critical違反、Review Council blocker、Human decision不足があれば次工程へ渡さない |
+| Runtime追跡 | Runtime Observability / Trace | workflow prompt、aiwfctl command、active trace state | trace begin / command event / trace status / trace end、sequence管理、runtime event log、test log出力 | `logs/runtime/runtime-events.log`、`logs/runtime/active-trace.json`、`logs/test/...` | workflow単位で追跡する場合はactive traceを開始し、終了漏れを残さない |
 | 改善実装 | Corrective Action Fix | target repository / branch、改善report | base checkout、RAG、Issue、branch、実装、test、human gate、PR材料 | issue branch、PR材料、知識回収候補 | Issue作成、push、PRは人間承認gateを通す |
 | Docs同期 | Docs Sync | target repository / branch | docs drift analysis JSON、Issue、docs-only update、commit / push | docs差分、RAG候補 | code変更を混ぜない |
 | GitHub知識保守 | GitHub Knowledge Maintenance | target repository、scan / repair mode | GitHub metadata収集、知識gap発見、repair proposal、Human Review、GitHub sync、RAG publish | analysis JSON、repair proposal、RAG候補 | GitHub mutation と RAG publish は承認後 |
 | VSCode環境整備 | VSCode Environment | target workspace | workspace requirement、validation、design、preflight、`.vscode` 実装、test evidence | `.vscode/*`、workspace docs、test evidence | validation fail は open questions へ戻す |
 | 完了後知識回収 | Knowledge Capture | 完了Issue作業 | PR材料、Mermaid sequence、evidence確認、push、PR、RAG/docs候補、archive readiness | PR文面、RAG候補、archive準備 | evidence不足ならpush/PR前に停止 |
-| RAG構築/読込 | RAG Build / Load | Markdown source reports | JSON正規化、chunk化、index、local embeddings、dispatcher、context pack | `work/db/ariadne-knowledge-platform/rag/normalized/`、`work/db/ariadne-knowledge-platform/rag/chunks/`、`work/db/ariadne-knowledge-platform/rag/retrieval/` | source report のmetadata不足は補正または停止 |
+| RAG構築/読込 | RAG Build / Load | Markdown source reports | JSON正規化、chunk化、ingestion optimization、optimized chunks、index、local embeddings、任意のDuckDB migration、dispatcher、context pack | `work/db/ariadne-knowledge-platform/rag/normalized/`、`chunks/`、`optimized-chunks/`、`indexes/`、`embeddings/`、`retrieval/`、`rag-build-run-latest.json` | source report のmetadata不足、吸収品質不足、Human Check対象chunkは補正または停止 |
 | 外部Web知識補助 | External Web RAG | knowledge gap | source reviewer、claims / metadata / verification notes、category file、dispatcher、specialist review | trusted external knowledge record、内部RAG候補 | 外部知識はrepo evidenceや人間承認済み知見を上書きしない |
 
 ## Requirement Discovery
@@ -102,6 +105,41 @@
 | 知識補助 | Internal RAG load / External Web RAG / Specialist review | 過去知見や外部一次情報で補助する | findings | 外部claimはrepo evidenceへ結び直す |
 | report作成 | Findings with repo evidence / Corrective action report | 改善点、risk、missing testsを整理する | RAG capture candidates | 修正は行わない |
 
+## Review Council Runtime
+
+| 工程 | Flowchart node | 目的 | 出力 / 次工程 | Gate / Stop |
+| --- | --- | --- | --- | --- |
+| review計画 | Review plan / Review Council session | intent、変更file、evidence、guardrails、必要reviewerを固定する | review session | review対象とrevisionが曖昧なら開始しない |
+| handoff | Reviewer handoff packets / Orchestrate / next action | reviewer別に読むべきcontextと次アクションを切り出す | specialist run packet | Runtimeが専門Agentを無承認で起動しない |
+| finding登録 | Run specialist / Draft findings / Add finding | Specialist reportをFinding contractへ寄せ、必要なものだけ正式登録する | Review issue aggregation | draft findingを未確認のままverdictへ混ぜない |
+| 反証/再検査 | Challenge round / Human gate / reinspection | counterexample、未解決issue、修正後evidenceを確認する | evidence gate | counterexampleが残る場合はHuman Gateまたは再検査へ戻す |
+| evidence確認 | Evidence gate | finding evidence、required tests、Review Council artifactの存在を検査する | verdict policy | evidence未検証なら承認扱いにしない |
+| verdict/知識化 | Verdict policy / Knowledge capture / Review Council RAG build bridge | `APPROVED`、`APPROVED_WITH_RISK`、`CHANGES_REQUIRED` などを判定し、再利用知識へ接続する | Review Council summary、verdict、RAG source候補 | risk acceptanceやfinal verdictのHuman Gate不足を残す |
+
+## Expectation-Driven Design Flow
+
+| 工程 | Flowchart node | 目的 | 出力 / 次工程 | Gate / Stop |
+| --- | --- | --- | --- | --- |
+| 初期化 | Expectation design init / Usage context scaffold / Expectation set | `work/<work-id>/design/expectation/` に期待駆動設計の作業領域とJSON artifactを作る | usage-context、expectation-set、weights、critical expectations | JSON source artifactを正本にし、YAMLへ戻さない |
+| 候補scaffold | Design candidate scaffold / Candidate concept / flow / wireframe | 自動生成ではなく、人間が比較できる候補の器を作る | `candidates/<id>/concept.md`、`flow.json`、`wireframe.svg` | 候補を削除せず、制約付き候補はconstrainedとして残す |
+| 実現性確認 | Feasibility report | 実装可能性、標準component可否、accessibility、testability、future extensibilityを構造化する | `feasibility-report.json/md` | 実現不能案も判断材料として残す |
+| 期待抽出/確認 | Expectation extraction / Expectation review report | usage contextと要件文から期待を抽出し、観測可能性、重み根拠、競合、抜け漏れ、UI手段固定化を確認する | expectation-set、expectation-review-report | confidenceとevidence_refsがない期待は採用しない |
+| 候補評価 | Candidate evaluation / Multi-axis evaluation / Trade-off analysis | 期待充足、UX、identity、delight、accessibility、cost、maintenance、technical feasibilityを比較する | multi-axis-evaluation、trade-off-analysis、comparison report | Critical違反や未検証項目を総合点で相殺しない |
+| Review Council連携 | Review Council dispatch / Review Council feedback | 必要なcontextだけをreviewerへ渡し、UX / Accessibility / Frontend Architectureなどの指摘を比較reportへ戻す | review-council-dispatch、comparison feedback | blocking issueが残る場合はHuman decision前に戻す |
+| 人間判断/精緻化 | Human decision / Selected design refinement | 選択または複数案統合の整合性を再評価し、単純な足し合わせを防ぐ | selected-design/design-specification.md | Human decisionなしではselected designへ進めない |
+| 契約/検証/feedback | Interaction contracts / Expectation verification / Expectation feedback | Given/When/Then/Must Not形式の契約、設計時推定値と実装後検証値、predicted vs observedを残す | interaction-contracts、expectation-verification、expectation-feedback | verification evidenceやhuman reviewを紐付ける |
+
+## Runtime Observability / Trace
+
+| 工程 | Flowchart node | 目的 | 出力 / 次工程 | Gate / Stop |
+| --- | --- | --- | --- | --- |
+| trace開始 | Workflow prompt starts / aiwfctl trace begin | 1 workflow実行を1つのtrace idへ束ねる | `logs/runtime/active-trace.json` | 既存active traceがある場合は意図せず上書きしない |
+| command記録 | aiwfctl command / Runtime Event Logger | command開始・完了・失敗を同じtrace idへ追記する | `logs/runtime/runtime-events.log` | secret、token、passwordなどはmaskする |
+| sequence管理 | sequence continues | active trace配下ではworkflow全体で `00001` から連番にする | workflow全体の時系列 | active trace未開始時はcommand scoped traceとして `00001` / `00002` に戻る |
+| 状態確認 | aiwfctl trace status | 現在のtrace id、workflow、last_sequenceを確認する | trace status JSON | 長時間workflowでは途中確認を証跡として使う |
+| trace終了 | aiwfctl trace end / active trace closed | workflow完了時にactive traceを閉じる | active trace ended | 終了漏れは次workflowのtrace混入リスクとして扱う |
+| 解析/再利用 | Workflow evidence / feedback analysis | Runtime logから失敗原因、blocked reason、復帰command、Feedback候補を抽出する | runtime evidence、self-improvement feedback | ログは観測sourceであり、正式判断はEvidenceやreportへ昇格して残す |
+
 ## Corrective Action Fix
 
 | 工程 | Flowchart node | 目的 | 出力 / 次工程 | Gate / Stop |
@@ -157,9 +195,10 @@
 | 工程 | Flowchart node | 目的 | 出力 / 次工程 | Gate / Stop |
 | --- | --- | --- | --- | --- |
 | 正規化 | Markdown source reports / Normalize JSON | Markdown reportを機械処理可能にする | normalized JSON | metadata不足は補正または停止 |
-| chunk/index | Chunk documents / Build JSONL indexes | 検索単位とindexを作る | indexes | source traceを残す |
-| embedding | Local embeddings | local baselineで検索可能にする | embeddings | 外部providerに依存しない |
-| 検索/配布 | RAG dispatcher / Context packs | 後続workflowへ圧縮contextを渡す | development / review workflow | raw bodyを無制限に持ち回らない |
+| chunk/最適化 | Chunk documents / Ingestion optimization / Optimized chunks | chunk候補を評価し、ACCEPT済みchunkだけをindex / embedding対象にする | optimized-chunks、ingestion evidence | HUMAN_CHECKやREJECTを無理に吸収しない |
+| index/embedding | Build JSONL indexes / Local embeddings / rag-build-run-latest.json | file-based検索とlocal embeddingの生成結果を再現可能に残す | indexes、embeddings、rag-build-run | source traceを残し、外部providerに依存しない |
+| DuckDB投影 | DuckDB migrate / Generated DuckDB read model | 必要な場合だけfile-based artifactを検索・監査用read modelへ投影する | `db/rag/ariadne-knowledge.duckdb`、migration evidence | DuckDBをsource of truthにしない |
+| 検索/配布 | RAG load query planning / Retrieve / Context packs | 後続workflowへ圧縮contextを渡す | development / review workflow | raw bodyを無制限に持ち回らない |
 
 ## External Web RAG
 

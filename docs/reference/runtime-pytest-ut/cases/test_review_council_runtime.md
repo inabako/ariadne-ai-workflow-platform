@@ -16,14 +16,14 @@
 runtime/tests/test_review_council_runtime.py::test_start_review_freezes_packet_and_writes_artifacts
 ```
 
-- Confirm: Review Council start freezes a Review Packet and writes session, index, and human-readable report artifacts.
-- Input:
+- 確認内容: Review Council startがReview Packetをfreezeし、session、index、人間が読めるreport artifactを出力することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_start_review_freezes_packet_and_writes_artifacts
   - source: `runtime/tests/test_review_council_runtime.py:30`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: `start_args`
-- Expected: The review session is `packet-frozen`, required reviewers are preserved, packet hash is stable length, and all expected artifacts exist.
+- 期待結果: review sessionが `packet-frozen` になり、required reviewerが保持され、packet hashが安定した長さで、期待するartifactがすべて存在する。
 
 #### RT-UT-CASE-REVIEW-002
 
@@ -33,14 +33,14 @@ runtime/tests/test_review_council_runtime.py::test_start_review_freezes_packet_a
 runtime/tests/test_review_council_runtime.py::test_plan_review_selects_specialists_and_writes_plan_artifacts
 ```
 
-- Confirm: Review Council plan selects required specialist reviewers from packet signals and writes plan artifacts.
-- Input:
+- 確認内容: Review Council planがpacket signalからrequired specialist reviewerを選択し、plan artifactを出力することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_plan_review_selects_specialists_and_writes_plan_artifacts
   - source: `runtime/tests/test_review_council_runtime.py:42`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: runtime/security/logging/test intent, changed file, evidence
-- Expected: Plan status is `planned`, runtime/security/observability/testing reviewers are selected, start command preserves packet args, and JSON/Markdown plan artifacts exist.
+- 期待結果: plan statusが `planned` になり、runtime/security/observability/testing reviewerが選択され、start commandがpacket argsを保持し、JSON/Markdown plan artifactが存在する。
 
 #### RT-UT-CASE-REVIEW-003
 
@@ -50,14 +50,14 @@ runtime/tests/test_review_council_runtime.py::test_plan_review_selects_specialis
 runtime/tests/test_review_council_runtime.py::test_handoff_review_writes_per_reviewer_packets
 ```
 
-- Confirm: Review Council handoff writes one reviewer packet per required reviewer and records it in session status.
-- Input:
+- 確認内容: Review Council handoffがrequired reviewerごとにreviewer packetを出力し、session statusへ記録することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_handoff_review_writes_per_reviewer_packets
   - source: `runtime/tests/test_review_council_runtime.py:69`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: frozen session with security/runtime reviewers
-- Expected: Handoff status is `handoff-ready`, reviewer packet Markdown files exist, and each packet contains the structured `add-finding` command.
+- 期待結果: handoff statusが `handoff-ready` になり、reviewer packet Markdown fileが存在し、各packetにstructured `add-finding` commandが含まれる。
 
 #### RT-UT-CASE-REVIEW-004
 
@@ -67,14 +67,14 @@ runtime/tests/test_review_council_runtime.py::test_handoff_review_writes_per_rev
 runtime/tests/test_review_council_runtime.py::test_orchestrate_review_waits_for_missing_reviewer
 ```
 
-- Confirm: Review Council orchestration detects missing required reviewers and produces the next specialist finding action.
-- Input:
+- 確認内容: Review Council orchestrationがrequired reviewerの不足を検出し、次のspecialist finding actionを生成することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_orchestrate_review_waits_for_missing_reviewer
   - source: `runtime/tests/test_review_council_runtime.py:95`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: frozen session, reviewer handoffs, one completed security finding
-- Expected: Orchestration status is `orchestration-waiting`, runtime reviewer is missing, an `add-finding` next action is emitted, artifacts exist, and session status is updated.
+- 期待結果: orchestration statusが `orchestration-waiting` になり、runtime reviewer不足、`add-finding` next action、artifact生成、session status更新が記録される。
 
 #### RT-UT-CASE-REVIEW-005
 
@@ -84,14 +84,14 @@ runtime/tests/test_review_council_runtime.py::test_orchestrate_review_waits_for_
 runtime/tests/test_review_council_runtime.py::test_next_action_prefers_specialist_run_for_missing_reviewer
 ```
 
-- Confirm: Review Council next-action converts missing reviewer work into a specialist run command.
-- Input:
+- 確認内容: Review Council next-action が、未実施reviewer作業をspecialist run commandへ変換することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_next_action_prefers_specialist_run_for_missing_reviewer
   - source: `runtime/tests/test_review_council_runtime.py:143`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: frozen session, handoff artifacts, orchestration result
-- Expected: Next action status is `action-required`, selected action is `register-specialist-finding`, and `agent_command` uses `aiwfctl review run-specialist`.
+- 期待結果: next action status が `action-required`、selected action が `register-specialist-finding` となり、`agent_command` が `aiwfctl review run-specialist` を使う。
 
 #### RT-UT-CASE-REVIEW-006
 
@@ -101,14 +101,14 @@ runtime/tests/test_review_council_runtime.py::test_next_action_prefers_specialis
 runtime/tests/test_review_council_runtime.py::test_run_specialist_review_writes_agent_packet
 ```
 
-- Confirm: Review Council specialist run writes an Agent execution packet with prompt, handoff, output, and finding registration command.
-- Input:
+- 確認内容: Review Council specialist run が、prompt、handoff、output、finding registration commandを含むAgent execution packetを出力することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_run_specialist_review_writes_agent_packet
   - source: `runtime/tests/test_review_council_runtime.py:167`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: security reviewer prompt file and frozen session
-- Expected: Specialist run status is `ready`, security reviewer agent is selected, prompt exists, handoff is prepared, artifacts exist, and session status becomes `specialist-ready`.
+- 期待結果: specialist run status が `ready` になり、security reviewer agentが選択され、prompt、handoff、artifactが作成され、session statusが `specialist-ready` になる。
 
 #### RT-UT-CASE-REVIEW-026
 
@@ -118,14 +118,14 @@ runtime/tests/test_review_council_runtime.py::test_run_specialist_review_writes_
 runtime/tests/test_review_council_runtime.py::test_execute_specialist_review_requires_human_check
 ```
 
-- Confirm: Specialist Agent execution is blocked until explicit Human Check approval is supplied.
-- Input:
+- 確認内容: 明示的なHuman Check承認が与えられるまで、Specialist Agent execution がblockされることを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_execute_specialist_review_requires_human_check
   - source: `runtime/tests/test_review_council_runtime.py:196`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: Review Council session, existing specialist prompt, `execute-specialist` with `human_check=pending`
-- Expected: The execution artifact type is `review-council-specialist-execution`, status is `human-check-required`, and execution evidence JSON is written without invoking a local Agent command.
+- 期待結果: execution artifact type が `review-council-specialist-execution`、status が `human-check-required` となり、local Agent commandを呼ばずにexecution evidence JSONが出力される。
 
 #### RT-UT-CASE-REVIEW-027
 
@@ -135,14 +135,14 @@ runtime/tests/test_review_council_runtime.py::test_execute_specialist_review_req
 runtime/tests/test_review_council_runtime.py::test_execute_specialist_review_runs_command_and_drafts_findings
 ```
 
-- Confirm: Approved Specialist Agent execution captures stdout/stderr, materializes the review report, and creates draft findings from the report.
-- Input:
+- 確認内容: 承認済みSpecialist Agent execution が stdout/stderr を取得し、review reportを実体化し、reportからdraft findingを作成することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_execute_specialist_review_runs_command_and_drafts_findings
   - source: `runtime/tests/test_review_council_runtime.py:223`
   - fixture/arg: `tmp_path` (temporary filesystem), monkeypatched `subprocess.run`
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: approved local agent command template, specialist packet stdin, stdout review report with one finding
-- Expected: The execution status is `completed`, stdout evidence and output report exist, one finding draft is generated, and the session records the completed specialist execution.
+- 期待結果: execution statusが `completed` になり、stdout evidenceとoutput reportが存在し、finding draftが1件生成され、sessionにcompleted specialist executionが記録される。
 
 #### RT-UT-CASE-REVIEW-007
 
@@ -152,14 +152,14 @@ runtime/tests/test_review_council_runtime.py::test_execute_specialist_review_run
 runtime/tests/test_review_council_runtime.py::test_draft_findings_extracts_structured_report_and_commands
 ```
 
-- Confirm: Review Council draft-findings extracts structured Finding candidates from a specialist review report and writes registration commands without mutating formal findings.
-- Input:
+- 確認内容: Review Council draft-findingsがspecialist review reportからstructured Finding candidateを抽出し、formal findingを変更せずregistration commandを出力することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_draft_findings_extracts_structured_report_and_commands
   - source: `runtime/tests/test_review_council_runtime.py:195`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: structured security specialist report with severity, verdict, evidence, required test, and requested action
-- Expected: One draft finding is produced, the draft is blocking, JSON/Markdown artifacts exist, `registration_command` uses `aiwfctl review add-finding`, and status reports `finding-draft-ready`.
+- 期待結果: draft findingが1件生成され、draftがblockingで、JSON/Markdown artifactが存在し、`registration_command` が `aiwfctl review add-finding` を使い、statusが `finding-draft-ready` を報告する。
 
 #### RT-UT-CASE-REVIEW-008
 
@@ -169,14 +169,14 @@ runtime/tests/test_review_council_runtime.py::test_draft_findings_extracts_struc
 runtime/tests/test_review_council_runtime.py::test_orchestrate_review_routes_reinspection_for_blocking_issue
 ```
 
-- Confirm: Review Council orchestration routes open blocking or high issues into the reinspection node.
-- Input:
+- 確認内容: Review Council orchestrationがopen blocking issueまたはhigh issueをreinspection nodeへ送ることを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_orchestrate_review_routes_reinspection_for_blocking_issue
   - source: `runtime/tests/test_review_council_runtime.py:251`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: one high `changes-required` security finding
-- Expected: Orchestration status is `orchestration-blocked`, issue `RI-001` is open, a `reinspect-review-issue` action is emitted, and the reinspection node is ready.
+- 期待結果: orchestration status が `orchestration-blocked` になり、issue `RI-001` がopenで、`reinspect-review-issue` actionが出力され、reinspection nodeがreadyになる。
 
 #### RT-UT-CASE-REVIEW-009
 
@@ -186,14 +186,14 @@ runtime/tests/test_review_council_runtime.py::test_orchestrate_review_routes_rei
 runtime/tests/test_review_council_runtime.py::test_summary_review_exports_snapshot_and_next_actions
 ```
 
-- Confirm: Review Council summary exports a machine-readable and human-readable snapshot with reviewer progress, issues, gates, and next actions.
-- Input:
+- 確認内容: Review Council summaryがreviewer進捗、issue、gate、next actionを含む機械可読および人間可読snapshotを出力することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_summary_review_exports_snapshot_and_next_actions
   - source: `runtime/tests/test_review_council_runtime.py:298`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: one high changes-required finding, orchestration result, and summary export id
-- Expected: Summary JSON/Markdown artifacts exist, counts include one finding and one blocking open issue, selected action requests reinspection, and session status remains orchestration-blocked.
+- 期待結果: Summary JSON/Markdown artifactが存在し、countにfinding 1件とblocking open issue 1件が含まれ、selected actionがreinspectionを要求し、session statusが `orchestration-blocked` のままになる。
 
 #### RT-UT-CASE-REVIEW-010
 
@@ -203,14 +203,14 @@ runtime/tests/test_review_council_runtime.py::test_summary_review_exports_snapsh
 runtime/tests/test_review_council_runtime.py::test_human_gate_review_records_blocked_and_approved_decisions
 ```
 
-- Confirm: Review Council human-gate records blocked and approved Human Gate decisions with restart guidance and summary artifacts.
-- Input:
+- 確認内容: Review Council human-gateがblocked/approvedのHuman Gate decisionをrestart guidanceとsummary artifact付きで記録することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_human_gate_review_records_blocked_and_approved_decisions
   - source: `runtime/tests/test_review_council_runtime.py:367`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: summary export, pending final-verdict gate, approved final-verdict gate
-- Expected: Pending gate is blocked with repair command, approved gate writes JSON/Markdown artifacts, and status reports persisted human gate approval.
+- 期待結果: pending gateはrepair command付きでblockされ、approved gateはJSON/Markdown artifactを出力し、statusが永続化済みhuman gate approvalを報告する。
 
 #### RT-UT-CASE-REVIEW-011
 
@@ -220,14 +220,14 @@ runtime/tests/test_review_council_runtime.py::test_human_gate_review_records_blo
 runtime/tests/test_review_council_runtime.py::test_human_gate_risk_acceptance_feeds_approved_with_risk_verdict
 ```
 
-- Confirm: Review Council risk acceptance Human Gate feeds verdict policy when non-blocking issues remain.
-- Input:
+- 確認内容: non-blocking issueが残る場合、Review Council risk acceptance Human Gateがverdict policyへ反映されることを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_human_gate_risk_acceptance_feeds_approved_with_risk_verdict
   - source: `runtime/tests/test_review_council_runtime.py:418`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: non-blocking warning finding, pass finding, pending verdict, approved risk-acceptance gate
-- Expected: Pending verdict requires human decision, approved risk gate allows `APPROVED_WITH_RISK`, and verdict records `human_check=approved`.
+- 期待結果: pending verdictはhuman decisionを要求し、approved risk gateでは `APPROVED_WITH_RISK` が許可され、verdictに `human_check=approved` が記録される。
 
 #### RT-UT-CASE-REVIEW-012
 
@@ -237,14 +237,14 @@ runtime/tests/test_review_council_runtime.py::test_human_gate_risk_acceptance_fe
 runtime/tests/test_review_council_runtime.py::test_challenge_review_generates_counterexample_plan_for_open_issues
 ```
 
-- Confirm: Review Council challenge creates a counterexample plan for selected open issues and related findings.
-- Input:
+- 確認内容: Review Council challengeが選択されたopen issueと関連findingに対するcounterexample planを作成することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_challenge_review_generates_counterexample_plan_for_open_issues
   - source: `runtime/tests/test_review_council_runtime.py:506`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: one high changes-required finding and challenge with no explicit issue id
-- Expected: Challenge targets `RI-001`, links `FND-001`, and stores a counterexample check for the open issue.
+- 期待結果: Challengeが `RI-001` を対象にし、`FND-001` をlinkし、open issue向けcounterexample checkを保存する。
 
 #### RT-UT-CASE-REVIEW-013
 
@@ -254,14 +254,14 @@ runtime/tests/test_review_council_runtime.py::test_challenge_review_generates_co
 runtime/tests/test_review_council_runtime.py::test_reinspection_records_issue_linkage_and_evidence_results
 ```
 
-- Confirm: Review Council reinspection records related issue ids, previous finding status, and evidence path checks.
-- Input:
+- 確認内容: Review Council reinspectionが関連issue id、previous finding status、evidence path checkを記録することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_reinspection_records_issue_linkage_and_evidence_results
   - source: `runtime/tests/test_review_council_runtime.py:555`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: one high finding and one reinspection evidence file
-- Expected: Reinspection links `RI-001`, records previous `FND-001` status as open, and evidence result exists.
+- 期待結果: Reinspectionが `RI-001` をlinkし、previous `FND-001` statusをopenとして記録し、evidence resultが存在する。
 
 #### RT-UT-CASE-REVIEW-014
 
@@ -271,14 +271,14 @@ runtime/tests/test_review_council_runtime.py::test_reinspection_records_issue_li
 runtime/tests/test_review_council_runtime.py::test_evidence_gate_records_artifact_level_results
 ```
 
-- Confirm: Review Council evidence gate records evidence path and Review Council artifact checks.
-- Input:
+- 確認内容: Review Council evidence gateがevidence pathとReview Council artifact checkを記録することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_evidence_gate_records_artifact_level_results
   - source: `runtime/tests/test_review_council_runtime.py:605`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: evidence file, required test text, and generated Review Council artifacts
-- Expected: Evidence gate is verified, evidence result exists, artifact checks are present, and no review artifacts are missing.
+- 期待結果: Evidence gateがverifiedになり、evidence resultとartifact checkが存在し、review artifact欠落がない。
 
 #### RT-UT-CASE-REVIEW-015
 
@@ -288,14 +288,14 @@ runtime/tests/test_review_council_runtime.py::test_evidence_gate_records_artifac
 runtime/tests/test_review_council_runtime.py::test_orchestrate_review_suggests_verdict_after_challenge_and_evidence
 ```
 
-- Confirm: Review Council orchestration suggests verdict after specialist review, challenge round, and evidence gate complete.
-- Input:
+- 確認内容: specialist review、challenge round、evidence gate完了後に、Review Council orchestrationがverdictを提案することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_orchestrate_review_suggests_verdict_after_challenge_and_evidence
   - source: `runtime/tests/test_review_council_runtime.py:656`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: pass finding, completed challenge round, verified evidence gate
-- Expected: Challenge and evidence checks are true, a `decide-verdict` next action is emitted, and the verdict-policy node is ready.
+- 期待結果: challengeとevidence checkがtrueになり、`decide-verdict` next actionが出力され、verdict-policy nodeがreadyになる。
 
 #### RT-UT-CASE-REVIEW-016
 
@@ -305,14 +305,14 @@ runtime/tests/test_review_council_runtime.py::test_orchestrate_review_suggests_v
 runtime/tests/test_review_council_runtime.py::test_review_knowledge_capture_writes_rag_candidates_after_verdict
 ```
 
-- Confirm: Review Council knowledge capture writes RAG candidates after verdict and updates orchestration checks.
-- Input:
+- 確認内容: Review Council knowledge captureがverdict後にRAG candidateを出力し、orchestration checkを更新することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_review_knowledge_capture_writes_rag_candidates_after_verdict
   - source: `runtime/tests/test_review_council_runtime.py:721`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: approved review flow and capture-knowledge command
-- Expected: Knowledge capture status is `captured`, RAG candidates are present, artifacts exist, and orchestration reports knowledge captured.
+- 期待結果: knowledge capture statusが `captured` になり、RAG candidateとartifactが存在し、orchestrationがknowledge capturedを報告する。
 
 #### RT-UT-CASE-REVIEW-024
 
@@ -322,14 +322,14 @@ runtime/tests/test_review_council_runtime.py::test_review_knowledge_capture_writ
 runtime/tests/test_review_council_runtime.py::test_review_rag_build_writes_source_markdown_and_manifest
 ```
 
-- Confirm: Review Council RAG build bridge exports a RAG source Markdown document and a manifest without running the full RAG pipeline.
-- Input:
+- 確認内容: Review Council RAG build bridgeがfull RAG pipelineを実行せず、RAG source Markdown documentとmanifestを出力することを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_review_rag_build_writes_source_markdown_and_manifest
   - source: `runtime/tests/test_review_council_runtime.py`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: Review Council session, summary export, `review rag-build` with `run=False`
-- Expected: The bridge artifact type is `review-council-rag-build`, source Markdown exists under `work/db/.../rag/review-council/...`, and the manifest contains an `aiwfctl rag build` command.
+- 期待結果: bridge artifact typeが `review-council-rag-build` になり、source Markdownが `work/db/.../rag/review-council/...` 配下に存在し、manifestに `aiwfctl rag build` commandが含まれる。
 
 #### RT-UT-CASE-REVIEW-025
 
@@ -339,14 +339,14 @@ runtime/tests/test_review_council_runtime.py::test_review_rag_build_writes_sourc
 runtime/tests/test_review_council_runtime.py::test_review_rag_build_can_run_existing_pipeline
 ```
 
-- Confirm: Review Council RAG build bridge can call the existing file-based RAG build pipeline when explicitly requested.
-- Input:
+- 確認内容: 明示指定された場合、Review Council RAG build bridgeが既存のfile-based RAG build pipelineを呼び出せることを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_review_rag_build_can_run_existing_pipeline
   - source: `runtime/tests/test_review_council_runtime.py`
   - fixture/arg: `tmp_path` (temporary filesystem), monkeypatched `rag_build.run`
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: Review Council session, `review rag-build` with `run=True`, `duckdb_migrate=True`, `skip_optimization=True`
-- Expected: The bridge returns the RAG build result and passes `document_type=review-council`, generated `source_dir`, DuckDB migration flag, and optimization flag to the existing RAG pipeline.
+- 期待結果: bridgeがRAG build resultを返し、`document_type=review-council`、生成された `source_dir`、DuckDB migration flag、optimization flagを既存RAG pipelineへ渡す。
 
 #### RT-UT-CASE-REVIEW-017
 
@@ -356,14 +356,14 @@ runtime/tests/test_review_council_runtime.py::test_review_rag_build_can_run_exis
 runtime/tests/test_review_council_runtime.py::test_add_finding_groups_issue_and_verdict_blocks_on_required_change
 ```
 
-- Confirm: Review Council add-finding normalizes a specialist finding, groups it into a Review Issue, and blocks the verdict when a required reviewer is missing.
-- Input:
+- 確認内容: Review Council add-findingがspecialist findingを正規化し、Review Issueへgroup化し、required reviewerが不足している場合にverdictをblockすることを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_add_finding_groups_issue_and_verdict_blocks_on_required_change
   - source: `runtime/tests/test_review_council_runtime.py:800`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: `start_args`, `add_finding`, `decide_verdict`
-- Expected: A high `changes-required` finding becomes a blocking `RI-001` issue, and verdict returns `HUMAN_DECISION_REQUIRED` with missing reviewer and blocking issue checks.
+- 期待結果: highの `changes-required` findingがblocking `RI-001` issueになり、verdictがmissing reviewerとblocking issue check付きで `HUMAN_DECISION_REQUIRED` を返す。
 
 #### RT-UT-CASE-REVIEW-018
 
@@ -373,14 +373,14 @@ runtime/tests/test_review_council_runtime.py::test_add_finding_groups_issue_and_
 runtime/tests/test_review_council_runtime.py::test_verdict_approves_after_required_reviewers_and_gates_pass
 ```
 
-- Confirm: Review Council verdict approves only after all required reviewers have provided structured findings and evidence/challenge gates pass.
-- Input:
+- 確認内容: すべてのrequired reviewerがstructured findingを提出し、evidence/challenge gateがpassした後だけ、Review Council verdictがapproveすることを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_verdict_approves_after_required_reviewers_and_gates_pass
   - source: `runtime/tests/test_review_council_runtime.py:848`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: `start_args`, pass findings, evidence and challenge flags
-- Expected: Required reviewer completion is detected, no Review Issues remain open, and the final verdict is `APPROVED`.
+- 期待結果: required reviewer完了が検出され、openのReview Issueが残らず、final verdictが `APPROVED` になる。
 
 #### RT-UT-CASE-REVIEW-019
 
@@ -390,14 +390,14 @@ runtime/tests/test_review_council_runtime.py::test_verdict_approves_after_requir
 runtime/tests/test_review_council_runtime.py::test_ctl_review_parser_and_json_flow
 ```
 
-- Confirm: `aiwfctl review` parser and dispatch path create plan/start/handoff/orchestrate/next-action/summary/human-gate/run-specialist/draft-findings/status outputs through JSON.
-- Input:
+- 確認内容: `aiwfctl review` parser and dispatch path create plan/start/handoff/orchestrate/next-action/summary/human-gate/run-specialist/draft-findings/status outputs through JSON.
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_ctl_review_parser_and_json_flow
   - source: `runtime/tests/test_review_council_runtime.py:891`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: `ctl.build_parser`, `review plan`, `review start`, `review handoff`, `review orchestrate`, `review next-action`, `review summary`, `review human-gate`, `review run-specialist`, `review draft-findings`, `review status`
-- Expected: The CTL route returns JSON for plan/session/operational commands, summary/human-gate/specialist/draft artifact types are returned, and status reports the persisted draft state.
+- 期待結果: CTL routeがplan/session/operational commandのJSONを返し、summary/human-gate/specialist/draft artifact typeが返され、statusが永続化済みdraft stateを報告する。
 
 #### RT-UT-CASE-REVIEW-020
 
@@ -407,14 +407,14 @@ runtime/tests/test_review_council_runtime.py::test_ctl_review_parser_and_json_fl
 runtime/tests/test_review_council_runtime.py::test_challenge_and_evidence_gate_are_saved_for_verdict
 ```
 
-- Confirm: Review Council challenge and evidence-gate results are persisted and reused by verdict without repeating CLI flags.
-- Input:
+- 確認内容: Review Council challengeとevidence-gate resultが永続化され、CLI flagを再指定せずにverdictで再利用されることを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_challenge_and_evidence_gate_are_saved_for_verdict
   - source: `runtime/tests/test_review_council_runtime.py:1054`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: evidence file, unit test specification file, pass findings, challenge record, evidence gate
-- Expected: Challenge status is `completed`, evidence gate status is `verified`, and verdict returns `APPROVED` using saved evidence/challenge state.
+- 期待結果: challenge statusが `completed`、evidence gate statusが `verified` になり、保存済みevidence/challenge stateを使ってverdictが `APPROVED` を返す。
 
 #### RT-UT-CASE-REVIEW-021
 
@@ -424,14 +424,14 @@ runtime/tests/test_review_council_runtime.py::test_challenge_and_evidence_gate_a
 runtime/tests/test_review_council_runtime.py::test_reinspection_closes_blocking_finding_before_verdict
 ```
 
-- Confirm: Review Council reinspection can mark a blocking finding verified and remove the corresponding Review Issue before verdict.
-- Input:
+- 確認内容: Review Council reinspectionがblocking findingをverifiedにし、verdict前に対応するReview Issueを削除できることを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_reinspection_closes_blocking_finding_before_verdict
   - source: `runtime/tests/test_review_council_runtime.py:1133`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: high changes-required finding, reinspection status, challenge, evidence gate
-- Expected: The reinspection result is `verified`, evidence gate passes, and verdict returns `APPROVED`.
+- 期待結果: reinspection resultが `verified` になり、evidence gateがpassし、verdictが `APPROVED` を返す。
 
 #### RT-UT-CASE-REVIEW-022
 
@@ -441,14 +441,14 @@ runtime/tests/test_review_council_runtime.py::test_reinspection_closes_blocking_
 runtime/tests/test_review_council_runtime.py::test_challenge_counterexample_blocks_verdict
 ```
 
-- Confirm: Review Council verdict blocks when a challenge round records a counterexample.
-- Input:
+- 確認内容: challenge roundがcounterexampleを記録した場合、Review Council verdictがblockすることを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_challenge_counterexample_blocks_verdict
   - source: `runtime/tests/test_review_council_runtime.py:1220`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: pass finding, challenge with counterexample, evidence gate
-- Expected: Verdict returns `HUMAN_DECISION_REQUIRED` and reports one challenge blocker.
+- 期待結果: verdictが `HUMAN_DECISION_REQUIRED` を返し、challenge blocker 1件を報告する。
 
 #### RT-UT-CASE-REVIEW-023
 
@@ -458,14 +458,14 @@ runtime/tests/test_review_council_runtime.py::test_challenge_counterexample_bloc
 runtime/tests/test_review_council_runtime.py::test_langgraph_adapter_returns_dependency_free_plan
 ```
 
-- Confirm: LangGraph orchestration remains an adapter skeleton and does not leak dependency requirements into Review Council domain logic.
-- Input:
+- 確認内容: LangGraph orchestration がadapter skeletonに留まり、dependency requirementをReview Council domain logicへ漏らさないことを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_langgraph_adapter_returns_dependency_free_plan
   - source: `runtime/tests/test_review_council_runtime.py:1291`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: Review Council session and adapter plan builder
-- Expected: The plan identifies LangGraph as the adapter, includes reviewer nodes and reinspection, and contains challenge-to-evidence orchestration edges.
+- 期待結果: planがLangGraphをadapterとして識別し、reviewer nodeとreinspectionを含み、challenge-to-evidence orchestration edgeを持つ。
 
 #### RT-UT-CASE-REVIEW-028
 
@@ -475,11 +475,11 @@ runtime/tests/test_review_council_runtime.py::test_langgraph_adapter_returns_dep
 runtime/tests/test_review_council_runtime.py::test_langgraph_adapter_invokes_compiled_state_graph
 ```
 
-- Confirm: Review Council uses a compiled LangGraph StateGraph execution path when LangGraph is available.
-- Input:
+- 確認内容: LangGraphが利用可能な場合、Review Council がcompile済みLangGraph StateGraph execution pathを使うことを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_review_council_runtime.py::test_langgraph_adapter_invokes_compiled_state_graph
   - source: `runtime/tests/test_review_council_runtime.py`
   - fixture/arg: `tmp_path` (temporary filesystem), fake LangGraph `StateGraph`
-  - parameter: names=None case=None
-  - inline input: Review Council session with missing reviewers and monkeypatched LangGraph graph API
-- Expected: The orchestration result reports `execution_mode=langgraph`, `compiled=true`, records the visited graph node trace, and emits the next handoff action.
+  - parameter: names=なし, case=なし
+  - inline input: 未実施reviewerを持つReview Council sessionとmonkeypatch済みLangGraph graph API
+- 期待結果: orchestration result が `execution_mode=langgraph`、`compiled=true` を報告し、visited graph node traceを記録し、次のhandoff actionを出力する。

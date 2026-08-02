@@ -135,14 +135,14 @@ runtime/tests/test_workflow_doctor.py::test_human_gate_registry_findings_accepts
 runtime/tests/test_workflow_doctor.py::test_registry_seed_findings_reports_incomplete_template_source
 ```
 
-- Confirm: workflow doctor reports incomplete `templates/registries` bootstrap seed files before registry auto-build fails.
-- Input:
-  - pytest node: above node id
+- 確認内容: workflow doctorがregistry自動build失敗前に、不完全な `templates/registries` bootstrap seed fileを報告することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_workflow_doctor.py:122`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=none case=none
+  - parameter: names=なし, case=なし
   - inline input: missing template directory, complete JSON objects, missing `search_terms.json`, invalid JSON shape, invalid JSON syntax
-- Expected: missing template source, missing seed file, invalid JSON object shape, and invalid JSON syntax are reported as registry seed findings.
+- 期待結果: template source欠落、seed file欠落、invalid JSON object shape、invalid JSON syntaxがregistry seed findingとして報告される。
 
 #### RT-UT-CASE-DOCTOR-007A
 
@@ -370,14 +370,14 @@ runtime/tests/test_workflow_doctor.py::test_path_constant_literal_findings_ignor
 runtime/tests/test_workflow_doctor.py::test_git_attributes_and_uv_startup_findings
 ```
 
-- Confirm: `test_git_attributes_and_uv_startup_findings` runtime contract is covered by pytest assertions.
-- Input:
-  - pytest node: above node id
+- 確認内容: `test_git_attributes_and_uv_startup_findings` runtime contract is covered by pytest assertions.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_workflow_doctor.py:437`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=none case=none
-  - inline input: test-local fixtures and assertions
-- Expected: pytest assertion defines the expected result.
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成されるfixtureとassertion
+- 期待結果: pytest assertionで期待結果を確認する。
 
 #### RT-UT-CASE-DOCTOR-020
 
@@ -472,14 +472,14 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_repair_encoding_clea
 runtime/tests/test_workflow_doctor.py::test_workflow_doctor_repair_spec_index_scaffolds_missing_cases
 ```
 
-- Confirm: `test_workflow_doctor_repair_spec_index_scaffolds_missing_cases` runtime contract is covered by pytest assertions.
-- Input:
-  - pytest node: above node id
+- 確認内容: `test_workflow_doctor_repair_spec_index_scaffolds_missing_cases` runtime contract is covered by pytest assertions.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_workflow_doctor.py:656`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
-  - parameter: names=none case=none
-  - inline input: test-local fixtures and assertions
-- Expected: pytest assertion defines the expected result.
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成されるfixtureとassertion
+- 期待結果: pytest assertionで期待結果を確認する。
 
 #### RT-UT-CASE-DOCTOR-023
 

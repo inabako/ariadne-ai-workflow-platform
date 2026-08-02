@@ -1,46 +1,53 @@
 # RAG
 
+この文書は、Ariadne の RAG artifact 全体の概念、source of truth、配置責務、cleanup分類を説明します。
+
+実行手順は [RAG Build / Load](../workflows/rag-build-load.md)、DuckDB read model の運用は [DuckDB RAG Read Model](../rag/duckdb-read-model.md)、吸収品質評価は [RAG Knowledge Quality Metrics](../rag/knowledge-quality-metrics.md) を参照してください。
+
+## 文書責務
+
+| Document | 役割 |
+| --- | --- |
+| この文書 | RAG全体の概念、source分類、artifact配置、cleanup分類 |
+| [RAG Build / Load](../workflows/rag-build-load.md) | `aiwfctl rag build/load` の実行手順、Context First連携、出力確認 |
+| [DuckDB RAG Read Model](../rag/duckdb-read-model.md) | `db/rag/ariadne-knowledge.duckdb` の生成、検索、再構築、Git管理境界 |
+| [RAG Knowledge Quality Metrics](../rag/knowledge-quality-metrics.md) | ingestion optimizationの評価項目、判定、evidence |
+
+## Source Of Truth
+
+Ariadne の RAG source of truth は、Markdown、JSON、JSONLなどのfile-based artifactです。
+
+`work/db/ariadne-knowledge-platform/` は、標準では `ariadne-knowledge-platform` repository のcloneとして扱います。長期保存するknowledge sourceはこのclone側で管理し、Ariadne本体側の `db/rag/**` は検索、検証、移行、context出力のための生成物として扱います。
+
+`db/rag/ariadne-knowledge.duckdb` はsource of truthではありません。削除されても、knowledge sourceから再生成できるread modelです。
+
 ## Workspace Environment Source
 
-VSCode Workspace-as-Code knowledge starts as human-reviewable internal project RAG source Markdown:
+VSCode Workspace-as-Code のknowledgeは、人間がreviewできる内部project RAG source Markdownとして保存します。
 
 ```text
 work/db/ariadne-knowledge-platform/rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
 ```
 
-After human approval, normalize approved notes with:
+Human承認後、approved noteを `document-type: workspace-environment-pattern` としてnormalizeします。具体的なcommandは [RAG Build / Load](../workflows/rag-build-load.md) を参照してください。
 
-```powershell
-.\runtime\windows-script\aiwf.cmd ctl rag normalize `
-  --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment `
-  --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
-  --document-type workspace-environment-pattern
-```
-
-The final durable knowledge record is the generated UUID-named JSON:
+最終的なdurable knowledge recordは、生成されたUUID名JSONです。
 
 ```text
 work/db/ariadne-knowledge-platform/rag/normalized/<uuid>.json
 ```
 
-Chunk JSON, indexes, embeddings, retrieval results, and context packs are derived from this normalized JSON. `work/db/ariadne-knowledge-platform/rag/jsonized/<uuid>.json` is only a wrapper path for existing non-UUID artifacts and is not the primary final RAG knowledge record.
+Chunk JSON、index、embedding、retrieval result、context packは、このnormalized JSONから派生します。`work/db/ariadne-knowledge-platform/rag/jsonized/<uuid>.json` は既存の非UUID artifactを包む互換wrapperであり、primary final RAG knowledge recordではありません。
 
 ## GitHub Knowledge Source
 
-Approved GitHub Repository Knowledge Maintenance outputs are stored as internal project RAG:
+承認済みの GitHub Repository Knowledge Maintenance 出力は、内部project RAGとして保存します。
 
 ```text
 work/db/ariadne-knowledge-platform/rag/github-knowledge/YYYYMMDD_HHMMSS_<topic>.md
 ```
 
-Normalize approved notes with:
-
-```powershell
-.\runtime\windows-script\aiwf.cmd ctl rag normalize `
-  --source-dir work/db/ariadne-knowledge-platform/rag/github-knowledge `
-  --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
-  --document-type github-repository-knowledge
-```
+Human承認後、approved noteを `document-type: github-repository-knowledge` としてnormalizeします。具体的なcommandは [RAG Build / Load](../workflows/rag-build-load.md) を参照してください。
 
 このrepoのRAGは、現場やreviewから得た知識、または外部Webの一次情報から抽出した補助知識を、次のworkflowで再利用するためのfile-based pipelineです。
 
@@ -77,7 +84,9 @@ YYYYMMDDHHmmSS_<random-5-to-8>_<repository-name>.md
 ```text
 source markdown
   -> normalized UUID JSON document
-  -> chunk JSON
+  -> raw chunk JSON
+  -> ingestion optimization
+  -> accepted optimized chunk JSON
   -> JSONL indexes
   -> local embeddings
   -> dispatch plan
@@ -112,6 +121,7 @@ Rules:
 | --- | --- |
 | `work/db/ariadne-knowledge-platform/rag/normalized/*.json` | Markdown reportをmetadata付きUUID JSON documentに変換した最終knowledge record |
 | `work/db/ariadne-knowledge-platform/rag/chunks/*.json` | retrieval / embeddings用chunk |
+| `work/db/ariadne-knowledge-platform/rag/optimized-chunks/*.json` | ingestion optimizationで `ACCEPT` されたindex / embedding対象chunk |
 | `work/db/ariadne-knowledge-platform/rag/indexes/documents.jsonl` | document-level index |
 | `work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl` | chunk-level index |
 | `work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |
@@ -217,46 +227,18 @@ front_matter
 
 詳しくは [External Web RAG](../workflows/external-web-rag.md) を参照してください。
 
-## Build
+## 実行手順
 
-```powershell
-.\runtime\windows-script\aiwf.cmd ctl rag standardize `
-  --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
-  --replace-references
+この文書では、RAGの概念と配置責務だけを扱います。build / load の具体的なcommand、Context First manifest連携、出力確認は [RAG Build / Load](../workflows/rag-build-load.md) を参照してください。
 
-.\runtime\windows-script\aiwf.cmd ctl rag normalize `
-  --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
-  --output-dir work/db/ariadne-knowledge-platform/rag/normalized `
-  --document-type corrective-action-report `
-  --clean-output
+標準の使い分けは次の通りです。
 
-.\runtime\windows-script\aiwf.cmd ctl rag chunk `
-  --input-dir work/db/ariadne-knowledge-platform/rag/normalized `
-  --output-dir work/db/ariadne-knowledge-platform/rag/chunks `
-  --clean-output
-
-.\runtime\windows-script\aiwf.cmd ctl rag index `
-  --normalized-dir work/db/ariadne-knowledge-platform/rag/normalized `
-  --chunks-dir work/db/ariadne-knowledge-platform/rag/chunks `
-  --output-dir work/db/ariadne-knowledge-platform/rag/indexes
-
-.\runtime\windows-script\aiwf.cmd ctl rag embed `
-  --chunks-index work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl `
-  --output work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl
-```
-
-## Load
-
-```powershell
-.\runtime\windows-script\aiwf.cmd ctl rag load `
-  --task "<task summary>" `
-  --repository "<target-repository>" `
-  --branch "<target-branch>" `
-  --search-mode hybrid `
-  --top-k 5 `
-  --max-chars 4000 `
-  --jobs 4
-```
+| やりたいこと | 参照先 |
+| --- | --- |
+| Markdown reportをRAG artifactへ変換する | [RAG Build / Load](../workflows/rag-build-load.md#rag-build) |
+| 開発前にRAG contextを読み込む | [RAG Build / Load](../workflows/rag-build-load.md#rag-load) |
+| DuckDB read modelを再構築する | [DuckDB RAG Read Model](../rag/duckdb-read-model.md) |
+| RAG吸収品質を確認する | [RAG Knowledge Quality Metrics](../rag/knowledge-quality-metrics.md) |
 
 dispatcherは検索前に `artifact_type: rag-dispatch-plan` を生成します。
 このplanは、Intent、metadata filter、semantic hint、query purpose、stop conditionをAgent間で共有するための成果物です。

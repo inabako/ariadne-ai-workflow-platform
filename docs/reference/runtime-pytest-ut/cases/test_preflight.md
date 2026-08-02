@@ -50,14 +50,14 @@ runtime/tests/test_preflight.py::test_basic_checks_report_detected_state
 runtime/tests/test_preflight.py::test_preflight_parser_accepts_runtime_dev_profile
 ```
 
-- Confirm: `test_preflight_parser_accepts_runtime_dev_profile` ? pytest assertion ???runtime???????????
-- Input:
-  - pytest node: above node id
-  - source: `runtime/tests/test_preflight.py`
-  - fixture/arg: pytest function signature ???
-  - parameter: names=none case=none
-  - inline input: test-local fixtures and assertions
-- Expected: pytest assertion defines the expected result.
+- 確認内容: preflight CLI parser が `runtime-dev` profile を受け付けることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_preflight.py:77`
+  - fixture/arg: なし
+  - parameter: names=なし, case=なし
+  - inline input: `["--profile", "runtime-dev"]`
+- 期待結果: parse結果の `args.profile` が `runtime-dev` になる。
 #### RT-UT-CASE-227S
 
 - pytest node id:
@@ -66,14 +66,14 @@ runtime/tests/test_preflight.py::test_preflight_parser_accepts_runtime_dev_profi
 runtime/tests/test_preflight.py::test_preflight_parser_accepts_scancode_audit_profile
 ```
 
-- Confirm: The preflight parser accepts the `scancode-audit` profile.
-- Input:
-  - pytest node: above node id
+- 確認内容: preflight parserが `scancode-audit` profileを受け付けることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_preflight.py:83`
-  - fixture/arg: none
-  - parameter: names=none case=none
+  - fixture/arg: なし
+  - parameter: names=なし, case=なし
   - inline input: `args`
-- Expected: Parsed arguments keep `profile` as `scancode-audit`.
+- 期待結果: parse結果の `profile` が `scancode-audit` として保持される。
 
 #### RT-UT-CASE-227A
 
@@ -83,14 +83,14 @@ runtime/tests/test_preflight.py::test_preflight_parser_accepts_scancode_audit_pr
 runtime/tests/test_preflight.py::test_uv_runtime_check_uses_repo_local_wrapper_when_uv_is_not_on_path
 ```
 
-- Confirm: `test_uv_runtime_check_uses_repo_local_wrapper_when_uv_is_not_on_path` ? pytest assertion ???runtime???????????
-- Input:
-  - pytest node: above node id
-  - source: `runtime/tests/test_preflight.py`
-  - fixture/arg: pytest function signature ???
-  - parameter: names=none case=none
-  - inline input: test-local fixtures and assertions
-- Expected: pytest assertion defines the expected result.
+- 確認内容: PATH上に `uv` が無い場合、repository local の `runtime/windows-script/uv.cmd` を検出することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_preflight.py:89`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: mockした `shutil.which` と一時作成した `runtime/windows-script/uv.cmd`
+- 期待結果: checkが成功し、検出パスがrepo local wrapperになり、install hintに `register-uv-path.cmd` が含まれる。
 #### RT-UT-CASE-227B
 
 - pytest node id:
@@ -99,14 +99,14 @@ runtime/tests/test_preflight.py::test_uv_runtime_check_uses_repo_local_wrapper_w
 runtime/tests/test_preflight.py::test_windows_aiwf_cmd_wraps_powershell_with_process_bypass
 ```
 
-- Confirm: `test_windows_aiwf_cmd_wraps_powershell_with_process_bypass` ? pytest assertion ???runtime???????????
-- Input:
-  - pytest node: above node id
-  - source: `runtime/tests/test_preflight.py`
-  - fixture/arg: pytest function signature ???
-  - parameter: names=none case=none
-  - inline input: test-local fixtures and assertions
-- Expected: pytest assertion defines the expected result.
+- 確認内容: Windows用 `aiwf.cmd` がPowerShellをProcess scopeのExecutionPolicy Bypassで呼び出し、旧tools cmd wrapperが残っていないことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_preflight.py:105`
+  - fixture/arg: なし
+  - parameter: names=なし, case=なし
+  - inline input: repository内の `runtime/windows-script/aiwf.cmd` と `runtime/tools/*.cmd`
+- 期待結果: `aiwf.cmd` に `powershell -NoProfile -ExecutionPolicy Bypass -File` と `%~dp0aiwf.ps1` が含まれ、`runtime/tools/*.cmd` が存在しない。
 #### RT-UT-CASE-227C
 
 - pytest node id:
@@ -149,14 +149,14 @@ runtime/tests/test_preflight.py::test_python_module_check_uses_current_interpret
 runtime/tests/test_preflight.py::test_runtime_pytest_check_uses_uv_project_command
 ```
 
-- Confirm: `test_runtime_pytest_check_uses_uv_project_command` ? pytest assertion ???runtime???????????
-- Input:
-  - pytest node: above node id
-  - source: `runtime/tests/test_preflight.py`
-  - fixture/arg: pytest function signature ???
-  - parameter: names=none case=none
-  - inline input: test-local fixtures and assertions
-- Expected: pytest assertion defines the expected result.
+- 確認内容: runtime pytest check がrepo local `uv.cmd` を使い、runtime project / dev group指定でpytest versionを確認することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_preflight.py:150`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: repo local `runtime/windows-script/uv.cmd` とmockした `run_command`
+- 期待結果: checkが成功し、実行commandが `uv.cmd run --project runtime --group dev pytest --version` になり、検出結果にpytest version stdoutが入る。
 #### RT-UT-CASE-228
 
 - pytest node id:
@@ -199,14 +199,14 @@ runtime/tests/test_preflight.py::test_docker_compose_check_reports_compose_error
 runtime/tests/test_preflight.py::test_act_cli_check_reports_missing_and_detected
 ```
 
-- Confirm: The act CLI preflight check reports both missing and detected states.
-- Input:
-  - pytest node: above node id
+- 確認内容: act CLI preflight checkが未検出状態と検出済み状態の両方を報告することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_preflight.py:203`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
-  - parameter: names=none case=none
-  - inline input: test-local fixtures and assertions
-- Expected: Missing act CLI is reported as missing, and detected act CLI returns ready metadata.
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成されるfixtureとassertion
+- 期待結果: act CLI未検出時はmissingとして報告され、検出時はready metadataを返す。
 
 #### RT-UT-CASE-229B
 
@@ -216,14 +216,14 @@ runtime/tests/test_preflight.py::test_act_cli_check_reports_missing_and_detected
 runtime/tests/test_preflight.py::test_docker_daemon_check_warns_when_not_running
 ```
 
-- Confirm: Docker daemon check warns when the daemon is not reachable.
-- Input:
-  - pytest node: above node id
+- 確認内容: Docker daemonに到達できない場合、Docker daemon checkがwarningを返すことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_preflight.py:226`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch)
-  - parameter: names=none case=none
-  - inline input: test-local fixtures and assertions
-- Expected: Docker daemon is reported as a warning with a start-Docker remediation hint.
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成されるfixtureとassertion
+- 期待結果: Docker daemonがwarningとして報告され、Docker起動を促すremediation hintが含まれる。
 
 #### RT-UT-CASE-230A
 
@@ -420,7 +420,7 @@ runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[
 runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[runtime-dev-expected_ids2]
 ```
 
-- 確認内容: pytest case `build checks profiles add expected checks[vscode-environment-expected_ids2]` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 確認内容: pytest case `build checks profiles add expected checks[runtime-dev-expected_ids2]` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_preflight.py:449`
@@ -437,14 +437,14 @@ runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[
 runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[vscode-environment-expected_ids3]
 ```
 
-- Confirm: `test_build_checks_profiles_add_expected_checks` ? pytest assertion ???runtime???????????
-- Input:
-  - pytest node: above node id
-  - source: `runtime/tests/test_preflight.py`
-  - fixture/arg: pytest function signature ???
-  - parameter: names=none case=none
-  - inline input: test-local fixtures and assertions
-- Expected: pytest assertion defines the expected result.
+- 確認内容: `vscode-environment` preflight profile が必要な検査IDを追加することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_preflight.py:498`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - parameter: names=`profile`, `expected_ids`, case=`vscode-environment-expected_ids3`
+  - inline input: 一時source dir、Windows script wrapper、mockしたtool検出とcommand実行結果
+- 期待結果: `build_checks` の検査ID集合に `exe:code`、`exe:docker`、`exe:go`、`path:msys2-bash`、`path:target-workspace`、`act:version`、`docker:daemon` が含まれる。
 #### RT-UT-CASE-239S
 
 - pytest node id:
@@ -453,14 +453,14 @@ runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[
 runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[scancode-audit-expected_ids4]
 ```
 
-- Confirm: The `scancode-audit` preflight profile adds all expected license-audit rehearsal checks.
-- Input:
-  - pytest node: above node id
+- 確認内容: `scancode-audit` preflight profileが、期待されるlicense audit rehearsal checkをすべて追加することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_preflight.py:498`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=`profile`, `expected_ids`, case=`scancode-audit-expected_ids4`
   - inline input: `args`
-- Expected: Generated checks include the expected act CLI, Docker daemon, ScanCode workflow, and REUSE lint workflow checks.
+- 期待結果: 生成されたcheckに、期待されるact CLI、Docker daemon、ScanCode workflow、REUSE lint workflowのcheckが含まれる。
 
 #### RT-UT-CASE-239T
 
@@ -470,14 +470,14 @@ runtime/tests/test_preflight.py::test_build_checks_profiles_add_expected_checks[
 runtime/tests/test_preflight.py::test_scancode_audit_profile_declares_optional_local_rehearsal_checks
 ```
 
-- Confirm: ScanCode audit preflight marks local rehearsal checks as optional guidance.
-- Input:
-  - pytest node: above node id
+- 確認内容: ScanCode audit preflightがlocal rehearsal checkをoptional guidanceとして扱うことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_preflight.py:532`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
-  - parameter: names=none case=none
+  - parameter: names=なし, case=なし
   - inline input: `args`
-- Expected: ScanCode and REUSE lint local rehearsal checks are declared optional, while required runtime checks remain strict.
+- 期待結果: ScanCodeとREUSE lintのlocal rehearsal checkはoptionalとして宣言され、必須runtime checkはstrictのまま維持される。
 
 #### RT-UT-CASE-239A
 

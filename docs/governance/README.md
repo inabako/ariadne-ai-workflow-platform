@@ -6,7 +6,7 @@ language: ja-JP
 
 このディレクトリは、Ariadne AI Workflow Platform の governance 入口です。
 
-v0.0.2 では governance を次の2階層に分けます。
+現在の governance は次の2階層に分けます。
 
 | Area | Path | Purpose |
 | --- | --- | --- |

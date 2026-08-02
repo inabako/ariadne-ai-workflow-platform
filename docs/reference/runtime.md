@@ -27,7 +27,7 @@ Windows 11 で AI workflow を実行する場合は、まず PowerShell native r
 .\runtime\windows-script\aiwf.cmd spec-check
 ```
 
-`runtime/windows-script/aiwf.cmd` is the normal PATH-friendly Windows entrypoint. It delegates to `runtime/windows-script/aiwf.cmd`, which invokes `runtime/windows-script/aiwf.ps1` with process-scoped `-ExecutionPolicy Bypass`, so the repository does not require changing the user's PowerShell policy.
+`runtime/windows-script/aiwf.cmd` はPATH登録しやすいWindows向け入口です。内部では `runtime/windows-script/aiwf.ps1` を process scoped `-ExecutionPolicy Bypass` 付きで呼び出すため、利用者のPowerShell policyを恒久変更せずに実行できます。
 
 `runtime/windows-script/aiwf.ps1` は PowerShell の UTF-8 no BOM 入出力、repo root / runtime root 解決、`uv run ... python ...` の固定だけを担当します。Context First、Human Check、GitHub knowledge maintenance などの workflow 判断は引き続き `aiwfctl` / `runtime/ctl/ctl.py` が担当します。
 
@@ -83,7 +83,7 @@ GitHub passwordをENVに保存しません。GitHub CLI/API と git remote の�
 | Script | Responsibility |
 | --- | --- |
 | `runtime/ctl/ctl.py` | `runtime/windows-script/aiwfctl.cmd` から呼び出される `aiwfctl help` / `aiwfctl env` の実体。help検索、Environment Dispatcher、`work/<work-id>/context/environment-selection.json` 作成を行う |
-| `db/registries/registry.duckdb` | `aiwfctl env` が参照する利用者向けEnvironmentと内部Backend profile registry |
+| `db/registries/registry.duckdb` | `templates/registries/*.json` から再生成されるruntime registry read model。`aiwfctl help`、`aiwfctl env`、Context First Tool Dispatcher、Human Gate Policy、Workflow Doctor が参照する |
 | `runtime/intake/intake_requirements.py` | `work/requirements/` の要件定義書を受付ID単位で移動し、初期contextを作る |
 | `runtime/environment/preflight.py` | 必要tool / packageを確認し、install listを作る |
 | `runtime/scm/prepare_repository.py` | target repository / branchを取得し、`scm-state.json` を作る |

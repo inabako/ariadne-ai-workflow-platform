@@ -101,14 +101,14 @@ runtime/tests/test_ctl_help.py::test_ctl_run_writes_runtime_event_log_for_each_c
 runtime/tests/test_ctl_help.py::test_ctl_trace_lifecycle_keeps_one_trace_id_for_workflow_commands
 ```
 
-- Confirm: `aiwfctl trace begin` から `trace end` までの複数 runtime command が、1つの workflow execution trace id にまとまることを確認します。
-- Input:
+- 確認内容: `aiwfctl trace begin` から `trace end` までの複数 runtime command が、1つの workflow execution trace id にまとまることを確認します。
+- 入力値:
   - pytest node: 上記 node id
   - source: `runtime/tests/test_ctl_help.py:235`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=none case=none
+  - parameter: names=なし, case=なし
   - inline input: `args`
-- Expected: begin / help / status / end の event は同じ trace id で記録され、end 後の command は新しい trace id で記録される。
+- 期待結果: begin / help / status / end の event は同じ trace id で記録され、end 後の command は新しい trace id で記録される。
 
 #### RT-UT-CASE-CTL-002A
 
@@ -730,14 +730,14 @@ runtime/tests/test_ctl_help.py::test_registry_store_builds_search_terms_table_wi
 runtime/tests/test_ctl_help.py::test_registry_store_ensure_builds_missing_duckdb_from_source_backup
 ```
 
-- Confirm: `test_registry_store_ensure_builds_missing_duckdb_from_source_backup` ? pytest assertion ???runtime???????????
-- Input:
-  - pytest node: above node id
-  - source: `runtime/tests/test_ctl_help.py`
-  - fixture/arg: pytest function signature ???
-  - parameter: names=none case=none
-  - inline input: test-local fixtures and assertions
-- Expected: pytest assertion defines the expected result.
+- 確認内容: source backup から欠落した `registry.duckdb` を再構築し、以後は既存read modelとして再利用されることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py:1686`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `work/db/ariadne-knowledge-platform/registries` 配下のregistry source fixture
+- 期待結果: 初回は `action = built` となり `db/registries/registry.duckdb` が作成され、workflow help / environment registry の件数が復元される。再実行時は `action = existing` になる。
 #### RT-UT-CASE-CTL-029D
 
 - pytest node id:
@@ -746,14 +746,14 @@ runtime/tests/test_ctl_help.py::test_registry_store_ensure_builds_missing_duckdb
 runtime/tests/test_ctl_help.py::test_registry_load_auto_builds_missing_duckdb_from_default_source_backup
 ```
 
-- Confirm: `test_registry_load_auto_builds_missing_duckdb_from_default_source_backup` ? pytest assertion ???runtime???????????
-- Input:
-  - pytest node: above node id
-  - source: `runtime/tests/test_ctl_help.py`
-  - fixture/arg: pytest function signature ???
-  - parameter: names=none case=none
-  - inline input: test-local fixtures and assertions
-- Expected: pytest assertion defines the expected result.
+- 確認内容: default source backup が存在する場合、registry load 時に欠落した `registry.duckdb` が自動生成されることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py:1704`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `work/db/ariadne-knowledge-platform/registries` 配下のregistry source fixture
+- 期待結果: `load_workflow_help` と `load_environment_profiles` が `registry.duckdb` を自動生成し、command、search terms、environment profile を読み込める。
 #### RT-UT-CASE-CTL-029D2
 
 - pytest node id:
@@ -762,14 +762,14 @@ runtime/tests/test_ctl_help.py::test_registry_load_auto_builds_missing_duckdb_fr
 runtime/tests/test_ctl_help.py::test_registry_load_auto_builds_missing_duckdb_from_template_source
 ```
 
-- Confirm: registry load can auto-build the missing DuckDB read model from `templates/registries`.
-- Input:
-  - pytest node: above node id
+- 確認内容: `templates/registries` から欠落したDuckDB read modelをregistry load時に自動生成できることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_ctl_help.py:1588`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=none case=none
+  - parameter: names=なし, case=なし
   - inline input: temporary repository with complete `templates/registries` JSON seed files
-- Expected: `db/registries/registry.duckdb` is created from the template source, and workflow help / environment profiles can be loaded.
+- 期待結果: template sourceから `db/registries/registry.duckdb` が作成され、workflow helpとenvironment profileを読み込める。
 
 #### RT-UT-CASE-CTL-029E
 
@@ -779,14 +779,14 @@ runtime/tests/test_ctl_help.py::test_registry_load_auto_builds_missing_duckdb_fr
 runtime/tests/test_ctl_help.py::test_registry_store_ensure_skips_when_source_backup_is_incomplete
 ```
 
-- Confirm: `test_registry_store_ensure_skips_when_source_backup_is_incomplete` ? pytest assertion ???runtime???????????
-- Input:
-  - pytest node: above node id
-  - source: `runtime/tests/test_ctl_help.py`
-  - fixture/arg: pytest function signature ???
-  - parameter: names=none case=none
-  - inline input: test-local fixtures and assertions
-- Expected: pytest assertion defines the expected result.
+- 確認内容: registry source backup が不完全な場合、read model の再構築を行わず missing-source として扱うことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py:1732`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `workflow_help.json` のみを持つ不完全なregistry source fixture
+- 期待結果: `action = missing-source`、`status = skipped` となり、欠落sourceに `tool_candidates.json` が含まれ、`registry.duckdb` は作成されない。
 #### RT-UT-CASE-CTL-029F
 
 - pytest node id:
@@ -930,11 +930,11 @@ runtime/tests/test_ctl_help.py::test_ctl_run_manual_error_and_json_branches
 runtime/tests/test_ctl_help.py::test_ctl_work_cleanup_check_and_apply_requires_absorbed_knowledge
 ```
 
-- Confirm: `aiwfctl work cleanup-check/apply` verifies long-lived Knowledge absorption before removing a temporary work scope.
+- 確認内容: `aiwfctl work cleanup-check/apply` verifies long-lived Knowledge absorption before removing a temporary work scope.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_ctl_help.py:1934`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `blocked_args`, `blocked`, `metrics_args`, `metrics`, `protected_args`, `ready_args`
-- Expected: cleanup is blocked before RAG evidence exists, becomes ready after `work/db/.../rag/github-knowledge` evidence, and apply requires `--human-check approved` before removing `work/github/original`.
+- 期待結果: RAG evidenceが存在する前はcleanupがblockされ、`work/db/.../rag/github-knowledge` evidence追加後にreadyとなり、`work/github/original` 削除前に `--human-check approved` が必須になる。

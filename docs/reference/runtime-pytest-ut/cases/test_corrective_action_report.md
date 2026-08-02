@@ -84,17 +84,17 @@ runtime/tests/test_corrective_action_report.py::test_corrective_action_report_re
 runtime/tests/test_corrective_action_report.py::test_corrective_action_report_registers_approved_work_db_report_for_cleanup
 ```
 
-- Confirm: approved corrective action report sources under `work/db/...` are registered as long-lived Knowledge cleanup evidence.
+- 確認内容: 承認済みCorrective Action Report sourceが `work/db/...` 配下でlong-lived Knowledge cleanup evidenceとして登録されることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_corrective_action_report.py:191`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected:
+- 期待結果:
   - `work_cleanup.ready_for_check` is true
   - `next_action.action == "check-work-cleanup"`
-  - generic `work cleanup-check` returns `status == "ready"`
+  - 汎用 `work cleanup-check` が `status == "ready"` を返す
 
 #### RT-UT-CASE-065
 

@@ -2,6 +2,8 @@
 
 Corrective Action Report などのMarkdown reportを file-based RAG artifactへ変換し、開発前に検索して圧縮済みcontextを読み込むworkflowです。
 
+この文書は、RAG build / load の実行手順を扱います。RAG全体の概念、source分類、cleanup分類は [RAG](../reference/rag.md)、DuckDB read model の再構築と検索は [DuckDB RAG Read Model](../rag/duckdb-read-model.md)、吸収品質評価は [RAG Knowledge Quality Metrics](../rag/knowledge-quality-metrics.md) を参照してください。
+
 ## Commands
 
 ```text
@@ -160,10 +162,13 @@ dispatcherは検索前に `artifact_type: rag-dispatch-plan` を保存します�
 
 ## Outputs
 
+各artifactのcleanup分類やsource of truth上の位置づけは [RAG](../reference/rag.md#cleanup-classification) を参照してください。
+
 | Path | Purpose |
 | --- | --- |
 | `work/db/ariadne-knowledge-platform/rag/normalized/*.json` | Markdown reportをmetadata付きUUID JSON documentに変換した最終knowledge record |
 | `work/db/ariadne-knowledge-platform/rag/chunks/*.json` | retrieval / embeddings用chunk |
+| `work/db/ariadne-knowledge-platform/rag/optimized-chunks/*.json` | ingestion optimizationで `ACCEPT` されたindex / embedding対象chunk |
 | `work/db/ariadne-knowledge-platform/rag/indexes/documents.jsonl` | document-level index |
 | `work/db/ariadne-knowledge-platform/rag/indexes/chunks.jsonl` | chunk-level index |
 | `work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl` | local sparse embedding index |

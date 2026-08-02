@@ -67,14 +67,14 @@ Dependency alerts / Dependency graph設定のAPI確認は、利用中のpersonal
 Dependency graph有効化後に、ローカルtokenを `GITHUB_TOKEN` secretとして渡して `act` を再実行したが、Dependency Review Action本体は同じ理由でfailした。
 そのため、残リスクはworkflow定義ではなく、GitHub上のrepository visibility、Dependency graph、Dependency Review Actionの対応条件、またはGitHub Advanced Security利用可否にある。
 
-## 公開前判断
+## Release判断
 
 ローカルで再現可能な範囲では、`.github/workflows` の構文、参照パス、artifact生成、REUSE lint、ScanCodeは公開可能な状態。
 
-公開前にGitHub上で確認が必要な残作業は、Dependency graphを有効化したうえで `.github/workflows/dependency-review.yml` を実行し、`ariadne-dependency-review-results` artifactを確認すること。
+release前にGitHub上で確認が必要な残作業は、Dependency graphを有効化したうえで `.github/workflows/dependency-review.yml` を実行し、`ariadne-dependency-review-results` artifactを確認すること。
 private repositoryのまま確認する場合は、GitHub Advanced Securityの利用可否も確認する。
 
 `aiwfctl release validate` のwarningはrelease gate上の確認対象として残っている。
-`.env` はgit管理外かつ `.gitignore` 対象だが、ローカルには実値入りのtoken設定が存在するため、公開前にpush対象へ含まれていないことを継続確認する。
+`.env` はgit管理外かつ `.gitignore` 対象だが、ローカルには実値入りのtoken設定が存在するため、release前にpush対象へ含まれていないことを継続確認する。
 
 このファイルはreview evidenceであり、法的助言ではありません。

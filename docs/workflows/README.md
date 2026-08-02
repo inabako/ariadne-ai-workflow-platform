@@ -19,7 +19,7 @@
 | `/vscode-environment` | VSCode workspace as code、task、terminal、AI workflow、evidenceを整備する | なし、target workspace path、またはcustom-design draft | `.vscode/*`, `workspace-test.md` |
 | `/flutter-multiplatform` | Flutterアプリの対象platform、環境、boilerplate、test、build計画、evidenceを整理する | `work/<work-id>/requirements/flutter-targets.yaml` または `--targets` | `flutter-development-context.json`, `flutter-multiplatform-report.md` |
 | `/knowledge-capture` | 完了IssueのPR材料、RAG候補、docs候補、archive準備を作る | `work/issue-<number>` | `knowledge-capture-report.md` |
-| `/rag-build` | Markdown reportをRAG artifactへ変換する | `work/db/ariadne-knowledge-platform/rag/corrective-action-report/*.md` | `work/db/ariadne-knowledge-platform/rag/normalized/`, `work/db/ariadne-knowledge-platform/rag/chunks/`, `work/db/ariadne-knowledge-platform/rag/indexes/`, `work/db/ariadne-knowledge-platform/rag/embeddings/` |
+| `/rag-build` | Markdown reportをRAG artifactへ変換する | `work/db/ariadne-knowledge-platform/rag/corrective-action-report/*.md` | `normalized/`, `chunks/`, `optimized-chunks/`, `indexes/`, `embeddings/`, `retrieval/rag-build-run-latest.json` |
 | `/rag-load` | 開発前に過去知識を検索し、圧縮contextを読む | task, repository, branch | `work/db/ariadne-knowledge-platform/rag/retrieval/*.json` |
 | `/runtime-health-check` | Ariadne自身のruntime、pytest、UT仕様書、Context First、docs品質を自己診断する | なし | `runtime/.pytest_cache/pytest-ut-spec-sync-report.*`, `context-manifest.json` |
 | External Web RAG | 要件定義、設計、改善flowで知見不足の領域を外部Web一次情報で補う | `work/db/ariadne-knowledge-platform/rag/external-web/knowledge-sources.md` | `work/db/ariadne-knowledge-platform/rag/external-web/<category>/*.md` |
