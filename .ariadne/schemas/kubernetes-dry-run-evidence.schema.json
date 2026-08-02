@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/schemas/kubernetes-dry-run-evidence.schema.json",
+  "title": "Kubernetes Dry-run Evidence",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "status", "work_id", "command", "executed"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "schema": {"type": "string"},
+    "artifact_type": {"const": "kubernetes-dry-run-evidence"},
+    "status": {"type": "string"},
+    "work_id": {"type": "string"},
+    "mode": {"type": "string"},
+    "manifest_dir": {"type": "string"},
+    "command": {"type": "array", "items": {"type": "string"}},
+    "kubectl_available": {"type": "boolean"},
+    "executed": {"type": "boolean"},
+    "exit_code": {"type": ["integer", "null"]},
+    "stdout": {"type": "string"},
+    "stderr": {"type": "string"},
+    "next_actions": {"type": "array", "items": {"type": "string"}},
+    "artifacts": {"type": "object"}
+  },
+  "additionalProperties": true
+}

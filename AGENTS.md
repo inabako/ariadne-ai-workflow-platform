@@ -43,6 +43,16 @@ Ariadne は、AI Agent が迷わず作業を進めるために、workflow の入
                thin VS Code Copilot custom instruction bridge
   prompts/     thin VS Code Copilot prompt stubs only
 
+.cursor/
+               thin Cursor project rule bridge into AGENTS.md and .ariadne/
+
+.clinerules/
+               thin Cline bridge rules into AGENTS.md and .ariadne/
+.claude/
+               thin Claude Code / Claude IDE bridge into AGENTS.md and .ariadne/
+.kiro/
+               thin Kiro steering bridge into AGENTS.md and .ariadne/
+
 knowledge-inbox/
   investigations/
   improvement-reports/

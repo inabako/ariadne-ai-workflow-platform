@@ -19,6 +19,16 @@
   instructions/
   prompts/     thin VS Code Copilot prompt stubs only
 
+.cursor/
+              thin Cursor project rule bridge into AGENTS.md and .ariadne/
+
+.clinerules/
+              thin Cline bridge rules into AGENTS.md and .ariadne/
+.claude/
+              thin Claude Code / Claude IDE bridge into AGENTS.md and .ariadne/
+.kiro/
+              thin Kiro steering bridge into AGENTS.md and .ariadne/
+
 docs/
   workflows/   workflow usage guides
   reference/   repository / runtime / data reference
@@ -73,6 +83,8 @@ work/
 ```
 
 `.ariadne/` は Ariadne のAI workflow資産を置く場所です。GitHub Actions、Issue template、PR template、Copilot bridge などGitHubが直接読むファイルだけを `.github/` に残します。
+
+`.cursor/rules/ariadne-bridge.mdc`、`.clinerules/`、`.claude/CLAUDE.md`、`.kiro/steering/ariadne-bridge.md` は、Cursor、Cline、Claude Code / Claude 対応IDE、Kiro から Ariadne を扱うための薄い bridge です。source of truth は `AGENTS.md`、`.ariadne/`、`skills/` に置き、各IDE向けファイルへ workflow 定義を複製しない方針です。
 
 `templates/registries/` は、fresh checkoutでも `db/registries/registry.duckdb` を再生成できるようにするbootstrap sourceです。`db/registries/registry.duckdb` はruntimeが読むread modelで、生成物として扱います。
 

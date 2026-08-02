@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/inabako/ariadne-ai-workflow-platform/.ariadne/schemas/e2e-test-report.schema.json",
+  "title": "E2E Test Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "schema",
+    "artifact_type",
+    "status",
+    "test_kind",
+    "work_id",
+    "generated_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "schema": {
+      "const": ".ariadne/schemas/e2e-test-report.schema.json"
+    },
+    "artifact_type": {
+      "enum": [
+        "e2e-readiness",
+        "e2e-run-result",
+        "e2e-observation",
+        "e2e-verification",
+        "e2e-explanation",
+        "e2e-test-review-plan",
+        "e2e-coverage",
+        "e2e-human-final-gate",
+        "e2e-evidence-package",
+        "e2e-test-loop",
+        "integration-readiness",
+        "integration-run-result",
+        "integration-observation",
+        "integration-verification",
+        "integration-explanation",
+        "integration-test-review-plan",
+        "integration-coverage",
+        "integration-human-final-gate",
+        "integration-evidence-package",
+        "integration-test-loop"
+      ]
+    },
+    "status": {
+      "enum": [
+        "ready",
+        "blocked",
+        "dry-run",
+        "completed",
+        "failed",
+        "observed",
+        "pass",
+        "review-ready",
+        "human-check-required",
+        "fix-required"
+      ]
+    },
+    "test_kind": {
+      "enum": [
+        "e2e",
+        "integration"
+      ]
+    },
+    "work_id": {
+      "type": "string"
+    },
+    "loop_state": {
+      "enum": [
+        "fix-instruction-ready",
+        "passed-no-fix-needed"
+      ]
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

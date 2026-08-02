@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/schemas/iac-app-runtime-assessment.schema.json",
+  "title": "IaC App Runtime Assessment",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "status", "work_id", "detected", "capabilities"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "schema": {"type": "string"},
+    "artifact_type": {"const": "iac-app-runtime-assessment"},
+    "status": {"type": "string"},
+    "work_id": {"type": "string"},
+    "source_documents": {"type": "array", "items": {"type": "object"}},
+    "detected": {"type": "object"},
+    "capabilities": {"type": "array", "items": {"type": "object"}},
+    "missing_capabilities": {"type": "array", "items": {"type": "string"}},
+    "next_actions": {"type": "array", "items": {"type": "string"}},
+    "artifacts": {"type": "object"}
+  },
+  "additionalProperties": true
+}

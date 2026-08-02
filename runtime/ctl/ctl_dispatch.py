@@ -10,6 +10,8 @@ from runtime.ctl.ctl_adapter_utils import save_plan_output_if_requested
 from runtime.ctl.ctl_context_adapter import run_context
 from runtime.ctl.ctl_design_adapter import run_design
 from runtime.ctl.ctl_doctor_adapter import run_doctor
+from runtime.ctl.ctl_e2e_adapter import format_result as format_e2e_result
+from runtime.ctl.ctl_e2e_adapter import run_e2e
 from runtime.ctl.ctl_flutter_adapter import format_result as format_flutter_result
 from runtime.ctl.ctl_flutter_adapter import run_flutter
 from runtime.ctl.ctl_gui_adapter import run_gui
@@ -17,6 +19,12 @@ from runtime.ctl.ctl_gui_adapter import run_web_svg
 from runtime.ctl.ctl_github_adapter import run_github
 from runtime.ctl.ctl_github_knowledge_adapter import run_github_knowledge
 from runtime.ctl.ctl_human_gate_adapter import run_human_gate
+from runtime.ctl.ctl_iac_adapter import format_deployment_result
+from runtime.ctl.ctl_iac_adapter import format_kubernetes_result
+from runtime.ctl.ctl_iac_adapter import format_prepare_result
+from runtime.ctl.ctl_iac_adapter import run_iac_deployment
+from runtime.ctl.ctl_iac_adapter import run_iac_kubernetes
+from runtime.ctl.ctl_iac_adapter import run_iac_prepare
 from runtime.ctl.ctl_iac_adapter import run_iac_template
 from runtime.ctl.ctl_intake_adapter import run_intake
 from runtime.ctl.ctl_integration_adapter import format_result as format_integration_result
@@ -1330,19 +1338,64 @@ def _handle_close_archive(args: argparse.Namespace, repo_root: Path, registry: d
 
 def _handle_iac(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
     iac_command = getattr(args, "iac_command", None)
-    if iac_command != "template":
+    if iac_command not in {"template", "prepare", "deployment", "kubernetes"}:
         return 1, (
-            "IaC Template\n\n"
+            "IaC Runtime\n\n"
             "Usage:\n"
             "  aiwfctl iac template list\n"
+            "  aiwfctl iac prepare --work-id <work-id>\n"
             "  aiwfctl iac template prepare --template opentelemetry-collector --work-id <work-id>\n"
-            "  aiwfctl iac template health --template opentelemetry-collector --work-id <work-id>\n\n"
+            "  aiwfctl iac template health --template opentelemetry-collector --work-id <work-id>\n"
+            "  aiwfctl iac deployment assess --work-id <work-id>\n"
+            "  aiwfctl iac deployment contract --work-id <work-id>\n"
+            "  aiwfctl iac deployment gap-report --work-id <work-id>\n"
+            "  aiwfctl iac kubernetes assess --work-id <work-id>\n"
+            "  aiwfctl iac kubernetes gap-report --work-id <work-id>\n"
+            "  aiwfctl iac kubernetes generate --work-id <work-id>\n"
+            "  aiwfctl iac kubernetes dry-run --work-id <work-id>\n"
+            "  aiwfctl iac kubernetes e2e-plan --work-id <work-id>\n"
+            "  aiwfctl iac kubernetes evidence --work-id <work-id>\n\n"
             "Outputs:\n"
             f"  {work_path_pattern('source', 'infrastructure', 'opentelemetry-collector')}/\n"
+            f"  {work_path_pattern('implementation', 'kubernetes', 'manifests')}/\n"
             f"  {context_path_pattern('iac-template-context.json')}\n"
             f"  {context_path_pattern('iac-template-health-context.json')}\n"
             f"  {test_evidence_path_pattern('infrastructure/opentelemetry-collector/health-summary.md')}\n"
+            f"  {test_evidence_path_pattern('kubernetes/dry-run.json')}\n"
         )
+    if iac_command == "prepare":
+        try:
+            result = run_iac_prepare(args, repo_root)
+        except Exception as exc:
+            return 1, f"IaC prepare failed: {exc}\n"
+        code = 0 if result.get("status") not in {"blocked"} else 2
+        if getattr(args, "json", False):
+            return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        return code, format_prepare_result(result)
+    if iac_command == "deployment":
+        deployment_command = getattr(args, "deployment_command", None)
+        if deployment_command is None:
+            return 1, "IaC deployment command is required. Use assess, contract, or gap-report.\n"
+        try:
+            result = run_iac_deployment(args, repo_root)
+        except Exception as exc:
+            return 1, f"IaC deployment failed: {exc}\n"
+        code = 0 if result.get("status") not in {"blocked", "failed"} else 2
+        if getattr(args, "json", False):
+            return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        return code, format_deployment_result(result)
+    if iac_command == "kubernetes":
+        kubernetes_command = getattr(args, "kubernetes_command", None)
+        if kubernetes_command is None:
+            return 1, "Kubernetes IaC command is required. Use assess, gap-report, generate, dry-run, e2e-plan, or evidence.\n"
+        try:
+            result = run_iac_kubernetes(args, repo_root)
+        except Exception as exc:
+            return 1, f"Kubernetes IaC failed: {exc}\n"
+        code = 0 if result.get("status") not in {"blocked", "fail", "human-check-required"} else 2
+        if getattr(args, "json", False):
+            return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+        return code, format_kubernetes_result(result)
     template_command = getattr(args, "iac_template_command", None)
     try:
         result = run_iac_template(args, repo_root, template_command)
@@ -1402,6 +1455,41 @@ def _handle_integration(args: argparse.Namespace, repo_root: Path, registry: dic
     if getattr(args, "json", False):
         return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
     return code, format_integration_result(result) + "\n"
+
+
+def _handle_e2e(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    e2e_command = getattr(args, "e2e_command", None)
+    if e2e_command is None:
+        return 1, (
+            "E2E / Integration Test Runtime\n\n"
+            "Usage:\n"
+            "  aiwfctl e2e plan --work-id <work-id> --objective \"...\"\n"
+            "  aiwfctl e2e contract scaffold --work-id <work-id>\n"
+            "  aiwfctl e2e contract --work-id <work-id>\n"
+            "  aiwfctl e2e readiness --work-id <work-id>\n"
+            "  aiwfctl e2e run --work-id <work-id> --dry-run\n"
+            "  aiwfctl e2e run --work-id <work-id> --human-check approved\n"
+            "  aiwfctl e2e observe --work-id <work-id>\n"
+            "  aiwfctl e2e verify --work-id <work-id>\n"
+            "  aiwfctl e2e review-plan --work-id <work-id>\n"
+            "  aiwfctl e2e coverage --work-id <work-id>\n"
+            "  aiwfctl e2e explain --work-id <work-id>\n"
+            "  aiwfctl e2e final-gate --work-id <work-id> --human-decision approved --reviewer <name>\n"
+            "  aiwfctl e2e evidence-package --work-id <work-id> --trace-id <trace-id> --output docs/evidence/<work-id>/e2e-package.json\n"
+            "  aiwfctl e2e loop --work-id <work-id>\n\n"
+            "Outputs:\n"
+            f"  {test_evidence_path_pattern('e2e-test/*.json')}\n"
+            f"  {test_evidence_path_pattern('e2e-test/explanation.md')}\n"
+        )
+    try:
+        result = run_e2e(args, repo_root, e2e_command)
+    except Exception as exc:
+        return 1, f"E2E runtime failed: {exc}\n"
+    status = result.get("status")
+    code = 0 if status in {"planned", "draft-with-gaps", "ready", "review-ready", "dry-run", "completed", "observed", "pass"} else 2
+    if getattr(args, "json", False):
+        return code, json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    return code, format_e2e_result(result) + "\n"
 
 
 def _handle_doctor(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
@@ -1605,6 +1693,7 @@ COMMAND_HANDLERS: dict[str, CommandHandler] = {
     "close-archive": _handle_close_archive,
     "iac": _handle_iac,
     "integration": _handle_integration,
+    "e2e": _handle_e2e,
     "preflight": _handle_preflight,
     "tools": _handle_tools,
     "release": _handle_release,

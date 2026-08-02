@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/schemas/iac-deployment-contract.schema.json",
+  "title": "IaC Deployment Contract",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "status", "work_id", "contract"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "schema": {"type": "string"},
+    "artifact_type": {"const": "iac-deployment-contract"},
+    "status": {"type": "string"},
+    "work_id": {"type": "string"},
+    "assessment_path": {"type": "string"},
+    "missing_capabilities": {"type": "array", "items": {"type": "string"}},
+    "contract": {"type": "object"},
+    "next_actions": {"type": "array", "items": {"type": "string"}},
+    "artifacts": {"type": "object"}
+  },
+  "additionalProperties": true
+}

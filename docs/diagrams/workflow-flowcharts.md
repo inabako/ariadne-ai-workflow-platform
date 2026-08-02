@@ -151,6 +151,46 @@ flowchart TD
   R --> S[Review Council RAG build bridge]
 ```
 
+## E2E / Integration Test Runtime
+
+```mermaid
+flowchart TD
+  A[Test objective] --> B[aiwfctl e2e plan]
+  B --> C[e2e-test-plan / integration-test-plan]
+  C --> VS[aiwfctl e2e contract scaffold]
+  VS --> V[aiwfctl e2e contract]
+  C --> V[aiwfctl e2e contract]
+  V --> VC[e2e-test-contract / integration-test-contract]
+  VC --> D[aiwfctl e2e readiness]
+  D --> E{Ready?}
+  E -- no --> F[Missing contract / Stub / command blockers]
+  F --> V
+  E -- yes --> G[aiwfctl e2e run --dry-run]
+  G --> H{Human Check approved?}
+  H -- no --> I[Stop before execution]
+  I --> J[run-result evidence]
+  H -- yes --> K[Run planned commands]
+  K --> J
+  J --> L[aiwfctl e2e observe]
+  L --> M[observation evidence]
+  M --> N[aiwfctl e2e verify]
+  N --> O{Expectations pass?}
+  O -- yes --> RP[aiwfctl e2e review-plan]
+  RP --> RC[Review Council plan / evidence gate]
+  RC --> CV[aiwfctl e2e coverage]
+  CV --> P[aiwfctl e2e explain]
+  P --> FG[aiwfctl e2e final-gate]
+  FG --> EP[aiwfctl e2e evidence-package]
+  EP --> Q[Human final confirmation]
+  O -- no --> R[aiwfctl e2e loop]
+  R --> S[Problem summary / fix instruction]
+  S --> T[Trace show problems]
+  S --> U[Review Council plan]
+  S --> V[SCM compare / commit dry-run]
+  S --> W[Retest commands]
+  W --> G
+```
+
 ## Expectation-Driven Design Flow
 
 ```mermaid
@@ -384,4 +424,30 @@ flowchart TD
   F --> G[Specialist review]
   G --> H[Trusted external knowledge record]
   H --> I[Internal RAG candidate after approval]
+```
+
+## Kubernetes / k3s Preparation
+
+```mermaid
+flowchart TD
+  A[Requirement / Design] --> Prepare[aiwfctl iac prepare]
+  Prepare --> B[App Runtime Assessment]
+  B --> C[Deployment Contract]
+  C --> D[IaC Deployment Gap Report]
+  D --> E[Requirement mentions Kubernetes / k3s]
+  E --> F[Compatibility Assessment]
+  F --> G[Gap Report]
+  G --> H{Critical or High gap?}
+  H -- yes --> I[Constrained manifest scaffold with placeholders]
+  H -- no --> J[Manifest scaffold]
+  I --> K[kubectl dry-run evidence]
+  J --> K
+  K --> L[Integration E2E plan]
+  L --> LC[Integration E2E contract]
+  LC --> M[E2E readiness / run / observe / verify]
+  M --> N{Pass?}
+  N -- yes --> O[Kubernetes evidence for Human Check]
+  N -- no --> P[E2E loop: problem -> fix instruction -> retest]
+  P --> D
+  O --> Q[Release / PR evidence]
 ```

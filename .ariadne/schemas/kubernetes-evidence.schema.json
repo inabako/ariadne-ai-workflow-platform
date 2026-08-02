@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/schemas/kubernetes-evidence.schema.json",
+  "title": "Kubernetes Evidence",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "status", "work_id", "collected_artifacts", "missing_artifacts"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "schema": {"type": "string"},
+    "artifact_type": {"const": "kubernetes-evidence"},
+    "status": {"type": "string"},
+    "work_id": {"type": "string"},
+    "collected_artifacts": {"type": "object"},
+    "missing_artifacts": {"type": "array", "items": {"type": "string"}},
+    "dry_run_status": {"type": "string"},
+    "judgment": {"type": "array", "items": {"type": "string"}},
+    "next_actions": {"type": "array", "items": {"type": "string"}},
+    "artifacts": {"type": "object"}
+  },
+  "additionalProperties": true
+}

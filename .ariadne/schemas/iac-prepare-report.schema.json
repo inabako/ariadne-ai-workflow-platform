@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/schemas/iac-prepare-report.schema.json",
+  "title": "IaC Prepare Report",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "status", "work_id", "steps"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "schema": {"type": "string"},
+    "artifact_type": {"const": "iac-prepare-report"},
+    "status": {"type": "string"},
+    "work_id": {"type": "string"},
+    "provider": {"type": "string"},
+    "steps": {"type": "array", "items": {"type": "object"}},
+    "artifacts": {"type": "object"},
+    "next_actions": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

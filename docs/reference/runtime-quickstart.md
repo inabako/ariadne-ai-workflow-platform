@@ -125,6 +125,25 @@ DuckDB read model が不足している場合は、`doctor` と `status` の nex
 
 GitHub credential、repository health、直近 trace/log の問題を分けて確認します。
 
+## E2E/結合試験を残したい
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd e2e plan --work-id <work-id> --objective "試験目的"
+.\runtime\windows-script\aiwfctl.cmd e2e contract scaffold --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e contract --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e readiness --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e run --work-id <work-id> --dry-run
+.\runtime\windows-script\aiwfctl.cmd e2e verify --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e review-plan --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e coverage --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e explain --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e final-gate --work-id <work-id> --human-decision approved --reviewer <name>
+.\runtime\windows-script\aiwfctl.cmd e2e evidence-package --work-id <work-id> --trace-id <trace-id> --output docs/evidence/<work-id>/e2e-package.json
+.\runtime\windows-script\aiwfctl.cmd e2e loop --work-id <work-id>
+```
+
+実行予定を確認したあと、実際に test plan 内の command を動かす場合だけ `--human-check approved` を付けます。詳細は [E2E Test Runtime](e2e-test-runtime.md) を参照してください。
+
 ## dry-run capabilities
 
 機械可読な一覧は次で確認できます。

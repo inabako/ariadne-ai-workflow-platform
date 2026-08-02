@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/schemas/kubernetes-compatibility-assessment.schema.json",
+  "title": "Kubernetes Compatibility Assessment",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "status", "work_id", "target", "requested", "capabilities"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "schema": {"type": "string"},
+    "artifact_type": {"const": "kubernetes-compatibility-assessment"},
+    "status": {"type": "string"},
+    "work_id": {"type": "string"},
+    "target": {"type": "string"},
+    "requested": {"type": "boolean"},
+    "source_documents": {"type": "array", "items": {"type": "object"}},
+    "detected": {"type": "object"},
+    "capabilities": {"type": "array", "items": {"type": "object"}},
+    "missing_capabilities": {"type": "array", "items": {"type": "string"}},
+    "artifacts": {"type": "object"}
+  },
+  "additionalProperties": true
+}

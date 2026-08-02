@@ -23,6 +23,7 @@ Runtime の最短運用、`status` / `trace` / `doctor` / `preflight` の使い�
 - GitHub knowledge maintenance は `aiwfctl github-knowledge ...` で実行します。
 - close archive は `aiwfctl close-archive ...` で実行します。
 - self-improvement feedback は `aiwfctl self-improvement ...` で実行します。
+- 結合試験およびE2Eテストの計画・証跡化は `aiwfctl e2e ...` で実行します。
 
 必要な操作が `aiwfctl` に存在しない場合は、その場で握りつぶさず、まず `aiwfctl self-improvement create-feedback` でFeedback reportを作成します。Human ReviewでAcceptedになったFeedbackだけを、後続の正式な改修候補にします。active workflow内で黙って `runtime/ctl/ctl.py` を拡張してはいけません。workflow側に新しい `python runtime/workflow/*.py ...` の直叩き手順を増やしてはいけません。
 
@@ -63,6 +64,54 @@ workflow実行が途中で止まった理由をtrace単位で確認する場合�
 ```
 
 `aiwfctl status` の Runtime Log では、互換性のため生の最終eventを `Last` に表示しつつ、`status` / `help ...` / `log ...` などの操作ノイズを除いた直近eventを `Relevant`、直近の blocked / failed / error / warning event を `Problem` として表示します。
+
+## E2E / Integration Test Runtime
+
+結合試験およびE2Eテストを runtime artifact として残す場合は、`aiwfctl e2e` を使います。試験目的、成立条件、必要Stub、実行結果、観測、期待結果との照合、説明を `work/<work-id>/test-specifications/` と `work/<work-id>/test-evidence/` に保存します。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd e2e plan --work-id <work-id> --objective "試験目的"
+.\runtime\windows-script\aiwfctl.cmd e2e contract scaffold --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e contract --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e readiness --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e run --work-id <work-id> --dry-run
+.\runtime\windows-script\aiwfctl.cmd e2e observe --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e verify --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e review-plan --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e coverage --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e explain --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e final-gate --work-id <work-id> --human-decision approved --reviewer <name>
+.\runtime\windows-script\aiwfctl.cmd e2e evidence-package --work-id <work-id> --trace-id <trace-id> --output docs/evidence/<work-id>/e2e-package.json
+.\runtime\windows-script\aiwfctl.cmd e2e loop --work-id <work-id>
+```
+
+実際に plan 内の command を実行する場合は、`--human-check approved` を明示します。
+
+問題発見後は `aiwfctl e2e loop` で、修正指示、Review Council plan、SCM compare / commit dry-run、再テストcommandを1つの証跡に束ねます。詳細は [E2E Test Runtime](e2e-test-runtime.md) を参照してください。
+
+## Kubernetes / k3s Runtime
+
+IaC を生成する前に、まず `aiwfctl iac deployment` でアプリの実行単位、image、port、health、env / Secret、外部依存、storage、resource、E2E 対象を確認します。Kubernetes / k3s を含む provider-specific IaC は、この Deployment Contract を入力として扱います。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd iac prepare --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac deployment assess --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac deployment contract --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac deployment gap-report --work-id <work-id>
+```
+
+要件定義に Kubernetes / k3s が指定された場合は、Deployment Contract 作成後に `aiwfctl iac kubernetes` で実行環境の成立性を確認します。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd iac kubernetes assess --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac kubernetes gap-report --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac kubernetes generate --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac kubernetes dry-run --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac kubernetes e2e-plan --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac kubernetes evidence --work-id <work-id>
+```
+
+この flow は `App Runtime Assessment -> Deployment Contract -> Compatibility Assessment -> Gap Report -> k8s生成 -> dry-run -> E2E -> Evidence` を runtime artifact として残します。manifest は `templates/boilerplates/infrastructure/kubernetes-app-template/` から展開し、`--spec-delta` で許可された仕様差分だけを取り込みます。実クラスタへの apply は行わず、manifest scaffold と dry-run evidence を Human Check の判断材料にします。詳細は [IaC Deployment Runtime](iac-deployment-runtime.md) と [Kubernetes / k3s Runtime](kubernetes-runtime.md) を参照してください。
 
 ## Runtime Log Maintenance
 
