@@ -50,11 +50,11 @@ scope は広すぎない名前にします。
 避ける subject:
 
 ```text
-feat(localty): 対応
-feat(localty): 修正
-feat(localty): README.mdを修正
-feat(localty): protocol共通化に伴う対応
-feat(localty): 耐障害性向上のためプロセス分離対応
+feat(target-system): 対応
+feat(target-system): 修正
+feat(target-system): README.mdを修正
+feat(target-system): protocol共通化に伴う対応
+feat(target-system): 耐障害性向上のためプロセス分離対応
 ```
 
 推奨 subject:
@@ -62,7 +62,7 @@ feat(localty): 耐障害性向上のためプロセス分離対応
 ```text
 docs(runtime): supervisor/worker運用契約とprotocol依存をREADMEへ反映
 feat(supervisor): worker分離とcontrol安全境界を追加
-feat(protocol): UDP port定義をlocalty-system-protocolへ集約
+feat(protocol): UDP port定義をtarget-system-protocolへ集約
 ```
 
 ## Body

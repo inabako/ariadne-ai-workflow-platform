@@ -1,4 +1,4 @@
-﻿# GaC / UaC GUI Mode
+# GaC / UaC GUI Mode
 
 SVGで表現された人間の画面意図を、Semantic Layout Graph、Widget Mapping、Layout Spec、PyQt6候補、QTest候補へ変換し、既存Issue駆動workflowへ安全に返す共通拡張です。
 

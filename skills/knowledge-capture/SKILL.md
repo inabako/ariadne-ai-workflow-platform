@@ -1,4 +1,4 @@
-﻿---
+---
 name: knowledge-capture
 description: Finalize a completed corrective action issue by generating PR material, checking docs evidence placement, extracting RAG/docs candidates, and preparing archive readiness without changing implementation. Use when the user selects /knowledge-capture or asks to run finalization and knowledge recovery for work/issue-XXX.
 ---
@@ -18,7 +18,7 @@ This skill does not implement code changes, alter design, push branches, run RAG
 ## Slash Command
 
 ```text
-/knowledge-capture --issue issue-11 --repository localty-system-gui --branch feature/issue-11
+/knowledge-capture --issue issue-11 --repository target-system --branch feature/issue-11
 ```
 
 Minimum:

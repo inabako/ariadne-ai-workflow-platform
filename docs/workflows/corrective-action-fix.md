@@ -11,13 +11,13 @@ Corrective Action Report を作成し、RAG build/load、GitHub Issue、remote-f
 例:
 
 ```text
-/corrective-action-fix localty-system-gui develop
+/corrective-action-fix target-system develop
 ```
 
 `/corrective-action-report` で作成済みのレポートを使う場合:
 
 ```text
-/corrective-action-fix localty-system-gui develop work/db/ariadne-knowledge-platform/rag/corrective-action-report/260704120000_ABC12345_localty-system-gui.md
+/corrective-action-fix target-system develop work/db/ariadne-knowledge-platform/rag/corrective-action-report/260704120000_ABC12345_target-system.md
 ```
 
 ## Directory Model

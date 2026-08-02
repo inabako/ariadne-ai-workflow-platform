@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 26 |
+| cases | 27 |
 
 ## ケース一覧
 
@@ -319,10 +319,10 @@ runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_r
 - pytest node id:
 
 ```text
-runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_msys2_smoke_reports_missing_bash
+runtime/tests/test_remaining_policy_vscode_runtime.py::test_vscode_task_runner_msys2_gui_smoke_reports_missing_bash
 ```
 
-- 確認内容: pytest case `vscode task runner msys2 smoke reports missing bash` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
+- 確認内容: pytest case `vscode task runner msys2 gui smoke reports missing bash` に対応するruntimeの単体振る舞い、境界条件、error boundaryを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_remaining_policy_vscode_runtime.py:292`

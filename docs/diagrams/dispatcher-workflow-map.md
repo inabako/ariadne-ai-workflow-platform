@@ -10,6 +10,7 @@
 flowchart TD
   Intent[Human / Agent Intent] --> CtxInit[aiwfctl context init]
   Intent --> EnvSelect[aiwfctl env select]
+  Intent --> TraceBegin[aiwfctl trace begin]
 
   subgraph DispatcherLayer[Dispatcher Layer]
     WF[Workflow Dispatcher]
@@ -20,11 +21,38 @@ flowchart TD
     Rag[RAG Dispatcher]
   end
 
+  subgraph WorkflowAssetLayer[AI Workflow Assets]
+    Prompts[.ariadne/prompts]
+    Agents[.ariadne/agents]
+    Schemas[.ariadne/schemas]
+    Shared[.ariadne/shared]
+  end
+
+  subgraph RegistryLayer[Registry Bootstrap / Read Model]
+    RegistrySeeds[templates/registries/*.json]
+    RegistryDB[db/registries/registry.duckdb]
+  end
+
+  subgraph ObservabilityLayer[Runtime Observability]
+    ActiveTrace[active-trace.json]
+    EventLog[runtime-events.log]
+  end
+
+  TraceBegin --> ActiveTrace
+  RegistrySeeds --> RegistryDB
+  Prompts --> WF
+  Agents --> Workflow
+  Schemas --> Manifest
+  Shared --> Workflow
+
   CtxInit --> WF
   CtxInit --> Tool
   CtxInit --> Runtime
   CtxInit --> Plan
   EnvSelect --> Env
+  RegistryDB --> WF
+  RegistryDB --> Tool
+  RegistryDB --> Env
 
   WF --> WFSel[workflow-selection.json]
   Tool --> ToolSel[tool-selection.json]
@@ -40,14 +68,22 @@ flowchart TD
 
   Manifest --> Gate{Required Context ready?}
   Gate -- no --> HumanCheck[Human Check / Context再生成]
+  RegistryDB --> HumanCheck
   HumanCheck --> CtxInit
   HumanCheck --> EnvSelect
   Gate -- yes --> Workflow[Target Workflow]
 
+  ActiveTrace --> Workflow
+  Workflow --> EventLog
+
   Workflow --> WorkflowCtx[Workflow Execution Context]
   WorkflowCtx --> Manifest
 
-  Workflow --> NeedRag{RAGが必要?}
+  Workflow --> NeedReview{Review Councilが必要?}
+  NeedReview -- yes --> ReviewCouncil[Review Council Runtime]
+  ReviewCouncil --> WorkflowCtx
+  ReviewCouncil --> NeedRag
+  NeedReview -- no --> NeedRag{RAGが必要?}
   NeedRag -- no --> Done[Workflow output]
   NeedRag -- yes --> Rag
   ExecPlan --> Rag
@@ -63,12 +99,62 @@ flowchart TD
 
 | Dispatcher | 主な入口 | 出力Context | Workflowとの関係 |
 | --- | --- | --- | --- |
-| Workflow Dispatcher | `aiwfctl context init --workflow ...` | `workflow-selection.json` | どのWorkflowを実行するかを固定する |
-| Tool Dispatcher | `aiwfctl context init --tool ...` / candidate scoring | `tool-selection.json` | `gh`、`git`、`docker`、`pytest` などの利用方針とHuman Check条件を固定する |
-| Environment Dispatcher | `aiwfctl env select ...` | `environment-selection.json` | GUI / Web / Docker / VSCodeなど環境依存Workflowの前提を固定する |
+| Workflow Dispatcher | `aiwfctl context init --workflow ...` | `workflow-selection.json` | `.ariadne/prompts` と registry のworkflow helpを前提に、どのWorkflowを実行するかを固定する |
+| Tool Dispatcher | `aiwfctl context init --tool ...` / candidate scoring | `tool-selection.json` | `db/registries/registry.duckdb` のtool candidatesを参照し、`gh`、`git`、`docker`、`pytest` などの利用方針とHuman Check条件を固定する |
+| Environment Dispatcher | `aiwfctl env select ...` | `environment-selection.json` | `db/registries/registry.duckdb` のenvironment profilesを参照し、GUI / Web / Docker / VSCodeなど環境依存Workflowの前提を固定する |
 | Runtime Dispatcher | `aiwfctl context init` | `runtime-context.json` | terminal、target dir、runtime modeなどの実行条件を固定する |
 | Execution Planner | `aiwfctl context init --next-command ...` | `execution-plan.json` | 次command、必須Context、停止条件を固定する |
 | RAG Dispatcher | `runtime/rag/rag_dispatcher.py` | `rag-dispatch-plan.json`, `rag-load-dispatch.json` | 検索query計画と取得ContextをWorkflowへ戻す |
+
+## AI Workflow AssetsとRegistryの位置づけ
+
+`.ariadne/` は、Agent が読む prompt、schema、shared rule の置き場です。
+`.github/` はGitHubが直接読む workflow、Issue template、PR template、Copilot bridge に限定します。
+Registry は `templates/registries/*.json` をbootstrap source、`db/registries/registry.duckdb` をruntime read modelとして扱います。
+
+```mermaid
+flowchart TD
+  subgraph AriadneAssets[.ariadne]
+    P[.ariadne/prompts]
+    A[.ariadne/agents]
+    S[.ariadne/schemas]
+    R[.ariadne/shared]
+  end
+
+  subgraph RegistrySource[Registry Source]
+    WH[templates/registries/workflow_help.json]
+    ST[templates/registries/search_terms.json]
+    TC[templates/registries/tool_candidates.json]
+    HG[templates/registries/human_gates.json]
+    EP[templates/registries/workflow_environment_profiles.json]
+  end
+
+  WH --> DB[db/registries/registry.duckdb]
+  ST --> DB
+  TC --> DB
+  HG --> DB
+  EP --> DB
+
+  P --> Help[aiwfctl help]
+  DB --> Help
+  DB --> Tool[Tool Dispatcher]
+  DB --> Env[Environment Dispatcher]
+  DB --> HumanGate[Human Gate Policy]
+  DB --> Doctor[Workflow Doctor]
+
+  A --> Review[Review Council / Specialist Review]
+  S --> Contracts[Agent-to-Agent JSON contracts]
+  R --> GateRules[Shared rules / output policy]
+
+  Help --> Workflow[Target Workflow]
+  Tool --> Workflow
+  Env --> Workflow
+  HumanGate --> Workflow
+  Doctor --> Feedback[Self-Improvement Feedback]
+```
+
+Registry seed JSON は fresh checkout 時に `registry.duckdb` を再生成するためのsourceです。
+`registry.duckdb` はruntime横断で読む生成read modelであり、AI promptやschemaの置き場ではありません。
 
 ## Workflowとの関係
 
@@ -83,6 +169,19 @@ flowchart LR
     Manifest[context-manifest]
   end
 
+  subgraph RegistryConsumers[Registry Consumers]
+    Help[aiwfctl help]
+    HumanGatePolicy[Human Gate Policy]
+    Doctor[Workflow Doctor]
+  end
+
+  RegistryDB[db/registries/registry.duckdb]
+  RegistryDB --> Help
+  RegistryDB --> HumanGatePolicy
+  RegistryDB --> Doctor
+  RegistryDB --> ToolSel
+  RegistryDB --> EnvSel
+
   subgraph HighWorkflows[環境依存が強いWorkflow]
     NewSys[/ariadne-new-system/]
     Feature[/ariadne-feature-maintenance/]
@@ -91,6 +190,7 @@ flowchart LR
     Vscode[/vscode-environment/]
     Gui[GUI Mode]
     WebSvg[Web SVG Layout Mode]
+    ExpDesign[Expectation-Driven Design]
   end
 
   subgraph MediumWorkflows[知識・保守・同期Workflow]
@@ -98,6 +198,7 @@ flowchart LR
     GhKnowledge[/github-knowledge-maintenance/]
     Capture[/knowledge-capture/]
     RagLoad[/rag-load/]
+    ReviewCouncil[/review-council runtime/]
   end
 
   subgraph LowWorkflows[軽量入口 / Read-only / Build系]
@@ -131,11 +232,17 @@ flowchart LR
   HighGate --> Vscode
   HighGate --> Gui
   HighGate --> WebSvg
+  HighGate --> ExpDesign
 
   MediumGate --> Docs
   MediumGate --> GhKnowledge
   MediumGate --> Capture
   MediumGate --> RagLoad
+  MediumGate --> ReviewCouncil
+
+  HumanGatePolicy --> HighGate
+  HumanGatePolicy --> MediumGate
+  Doctor --> MediumGate
 
   LowGate --> Requirement
   LowGate --> Report
@@ -149,6 +256,12 @@ flowchart LR
   Docs --> Capture
   GhKnowledge --> RagBuild
   Fix --> Capture
+  NewSys --> ReviewCouncil
+  Feature --> ReviewCouncil
+  ExpDesign --> ReviewCouncil
+  Fix --> ReviewCouncil
+  ReviewCouncil --> Capture
+  ReviewCouncil --> RagBuild
 ```
 
 ## Workflow別のContext関与
@@ -162,13 +275,36 @@ flowchart LR
 | `/vscode-environment` | `environment-selection`, `runtime-context` | `vscode-environment-state`, `.vscode/*`候補 | self-provision / target-workspace / custom-designを分ける |
 | GUI Mode | `environment-selection` | `gui-mode-state` | `environment == gui-mode` でなければ停止する |
 | Web SVG Layout Mode | `environment-selection` | `web-svg-layout-state` | `environment == web-svg` でなければ停止する |
+| Expectation-Driven Design | `workflow-selection`, `execution-plan`, usage context、design candidates、Review Council feedback | `expectation-set`, `multi-axis-evaluation`, `trade-off-analysis`, `design-comparison-report`, `human-decision`, `interaction-contracts`, `expectation-verification`, `expectation-feedback` | Human Gate前に期待、候補、実現性、比較、Review Council feedbackを構造化する |
 | `/docs-sync` | `workflow-selection`, `tool-selection`, `scm-state` | `docs-drift-analysis` | 新規workのanalysisでは `scm-state` を要求する |
 | `/github-knowledge-maintenance` | `tool-selection`, `github-operation-gate` | `github-knowledge-analysis`, RAG candidate | mutation / RAG publish pathはHuman Check gateを確認する |
 | `/knowledge-capture` | `scm-state` | `knowledge-capture`, PR材料、RAG候補 | active workはmanifest上の `scm-state` を要求し、close archiveはfallbackを許容する |
 | `/rag-load` | `execution-plan` | `rag-dispatch-plan`, `rag-load-dispatch` | `--work-id` 指定時に `execution-plan` 不足ならHuman Check警告を記録する |
 | `/rag-build` | 任意の `work-id` context | `rag-build-run` | RAG生成pipelineのstage結果をmanifestへ登録する |
+| Review Council Runtime | `workflow-selection`, `execution-plan`, Review Packet、変更file、evidence | `review-council-session`, `review-council-summary`, `review-council-verdict`, `review-council-knowledge-capture` | 専門レビューのFinding、Evidence Gate、Challenge、Verdictを構造化し、Human GateとKnowledge Captureへ戻す |
 | `/corrective-action-report` | 任意 | `corrective-action-report` | read-only調査なので環境必須化はしない |
 | `/requirement-discovery` | 任意 | 完成要件、Noise Reduction結果 | work-id生成前の入口なのでContext必須化しすぎない |
+
+## Runtime Observabilityの位置づけ
+
+Runtime Observability はWorkflow選定そのものを行うDispatcherではありません。
+ただし、`aiwfctl trace begin` から `trace end` までの間は、複数commandを同じworkflow実行として束ね、後続のFeedback、Review Council、Evidence確認が読める時系列を残します。
+
+```mermaid
+flowchart TD
+  Begin[aiwfctl trace begin] --> Active[logs/runtime/active-trace.json]
+  Active --> CommandA[aiwfctl command A]
+  Active --> CommandB[aiwfctl command B]
+  CommandA --> Log[logs/runtime/runtime-events.log]
+  CommandB --> Log
+  Log --> Sequence[Same trace id / increasing sequence]
+  Sequence --> Status[aiwfctl trace status]
+  Status --> End[aiwfctl trace end]
+  End --> Evidence[Evidence / Feedback / Review Council context]
+
+  NoActive[No active trace] --> CommandScoped[Command scoped trace id]
+  CommandScoped --> ResetSeq[sequence resets per command]
+```
 
 ## RAG Dispatcherの位置づけ
 

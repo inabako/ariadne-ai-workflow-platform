@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 48 |
+| cases | 50 |
 
 ## ケース一覧
 
@@ -49,25 +49,15 @@ runtime/tests/test_github_knowledge_maintenance.py::test_repository_name_and_def
 ```text
 runtime/tests/test_github_knowledge_maintenance.py::test_status_reports_package_execution_and_next_action
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+
+- 確認内容: message repair package が存在するstatusで、package実行情報と次アクションが正しく提示されることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_github_knowledge_maintenance.py:231`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: Placeholder; pytest assertion defines the expected result.
-
-
-- 遒ｺ隱榊・螳ｹ: github-knowledge status縺後ヱ繝・こ繝ｼ繧ｸ螳溯｡後迥ｶ諷九→谺｡action繧定ｿ斐☆縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: package execution count縺ｨlatest package縲∵欠螳壽欠遉ｺ縺瑚ｿ斐ｋ縲・
-
+  - inline input: `github-knowledge-analysis.json` と `message-repair-package.json`
+- 期待結果: latest package の `allow_push` と `expected_remote_sha` が読み込まれ、未解決candidate数と `verify-remote-then-rebase-apply` のnext actionが返る。
 #### RT-UT-CASE-131B
 
 - pytest node id:
@@ -75,25 +65,15 @@ runtime/tests/test_github_knowledge_maintenance.py::test_status_reports_package_
 ```text
 runtime/tests/test_github_knowledge_maintenance.py::test_next_action_prefers_reuse_worktree_when_replay_worktree_exists
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+
+- 確認内容: replay用worktreeが既に存在する場合、next-action が再利用前提のresume commandを優先することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_github_knowledge_maintenance.py:275`
   - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: Placeholder; pytest assertion defines the expected result.
-
-
-- 遒ｺ隱榊・螳ｹ: replay worktree縺悟ｭ伜惠縺吶ｋ蝣ｴ蜷医↓next-action縺・reuse-worktree繧貞━蜈医☆繧九％縺ｨ繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: next action縺後◎縺ｮ縺ｾ縺ｾreuse縺吶∋縺肴欠遉ｺ縺吶ｋ縲・
-
+  - inline input: approved history rewrite candidate、`rebase-replay-package.json`、既存 `git-worktree`
+- 期待結果: next action が `resume-rebase-apply-with-reuse-worktree` となり、commandに `--reuse-worktree`、cleanup commandに `cleanup-worktree` が含まれる。
 #### RT-UT-CASE-131B-1
 
 - pytest node id:
@@ -101,15 +81,6 @@ runtime/tests/test_github_knowledge_maintenance.py::test_next_action_prefers_reu
 ```text
 runtime/tests/test_github_knowledge_maintenance.py::test_resume_blocks_when_analysis_json_is_corrupt
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:315`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: Placeholder; pytest assertion defines the expected result.
-
 
 - 確認内容: corrupt analysis JSON がある場合、resume が通常復帰せず encoding gate block を返すことを確認します。
 - 入力値:
@@ -127,15 +98,6 @@ runtime/tests/test_github_knowledge_maintenance.py::test_resume_blocks_when_anal
 ```text
 runtime/tests/test_github_knowledge_maintenance.py::test_resume_blocks_push_package_without_expected_remote_sha
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
-- 入力値:
-  - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:335`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: Placeholder; pytest assertion defines the expected result.
-
 
 - 確認内容: push 許可 package に `expected_remote_sha` が無い場合、next-action が push/rebase command を返さず block することを確認します。
 - 入力値:
@@ -153,25 +115,15 @@ runtime/tests/test_github_knowledge_maintenance.py::test_resume_blocks_push_pack
 ```text
 runtime/tests/test_github_knowledge_maintenance.py::test_verify_remote_compares_expected_sha_from_package
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+
+- 確認内容: verify-remote が package内の `expected_remote_sha` とremote branch SHAを比較し、push可能判定を返すことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:370`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:371`
   - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: Placeholder; pytest assertion defines the expected result.
-
-
-- 遒ｺ隱榊・螳ｹ: verify-remote縺御ｿ晏ｭ倥＆繧後◆package縺ｮexpected SHA縺ｨactual remote SHA繧呈ｯ碑ｼ・〒縺阪ｋ縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py`
-  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: expected / actual remote SHA縺悟粋閾ｴ縺吶ｋ縺薙→繧堤､ｺ縺吶・
-
+  - inline input: `rebase-replay-package.json` の `expected_remote_sha = abc123` とmockした `git ls-remote` 結果
+- 期待結果: `matches = True` となり、next action が `safe-to-push` になる。
 #### RT-UT-CASE-131D
 
 - pytest node id:
@@ -179,25 +131,15 @@ runtime/tests/test_github_knowledge_maintenance.py::test_verify_remote_compares_
 ```text
 runtime/tests/test_github_knowledge_maintenance.py::test_cleanup_worktree_requires_force_before_removal
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+
+- 確認内容: cleanup-worktree がforceなしでは削除せず、force指定時のみGit worktreeを削除することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py:413`
+  - source: `runtime/tests/test_github_knowledge_maintenance.py:414`
   - fixture/arg: `tmp_path` (temporary filesystem), `monkeypatch` (environment / function monkeypatch)
   - parameter: names=なし, case=なし
-  - inline input: `calls`
-- Expected: Placeholder; pytest assertion defines the expected result.
-
-
-- 遒ｺ隱榊・螳ｹ: cleanup-worktree縺・force譛ｪ謖・ｮ壽凾縺ｯ蜑企勁縺帙★縲√謖・ｮ壽凾縺縺代Ξ繝励Ξ繧､worktree繧貞炎髯､縺吶ｋ縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
-  - source: `runtime/tests/test_github_knowledge_maintenance.py`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: force譛ｪ謖・ｮ壽凾縺ｯblocked縲、force謖・ｮ壽凾縺ｯremoved縺ｫ縺ｪ繧九・
-
+  - inline input: 既存 `git-worktree/feature-issue-2-v0.0.2` とmockした `git worktree remove --force`
+- 期待結果: forceなしでは `force_required = True` かつworktreeが残り、forceありでは `removed = True` かつworktreeが削除される。
 #### RT-UT-CASE-132
 
 - pytest node id:
@@ -682,14 +624,14 @@ runtime/tests/test_github_knowledge_maintenance.py::test_rebase_replay_apply_res
 runtime/tests/test_github_knowledge_maintenance.py::test_message_repair_plan_intake_package_and_replay_apply
 ```
 
-- Confirm: message repair plan, OK/NG intake, message repair package, and replay apply are connected as one tree-preserving high-risk rewrite flow.
+- 確認内容: message repair plan、OK/NG intake、message repair package、replay apply が、treeを維持する高risk履歴書き換えflowとして接続されることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_github_knowledge_maintenance.py:1488`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `text`, `package_data`, `updated`
-- Expected: final tree matches source ref, weak subject disappears from latest log, candidate is `verified`, and before/after SHA mapping is recorded.
+- 期待結果: final tree が source ref と一致し、弱いsubjectがlatest logから消え、candidateが `verified` になり、before/after SHA mappingが記録される。
 #### RT-UT-CASE-149F
 
 - pytest node id:
@@ -698,14 +640,14 @@ runtime/tests/test_github_knowledge_maintenance.py::test_message_repair_plan_int
 runtime/tests/test_github_knowledge_maintenance.py::test_publish_verified_replay_pushes_existing_verified_tip
 ```
 
-- Confirm: a verified unpublished replay execution can be published through the dedicated force-with-lease runtime entrypoint without regenerating a package.
+- 確認内容: verified済みで未publishのreplay executionを、package再生成なしで専用のforce-with-lease runtime entrypointからpublishできることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_github_knowledge_maintenance.py:1582`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `updated`
-- Expected: remote branch moves to the verified `new_tip`, analysis records `rebase_replay_publications`, and matching message repair candidates become `pushed`.
+- 期待結果: remote branch がverified済みの `new_tip` へ移動し、analysisに `rebase_replay_publications` が記録され、対応するmessage repair candidateが `pushed` になる。
 #### RT-UT-CASE-149G
 
 - pytest node id:
@@ -765,14 +707,14 @@ runtime/tests/test_github_knowledge_maintenance.py::test_github_sync_command_val
 runtime/tests/test_github_knowledge_maintenance.py::test_create_sync_review_plan_and_intake_reads_ok_ng_checklist
 ```
 
-- Confirm: GitHub Issue / PR / comment repair actions are reviewed with one OK / NG checklist and ingested into `github_sync_actions`.
+- 確認内容: GitHub Issue / PR / comment repair actionが1つのOK/NG checklistでreviewされ、`github_sync_actions` へ取り込まれることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_github_knowledge_maintenance.py:1760`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `text`, `updated`
-- Expected: one action becomes `approved`, one action becomes `rejected`, and human review source metadata is recorded.
+- 期待結果: one action becomes `approved`, one action becomes `rejected`, and human review source metadata is recorded.
 #### RT-UT-CASE-152
 
 - pytest node id:
@@ -815,14 +757,14 @@ runtime/tests/test_github_knowledge_maintenance.py::test_create_sync_apply_block
 runtime/tests/test_github_knowledge_maintenance.py::test_create_sync_apply_blocks_unresolved_message_repair_candidates
 ```
 
-- Confirm: GitHub sync apply is blocked while approved or pending commit message repair candidates remain unverified.
+- 確認内容: approvedまたはpendingのcommit message repair candidateが未verifiedの間、GitHub sync applyがblockされることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_github_knowledge_maintenance.py:1915`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: `github-sync-apply` raises a runtime block that names `MESSAGE-REPAIR-001`.
+- 期待結果: `github-sync-apply` raises a runtime block that names `MESSAGE-REPAIR-001`.
 #### RT-UT-CASE-154
 
 - pytest node id:

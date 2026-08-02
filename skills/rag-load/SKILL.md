@@ -1,4 +1,4 @@
-﻿---
+---
 name: rag-load
 description: Load prior knowledge from the Ariadne AI Workflow file-based RAG before development work. Use when the user selects /rag-load, asks to read RAG, search RAG, load RAG context, retrieve prior corrective action reports, prepare context before development flow, or run parallel RAG retrieval and compression.
 ---

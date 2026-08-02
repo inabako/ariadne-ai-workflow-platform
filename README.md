@@ -12,11 +12,11 @@ Ariadne AI Workflow Platform は、AI Agent が複雑なworkflow迷宮を迷わ�
 
 この思想の背景は [Brand Guide](docs/brand/README.md) にまとめています。
 
-Localty の対象システム開発を、Intent、Safety、Operational Learning を中心に進めるための AI workflow repository です。
+Ariadne は、さまざまなソフトウェア開発・保守・運用改善に活用できる汎用的な AI workflow platform です。
 
-Ariadne は特定ドメイン専用ではなく、対象システムの責務境界、runtime、network、operator responsibility、safety gate、evidence を一貫して扱うための workflow platform です。
+対象システムの責務境界、runtime、network、operator responsibility、safety gate、evidence を一貫して扱い、人間とAI Agentが複雑な開発・保守・運用改善を追跡可能な形で進められるようにします。
 
-この repository は、現場で学びながら、安全に試し、安全に止め、安全に戻し、学びを次の workflow / Agent / RAG に残すための foundation です。
+この repository は、開発・検証・運用改善の過程で得た判断、証跡、知見を整理し、次の workflow / Agent / RAG へ引き継ぐための基盤です。
 
 ## Core Concepts
 
@@ -28,7 +28,32 @@ Ariadne は、AI Agent が作業を進める前に必要な文脈、判断、証
 - GitHub、SCM、RAG、runtime helper を使う場合も、判断根拠を追跡できる形で保存する。
 - AI が推測で副作用を起こさないよう、承認が必要な操作を gate として分離する。
 
+Ariadne runtime は、単一の巨大な自動化scriptではなく、複数のDispatcherで判断を分離します。
+
+- Workflow Dispatcher: 実行するworkflowを固定する。
+- Tool Dispatcher: 利用tool、権限、副作用、Human Gate条件を固定する。
+- Environment Dispatcher: GUI / Web / Docker / VSCode などの実行環境を固定する。
+- Execution Planner: 次command、必須context、停止条件、再開方針を固定する。
+- RAG Dispatcher: どの知識を、なぜ読むかを固定する。
+- Review Council Runtime: 専門review、Finding、Evidence Gate、Verdictを構造化する。
+- Runtime Observability: workflow全体をtrace idとsequenceで追跡する。
+
+この Multi Dispatcher 構成により、Agent は環境、tool、知識、承認条件を毎回推測せず、Context First の入力を読んで担当作業に集中できます。
+
 ## Quick Start
+
+Workflow を始める前に Runtime の現在地を確認する場合:
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd ready
+.\runtime\windows-script\aiwfctl.cmd status --summary --json
+```
+
+Release 前や CI 相当の厳しめの確認では、`attention` も `blocked` として扱う `--strict` を使います。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd ready --strict --json
+```
 
 まず読む場所:
 
@@ -97,10 +122,15 @@ ARIADNEの構成は、prompt、agent、schema、runtime、workflow document、te
 .ariadne/   prompts, agents, schemas, shared rules
 .github/    GitHub templates, workflows, and thin Copilot bridge files
 docs/       workflow guides and reference docs
-db/rag/     generated local RAG read models and retrieval artifacts
+db/registries/
+            generated runtime registry read model
+db/rag/     generated DuckDB RAG read model and local evidence
+logs/       local runtime event logs and test logs
 runtime/    workflow helper CLI
 skills/     Codex Skill entrypoints
 templates/  requirement, design, report, test templates
+work/db/ariadne-knowledge-platform/
+            local knowledge source workspace
 work/       per-workflow artifacts and cloned sources
 ```
 
@@ -128,6 +158,7 @@ uv run --project runtime python -m pytest runtime/tests
 | Skill discovery | [docs/reference/skill-discovery.md](docs/reference/skill-discovery.md) |
 | VSCode Environment | [docs/reference/vscode-environment.md](docs/reference/vscode-environment.md) |
 | Data model | [docs/reference/data-model.md](docs/reference/data-model.md) |
+| Diagrams | [docs/diagrams/README.md](docs/diagrams/README.md) |
 | RAG | [docs/reference/rag.md](docs/reference/rag.md) |
 | Operations | [docs/reference/operations.md](docs/reference/operations.md) |
 | Architecture | [docs/architecture/overview.md](docs/architecture/overview.md) |
@@ -240,7 +271,7 @@ GITHUB_TOKEN=
 
 ## Status
 
-この repository は、Localty の Ariadne workflow を試行錯誤しながら育てる foundation です。
+この repository は、Ariadne workflow platform を継続的に育てるための foundation です。
 
 現在は以下を整備済みです。
 
@@ -261,11 +292,18 @@ GITHUB_TOKEN=
 - knowledge capture workflow
 - GitHub Issue / branch / commit / push補助runtime
 - environment preflight
+- Context First Multi Dispatcher runtime
+- Review Council Runtime
+- Expectation-Driven Design Flow
+- Runtime Observability / workflow trace
+- Human Gate Registry / side effect gates
 - Agent間共有JSON Schema
 - artifact templates
 - file-based RAG pipeline
+- DuckDB RAG read model
 - local context compression
 - local embeddings / hybrid reranking
+- OSS release audit workflows
 
 詳細な運用ルールは [Operations](docs/reference/operations.md) を参照してください。
 
@@ -283,7 +321,7 @@ uv run --project runtime python runtime/workflow/validate_output_language.py `
 
 ## Releases
 
-公開前には [Release Policy](docs/release/release-policy.md) と [Release Checklist](docs/release/release-checklist.md) を確認し、release manifestと検証結果を残します。
+release時および継続運用では [Release Policy](docs/release/release-policy.md) と [Release Checklist](docs/release/release-checklist.md) を確認し、release manifest、license / security audit、検証結果を残します。
 
 ```powershell
 aiwfctl release validate

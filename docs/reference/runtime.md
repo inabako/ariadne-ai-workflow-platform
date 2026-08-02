@@ -1,4 +1,14 @@
-﻿# Runtime
+# Runtime
+
+## Runtime UX Quickstart
+
+Runtime の最短運用、`status` / `trace` / `doctor` / `preflight` の使い分け、状況別の確認順は [Runtime UX Quickstart](runtime-quickstart.md) を参照してください。
+
+機械可読な dry-run capability は次で確認できます。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd help runtime --json
+```
 
 `runtime/` は、workflow を実行・補助するための処理機能を置く場所です。
 
@@ -13,8 +23,156 @@
 - GitHub knowledge maintenance は `aiwfctl github-knowledge ...` で実行します。
 - close archive は `aiwfctl close-archive ...` で実行します。
 - self-improvement feedback は `aiwfctl self-improvement ...` で実行します。
+- 結合試験およびE2Eテストの計画・証跡化は `aiwfctl e2e ...` で実行します。
 
 必要な操作が `aiwfctl` に存在しない場合は、その場で握りつぶさず、まず `aiwfctl self-improvement create-feedback` でFeedback reportを作成します。Human ReviewでAcceptedになったFeedbackだけを、後続の正式な改修候補にします。active workflow内で黙って `runtime/ctl/ctl.py` を拡張してはいけません。workflow側に新しい `python runtime/workflow/*.py ...` の直叩き手順を増やしてはいけません。
+
+## Runtime Status
+
+現在のruntime状態を確認する場合は、最初に `aiwfctl status` を実行します。
+このcommandは、repository、Git状態、active trace、runtime event log、`work/`、knowledge source、DuckDB read modelを一覧化し、次に実行する候補commandを表示します。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd status
+.\runtime\windows-script\aiwfctl.cmd status --work-id issue-123
+.\runtime\windows-script\aiwfctl.cmd status --json
+.\runtime\windows-script\aiwfctl.cmd status --summary --json
+.\runtime\windows-script\aiwfctl.cmd status --problems --json
+.\runtime\windows-script\aiwfctl.cmd status --verbose --json
+```
+
+`status --work-id` は、指定した work id に紐づく trace を `Related Traces` として表示し、直近 trace を深掘りする `aiwfctl trace show <trace-id>` を Next Actions に含めます。
+
+`status` は doctor warning count と dependency readiness も表示します。`--summary --json` は Agent や dashboard が読む軽量ビュー、`--problems --json` は失敗・警告・未準備項目だけを追う調査ビュー、`--verbose --json` は全情報を明示的に読むビューです。
+
+workflow実行が途中で止まった理由をtrace単位で確認する場合は、`aiwfctl trace show <trace-id>` を使います。
+`runtime-events.log` から該当traceのcommand、成功済みcommand、blocked / failed event、復帰候補を集約します。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd trace begin --workflow /docs-sync --work-id issue-123
+.\runtime\windows-script\aiwfctl.cmd trace show <trace-id>
+.\runtime\windows-script\aiwfctl.cmd trace show <trace-id> --problems
+.\runtime\windows-script\aiwfctl.cmd trace show <trace-id> --json
+```
+
+`active-trace.json` が壊れている場合は、まず復旧予定を dry-run で確認します。実際に退避する場合は Human Check approval を明示します。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd trace status --json
+.\runtime\windows-script\aiwfctl.cmd trace recover --dry-run
+.\runtime\windows-script\aiwfctl.cmd trace recover --human-check approved
+```
+
+`aiwfctl status` の Runtime Log では、互換性のため生の最終eventを `Last` に表示しつつ、`status` / `help ...` / `log ...` などの操作ノイズを除いた直近eventを `Relevant`、直近の blocked / failed / error / warning event を `Problem` として表示します。
+
+## E2E / Integration Test Runtime
+
+結合試験およびE2Eテストを runtime artifact として残す場合は、`aiwfctl e2e` を使います。試験目的、成立条件、必要Stub、実行結果、観測、期待結果との照合、説明を `work/<work-id>/test-specifications/` と `work/<work-id>/test-evidence/` に保存します。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd e2e plan --work-id <work-id> --objective "試験目的"
+.\runtime\windows-script\aiwfctl.cmd e2e contract scaffold --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e contract --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e readiness --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e run --work-id <work-id> --dry-run
+.\runtime\windows-script\aiwfctl.cmd e2e observe --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e verify --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e review-plan --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e coverage --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e explain --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd e2e final-gate --work-id <work-id> --human-decision approved --reviewer <name>
+.\runtime\windows-script\aiwfctl.cmd e2e evidence-package --work-id <work-id> --trace-id <trace-id> --output docs/evidence/<work-id>/e2e-package.json
+.\runtime\windows-script\aiwfctl.cmd e2e loop --work-id <work-id>
+```
+
+実際に plan 内の command を実行する場合は、`--human-check approved` を明示します。
+
+問題発見後は `aiwfctl e2e loop` で、修正指示、Review Council plan、SCM compare / commit dry-run、再テストcommandを1つの証跡に束ねます。詳細は [E2E Test Runtime](e2e-test-runtime.md) を参照してください。
+
+## Kubernetes / k3s Runtime
+
+IaC を生成する前に、まず `aiwfctl iac deployment` でアプリの実行単位、image、port、health、env / Secret、外部依存、storage、resource、E2E 対象を確認します。Kubernetes / k3s を含む provider-specific IaC は、この Deployment Contract を入力として扱います。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd iac prepare --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac deployment assess --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac deployment contract --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac deployment gap-report --work-id <work-id>
+```
+
+要件定義に Kubernetes / k3s が指定された場合は、Deployment Contract 作成後に `aiwfctl iac kubernetes` で実行環境の成立性を確認します。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd iac kubernetes assess --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac kubernetes gap-report --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac kubernetes generate --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac kubernetes dry-run --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac kubernetes e2e-plan --work-id <work-id>
+.\runtime\windows-script\aiwfctl.cmd iac kubernetes evidence --work-id <work-id>
+```
+
+この flow は `App Runtime Assessment -> Deployment Contract -> Compatibility Assessment -> Gap Report -> k8s生成 -> dry-run -> E2E -> Evidence` を runtime artifact として残します。manifest は `templates/boilerplates/infrastructure/kubernetes-app-template/` から展開し、`--spec-delta` で許可された仕様差分だけを取り込みます。実クラスタへの apply は行わず、manifest scaffold と dry-run evidence を Human Check の判断材料にします。詳細は [IaC Deployment Runtime](iac-deployment-runtime.md) と [Kubernetes / k3s Runtime](kubernetes-runtime.md) を参照してください。
+
+## Runtime Log Maintenance
+
+`logs/runtime/runtime-events.log` は workflow 実行や `aiwfctl` 実行のたびに追記されます。長期運用では、まず `summary` で件数と trace 数を確認し、必要に応じて `archive` または `prune` を `--dry-run` で予行します。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd log summary
+.\runtime\windows-script\aiwfctl.cmd log tail -n 20
+.\runtime\windows-script\aiwfctl.cmd log grep --trace-id <trace-id>
+.\runtime\windows-script\aiwfctl.cmd log export --trace-id <trace-id> --output work/evidence/runtime-log-export.json
+.\runtime\windows-script\aiwfctl.cmd log archive --keep-last 1000 --dry-run
+.\runtime\windows-script\aiwfctl.cmd log prune --keep-last 1000 --dry-run
+```
+
+実際にログを縮小する操作は、明示的な Human Check を要求します。通常は削除だけの `prune` より、退避ファイルを残す `archive` を優先してください。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd log archive --keep-last 1000 --human-check approved
+```
+
+## Workflow Doctor Warning View
+
+`aiwfctl doctor` は warning ごとに `severity`、`category`、`repairable`、`human_review_required` を付けます。人間向け出力では `Repairable Warnings` と `Human Review Warnings` を分けて表示するため、先に修復コマンドを試すものと、方針判断が必要なものを切り分けられます。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd doctor
+.\runtime\windows-script\aiwfctl.cmd doctor --json
+.\runtime\windows-script\aiwfctl.cmd doctor --repair-encoding --dry-run
+```
+
+## Runtime Help Guide
+
+Runtime操作で迷った場合は、最初に `aiwfctl help runtime` を実行します。`status`、`trace show`、`doctor`、書き込み前の `--dry-run` 確認順をまとめて確認できます。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd help runtime
+```
+
+## Dry-run Plan Evidence
+
+`--dry-run` で表示した実行予定は、必要に応じて `--output` で JSON evidence として保存できます。Human Check 前に「何を読み、何を書き換える予定だったか」を残したい場合に使います。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd rag build `
+  --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
+  --dry-run `
+  --output work/evidence/rag-build-dry-run.json
+
+.\runtime\windows-script\aiwfctl.cmd rag duckdb rebuild `
+  --source-repo work/db/ariadne-knowledge-platform `
+  --reset `
+  --dry-run `
+  --output work/evidence/duckdb-rebuild-dry-run.json
+
+.\runtime\windows-script\aiwfctl.cmd doctor `
+  --repair-encoding `
+  --dry-run `
+  --output work/evidence/doctor-repair-dry-run.json
+```
+
+`--output` を指定しない `--dry-run` は、従来どおり表示だけで終了します。保存された JSON には `plan_output` と `written` が含まれます。
 
 ## Windows 11 PowerShell Runtime
 
@@ -27,7 +185,7 @@ Windows 11 で AI workflow を実行する場合は、まず PowerShell native r
 .\runtime\windows-script\aiwf.cmd spec-check
 ```
 
-`runtime/windows-script/aiwf.cmd` is the normal PATH-friendly Windows entrypoint. It delegates to `runtime/windows-script/aiwf.cmd`, which invokes `runtime/windows-script/aiwf.ps1` with process-scoped `-ExecutionPolicy Bypass`, so the repository does not require changing the user's PowerShell policy.
+`runtime/windows-script/aiwf.cmd` はPATH登録しやすいWindows向け入口です。内部では `runtime/windows-script/aiwf.ps1` を process scoped `-ExecutionPolicy Bypass` 付きで呼び出すため、利用者のPowerShell policyを恒久変更せずに実行できます。
 
 `runtime/windows-script/aiwf.ps1` は PowerShell の UTF-8 no BOM 入出力、repo root / runtime root 解決、`uv run ... python ...` の固定だけを担当します。Context First、Human Check、GitHub knowledge maintenance などの workflow 判断は引き続き `aiwfctl` / `runtime/ctl/ctl.py` が担当します。
 
@@ -83,7 +241,7 @@ GitHub passwordをENVに保存しません。GitHub CLI/API と git remote の�
 | Script | Responsibility |
 | --- | --- |
 | `runtime/ctl/ctl.py` | `runtime/windows-script/aiwfctl.cmd` から呼び出される `aiwfctl help` / `aiwfctl env` の実体。help検索、Environment Dispatcher、`work/<work-id>/context/environment-selection.json` 作成を行う |
-| `db/registries/registry.duckdb` | `aiwfctl env` が参照する利用者向けEnvironmentと内部Backend profile registry |
+| `db/registries/registry.duckdb` | `templates/registries/*.json` から再生成されるruntime registry read model。`aiwfctl help`、`aiwfctl env`、Context First Tool Dispatcher、Human Gate Policy、Workflow Doctor が参照する |
 | `runtime/intake/intake_requirements.py` | `work/requirements/` の要件定義書を受付ID単位で移動し、初期contextを作る |
 | `runtime/environment/preflight.py` | 必要tool / packageを確認し、install listを作る |
 | `runtime/scm/prepare_repository.py` | target repository / branchを取得し、`scm-state.json` を作る |
@@ -101,6 +259,7 @@ GitHub passwordをENVに保存しません。GitHub CLI/API と git remote の�
 | `runtime/workflow/web_svg_layout_mode.py` | `work/requirements/svg-input/WEB_<PREFIX>_*.svg`をIssueへ取り込み、Web layout、React候補、Playwright候補を`web-ui/`へ生成・検証する |
 | `runtime/workflow/flutter_multiplatform.py` | Flutter target宣言、host OS別build可否、boilerplate選択、静的解析/test/build計画、Flutter contextとreportを生成する |
 | `runtime/workflow/knowledge_capture.py` | PR材料、knowledge capture report、archive readinessを作り、target repository側の `docs/evidence/<issue-id>/` scaffoldを自動生成する |
+| `runtime/rag/semantic_hints.py` | project固有のsemantic hintを生成し、RAG source化、build、読み取りへ接続する |
 | `runtime/workflow/close_archive.py` | `work/close/<category>/<archive-id>`を軽量なreport-only archiveとして作成、監査、承認付きpruneする |
 | `runtime/workflow/noise_reduction.py` | 要件定義前の不明ワード、Critical項目不足、曖昧表現を抽出し、Human InterviewとReadinessを生成する |
 | `runtime/workflow/sdk_analysis.py` | 要件定義工程で `work/requirements/sdk/` のSDKプログラムを事前解析し、SDK分析context、外部関連資料discovery context、要件追記候補、Knowledge JSON候補を生成する。AWS/GCPはcloud metadata、Stripeはpayment metadataとして専用Human Checkを出す |
@@ -122,6 +281,28 @@ GitHub passwordをENVに保存しません。GitHub CLI/API と git remote の�
 .\runtime\windows-script\aiwf.cmd ctl tools bom-strip --paths skills .github docs runtime --extensions .md .py .json .yaml .yml --write
 ```
 
+## Workflow Doctor Repair
+
+`aiwfctl doctor` は workflow repository 自身のhealth checkを行います。通常は検出のみを行い、warningが残る場合は `--fail-on-warning` で非ゼロ終了できます。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd doctor --json --fail-on-warning
+```
+
+修復可能な項目は、明示的にrepair optionを付けた場合だけ書き換えます。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd doctor `
+  --repair-spec-index `
+  --repair-encoding `
+  --fail-on-warning
+```
+
+- `--repair-spec-index`: pytest collectionに存在するがUT仕様書に未登録のnode idについて、`docs/reference/runtime-pytest-ut/cases/*.md` にcase scaffoldを追加します。
+- `--repair-encoding`: UTF-8 BOMや安全に復元可能なtext-boundary findingを修復します。
+
+通常表示では `Repair Count` と `Repairs` セクションに、どのrepair artifactが何件処理したかを表示します。JSON出力では `repairs[]` に詳細が残ります。
+
 ## Environment Files
 
 GitHub / SCM 連携で必要な値は、repository root の環境ファイルで管理します。
@@ -140,7 +321,7 @@ GITHUB_TOKEN=
 ARIADNE_KNOWLEDGE_REPOSITORY=ariadne-knowledge-platform
 ```
 
-`GITHUB_OWNER` を設定すると、`localty-system-gui` のようなrepository名だけの指定を `<GITHUB_OWNER>/localty-system-gui` として解決できます。
+`GITHUB_OWNER` を設定すると、`target-system` のようなrepository名だけの指定を `<GITHUB_OWNER>/target-system` として解決できます。
 
 案件ごとに変わるrepositoryは `.env` に置きません。要件定義書の `Repository Control` またはworkflow inputを source of truth にします。
 

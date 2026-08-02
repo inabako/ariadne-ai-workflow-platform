@@ -81,7 +81,7 @@ runtime/posix-bash/aiwf.sh
 
 `intake_requirements.py` は、要件定義書を `work/<採番ID>/design-document/` へ移動し、`context/*.json` を初期化します。
 
-`preflight.py` は、workflow や target repository の作業前に必要な executable / Python module / Python package / MSYS2 package / fallback support repository を確認し、不足時は install list を `work/<id>/process-report/` に出力します。`--install --human-check approved` が指定された場合のみ install を実行します。Localty の MSYS2 profile では公開済み `localty-system-protocol>=0.1.0` を優先し、取得できない場合だけ `localty-system-protocol` repository を support repository として準備します。
+`preflight.py` は、workflow や target repository の作業前に必要な executable / Python module / Python package / MSYS2 package / fallback support repository を確認し、不足時は install list を `work/<id>/process-report/` に出力します。`--install --human-check approved` が指定された場合のみ install を実行します。GUI / MSYS2 など target-specific な依存は、repo evidence、semantic hint、または人間の指示で明示された場合のみ preflight / support repository plan に含めます。
 
 通常入口は `aiwfctl preflight ...` です。Windows / POSIX wrapper の `preflight` 互換コマンドも内部では `runtime/ctl/ctl.py preflight` へ委譲します。
 

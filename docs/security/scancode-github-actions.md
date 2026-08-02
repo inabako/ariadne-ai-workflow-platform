@@ -1,8 +1,8 @@
 # ScanCode GitHub Actions
 
-この文書は、ARIADNEをOSS公開する前に実行するScanCode Toolkit license auditの運用手順を記録します。
+この文書は、ARIADNEのrelease前および継続運用で実行するScanCode Toolkit license auditの運用手順を記録します。
 
-ScanCodeの検出結果は、公開前のlicense review evidenceです。検出結果だけで法的判断を自動確定しません。Unknown license、複数license候補、出所不明file、ARIADNEと無関係なcopyright holder、package metadataの不足は、人間reviewerが確認します。
+ScanCodeの検出結果は、release時のlicense review evidenceです。検出結果だけで法的判断を自動確定しません。Unknown license、複数license候補、出所不明file、ARIADNEと無関係なcopyright holder、package metadataの不足は、人間reviewerが確認します。
 
 ## 目的
 

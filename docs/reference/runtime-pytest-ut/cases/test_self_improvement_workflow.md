@@ -50,14 +50,14 @@ runtime/tests/test_self_improvement_workflow.py::test_init_and_create_feedback
 runtime/tests/test_self_improvement_workflow.py::test_create_feedback_includes_runtime_log_analysis_for_trace
 ```
 
-- Confirm: create-feedback can include Runtime Observation and Runtime Log Analysis from runtime-events.log for a requested trace id.
-- Input:
+- 確認内容: create-feedbackが指定trace idのruntime-events.logからRuntime ObservationとRuntime Log Analysisを取り込めることを確認します。
+- 入力値:
   - pytest node: runtime/tests/test_self_improvement_workflow.py::test_create_feedback_includes_runtime_log_analysis_for_trace
   - source: `runtime/tests/test_self_improvement_workflow.py:53`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=None case=None
+  - parameter: names=なし, case=なし
   - inline input: `RuntimeEventLogger`, `args`, `runtime_trace_id`, `runtime_log`
-- Expected: Feedback report includes the selected trace id, event count, command, blocked status, required_argument_missing reason, and blocked event summary.
+- 期待結果: Feedback reportに選択したtrace id、event count、command、blocked status、required_argument_missing reason、blocked event summaryが含まれる。
 
 #### RT-UT-CASE-SELF-003
 

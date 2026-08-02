@@ -91,7 +91,7 @@ VSCode Environment workflow用に `work/<id>/` を初期化し、要件定義・
 ```powershell
 .\runtime\windows-script\aiwf.cmd ctl workflow knowledge-capture `
   --issue issue-11 `
-  --repository localty-system-gui `
+  --repository target-system `
   --branch feature/issue-11 `
   --base-work-id develop
 ```

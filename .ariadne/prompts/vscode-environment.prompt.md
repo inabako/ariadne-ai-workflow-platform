@@ -1,4 +1,4 @@
-﻿---
+---
 name: vscode-environment
 description: Build or maintain a reproducible VSCode Workspace-as-Code setup with settings, tasks, launch configs, extensions, terminal profiles, AI workflow entry tasks, tests, evidence, and documentation.
 argument-hint: "[target-workspace-path | --custom-design]"
@@ -102,13 +102,13 @@ Use `work/requirements/devlop-edit-draft/README.md` and `README_*.md` only as op
 
 ## RAG Capture
 
-For Localty workspace environment knowledge, use:
+For reusable workspace environment knowledge, use:
 
 ```powershell
 .\runtime\windows-script\aiwf.cmd ctl workflow vscode-environment rag-template `
   --work-id "vscode-environment" `
-  --topic "localty-vscode-environment" `
-  --repository "localty"
+  --topic "workspace-environment" `
+  --repository "target-system"
 ```
 
 Build approved notes with `aiwfctl rag normalize --source-dir work/db/ariadne-knowledge-platform/rag/workspace-environment --document-type workspace-environment-pattern`.

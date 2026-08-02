@@ -1,0 +1,28 @@
+<type>(<scope>): <summary>
+
+Intent: <この変更で達成したい目的>
+
+Scope: <変更対象の範囲>
+
+Decision: <今回の実装・設計判断>
+
+Impact: <影響範囲、互換性、運用上の注意点>
+
+# Ariadne commit message template
+#
+# Subject format:
+#   <type>(<scope>): <summary>
+#
+# Recommended types:
+#   feat, fix, docs, style, refactor, test, chore, build, ci, perf, revert
+#
+# Examples:
+#   feat(runtime): aiwfctl doctorの診断結果を改善
+#   docs(github): IssueとPRテンプレートの運用手順を更新
+#   chore(oss): Dependency Reviewの監査例外を限定追加
+#
+# Body format:
+#   Intent: なぜ変更したか
+#   Scope: どこを変更したか
+#   Decision: どの判断を採用したか
+#   Impact: 何に影響するか

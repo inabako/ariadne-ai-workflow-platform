@@ -1,0 +1,68 @@
+{
+  "registry_version": "1.0",
+  "gates": [
+    {
+      "id": "github-issue-create",
+      "label": "GitHub Issue作成",
+      "requires_human_check": true,
+      "approved_value": "approved",
+      "reason": "外部GitHub状態を変更するため"
+    },
+    {
+      "id": "branch-create",
+      "label": "branch作成",
+      "requires_human_check": true,
+      "approved_value": "approved",
+      "reason": "Git履歴と作業基点を変更するため"
+    },
+    {
+      "id": "push",
+      "label": "push",
+      "requires_human_check": true,
+      "approved_value": "approved",
+      "reason": "remote repositoryへ変更を送信するため"
+    },
+    {
+      "id": "pull-request-create",
+      "label": "Pull Request作成",
+      "requires_human_check": true,
+      "approved_value": "approved",
+      "reason": "GitHub上のreview対象を作成するため"
+    },
+    {
+      "id": "rag-register",
+      "label": "RAG登録 / rebuild",
+      "requires_human_check": true,
+      "approved_value": "approved",
+      "reason": "将来のAI判断に影響する知識を蓄積するため"
+    },
+    {
+      "id": "close-prune",
+      "label": "close archive prune",
+      "requires_human_check": true,
+      "approved_value": "approved",
+      "reason": "作業実体やcacheを削除するため"
+    },
+    {
+      "id": "work-delete",
+      "label": "work削除",
+      "requires_human_check": true,
+      "approved_value": "approved",
+      "reason": "ローカル作業証跡を削除するため"
+    },
+    {
+      "id": "tool-install",
+      "label": "tool / package install",
+      "requires_human_check": true,
+      "approved_value": "approved",
+      "reason": "ローカル環境へ変更を加えるため"
+    },
+    {
+      "id": "external-io-test",
+      "label": "実機 / 外部I/Oテスト",
+      "requires_human_check": true,
+      "approved_value": "approved",
+      "reason": "実機、network、camera、field environmentへ影響する可能性があるため"
+    }
+  ]
+}

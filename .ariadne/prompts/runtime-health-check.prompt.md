@@ -31,6 +31,7 @@ Ariadne AI Workflow Platform 自身の runtime health を確認する自己診�
 6. `aiwfctl doctor` を実行する。
 7. 日本語Markdown品質ガードを実行する。
 8. 結果を人間と後続Agentが読める形で報告する。
+9. repair optionを使った場合は、生成/修復された成果物を確認し、再度doctorを実行する。
 
 ## 成功条件
 
@@ -38,6 +39,7 @@ Ariadne AI Workflow Platform 自身の runtime health を確認する自己診�
 - UT仕様書同期チェックが `status: ok` を返す。
 - `workflow_doctor --fail-on-warning` がpassする。
 - `aiwfctl doctor --json --fail-on-warning` がpassする。
+- 必要に応じて `aiwfctl doctor --repair-spec-index --repair-encoding --fail-on-warning` を実行し、repair結果を確認済みである。
 - `pytest-ut-spec-sync-report.json` と `pytest-ut-spec-sync-report.md` が生成される。
 - Context First manifestに `test-evidence` が登録される。
 - 日本語Markdown品質ガードがpassする。
@@ -51,33 +53,31 @@ Ariadne AI Workflow Platform 自身の runtime health を確認する自己診�
 
 ## 標準コマンド
 
-```powershell
-cd C:\github\ariadne-ai-workflow-platform\runtime
+`<repository-root>` は現在の Ariadne repository checkout root を指します。
+`<uv-command>` は、Windows では `runtime/windows-script/uv.cmd`、macOS / Linux / WSL では PATH 上の `uv` を指します。
 
-.\tools\uv.cmd run --project . --group dev pytest tests -q
+```shell
+cd <repository-root>
 
-.\tools\uv.cmd run --project . --group dev python tools\pytest_ut_spec_sync.py `
-  --spec ..\docs\reference\runtime-pytest-ut-case-specification.md `
-  --runtime-root . `
-  check `
-  --repo-root .. `
-  --work-dir runtime\.pytest_cache\runtime-health-check `
-  --report .pytest_cache\pytest-ut-spec-sync-report.json `
-  --markdown .pytest_cache\pytest-ut-spec-sync-report.md `
-  --register-context `
-  --required-context
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . trace begin --workflow /runtime-health-check
 
-.\tools\uv.cmd run --project . --group dev python workflow\workflow_doctor.py `
-  --repo-root .. `
-  --fail-on-warning
+<uv-command> run --project runtime --group dev pytest -c runtime/pytest.ini runtime/tests -q
 
-.\tools\uv.cmd run --project . --group dev python ctl.py `
-  --repo-root .. `
-  doctor `
-  --json `
-  --fail-on-warning
+<uv-command> run --project runtime --group dev python runtime/tools/pytest_ut_spec_sync.py --spec docs/reference/runtime-pytest-ut/case-specification.md --runtime-root runtime check --repo-root . --work-dir runtime/.pytest_cache/runtime-health-check --report runtime/.pytest_cache/pytest-ut-spec-sync-report.json --markdown runtime/.pytest_cache/pytest-ut-spec-sync-report.md --register-context --required-context
 
-.\tools\uv.cmd run --project . --group dev python workflow\validate_output_language.py `
-  --paths ..\docs\reference\runtime-pytest-ut-test-items.md ..\docs\reference\runtime-pytest-ut-case-specification.md ..\.ariadne\schemas\README.md ..\.ariadne\agents\runtime-quality-gate-agent.prompt.md `
-  --fail-on-violation
+<uv-command> run --project runtime --group dev python runtime/workflow/workflow_doctor.py --repo-root . --fail-on-warning
+
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . doctor --json --fail-on-warning
+
+<uv-command> run --project runtime --group dev python runtime/workflow/validate_output_language.py --paths docs/reference/runtime-pytest-ut/test-items.md docs/reference/runtime-pytest-ut/case-specification.md .ariadne/schemas/README.md .ariadne/agents/runtime-quality-gate-agent.prompt.md --fail-on-violation
+
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . trace end
+```
+
+修復可能なwarningがある場合だけ、次を明示的に実行します。
+
+```shell
+cd <repository-root>
+
+<uv-command> run --project runtime --group dev python runtime/ctl/ctl.py --repo-root . doctor --repair-spec-index --repair-encoding --fail-on-warning
 ```

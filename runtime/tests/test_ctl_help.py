@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import runpy
@@ -9,6 +9,7 @@ from uuid import UUID
 
 from runtime.common import registry_store
 from runtime.ctl import ctl
+from runtime.ctl import ctl_help
 from runtime.observability import command_event
 from runtime.rag import duckdb_store
 
@@ -17,10 +18,63 @@ def repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+def write_minimal_template_registries(root: Path, runtime_help: dict[str, object] | None = None) -> None:
+    registry_dir = root / "templates" / "registries"
+    registry_dir.mkdir(parents=True)
+    (registry_dir / "workflow_help.json").write_text('{"commands": [], "extensions": []}', encoding="utf-8")
+    (registry_dir / "tool_candidates.json").write_text('{"tools": []}', encoding="utf-8")
+    (registry_dir / "human_gates.json").write_text('{"gates": []}', encoding="utf-8")
+    (registry_dir / "workflow_environment_profiles.json").write_text(
+        '{"environments": [], "profiles": [], "mappings": []}',
+        encoding="utf-8",
+    )
+    ctl_help_usage = json.loads((repo_root() / "templates" / "registries" / "ctl_help_usage.json").read_text(encoding="utf-8"))
+    (registry_dir / "ctl_help_usage.json").write_text(json.dumps(ctl_help_usage, ensure_ascii=False), encoding="utf-8")
+    payload = runtime_help
+    if payload is None:
+        payload = json.loads((repo_root() / "templates" / "registries" / "runtime_help_capabilities.json").read_text(encoding="utf-8"))
+    (registry_dir / "runtime_help_capabilities.json").write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+
 def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     parser = ctl.build_parser()
 
     assert parser.prog == "aiwfctl"
+    help_runtime_args = parser.parse_args(["help", "runtime"])
+    assert help_runtime_args.command == "help"
+    assert help_runtime_args.help_command == "runtime"
+    help_runtime_json_args = parser.parse_args(["help", "runtime", "--json"])
+    assert help_runtime_json_args.json is True
+    status_root_args = parser.parse_args(["status", "--json"])
+    assert status_root_args.command == "status"
+    assert status_root_args.json is True
+    status_summary_args = parser.parse_args(["status", "--summary", "--json"])
+    assert status_summary_args.summary is True
+    status_verbose_args = parser.parse_args(["status", "--verbose", "--json"])
+    assert status_verbose_args.verbose is True
+    status_problem_args = parser.parse_args(["status", "--problems", "--json"])
+    assert status_problem_args.problems is True
+    status_work_args = parser.parse_args(["status", "--work-id", "issue-1"])
+    assert status_work_args.work_id == "issue-1"
+    ready_args = parser.parse_args(
+        [
+            "ready",
+            "--work-id",
+            "issue-1",
+            "--skip-spec-check",
+            "--strict",
+            "--output",
+            "work/evidence/runtime-ready.json",
+            "--json",
+        ]
+    )
+    assert ready_args.command == "ready"
+    assert ready_args.work_id == "issue-1"
+    assert ready_args.skip_spec_check is True
+    assert ready_args.strict is True
+    assert ready_args.output == "work/evidence/runtime-ready.json"
+    assert ready_args.output_explicit is True
+    assert ready_args.json is True
     args = parser.parse_args(["github-knowledge", "rebase-review-intake", "--work-id", "w", "--human-check", "approved"])
     assert args.github_knowledge_command == "rebase-review-intake"
     assert args.human_check == "approved"
@@ -48,6 +102,12 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     assert tools_args.tools_command == "bom-scan"
     assert tools_args.paths == ["docs"]
     assert tools_args.fail_on_finding is True
+    doctor_dry_run_args = parser.parse_args(["doctor", "--repair-encoding", "--dry-run"])
+    assert doctor_dry_run_args.command == "doctor"
+    assert doctor_dry_run_args.repair_encoding is True
+    assert doctor_dry_run_args.dry_run is True
+    doctor_suggestion_args = parser.parse_args(["doctor", "--fix-suggestion-only"])
+    assert doctor_suggestion_args.fix_suggestion_only is True
     release_validate_args = parser.parse_args(["release", "validate", "--expected-license", "AGPL-3.0-or-later", "--json"])
     assert release_validate_args.command == "release"
     assert release_validate_args.release_command == "validate"
@@ -57,6 +117,86 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     assert release_manifest_args.command == "release"
     assert release_manifest_args.release_command == "manifest"
     assert release_manifest_args.artifact == ["LICENSE"]
+    trace_begin_args = parser.parse_args(["trace", "begin", "--workflow", "/runtime-health-check", "--work-id", "issue-1", "--trace-id", "traceabc"])
+    assert trace_begin_args.command == "trace"
+    assert trace_begin_args.trace_command == "begin"
+    assert trace_begin_args.workflow == "/runtime-health-check"
+    assert trace_begin_args.work_id == "issue-1"
+    assert trace_begin_args.trace_id == "traceabc"
+    trace_status_args = parser.parse_args(["trace", "status", "--json"])
+    assert trace_status_args.trace_command == "status"
+    assert trace_status_args.json is True
+    trace_show_args = parser.parse_args(["trace", "show", "traceabc", "--runtime-log", "logs/runtime/runtime-events.log"])
+    assert trace_show_args.trace_command == "show"
+    assert trace_show_args.trace_id == "traceabc"
+    assert trace_show_args.runtime_log == "logs/runtime/runtime-events.log"
+    trace_show_problem_args = parser.parse_args(["trace", "show", "traceabc", "--problems"])
+    assert trace_show_problem_args.trace_command == "show"
+    assert trace_show_problem_args.problems is True
+    trace_show_option_args = parser.parse_args(["trace", "show", "--trace-id", "traceopt", "--json"])
+    assert trace_show_option_args.trace_id_option == "traceopt"
+    assert trace_show_option_args.json is True
+    trace_end_args = parser.parse_args(["trace", "end"])
+    assert trace_end_args.trace_command == "end"
+    trace_recover_args = parser.parse_args(["trace", "recover", "--dry-run"])
+    assert trace_recover_args.trace_command == "recover"
+    assert trace_recover_args.dry_run is True
+    log_summary_args = parser.parse_args(["log", "summary", "--json"])
+    assert log_summary_args.command == "log"
+    assert log_summary_args.log_command == "summary"
+    assert log_summary_args.json is True
+    log_archive_args = parser.parse_args(["log", "archive", "--keep-last", "2", "--dry-run", "--output", "work/log-plan.json"])
+    assert log_archive_args.log_command == "archive"
+    assert log_archive_args.keep_last == 2
+    assert log_archive_args.dry_run is True
+    assert log_archive_args.output == "work/log-plan.json"
+    assert log_archive_args.output_explicit is True
+    log_prune_args = parser.parse_args(["log", "prune", "--keep-last", "2", "--human-check", "approved"])
+    assert log_prune_args.log_command == "prune"
+    assert log_prune_args.human_check == "approved"
+    log_tail_args = parser.parse_args(["log", "tail", "-n", "5", "--problems"])
+    assert log_tail_args.log_command == "tail"
+    assert log_tail_args.limit == 5
+    assert log_tail_args.problems is True
+    log_grep_args = parser.parse_args(["log", "grep", "--trace-id", "trace-1"])
+    assert log_grep_args.log_command == "grep"
+    log_ack_args = parser.parse_args(
+        ["log", "acknowledge-problem", "--trace-id", "trace-1", "--sequence", "2", "--command", "env select", "--all"]
+    )
+    assert log_ack_args.log_command == "acknowledge-problem"
+    assert log_ack_args.trace_id == "trace-1"
+    assert log_ack_args.sequence == "2"
+    assert log_ack_args.ack_command == "env select"
+    assert log_ack_args.all is True
+    assert log_grep_args.trace_id == "trace-1"
+    log_export_args = parser.parse_args(["log", "export", "--trace-id", "trace-1", "--output", "work/evidence/trace.json"])
+    assert log_export_args.log_command == "export"
+    assert log_export_args.output == "work/evidence/trace.json"
+    rag_duckdb_rebuild_args = parser.parse_args(["rag", "duckdb", "rebuild", "--reset", "--dry-run"])
+    assert rag_duckdb_rebuild_args.command == "rag"
+    assert rag_duckdb_rebuild_args.rag_command == "duckdb"
+    assert rag_duckdb_rebuild_args.rag_duckdb_command == "rebuild"
+    assert rag_duckdb_rebuild_args.reset is True
+    assert rag_duckdb_rebuild_args.dry_run is True
+    rag_duckdb_verify_args = parser.parse_args(["rag", "duckdb", "verify", "--query", "workflow"])
+    assert rag_duckdb_verify_args.command == "rag"
+    assert rag_duckdb_verify_args.rag_command == "duckdb"
+    assert rag_duckdb_verify_args.rag_duckdb_command == "verify"
+    assert rag_duckdb_verify_args.query == ["workflow"]
+    semantic_hints_args = parser.parse_args(["rag", "semantic-hints", "read", "--semantic-hint", "gui simulator"])
+    assert semantic_hints_args.command == "rag"
+    assert semantic_hints_args.rag_command == "semantic-hints"
+    assert semantic_hints_args.semantic_hints_command == "read"
+    assert semantic_hints_args.semantic_hint == "gui simulator"
+    rag_build_args = parser.parse_args(["rag", "build", "--dry-run"])
+    assert rag_build_args.rag_command == "build"
+    assert rag_build_args.dry_run is True
+    rag_jsonize_args = parser.parse_args(["rag", "jsonize", "--dry-run"])
+    assert rag_jsonize_args.rag_command == "jsonize"
+    assert rag_jsonize_args.dry_run is True
+    semantic_hints_build_args = parser.parse_args(["rag", "semantic-hints", "build", "--dry-run"])
+    assert semantic_hints_build_args.semantic_hints_command == "build"
+    assert semantic_hints_build_args.dry_run is True
     publish_args = parser.parse_args(
         [
             "github-knowledge",
@@ -75,6 +215,141 @@ def test_ctl_parser_uses_aiwfctl_program_name() -> None:
     assert publish_args.expected_remote_sha == "abc123"
     namespace = runpy.run_path(str(Path(ctl.__file__)))
     assert namespace["build_parser"]
+
+
+def test_ctl_help_runtime_shows_operational_command_guide(tmp_path: Path) -> None:
+    write_minimal_template_registries(tmp_path)
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "help", "runtime"])
+
+    code, output = ctl.run(args)
+
+    assert code == 0
+    assert "Runtime Command Guide" in output
+    assert "aiwfctl status" in output
+    assert "aiwfctl status --work-id <work-id> --json" in output
+    assert "aiwfctl status --summary --json" in output
+    assert "aiwfctl status --problems --json" in output
+    assert "aiwfctl status --verbose --json" in output
+    assert "aiwfctl ready" in output
+    assert "aiwfctl ready --json" in output
+    assert "aiwfctl ready --strict --json" in output
+    assert "aiwfctl ready --json --output work/evidence/runtime-ready.json" in output
+    assert "aiwfctl trace show" in output
+    assert "aiwfctl trace show <trace-id> --problems" in output
+    assert "aiwfctl trace recover --dry-run" in output
+    assert "aiwfctl help show <workflow-command>" in output
+    assert "aiwfctl help search <keyword>" in output
+    assert "aiwfctl help runtime --json" in output
+    assert "docs/reference/runtime.md" in output
+    assert "docs/reference/runtime-quickstart.md" in output
+    assert "preflight と doctor の使い分け" in output
+    assert "aiwfctl log summary" in output
+    assert "aiwfctl log archive --keep-last 1000 --dry-run" in output
+    assert "aiwfctl log tail -n 20" in output
+    assert "aiwfctl log grep --trace-id <trace-id>" in output
+    assert "aiwfctl log acknowledge-problem --trace-id <trace-id> --sequence <sequence>" in output
+    assert "aiwfctl doctor" in output
+    assert "aiwfctl doctor --fix-suggestion-only" in output
+    assert "aiwfctl rag build --dry-run" in output
+    assert "aiwfctl rag duckdb rebuild" in output
+    assert "aiwfctl retrieval run" in output
+    assert "よくある状況別" in output
+    assert "fresh checkout後" in output
+
+
+def test_ctl_help_runtime_json_exposes_dry_run_capabilities(tmp_path: Path) -> None:
+    write_minimal_template_registries(tmp_path)
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "help", "runtime", "--json"])
+
+    code, output = ctl.run(args)
+
+    assert code == 0
+    payload = json.loads(output)
+    assert payload["artifact_type"] == "runtime-help-capabilities"
+    assert payload["schema"] == ".ariadne/schemas/runtime-help-capabilities.schema.json"
+    assert payload["responsibility_boundary"]["preflight"].startswith("OS")
+    assert any(item["command"] == "aiwfctl ready --json" for item in payload["readiness_capabilities"])
+    assert any(item["command"] == "aiwfctl ready --strict --json" for item in payload["readiness_capabilities"])
+    assert any(item["command"] == "aiwfctl rag build --dry-run" for item in payload["dry_run_capabilities"])
+    assert any("aiwfctl trace show --problems" in item.get("commands", []) for item in payload["situations"])
+
+
+def test_ctl_help_runtime_json_matches_schema_contract() -> None:
+    payload = ctl_help.runtime_help_model(repo_root())
+    schema = json.loads((repo_root() / ".ariadne" / "schemas" / "runtime-help-capabilities.schema.json").read_text(encoding="utf-8"))
+
+    assert sorted(payload) == sorted(schema["properties"])
+    for key in schema["required"]:
+        assert key in payload
+    for key, definition in schema["properties"].items():
+        if "const" in definition:
+            assert payload[key] == definition["const"]
+    for item in payload["status_views"]:
+        assert sorted(item) == ["command", "mode", "purpose"]
+    for item in payload["runtime_sections"]:
+        assert sorted(item) == ["commands", "title"]
+    for item in payload["readiness_capabilities"]:
+        assert sorted(item) == ["command", "purpose"]
+    for item in payload["dry_run_capabilities"]:
+        assert sorted(item) == ["command", "evidence_example", "output_supported", "purpose"]
+    assert payload["recovery_steps"][:2] == ["aiwfctl status --problems --json", "aiwfctl trace show --problems"]
+    assert "docs/reference/runtime-state-glossary.md" in payload["docs"]
+
+
+def test_ctl_help_runtime_capabilities_load_from_template_registry(tmp_path: Path) -> None:
+    write_minimal_template_registries(
+        tmp_path,
+        {
+            "schema_version": "1.0",
+            "schema": ".ariadne/schemas/runtime-help-capabilities.schema.json",
+            "artifact_type": "runtime-help-capabilities",
+            "responsibility_boundary": {"status": "custom status", "preflight": "custom preflight", "doctor": "custom doctor"},
+            "status_views": [],
+            "readiness_capabilities": [{"command": "aiwfctl custom-ready", "purpose": "custom registry seed"}],
+            "dry_run_capabilities": [],
+            "situations": [],
+            "docs": [],
+        },
+    )
+
+    payload = ctl_help.runtime_help_model(tmp_path)
+
+    assert payload["responsibility_boundary"]["status"] == "custom status"
+    assert payload["readiness_capabilities"] == [{"command": "aiwfctl custom-ready", "purpose": "custom registry seed"}]
+
+
+def test_ctl_help_usage_loads_from_template_registry(tmp_path: Path) -> None:
+    write_minimal_template_registries(tmp_path)
+    payload = {
+        "schema_version": "1.0",
+        "schema": ".ariadne/schemas/ctl-help-usage.schema.json",
+        "artifact_type": "ctl-help-usage",
+        "warning": "custom warning",
+        "guidance": "custom guidance",
+        "sections": [{"title": "custom section", "commands": ["aiwfctl custom help"]}],
+    }
+    (tmp_path / "templates" / "registries" / "ctl_help_usage.json").write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+    model = ctl_help.ctl_help_usage_model(tmp_path)
+    output = ctl_help.format_help_usage_warning(tmp_path)
+
+    assert model["warning"] == "custom warning"
+    assert "custom guidance" in output
+    assert "aiwfctl custom help" in output
+
+
+def test_ctl_help_usage_json_matches_schema_contract() -> None:
+    payload = ctl_help.ctl_help_usage_model(repo_root())
+    schema = json.loads((repo_root() / ".ariadne" / "schemas" / "ctl-help-usage.schema.json").read_text(encoding="utf-8"))
+
+    assert sorted(payload) == sorted(schema["properties"])
+    for key in schema["required"]:
+        assert key in payload
+    for key, definition in schema["properties"].items():
+        if "const" in definition:
+            assert payload[key] == definition["const"]
+    for section in payload["sections"]:
+        assert sorted(section) == ["commands", "title"]
 
 
 def test_windows_script_runtime_contract() -> None:
@@ -212,6 +487,55 @@ def test_ctl_run_writes_runtime_event_log_for_each_command(tmp_path: Path) -> No
     assert completed["output"]["duration_ms"] >= 0
 
 
+def test_ctl_trace_lifecycle_keeps_one_trace_id_for_workflow_commands(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+    registry = tmp_path / "runtime" / "registries"
+    registry.mkdir(parents=True)
+    (registry / "workflow_help.json").write_text('{"commands": [], "extensions": []}', encoding="utf-8")
+
+    args = ctl.build_parser().parse_args(
+        ["--repo-root", str(tmp_path), "trace", "begin", "--workflow", "/runtime-health-check", "--trace-id", "wftrace"]
+    )
+    code, output = ctl.run(args)
+
+    assert code == 0
+    assert "Trace ID : wftrace" in output
+    active_trace = tmp_path / "logs" / "runtime" / "active-trace.json"
+    active_payload = json.loads(active_trace.read_text(encoding="utf-8"))
+    assert active_payload["trace_id"] == "wftrace"
+    assert active_payload["last_sequence"] == 2
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "help", "list"])
+    code, output = ctl.run(args)
+    assert code == 0
+    assert "## Workflow Commands" in output
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "trace", "status", "--json"])
+    code, output = ctl.run(args)
+    assert code == 0
+    assert json.loads(output)["trace_id"] == "wftrace"
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "trace", "end"])
+    code, output = ctl.run(args)
+    assert code == 0
+    assert "Status   : ended" in output
+    assert not active_trace.exists()
+
+    args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "help", "list"])
+    code, output = ctl.run(args)
+    assert code == 0
+
+    log_path = tmp_path / "logs" / "runtime" / "runtime-events.log"
+    prefixes = [line.split(" | ", 3) for line in log_path.read_text(encoding="utf-8").splitlines()]
+    trace_ids = [prefix[1] for prefix in prefixes]
+    sequences = [prefix[2] for prefix in prefixes]
+    assert trace_ids[:8] == ["wftrace"] * 8
+    assert trace_ids[8] != "wftrace"
+    assert trace_ids[9] == trace_ids[8]
+    assert sequences[:8] == [f"{index:05d}" for index in range(1, 9)]
+    assert sequences[8:] == ["00001", "00002"]
+
+
 def test_runtime_diagnostics_for_blocked_command_include_next_action() -> None:
     diagnostics = command_event.runtime_diagnostics_for_result(
         "self-improvement create-feedback",
@@ -224,6 +548,26 @@ def test_runtime_diagnostics_for_blocked_command_include_next_action() -> None:
         "next_action": "review_command_usage",
         "resume_command": "aiwfctl self-improvement create-feedback",
     }
+
+
+def test_runtime_resume_command_keeps_safe_retry_arguments() -> None:
+    args = ctl.build_parser().parse_args(
+        [
+            "log",
+            "archive",
+            "--keep-last",
+            "25",
+            "--dry-run",
+            "--output",
+            "work/evidence/log plan.json",
+        ]
+    )
+
+    command = command_event.runtime_resume_command(args)
+
+    assert command == (
+        'aiwfctl log archive --output "work/evidence/log plan.json" --keep-last 25 --dry-run'
+    )
 
 
 def test_ctl_help_without_modifier_warns_and_does_not_show_list() -> None:
@@ -399,6 +743,26 @@ def test_ctl_knowledge_usage_and_search_export_context(tmp_path: Path) -> None:
     assert "Source Repo     : work/db/ariadne-knowledge-platform" in output
     assert "Registered" in output
 
+    alias_db = root / "db" / "rag" / "alias.duckdb"
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "rag",
+            "duckdb",
+            "--db",
+            str(alias_db),
+            "rebuild",
+            "--source-repo",
+            "work/db/ariadne-knowledge-platform",
+            "--reset",
+        ]
+    )
+    code, output = ctl.run(args)
+    assert code == 0
+    assert "Knowledge Rebuild" in output
+    assert alias_db.exists()
+
     args = ctl.build_parser().parse_args(
         [
             "--repo-root",
@@ -422,6 +786,27 @@ def test_ctl_knowledge_usage_and_search_export_context(tmp_path: Path) -> None:
     manifest = json.loads((root / "db" / "rag" / "evidence" / "context" / "context-manifest.json").read_text(encoding="utf-8"))
     assert manifest["work_id"] == "duckdb-reference-check"
     assert "rag-duckdb-reference-check" in {item["type"] for item in manifest["contexts"]}
+
+    alias_output = root / "db" / "rag" / "evidence" / "alias-reference-check.json"
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(root),
+            "rag",
+            "duckdb",
+            "--db",
+            str(alias_db),
+            "verify",
+            "--query",
+            "DuckDB context",
+            "--output",
+            str(alias_output),
+        ]
+    )
+    code, output = ctl.run(args)
+    assert code == 0
+    assert "Knowledge Reference Check" in output
+    assert alias_output.exists()
 
 
 def test_ctl_github_knowledge_sync_apply_dry_run_updates_analysis(tmp_path: Path) -> None:
@@ -1204,7 +1589,23 @@ def test_ctl_doctor_runs_workflow_doctor(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
         ctl.workflow_doctor,
         "run",
-        lambda args: {"status": "pass", "warning_count": 0, "warnings": []},
+        lambda args: {
+            "status": "pass",
+            "warning_count": 0,
+            "warnings": [],
+            "repairs": [
+                {
+                    "artifact_type": "pytest-ut-spec-index-repair",
+                    "status": "repaired",
+                    "repairs": [
+                        {
+                            "node_id": "runtime/tests/test_sample.py::test_new",
+                            "path": "docs/reference/runtime-pytest-ut/cases/test_sample.md",
+                        }
+                    ],
+                }
+            ],
+        },
     )
 
     args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "doctor"])
@@ -1213,6 +1614,10 @@ def test_ctl_doctor_runs_workflow_doctor(monkeypatch, tmp_path: Path) -> None:
     assert code == 0
     assert "Workflow Doctor" in output
     assert "Warning Count : 0" in output
+    assert "Repair Count  : 1" in output
+    assert "Repairs" in output
+    assert "pytest-ut-spec-index-repair" in output
+    assert "runtime/tests/test_sample.py::test_new" in output
 
     args = ctl.build_parser().parse_args(["--repo-root", str(tmp_path), "doctor", "--json"])
     code, output = ctl.run(args)
@@ -1239,9 +1644,34 @@ def test_defensive_specimen_ctl_doctor_formats_warning_paths(monkeypatch, tmp_pa
                 {
                     "id": "defensive-specimen",
                     "message": "rare warning specimen",
+                    "next_action": "review warning specimen",
+                    "repair_command": "aiwfctl doctor --fail-on-warning",
+                    "ignore_condition": "confirmed false positive",
+                    "severity": "medium",
+                    "category": "defensive",
+                    "repairable": True,
+                    "human_review_required": True,
                     "paths": [f"path-{index}" for index in range(12)],
                 }
             ],
+            "warning_summary": {
+                "severity_counts": {"medium": 1},
+                "category_counts": {"defensive": 1},
+                "repairable_count": 1,
+                "human_review_count": 1,
+                "repairable_warnings": [
+                    {
+                        "id": "defensive-specimen",
+                        "repair_command": "aiwfctl doctor --fail-on-warning",
+                    }
+                ],
+                "human_review_warnings": [
+                    {
+                        "id": "defensive-specimen",
+                        "next_action": "review warning specimen",
+                    }
+                ],
+            },
         },
     )
 
@@ -1250,11 +1680,75 @@ def test_defensive_specimen_ctl_doctor_formats_warning_paths(monkeypatch, tmp_pa
 
     assert code == 0
     assert "Warnings" in output
+    assert "Repairable    : 1" in output
+    assert "Human Review  : 1" in output
+    assert "Severity      : medium=1" in output
+    assert "Category      : defensive=1" in output
     assert "defensive-specimen" in output
+    assert "severity: medium" in output
+    assert "category: defensive" in output
     assert "rare warning specimen" in output
+    assert "next: review warning specimen" in output
+    assert "repair: aiwfctl doctor --fail-on-warning" in output
+    assert "Repairable Warnings" in output
+    assert "Human Review Warnings" in output
+    assert "ignore: confirmed false positive" in output
     assert "path-0" in output
     assert "path-9" in output
     assert "path-10" not in output
+
+
+def test_ctl_doctor_repair_encoding_dry_run_does_not_write_files(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(ctl.workflow_doctor, "tracked_policy_violations", lambda repo_root: [])
+    monkeypatch.setattr(ctl.workflow_doctor, "missing_required_files", lambda repo_root: [])
+    monkeypatch.setattr(ctl.workflow_doctor, "pytest_runtime_boundary_findings", lambda repo_root: [])
+    monkeypatch.setattr(ctl.workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
+    monkeypatch.setattr(ctl.workflow_doctor, "registry_seed_findings", lambda repo_root: [])
+    monkeypatch.setattr(ctl.workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    monkeypatch.setattr(ctl.workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
+    monkeypatch.setattr(ctl.workflow_doctor, "git_attributes_findings", lambda repo_root: [])
+    monkeypatch.setattr(ctl.workflow_doctor, "uv_startup_findings", lambda repo_root: [])
+    monkeypatch.setattr(ctl.workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
+    monkeypatch.setattr(ctl.workflow_doctor, "duckdb_read_model_findings", lambda repo_root: [])
+    monkeypatch.setattr(ctl.workflow_doctor, "workspace_layout_literal_findings", lambda repo_root: [])
+    monkeypatch.setattr(ctl.workflow_doctor, "path_constant_literal_findings", lambda repo_root: [])
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    original = "\u3042\u3042"
+    mojibake = original.encode("utf-8").decode("cp932")
+    target = docs / "guide.md"
+    target.write_text(f"# {mojibake}\n", encoding="utf-8")
+    args = ctl.build_parser().parse_args(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "doctor",
+            "--repair-encoding",
+            "--dry-run",
+            "--output",
+            "work/doctor-dry-run.json",
+            "--encoding-paths",
+            "docs",
+            "--encoding-extensions",
+            ".md",
+            "--json",
+        ]
+    )
+
+    code, output = ctl.run(args)
+
+    assert code == 0
+    payload = json.loads(output)
+    assert payload["dry_run"] is True
+    assert payload["plan_output"] == "work/doctor-dry-run.json"
+    assert payload["written"] is True
+    assert payload["repairs"][0]["artifact_type"] == "text-boundary-repair-preview"
+    assert payload["repairs"][0]["repairs"][0]["written"] is False
+    assert target.read_text(encoding="utf-8") == f"# {mojibake}\n"
+    assert not (docs / "guide.md.encoding-bak").exists()
+    saved = json.loads((tmp_path / "work" / "doctor-dry-run.json").read_text(encoding="utf-8"))
+    assert saved["artifact_type"] == "workflow-doctor-report"
+    assert saved["plan_output"] == "work/doctor-dry-run.json"
 
 
 def test_ctl_help_search_finds_svg_gui_workflows() -> None:
@@ -1468,6 +1962,32 @@ def write_registry_source(source_dir: Path) -> None:
     for name, payload in {
         "tool_candidates.json": {"registry_version": "1.0", "tools": []},
         "human_gates.json": {"registry_version": "1.0", "gates": []},
+        "ctl_help_usage.json": {
+            "schema_version": "1.0",
+            "schema": ".ariadne/schemas/ctl-help-usage.schema.json",
+            "artifact_type": "ctl-help-usage",
+            "warning": "warning",
+            "guidance": "guidance",
+            "sections": [],
+        },
+        "runtime_help_capabilities.json": {
+            "schema_version": "1.0",
+            "schema": ".ariadne/schemas/runtime-help-capabilities.schema.json",
+            "artifact_type": "runtime-help-capabilities",
+            "guide_title": "Runtime Command Guide",
+            "runtime_sections": [],
+            "responsibility_boundary": {"status": "", "preflight": "", "doctor": ""},
+            "responsibility_boundary_title": "",
+            "status_views": [],
+            "readiness_capabilities": [],
+            "dry_run_section_title": "",
+            "dry_run_capabilities": [],
+            "situations_title": "",
+            "situations": [],
+            "recovery_section_title": "",
+            "recovery_steps": [],
+            "docs": [],
+        },
         "workflow_environment_profiles.json": {
             "registry_version": "1.0",
             "environments": [{"name": "local", "backend": "windows-powershell", "purpose": "local runtime"}],
@@ -1527,6 +2047,32 @@ def test_registry_store_builds_search_terms_table_with_owner_id(tmp_path: Path) 
     for name, payload in {
         "tool_candidates.json": {"registry_version": "1.0", "tools": []},
         "human_gates.json": {"registry_version": "1.0", "gates": []},
+        "ctl_help_usage.json": {
+            "schema_version": "1.0",
+            "schema": ".ariadne/schemas/ctl-help-usage.schema.json",
+            "artifact_type": "ctl-help-usage",
+            "warning": "warning",
+            "guidance": "guidance",
+            "sections": [],
+        },
+        "runtime_help_capabilities.json": {
+            "schema_version": "1.0",
+            "schema": ".ariadne/schemas/runtime-help-capabilities.schema.json",
+            "artifact_type": "runtime-help-capabilities",
+            "guide_title": "Runtime Command Guide",
+            "runtime_sections": [],
+            "responsibility_boundary": {"status": "", "preflight": "", "doctor": ""},
+            "responsibility_boundary_title": "",
+            "status_views": [],
+            "readiness_capabilities": [],
+            "dry_run_section_title": "",
+            "dry_run_capabilities": [],
+            "situations_title": "",
+            "situations": [],
+            "recovery_section_title": "",
+            "recovery_steps": [],
+            "docs": [],
+        },
         "workflow_environment_profiles.json": {
             "registry_version": "1.0",
             "environments": [],
@@ -1540,17 +2086,25 @@ def test_registry_store_builds_search_terms_table_with_owner_id(tmp_path: Path) 
     result = registry_store.build_registry_read_model(tmp_path, source_dir, db_path)
 
     assert "search_terms" in result["tables"]
+    assert "registry_documents" in result["tables"]
     assert result["counts"]["search_terms"] == 1
+    assert result["counts"]["registry_documents"] == 2
     with registry_store.connect(db_path, read_only=True) as conn:
         command_id = conn.execute("SELECT id FROM workflow_help_commands").fetchone()[0]
         term_id, owner_id = conn.execute("SELECT id, owner_id FROM search_terms").fetchone()
+        document_count = conn.execute("SELECT count(*) FROM registry_documents").fetchone()[0]
     assert command_id == "alpha"
     UUID(term_id)
     assert owner_id == command_id
+    assert document_count == 2
 
     registry = registry_store.load_workflow_help(tmp_path)
+    usage = registry_store.load_ctl_help_usage(tmp_path)
+    runtime_help = registry_store.load_runtime_help_capabilities(tmp_path)
     matches = ctl.search_commands(registry, ["入口整理"])
     assert matches[0]["command"] == "/alpha"
+    assert usage["artifact_type"] == "ctl-help-usage"
+    assert runtime_help["artifact_type"] == "runtime-help-capabilities"
 
 
 def test_registry_store_ensure_builds_missing_duckdb_from_source_backup(tmp_path: Path) -> None:
@@ -1564,15 +2118,61 @@ def test_registry_store_ensure_builds_missing_duckdb_from_source_backup(tmp_path
     assert db_path.exists()
     assert result["counts"]["workflow_help_commands"] == 1
     assert result["counts"]["workflow_environments"] == 1
+    assert result["counts"]["registry_documents"] == 2
 
     existing = registry_store.ensure_registry_read_model(tmp_path, source_dir, db_path)
 
     assert existing["action"] == "existing"
     assert existing["counts"]["workflow_help_commands"] == 1
+    assert existing["counts"]["registry_documents"] == 2
+
+    summary = registry_store.run_summary(SimpleNamespace(repo_root=str(tmp_path), db=str(db_path)))
+    assert summary["counts"]["registry_documents"] == 2
+
+
+def test_registry_store_rebuilds_stale_duckdb_without_document_registry(tmp_path: Path) -> None:
+    source_dir = tmp_path / "templates" / "registries"
+    db_path = tmp_path / "db" / "registries" / "registry.duckdb"
+    write_registry_source(source_dir)
+    db_path.parent.mkdir(parents=True)
+    with registry_store.connect(db_path) as conn:
+        conn.execute(
+            """
+            CREATE TABLE registry_metadata (
+                registry_name VARCHAR PRIMARY KEY,
+                metadata_json TEXT NOT NULL,
+                source_path VARCHAR NOT NULL,
+                source_sha256 VARCHAR NOT NULL,
+                built_at VARCHAR NOT NULL
+            )
+            """
+        )
+
+    usage = registry_store.load_ctl_help_usage(tmp_path)
+    runtime_help = registry_store.load_runtime_help_capabilities(tmp_path)
+    summary = registry_store.run_summary(SimpleNamespace(repo_root=str(tmp_path), db=str(db_path)))
+
+    assert usage["artifact_type"] == "ctl-help-usage"
+    assert runtime_help["artifact_type"] == "runtime-help-capabilities"
+    assert summary["counts"]["registry_documents"] == 2
 
 
 def test_registry_load_auto_builds_missing_duckdb_from_default_source_backup(tmp_path: Path) -> None:
     source_dir = tmp_path / "work" / "db" / "ariadne-knowledge-platform" / "registries"
+    db_path = tmp_path / "db" / "registries" / "registry.duckdb"
+    write_registry_source(source_dir)
+
+    registry = registry_store.load_workflow_help(tmp_path)
+    environment_registry = registry_store.load_environment_profiles(tmp_path)
+
+    assert db_path.exists()
+    assert registry["commands"][0]["command"] == "/alpha"
+    assert registry["commands"][0]["_search_terms"][0]["term"] == "entrypoint maintenance"
+    assert environment_registry["environments"][0]["name"] == "local"
+
+
+def test_registry_load_auto_builds_missing_duckdb_from_template_source(tmp_path: Path) -> None:
+    source_dir = tmp_path / "templates" / "registries"
     db_path = tmp_path / "db" / "registries" / "registry.duckdb"
     write_registry_source(source_dir)
 

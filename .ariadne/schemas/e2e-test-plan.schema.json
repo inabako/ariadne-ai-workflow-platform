@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/inabako/ariadne-ai-workflow-platform/.ariadne/schemas/e2e-test-plan.schema.json",
+  "title": "E2E Test Plan",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "schema",
+    "artifact_type",
+    "status",
+    "test_kind",
+    "work_id",
+    "objective",
+    "scenarios",
+    "expectations",
+    "required_stubs",
+    "commands",
+    "human_review_required",
+    "artifacts",
+    "next_actions"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "schema": {
+      "const": ".ariadne/schemas/e2e-test-plan.schema.json"
+    },
+    "artifact_type": {
+      "enum": [
+        "e2e-test-plan",
+        "integration-test-plan"
+      ]
+    },
+    "status": {
+      "const": "planned"
+    },
+    "test_kind": {
+      "enum": [
+        "e2e",
+        "integration"
+      ]
+    },
+    "work_id": {
+      "type": "string"
+    },
+    "objective": {
+      "type": "string"
+    },
+    "scenarios": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "expectations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "required_stubs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "human_review_required": {
+      "const": true
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "next_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

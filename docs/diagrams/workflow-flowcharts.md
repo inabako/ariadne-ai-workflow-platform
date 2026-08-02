@@ -123,6 +123,132 @@ flowchart TD
   H --> I[RAG capture candidates]
 ```
 
+## Review Council Runtime
+
+```mermaid
+flowchart TD
+  A[Intent / changed files / evidence] --> B[Review plan]
+  B --> C[Review Council session]
+  C --> D[Reviewer handoff packets]
+  D --> E[Orchestrate / next action]
+  E --> F{Reviewer findings ready?}
+  F -- no --> G[Run specialist / execute specialist]
+  G --> H[Draft findings]
+  H --> I[Add finding]
+  I --> E
+  F -- yes --> J[Review issue aggregation]
+  J --> K[Challenge round]
+  K --> L{Counterexample remains?}
+  L -- yes --> M[Human gate / reinspection]
+  M --> E
+  L -- no --> N[Evidence gate]
+  N --> O{Evidence verified?}
+  O -- no --> M
+  O -- yes --> P[Verdict policy]
+  P --> Q{Approved or risk accepted?}
+  Q -- no --> M
+  Q -- yes --> R[Knowledge capture]
+  R --> S[Review Council RAG build bridge]
+```
+
+## E2E / Integration Test Runtime
+
+```mermaid
+flowchart TD
+  A[Test objective] --> B[aiwfctl e2e plan]
+  B --> C[e2e-test-plan / integration-test-plan]
+  C --> VS[aiwfctl e2e contract scaffold]
+  VS --> V[aiwfctl e2e contract]
+  C --> V[aiwfctl e2e contract]
+  V --> VC[e2e-test-contract / integration-test-contract]
+  VC --> D[aiwfctl e2e readiness]
+  D --> E{Ready?}
+  E -- no --> F[Missing contract / Stub / command blockers]
+  F --> V
+  E -- yes --> G[aiwfctl e2e run --dry-run]
+  G --> H{Human Check approved?}
+  H -- no --> I[Stop before execution]
+  I --> J[run-result evidence]
+  H -- yes --> K[Run planned commands]
+  K --> J
+  J --> L[aiwfctl e2e observe]
+  L --> M[observation evidence]
+  M --> N[aiwfctl e2e verify]
+  N --> O{Expectations pass?}
+  O -- yes --> RP[aiwfctl e2e review-plan]
+  RP --> RC[Review Council plan / evidence gate]
+  RC --> CV[aiwfctl e2e coverage]
+  CV --> P[aiwfctl e2e explain]
+  P --> FG[aiwfctl e2e final-gate]
+  FG --> EP[aiwfctl e2e evidence-package]
+  EP --> Q[Human final confirmation]
+  O -- no --> R[aiwfctl e2e loop]
+  R --> S[Problem summary / fix instruction]
+  S --> T[Trace show problems]
+  S --> U[Review Council plan]
+  S --> V[SCM compare / commit dry-run]
+  S --> W[Retest commands]
+  W --> G
+```
+
+## Expectation-Driven Design Flow
+
+```mermaid
+flowchart TD
+  A[Requirement / usage note] --> B[Expectation design init]
+  B --> C[Usage context scaffold]
+  B --> D[Expectation set / weights / critical expectations]
+  B --> E[Design candidate scaffold]
+  E --> F[Candidate concept / flow / wireframe]
+  F --> G[Feasibility report]
+  C --> H[Expectation extraction]
+  D --> H
+  H --> I[Expectation review report]
+  I --> J{Human Gate required?}
+  J -- yes --> K[Revise expectations / weights / evidence]
+  K --> H
+  J -- no --> L[Candidate evaluation]
+  G --> L
+  L --> M[Multi-axis evaluation]
+  M --> N[Trade-off analysis]
+  N --> O[Design comparison report]
+  O --> P[Review Council dispatch]
+  P --> Q{Review Council feedback?}
+  Q -- blocked --> K
+  Q -- clear --> R{Human decision}
+  R -- select / combine --> S[Selected design refinement]
+  R -- revise --> K
+  S --> T[Interaction contracts]
+  T --> U[Expectation verification]
+  U --> V[Expectation feedback]
+```
+
+## Runtime Observability / Trace
+
+```mermaid
+flowchart TD
+  A[Workflow prompt starts] --> B{Workflow-wide trace needed?}
+  B -- yes --> C[aiwfctl trace begin]
+  C --> D[logs/runtime/active-trace.json]
+  D --> E[aiwfctl command 1]
+  E --> F[Runtime Event Logger]
+  F --> G[logs/runtime/runtime-events.log]
+  G --> H[sequence 00001 / 00002]
+  D --> I[aiwfctl command 2]
+  I --> F
+  F --> J[sequence continues 00003 / 00004]
+  J --> K[aiwfctl trace status]
+  K --> L[aiwfctl trace end]
+  L --> M[active trace closed]
+  M --> N[Workflow evidence / feedback analysis]
+
+  B -- no --> O[Command scoped trace]
+  O --> P[aiwfctl command]
+  P --> Q[auto trace id]
+  Q --> R[sequence 00001 / 00002]
+  R --> S[Next command gets another trace id]
+```
+
 ## Realtime IaC
 
 ```mermaid
@@ -267,13 +393,23 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  A[Markdown source reports] --> B[Normalize JSON]
-  B --> C[Chunk documents]
-  C --> D[Build JSONL indexes]
-  D --> E[Local embeddings]
-  E --> F[RAG dispatcher]
-  F --> G[Context packs]
-  G --> H[Development / review workflow]
+  A[Markdown source reports] --> B[Normalize UUID JSON]
+  B --> C[Raw chunk JSON]
+  C --> D[Ingestion optimization]
+  D --> E{Accepted chunk?}
+  E -- no --> F[Human check / reject evidence]
+  E -- yes --> G[Optimized chunks]
+  G --> H[Build JSONL indexes]
+  H --> I[Local embeddings]
+  I --> J[rag-build-run-latest.json]
+  J --> K{DuckDB migrate?}
+  K -- yes --> L[Generated DuckDB read model]
+  K -- no --> M[File-based indexes]
+  L --> N[RAG load query planning]
+  M --> N
+  N --> O[Retrieve by file or DuckDB backend]
+  O --> P[Compressed context packs]
+  P --> Q[Development / review workflow]
 ```
 
 ## External Web RAG
@@ -288,4 +424,30 @@ flowchart TD
   F --> G[Specialist review]
   G --> H[Trusted external knowledge record]
   H --> I[Internal RAG candidate after approval]
+```
+
+## Kubernetes / k3s Preparation
+
+```mermaid
+flowchart TD
+  A[Requirement / Design] --> Prepare[aiwfctl iac prepare]
+  Prepare --> B[App Runtime Assessment]
+  B --> C[Deployment Contract]
+  C --> D[IaC Deployment Gap Report]
+  D --> E[Requirement mentions Kubernetes / k3s]
+  E --> F[Compatibility Assessment]
+  F --> G[Gap Report]
+  G --> H{Critical or High gap?}
+  H -- yes --> I[Constrained manifest scaffold with placeholders]
+  H -- no --> J[Manifest scaffold]
+  I --> K[kubectl dry-run evidence]
+  J --> K
+  K --> L[Integration E2E plan]
+  L --> LC[Integration E2E contract]
+  LC --> M[E2E readiness / run / observe / verify]
+  M --> N{Pass?}
+  N -- yes --> O[Kubernetes evidence for Human Check]
+  N -- no --> P[E2E loop: problem -> fix instruction -> retest]
+  P --> D
+  O --> Q[Release / PR evidence]
 ```

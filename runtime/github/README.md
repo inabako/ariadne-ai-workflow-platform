@@ -32,7 +32,7 @@ GitHub連携に必要な値は repository root の `.env` から読み込みま�
 
 `GH_HOST` / `GITHUB_API_URL` は通常不要です。未指定の場合、REST API endpoint は `https://api.github.com`、GraphQL endpoint は `https://api.github.com/graphql` です。GitHub Enterprise Server などで明示したい場合だけ `GITHUB_API_URL` に `https://<host>/api/v3` 形式で指定できます。GraphQL endpointだけを上書きする場合は `GITHUB_GRAPHQL_URL` を指定します。
 
-`GITHUB_OWNER` を設定すると、`localty-system-gui` のようなrepository名だけの指定を `<GITHUB_OWNER>/localty-system-gui` として解決できます。
+`GITHUB_OWNER` を設定すると、`target-system` のようなrepository名だけの指定を `<GITHUB_OWNER>/target-system` として解決できます。
 
 `--github-repo` が未指定の場合、`scm-state.json` の repository を使います。
 

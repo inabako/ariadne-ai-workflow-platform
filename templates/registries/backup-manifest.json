@@ -1,0 +1,35 @@
+{
+    "backup_type":  "runtime-registries-template-seed",
+    "source_repository":  "ariadne-ai-workflow-platform",
+    "source_path":  "templates/registries",
+    "source_of_truth":  "templates/registries in ariadne-ai-workflow-platform",
+    "backup_path":  "templates/registries",
+    "copied_at":  "2026-07-15T15:59:50Z",
+    "files":  [
+                  {
+                      "name":  "human_gates.json",
+                      "length":  2016,
+                      "sha256":  "411db6b021c7dc5eb34bddcb389ec9f143fb3360982dc3f8441300331f57d43a"
+                  },
+                  {
+                      "name":  "README.md",
+                      "length":  1072,
+                      "sha256":  "1e19f065c01f6098615583306ee70ba1275e398a4772065cb422fd11aabfa2c4"
+                  },
+                  {
+                      "name":  "tool_candidates.json",
+                      "length":  6108,
+                      "sha256":  "dc56db027947e5b0cce1e28ab503261cd7668409a81594dcf886ffe640467bee"
+                  },
+                  {
+                      "name":  "workflow_environment_profiles.json",
+                      "length":  16192,
+                      "sha256":  "96e277848c9a220e4198700d75599e11067e1005bd56836ea01a60a753b618f3"
+                  },
+                  {
+                      "name":  "workflow_help.json",
+                      "length":  53036,
+                      "sha256":  "a058bea364830ca127a03f54c554a1d8219a1c5992b90599468759246fc47ae6"
+                  }
+              ]
+}

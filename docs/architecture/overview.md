@@ -1,4 +1,4 @@
-﻿# アーキテクチャ概要
+# アーキテクチャ概要
 
 ARIADNEは、Context Firstを基本にしたAI workflow platformです。文書化されたworkflow入口、runtime helper、state artifact、evidence、Human Gate、復帰経路を組み合わせて作業を進めます。
 

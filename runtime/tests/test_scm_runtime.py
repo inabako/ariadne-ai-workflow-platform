@@ -483,7 +483,7 @@ def test_prepare_support_repository_dry_run_writes_state_report_and_artifacts(tm
     args = argparse.Namespace(
         work_id="issue-1",
         name="protocol",
-        repository="localty-system-protocol",
+        repository="target-system-protocol",
         branch="main",
         remote="origin",
         repo_root=str(repo),
@@ -527,7 +527,7 @@ def test_prepare_support_repository_replaces_existing_state_entry(tmp_path: Path
     args = argparse.Namespace(
         work_id="issue-1",
         name="protocol",
-        repository="inabako/localty-system-protocol",
+        repository="owner/target-system-protocol",
         branch="develop",
         remote=None,
         repo_root=str(repo),
@@ -550,7 +550,7 @@ def test_prepare_support_repository_rejects_existing_non_git_source_dir(tmp_path
     args = argparse.Namespace(
         work_id="issue-1",
         name="protocol",
-        repository="inabako/localty-system-protocol",
+        repository="owner/target-system-protocol",
         branch="main",
         remote=None,
         repo_root=str(repo),
@@ -582,7 +582,7 @@ def test_prepare_support_repository_updates_existing_git_repo(
     args = argparse.Namespace(
         work_id="issue-1",
         name="protocol",
-        repository="inabako/localty-system-protocol",
+        repository="owner/target-system-protocol",
         branch="develop",
         remote="upstream",
         repo_root=str(repo),
@@ -616,7 +616,7 @@ def test_prepare_support_repository_parser_clone_pull_main_and_script_paths(
             "--name",
             "protocol",
             "--repository",
-            "inabako/localty-system-protocol",
+            "owner/target-system-protocol",
             "--branch",
             "develop",
             "--remote",
@@ -665,7 +665,7 @@ def test_prepare_support_repository_parser_clone_pull_main_and_script_paths(
     update_args = argparse.Namespace(
         work_id="issue-1",
         name="protocol",
-        repository="inabako/localty-system-protocol",
+        repository="owner/target-system-protocol",
         branch="develop",
         remote="origin",
         repo_root=str(repo),
@@ -699,7 +699,7 @@ def test_prepare_support_repository_parser_clone_pull_main_and_script_paths(
             "--name",
             "protocol",
             "--repository",
-            "inabako/localty-system-protocol",
+            "owner/target-system-protocol",
             "--repo-root",
             str(repo),
         ]
@@ -717,7 +717,7 @@ def test_prepare_support_repository_parser_clone_pull_main_and_script_paths(
             "--name",
             "protocol",
             "--repository",
-            "inabako/localty-system-protocol",
+            "owner/target-system-protocol",
             "--repo-root",
             str(repo),
         ]

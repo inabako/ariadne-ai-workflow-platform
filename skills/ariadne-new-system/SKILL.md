@@ -1,4 +1,4 @@
-﻿---
+---
 name: ariadne-new-system
 description: Start the Ariadne AI Workflow for creating a new target system, runtime, remote operation system, device integration, or architecture-level system launch. Use when the user selects /ariadne-new-system or asks to begin an Ariadne New System flow from a completed requirement document in work/requirements/.
 ---

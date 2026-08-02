@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/inabako/ariadne-ai-workflow-platform/.ariadne/schemas/e2e-test-contract.schema.json",
+  "title": "E2E Test Contract",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "schema",
+    "artifact_type",
+    "status",
+    "test_kind",
+    "work_id",
+    "test_contract",
+    "missing_contract_fields",
+    "human_review_required",
+    "artifacts",
+    "next_actions"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "schema": {"const": ".ariadne/schemas/e2e-test-contract.schema.json"},
+    "artifact_type": {"enum": ["e2e-test-contract", "integration-test-contract"]},
+    "status": {"enum": ["ready", "draft-with-gaps"]},
+    "test_kind": {"enum": ["e2e", "integration"]},
+    "work_id": {"type": "string"},
+    "test_contract": {
+      "type": "object",
+      "required": [
+        "objective",
+        "trigger",
+        "preconditions",
+        "expected_route",
+        "expected_state_transitions",
+        "expected_side_effects",
+        "observable_endpoints",
+        "timing_constraints",
+        "ordering_constraints",
+        "duplicate_handling",
+        "retry_expectations",
+        "recovery_expectations",
+        "required_stubs",
+        "failure_signals",
+        "evidence_requirements",
+        "human_review_points"
+      ],
+      "additionalProperties": true
+    },
+    "missing_contract_fields": {"type": "array", "items": {"type": "string"}},
+    "responsibility_split": {"type": "object"},
+    "human_review_required": {"const": true},
+    "artifacts": {"type": "object", "additionalProperties": {"type": "string"}},
+    "next_actions": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

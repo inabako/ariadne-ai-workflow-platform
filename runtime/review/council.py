@@ -32,6 +32,7 @@ from runtime.constants.paths import (
 )
 from runtime.constants.schemas import REVIEW_COUNCIL_RAG_BUILD_SCHEMA
 from runtime.constants.schemas import REVIEW_COUNCIL_SPECIALIST_EXECUTION_SCHEMA
+from runtime.constants.workspace import test_specifications_dir_for_work_dir, work_dir_for_id
 from runtime.observability.logger import RuntimeEventLogger
 from runtime.rag import rag_build
 from runtime.review.constants import DEFAULT_REVIEW_FINDING_CONFIDENCE
@@ -2233,7 +2234,7 @@ def _required_tests(session: dict[str, Any], extra: list[str]) -> list[str]:
 
 
 def _default_test_spec_paths(repo_root: Path, work_id: str) -> list[Path]:
-    base = repo_root / "work" / work_id / "test-specifications"
+    base = test_specifications_dir_for_work_dir(work_dir_for_id(repo_root, work_id))
     if not base.exists():
         return []
     return sorted(path for path in base.glob("*.md") if path.is_file())

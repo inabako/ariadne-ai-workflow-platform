@@ -1,4 +1,8 @@
-﻿# Documentation Guide
+# Documentation Guide
+
+Workflow 開始前の総合確認は `aiwfctl ready` を使います。状態語彙は [Runtime State Glossary](reference/runtime-state-glossary.md) を参照してください。
+
+Runtime の最短運用は [Runtime UX Quickstart](reference/runtime-quickstart.md) を参照してください。
 
 この `docs/` は、Ariadne AI Workflow Platform を運用するための日本語ドキュメント置き場です。
 
@@ -16,27 +20,33 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
    - この repository の directory 役割を確認する。
 5. [Runtime](reference/runtime.md)
    - workflow を支える CLI と副作用境界を確認する。
-6. [Context First Architecture](reference/context-first-architecture.md)
+6. [Runtime Observability](runtime/runtime-observability.md)
+   - runtime event log、active trace、workflow単位のsequence、テスト確認ログを確認する。
+7. [Context First Architecture](reference/context-first-architecture.md)
    - Dispatcher Contextを先に作り、WorkflowがContextを第一入力にする原則を確認する。
-7. [Environment Selection](reference/environment-selection.md)
+8. [Environment Selection](reference/environment-selection.md)
    - `aiwfctl env` による実行環境 profile 選択を確認する。
-8. [Templates](reference/templates.md)
+9. [Templates](reference/templates.md)
    - 要件、設計、process report、test evidence のひな形を確認する。
-9. [Workflow Feedback](reference/workflow-feedback.md)
+10. [Workflow Feedback](reference/workflow-feedback.md)
    - 各AI workflow実行時に改善候補を `work/feedback/` へ残し、後で `/self-improvement` で採用判断する流れを確認する。
-10. [RAG](reference/rag.md)
-   - corrective action report を検索可能な知識へ変換する流れを確認する。
-11. [Test Artifact Storage](reference/test-artifact-storage.md)
+11. [RAG](reference/rag.md)
+   - RAGのsource分類、artifact配置、cleanup分類、関連docsの役割を確認する。
+12. [Test Artifact Storage](reference/test-artifact-storage.md)
    - テスト仕様書、QTest、結合疎通証跡、target repo docsへの保存先を確認する。
-12. [Mermaid Diagrams](diagrams/README.md)
+13. [Development Notes](development-notes/README.md)
+   - versionごとの意図、変更、検証、残課題を確認する。
+14. [Documentation Maintenance](reference/documentation-maintenance.md)
+   - 実装、runtime、workflow、RAG、release運用を変えたときに一緒に確認するdocsを確認する。
+15. [Mermaid Diagrams](diagrams/README.md)
    - 各AI workflowの動作イメージをflowchartで確認する。
    - Dispatcher群とWorkflowの関係は [Dispatcher / Workflow Map](diagrams/dispatcher-workflow-map.md) を確認する。
-13. [Architecture Overview](architecture/overview.md)
-   - OSS公開前に、aiwfctl、runtime、workflow dispatch、state、artifact、evidence、Human Gate、復帰処理の全体像を確認する。
-14. [Release Policy](release/release-policy.md)
-   - release checklist、versioning、manifest、公開前検証の流れを確認する。
-15. [License Policy](legal/license-policy.md)
-   - `AGPL-3.0-or-later` 方針、生成物への非波及方針、公開前の法務レビュー事項を確認する。
+16. [Architecture Overview](architecture/overview.md)
+   - aiwfctl、runtime、workflow dispatch、state、artifact、evidence、Human Gate、復帰処理の全体像を確認する。
+17. [Release Policy](release/release-policy.md)
+   - release checklist、versioning、manifest、release検証の流れを確認する。
+18. [License Policy](legal/license-policy.md)
+   - `AGPL-3.0-or-later` 方針、生成物への非波及方針、release時の法務レビュー事項を確認する。
 
 ## Governance Docs
 
@@ -99,9 +109,11 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 | --- | --- |
 | [Runtime pytest UT Specifications](reference/runtime-pytest-ut/README.md) | runtime pytest UT仕様書ディレクトリ、項目表、pytest node id別の単体試験仕様書 |
 | [Runtime pytest UT Test Items](reference/runtime-pytest-ut/test-items.md) | runtime pytest UT項目表、test file別の観点、件数、coverage到達点 |
-| [Runtime pytest UT Case Specification](reference/runtime-pytest-ut/case-specification.md) | runtime pytest 533ケース分の単体試験仕様書、pytest node id別の確認内容 |
+| [Runtime pytest UT Case Specification](reference/runtime-pytest-ut/case-specification.md) | runtime pytest の単体試験仕様書、pytest node id別の確認内容 |
+| [Documentation Maintenance](reference/documentation-maintenance.md) | 変更種別ごとに一緒に確認するdocs、UT仕様、Development Notes、表現チェック |
 | [Repository Structure](reference/repository-structure.md) | root directory、work directory、artifact保存先 |
 | [Runtime](reference/runtime.md) | runtime CLI、GitHub/SCM/環境ファイル |
+| [Runtime Observability](runtime/runtime-observability.md) | runtime event log、active trace、workflow sequence、`logs/test` の確認ログ |
 | [Templates](reference/templates.md) | templates配下の成果物ひな形と品質ルール |
 | [Test Artifact Storage](reference/test-artifact-storage.md) | テスト仕様書、QTest、結合疎通証跡の保存先 |
 | [VSCode Environment](reference/vscode-environment.md) | VSCode Workspace as Code、terminal profiles、task labels、preflight |
@@ -112,9 +124,17 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 | [Workflow Help CLI](reference/workflow-help.md) | `aiwfctl help` でprompt command、必須引数、処理概要、詳細を検索する |
 | [Workflow Feedback](reference/workflow-feedback.md) | 各AI workflow実行時にFeedback reportを保存し、蓄積後に`/self-improvement`で採用判断する運用 |
 | [Environment Selection](reference/environment-selection.md) | `aiwfctl env` でworkflow実行前にWindows / WSL / Docker profileを選ぶ |
-| [RAG](reference/rag.md) | internal / external-web RAG pipeline、出力artifact、境界 |
+| [RAG](reference/rag.md) | RAG全体の概念、source分類、artifact配置、cleanup分類 |
 | [RAG Dispatcher Design Notes](reference/rag-dispatcher.md) | dispatch plan、query planning、Agent間handoff、UUIDと意味検索の責任分離 |
 | [Operations](reference/operations.md) | commit rule、human gate、encoding、archiveの運用注意 |
+
+## RAG文書
+
+| Document | Purpose |
+| --- | --- |
+| [RAG Documents](rag/README.md) | RAG read model、吸収品質、検証文書の入口 |
+| [DuckDB RAG Read Model](rag/duckdb-read-model.md) | DuckDB read modelの生成、検索、再構築、Git管理境界 |
+| [RAG Knowledge Quality Metrics](rag/knowledge-quality-metrics.md) | ingestion optimizationの評価項目、判定、evidence |
 
 ## Architecture文書
 
@@ -134,23 +154,32 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 | Document | Purpose |
 | --- | --- |
 | [Release Policy](release/release-policy.md) | releaseに必要な文書、検証、Human Gate |
-| [Release Checklist](release/release-checklist.md) | 公開前、テスト、文書、release、post-release確認 |
+| [Release Checklist](release/release-checklist.md) | release前、テスト、文書、release、post-release確認 |
 | [Versioning Policy](release/versioning-policy.md) | tag、package version、development noteの関係 |
-| [Citation Guide](citation/citation-guide.md) | `CITATION.cff` の未確定値と公開前確認 |
-| [ScanCode GitHub Actions](security/scancode-github-actions.md) | OSS公開前のScanCode license audit workflowとローカル予行 |
+| [Citation Guide](citation/citation-guide.md) | `CITATION.cff` の未確定値とrelease確認 |
+| [ScanCode GitHub Actions](security/scancode-github-actions.md) | ScanCode license audit workflowとローカル予行 |
+
+## Development Notes
+
+| Document | Purpose |
+| --- | --- |
+| [Development Notes Index](development-notes/README.md) | version noteの読み方、記録項目、運用ルール |
+| [v0.0.1 Development Notes](development-notes/v0.0.1.md) | 初期AI workflow基盤、Context First、Runtime、RAG、Evidence |
+| [v0.0.2 Development Notes](development-notes/v0.0.2.md) | Runtime復帰、Feedback、Review Council Runtime、Expectation-Driven Design Flow、OSS公開準備 |
+| [v0.0.3 Development Notes](development-notes/v0.0.3.md) | OSS公開後の運用安定化、registry bootstrap、Runtime trace / log |
 
 ## Legal文書
 
 | Document | Purpose |
 | --- | --- |
-| [License Policy](legal/license-policy.md) | `AGPL-3.0-or-later` 方針、生成物方針、公開前確認 |
+| [License Policy](legal/license-policy.md) | `AGPL-3.0-or-later` 方針、生成物方針、release確認 |
 | [Generated Artifacts](legal/generated-artifacts.md) | ARIADNE利用による生成物への非波及方針 |
 | [Component License Boundaries](legal/component-license-boundaries.md) | ARIADNE本体、外部入力、生成物の境界 |
 | [Network Source Offer](legal/network-source-offer.md) | AGPL採用時に必要なnetwork source offer検討 |
 | [Third-Party Licenses](legal/third-party-licenses.md) | dependency license auditの入口 |
-| [Legal FAQ](legal/faq.md) | 公開前に利用者へ説明するライセンスFAQ |
-| [Legal Evidence Index](legal/README.md#release-evidence) | 公開前のreview itemとrelease evidenceの入口 |
-| [Legal Review Items](legal/evidence/legal-review-items.md) | 公開前に人間確認が必要な著作権者、公開URL、GitHub Security Advisories方針など |
+| [Legal FAQ](legal/faq.md) | 利用者へ説明するライセンスFAQ |
+| [Legal Evidence Index](legal/README.md#release-evidence) | release review itemとrelease evidenceの入口 |
+| [Legal Review Items](legal/evidence/legal-review-items.md) | release時に人間確認が必要な著作権者、公開URL、GitHub Security Advisories方針など |
 | [Dependency License Report](legal/evidence/dependency-license-report.json) | third-party dependency license review状況 |
 | [License Boundary Report](legal/evidence/license-boundary-report.json) | ARIADNE本体、生成物、外部入力のlicense boundary |
 | [Release License Check](legal/evidence/release-license-check.json) | AGPL方針へのrelease license整合性確認 |

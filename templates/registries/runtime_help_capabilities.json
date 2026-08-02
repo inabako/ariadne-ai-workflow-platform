@@ -1,0 +1,320 @@
+{
+  "schema_version": "1.0",
+  "schema": ".ariadne/schemas/runtime-help-capabilities.schema.json",
+  "artifact_type": "runtime-help-capabilities",
+  "guide_title": "Runtime Command Guide",
+  "runtime_sections": [
+    {
+      "title": "まず現在地を確認する",
+      "commands": [
+        "aiwfctl status",
+        "aiwfctl status --work-id <work-id>",
+        "aiwfctl status --work-id <work-id> --json",
+        "aiwfctl status --summary --json",
+        "aiwfctl status --problems --json",
+        "aiwfctl status --verbose --json",
+        "aiwfctl ready",
+        "aiwfctl ready --json",
+        "aiwfctl ready --strict --json",
+        "aiwfctl ready --json --output work/evidence/runtime-ready.json"
+      ]
+    },
+    {
+      "title": "workflow traceを開始・確認・終了する",
+      "commands": [
+        "aiwfctl trace begin --workflow /<workflow-name>",
+        "aiwfctl trace begin --workflow /<workflow-name> --work-id <work-id>",
+        "aiwfctl trace status",
+        "aiwfctl trace show",
+        "aiwfctl trace show <trace-id>",
+        "aiwfctl trace show <trace-id> --problems",
+        "aiwfctl trace recover --dry-run",
+        "aiwfctl trace end"
+      ]
+    },
+    {
+      "title": "help / docs",
+      "commands": [
+        "aiwfctl help list",
+        "aiwfctl help show <workflow-command>",
+        "aiwfctl help search <keyword>",
+        "aiwfctl help open --query <keyword>",
+        "aiwfctl help runtime --json",
+        "docs/reference/runtime.md",
+        "docs/reference/runtime-quickstart.md"
+      ]
+    },
+    {
+      "title": "runtime logの肥大化を確認・整理する",
+      "commands": [
+        "aiwfctl log summary",
+        "aiwfctl log tail -n 20",
+        "aiwfctl log grep --trace-id <trace-id>",
+        "aiwfctl log export --trace-id <trace-id> --output work/evidence/runtime-log-export.json",
+        "aiwfctl log acknowledge-problem --trace-id <trace-id> --sequence <sequence>",
+        "aiwfctl log archive --keep-last 1000 --dry-run",
+        "aiwfctl log archive --keep-last 1000 --human-check approved",
+        "aiwfctl log prune --keep-last 1000 --dry-run"
+      ]
+    },
+    {
+      "title": "結合/E2Eテストを計画・証跡化する",
+      "commands": [
+        "aiwfctl e2e plan --work-id <work-id> --objective \"試験目的\"",
+        "aiwfctl e2e contract scaffold --work-id <work-id>",
+        "aiwfctl e2e contract --work-id <work-id>",
+        "aiwfctl e2e readiness --work-id <work-id>",
+        "aiwfctl e2e run --work-id <work-id> --dry-run",
+        "aiwfctl e2e run --work-id <work-id> --human-check approved",
+        "aiwfctl e2e observe --work-id <work-id>",
+        "aiwfctl e2e verify --work-id <work-id>",
+        "aiwfctl e2e review-plan --work-id <work-id>",
+        "aiwfctl e2e coverage --work-id <work-id>",
+        "aiwfctl e2e explain --work-id <work-id>",
+        "aiwfctl e2e final-gate --work-id <work-id> --human-decision approved --reviewer <name>",
+        "aiwfctl e2e evidence-package --work-id <work-id> --trace-id <trace-id> --output docs/evidence/<work-id>/e2e-package.json",
+        "aiwfctl e2e loop --work-id <work-id>"
+      ]
+    },
+    {
+      "title": "Kubernetes/k3s の成立性と dry-run evidence を確認する",
+      "commands": [
+        "aiwfctl iac prepare --work-id <work-id>",
+        "aiwfctl iac prepare --work-id <work-id> --provider kubernetes",
+        "aiwfctl iac deployment assess --work-id <work-id>",
+        "aiwfctl iac deployment contract --work-id <work-id>",
+        "aiwfctl iac deployment gap-report --work-id <work-id>",
+        "aiwfctl iac kubernetes assess --work-id <work-id>",
+        "aiwfctl iac kubernetes gap-report --work-id <work-id>",
+        "aiwfctl iac kubernetes generate --work-id <work-id>",
+        "aiwfctl iac kubernetes generate --work-id <work-id> --spec-delta work/<work-id>/context/spec-delta.json",
+        "aiwfctl iac kubernetes dry-run --work-id <work-id>",
+        "aiwfctl iac kubernetes dry-run --work-id <work-id> --execute --human-check approved",
+        "aiwfctl iac kubernetes e2e-plan --work-id <work-id>",
+        "aiwfctl iac kubernetes evidence --work-id <work-id>"
+      ]
+    },
+    {
+      "title": "warningと復帰手順を確認する",
+      "commands": [
+        "aiwfctl doctor",
+        "aiwfctl doctor --json",
+        "aiwfctl doctor --fix-suggestion-only"
+      ]
+    }
+  ],
+  "responsibility_boundary": {
+    "status": "現在地、直近の問題、doctor warning count、dependency readinessを軽く見る入口です。",
+    "preflight": "OSやローカル環境に依存するtool/package readinessを確認します。installやcredential設定はHuman Check後に進めます。",
+    "doctor": "repository構造、schema、runtime contract、docs/test evidenceの健全性を確認します。環境依存の準備確認はpreflightへ寄せます。"
+  },
+  "responsibility_boundary_title": "preflight と doctor の使い分け",
+  "status_views": [
+    {
+      "mode": "summary",
+      "command": "aiwfctl status --summary --json",
+      "purpose": "Agentやdashboard向けの軽量状態確認"
+    },
+    {
+      "mode": "problems",
+      "command": "aiwfctl status --problems --json",
+      "purpose": "失敗、警告、未準備項目だけを追う調査用"
+    },
+    {
+      "mode": "verbose",
+      "command": "aiwfctl status --verbose --json",
+      "purpose": "全フィールドを明示的に読む詳細確認"
+    }
+  ],
+  "readiness_capabilities": [
+    {
+      "command": "aiwfctl ready",
+      "purpose": "workflow開始前にstatus、doctor、dependency readiness、UT spec syncをまとめて確認する"
+    },
+    {
+      "command": "aiwfctl ready --json",
+      "purpose": "Agentやdashboard向けにruntime readiness gateを機械可読で確認する"
+    },
+    {
+      "command": "aiwfctl ready --strict --json",
+      "purpose": "release前やCI相当の確認でattentionもblockedとして扱う"
+    },
+    {
+      "command": "aiwfctl ready --json --output work/evidence/runtime-ready.json",
+      "purpose": "Human Checkやhandoff向けにruntime readinessをevidenceとして保存する"
+    }
+  ],
+  "dry_run_section_title": "書き込み前に実行予定を確認する",
+  "dry_run_capabilities": [
+    {
+      "command": "aiwfctl rag build --dry-run",
+      "output_supported": true,
+      "evidence_example": "aiwfctl rag build --dry-run --output work/evidence/rag-build-dry-run.json",
+      "purpose": "RAG buildで読む/書く予定のartifactを事前確認する"
+    },
+    {
+      "command": "aiwfctl rag duckdb rebuild --source-repo work/db/ariadne-knowledge-platform --reset --dry-run",
+      "output_supported": true,
+      "evidence_example": "aiwfctl rag duckdb rebuild --source-repo work/db/ariadne-knowledge-platform --reset --dry-run --output work/evidence/duckdb-rebuild-dry-run.json",
+      "purpose": "DuckDB read model再生成の対象と出力を事前確認する"
+    },
+    {
+      "command": "aiwfctl rag semantic-hints build --dry-run",
+      "output_supported": false,
+      "evidence_example": "",
+      "purpose": "semantic hints buildの対象を事前確認する"
+    },
+    {
+      "command": "aiwfctl doctor --repair-encoding --dry-run",
+      "output_supported": true,
+      "evidence_example": "aiwfctl doctor --repair-encoding --dry-run --output work/evidence/doctor-repair-dry-run.json",
+      "purpose": "encoding修復の予定だけを確認する"
+    },
+    {
+      "command": "aiwfctl log archive --keep-last 1000 --dry-run",
+      "output_supported": true,
+      "evidence_example": "aiwfctl log archive --keep-last 1000 --dry-run --output work/evidence/runtime-log-archive-dry-run.json",
+      "purpose": "runtime log退避/縮小の予定を確認する"
+    },
+    {
+      "command": "aiwfctl log prune --keep-last 1000 --dry-run",
+      "output_supported": true,
+      "evidence_example": "aiwfctl log prune --keep-last 1000 --dry-run --output work/evidence/runtime-log-prune-dry-run.json",
+      "purpose": "runtime log縮小の予定を確認する"
+    },
+    {
+      "command": "aiwfctl scm prepare --work-id <work-id> --repository <owner/repo> --dry-run",
+      "output_supported": false,
+      "evidence_example": "",
+      "purpose": "target repository取得前にSCM準備内容を確認する"
+    },
+    {
+      "command": "aiwfctl scm commit --work-id <work-id> --message \"type(scope): summary\" --dry-run",
+      "output_supported": false,
+      "evidence_example": "",
+      "purpose": "commit対象とmessageを事前確認する"
+    },
+    {
+      "command": "aiwfctl retrieval run --plan <task-plan.json> --dry-run",
+      "output_supported": false,
+      "evidence_example": "",
+      "purpose": "task runnerの実行計画を事前確認する"
+    },
+    {
+      "command": "aiwfctl e2e run --work-id <work-id> --dry-run",
+      "output_supported": true,
+      "evidence_example": "work/<work-id>/test-evidence/e2e-test/run-result.json",
+      "purpose": "E2E/結合試験の実行前に対象commandと不足条件を証跡化する"
+    },
+    {
+      "command": "aiwfctl e2e contract scaffold --work-id <work-id>",
+      "output_supported": true,
+      "evidence_example": "work/<work-id>/test-specifications/e2e-test-contract.json",
+      "purpose": "E2E/結合試験の検証契約ひな形を作り、AIがテストを書く前に埋めるべき成功条件、失敗条件、観測点、evidence要件を可視化する"
+    },
+    {
+      "command": "aiwfctl e2e contract --work-id <work-id>",
+      "output_supported": true,
+      "evidence_example": "work/<work-id>/test-specifications/e2e-test-contract.json",
+      "purpose": "E2E/結合試験の実装・実行前に検証契約を固定し、成功条件、失敗条件、観測点、evidence要件を明示する"
+    },
+    {
+      "command": "aiwfctl e2e review-plan --work-id <work-id>",
+      "output_supported": true,
+      "evidence_example": "work/<work-id>/test-evidence/e2e-test/review-plan.json",
+      "purpose": "E2E/結合試験のverification evidenceをReview Councilへ渡すためのreviewer、evidence、review plan/evidence-gate commandを証跡化する"
+    },
+    {
+      "command": "aiwfctl e2e coverage --work-id <work-id>",
+      "output_supported": true,
+      "evidence_example": "work/<work-id>/test-evidence/e2e-test/coverage.json",
+      "purpose": "E2E/結合試験のcontract fieldとrequired evidenceの充足状況を確認し、Human最終確認前のcoverage evidenceとして保存する"
+    },
+    {
+      "command": "aiwfctl e2e final-gate --work-id <work-id> --human-decision approved --reviewer <name>",
+      "output_supported": true,
+      "evidence_example": "work/<work-id>/test-evidence/e2e-test/human-final-gate.json",
+      "purpose": "E2E/結合試験のverification、Review Council bridge、coverage、explanationを入力にしてHuman最終判断、判断理由、参照先を証跡化する"
+    },
+    {
+      "command": "aiwfctl e2e evidence-package --work-id <work-id> --trace-id <trace-id> --output docs/evidence/<work-id>/e2e-package.json",
+      "output_supported": true,
+      "evidence_example": "work/<work-id>/test-evidence/e2e-test/evidence-package.json",
+      "purpose": "E2E/結合試験のplan、contract、各evidence、Review Council bridge、coverage、explanation、Human final gate、trace/log参照、未解決loop状態を後続AgentやPR向けのhandoff packageとして集約する"
+    },
+    {
+      "command": "aiwfctl e2e loop --work-id <work-id>",
+      "output_supported": true,
+      "evidence_example": "work/<work-id>/test-evidence/e2e-test/loop.json",
+      "purpose": "問題発見、修正指示、Review Council/SCM連携、再テスト導線を1つの証跡に束ねる"
+    }
+  ],
+  "situations_title": "よくある状況別",
+  "situations": [
+    {
+      "name": "fresh checkout後",
+      "commands": [
+        "aiwfctl status --summary --json",
+        "aiwfctl preflight --profile runtime-dev",
+        "aiwfctl doctor"
+      ]
+    },
+    {
+      "name": "workflowが止まった",
+      "commands": [
+        "aiwfctl status --problems --json",
+        "aiwfctl trace show --problems",
+        "aiwfctl doctor --fix-suggestion-only"
+      ]
+    },
+    {
+      "name": "RAGが検索できない",
+      "commands": [
+        "aiwfctl status --problems --json",
+        "aiwfctl rag duckdb rebuild --source-repo work/db/ariadne-knowledge-platform --reset --dry-run",
+        "aiwfctl doctor --fix-suggestion-only"
+      ]
+    },
+    {
+      "name": "GitHub push前",
+      "commands": [
+        "aiwfctl preflight --profile github-cli",
+        "aiwfctl doctor --json",
+        "aiwfctl status --summary --json"
+      ]
+    },
+    {
+      "name": "E2E/結合試験を残したい",
+      "commands": [
+        "aiwfctl e2e plan --work-id <work-id> --objective \"試験目的\"",
+        "aiwfctl e2e contract scaffold --work-id <work-id>",
+        "aiwfctl e2e contract --work-id <work-id>",
+        "aiwfctl e2e readiness --work-id <work-id>",
+        "aiwfctl e2e run --work-id <work-id> --dry-run",
+        "aiwfctl e2e verify --work-id <work-id>",
+        "aiwfctl e2e review-plan --work-id <work-id>",
+        "aiwfctl e2e coverage --work-id <work-id>",
+        "aiwfctl e2e explain --work-id <work-id>",
+        "aiwfctl e2e final-gate --work-id <work-id> --human-decision approved --reviewer <name>",
+        "aiwfctl e2e evidence-package --work-id <work-id> --trace-id <trace-id> --output docs/evidence/<work-id>/e2e-package.json",
+        "aiwfctl e2e loop --work-id <work-id>"
+      ]
+    }
+  ],
+  "recovery_section_title": "止まったときの最短確認順",
+  "recovery_steps": [
+    "aiwfctl status --problems --json",
+    "aiwfctl trace show --problems",
+    "aiwfctl doctor --fix-suggestion-only",
+    "書き込み系commandは --dry-run で確認",
+    "問題なければHuman Check後に実行"
+  ],
+  "docs": [
+    "docs/reference/runtime.md",
+    "docs/reference/runtime-quickstart.md",
+    "docs/reference/runtime-state-glossary.md",
+    "docs/reference/e2e-test-runtime.md",
+    "docs/reference/iac-deployment-runtime.md",
+    "docs/reference/kubernetes-runtime.md"
+  ]
+}

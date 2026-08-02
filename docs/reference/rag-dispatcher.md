@@ -1,4 +1,4 @@
-﻿# RAG Dispatcher Design Notes
+# RAG Dispatcher Design Notes
 
 この文書は、RAG dispatcher の設計思想、Agent間で共有するノウハウ、運用上の判断基準をまとめます。
 
@@ -114,7 +114,7 @@ queryは単語の羅列ではなく、目的を持つ検索単位として扱い
   "purpose": "component test and regression risk",
   "search_mode": "hybrid",
   "filters": {
-    "repository": "localty-system-gui",
+    "repository": "target-system",
     "branch": "develop",
     "tags": ["workflow"]
   }

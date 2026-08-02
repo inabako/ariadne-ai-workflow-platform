@@ -32,8 +32,8 @@ AIワークフローは増え続けます。
 
 ```text
 db/registries/registry.duckdb
-work/db/ariadne-knowledge-platform/registries/workflow_help.json
-work/db/ariadne-knowledge-platform/registries/search_terms.json
+templates/registries/workflow_help.json
+templates/registries/search_terms.json
 .ariadne/schemas/workflow-help.schema.json
 .ariadne/schemas/search-terms.schema.json
 runtime/ctl/ctl.py
@@ -112,7 +112,7 @@ flow内で作成可能
 
 - よく使う別名を `aliases` に追加する。
 - 人間が検索しそうな語を `overview`, `prerequisites`, `details`, `arguments.description` に自然に含める。
-- 明示intent語、同義語、自然文検索語は `workflow_help.json` に内包せず、`work/db/ariadne-knowledge-platform/registries/search_terms.json` に追加する。
+- 明示intent語、同義語、自然文検索語は `workflow_help.json` に内包せず、`templates/registries/search_terms.json` に追加する。
 - `workflow_help.json` の `id` は、prompt commandやextension名をsnake_case化した機能IDにする。例: `/ariadne-new-system` -> `ariadne_new_system`。
 - `search_terms.json` の検索語 `id` はUUIDにし、`owner_id` で `workflow_help.json` の機能IDへ結び付ける。
 - 英語名、日本語名、略称、prefix、入力ディレクトリを必要に応じて入れる。
@@ -157,13 +157,15 @@ workflow help を更新した場合、原則として次も確認します。
 
 ```text
 db/registries/registry.duckdb
-work/db/ariadne-knowledge-platform/registries/workflow_help.json
-work/db/ariadne-knowledge-platform/registries/search_terms.json
+templates/registries/workflow_help.json
+templates/registries/search_terms.json
 .ariadne/schemas/workflow-help.schema.json
 .ariadne/schemas/search-terms.schema.json
 docs/reference/workflow-help.md
 runtime/tests/test_ctl_help.py
 ```
+
+運用中にknowledge workspaceへmirror / backupする場合は、`work/db/ariadne-knowledge-platform/registries/` を使います。fresh checkout の bootstrap source は `templates/registries/` です。
 
 必要に応じて、対象workflowの次も更新します。
 

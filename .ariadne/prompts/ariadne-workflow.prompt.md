@@ -4,7 +4,7 @@
 
 既定では日本語で応答し、人間向けreport、document、review、evidence、RAG source Markdownは `.ariadne/shared/output-language-policy.md` に従って日本語で作成してください。
 
-このディレクトリは、Localty の Ariadne Workflow を定義します。
+このディレクトリは、Ariadne Workflow を定義します。
 
 Ariadne は特定ドメイン専用の手順ではなく、対象システムの責務境界、runtime、network、operator responsibility、safety、evidence を一貫して扱う workflow です。
 
@@ -12,7 +12,7 @@ Ariadne は特定ドメイン専用の手順ではなく、対象システムの
 
 対象システム開発では、実装できたかより先に、安全に試せるか、安全に止められるか、安全に戻せるかを確認します。
 
-Localty の workflow は、完成形を一度に作るためではなく、現場で学びながら安全に成長するためのものです。
+Ariadne の workflow は、完成形を一度に作るためではなく、運用で学びながら安全に更新していくためのものです。
 
 ## Ariadne Responsibility
 

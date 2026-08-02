@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/schemas/runtime-help-capabilities.schema.json",
+  "title": "Runtime Help Capabilities",
+  "description": "Machine-readable capabilities exposed by aiwfctl help runtime --json.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "schema",
+    "artifact_type",
+    "guide_title",
+    "runtime_sections",
+    "responsibility_boundary",
+    "responsibility_boundary_title",
+    "status_views",
+    "readiness_capabilities",
+    "dry_run_capabilities",
+    "dry_run_section_title",
+    "situations",
+    "situations_title",
+    "recovery_section_title",
+    "recovery_steps",
+    "docs"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "schema": {
+      "type": "string"
+    },
+    "artifact_type": {
+      "type": "string",
+      "const": "runtime-help-capabilities"
+    },
+    "guide_title": {
+      "type": "string"
+    },
+    "runtime_sections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/commandSection"
+      }
+    },
+    "responsibility_boundary": {
+      "type": "object",
+      "required": ["status", "preflight", "doctor"],
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "preflight": {
+          "type": "string"
+        },
+        "doctor": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "responsibility_boundary_title": {
+      "type": "string"
+    },
+    "status_views": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/commandCapability"
+      }
+    },
+    "readiness_capabilities": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/namedCommandCapability"
+      }
+    },
+    "dry_run_capabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["command", "output_supported", "evidence_example", "purpose"],
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "output_supported": {
+            "type": "boolean"
+          },
+          "evidence_example": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "dry_run_section_title": {
+      "type": "string"
+    },
+    "situations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "commands"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "commands": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "situations_title": {
+      "type": "string"
+    },
+    "recovery_section_title": {
+      "type": "string"
+    },
+    "recovery_steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "docs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "commandSection": {
+      "type": "object",
+      "required": ["title", "commands"],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "commandCapability": {
+      "type": "object",
+      "required": ["mode", "command", "purpose"],
+      "properties": {
+        "mode": {
+          "type": "string"
+        },
+        "command": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "namedCommandCapability": {
+      "type": "object",
+      "required": ["command", "purpose"],
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

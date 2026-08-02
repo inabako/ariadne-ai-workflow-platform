@@ -1,4 +1,4 @@
-﻿# GitHub Knowledge Maintenance
+# GitHub Knowledge Maintenance
 
 `/github-knowledge-maintenance` は、GitHub Repositoryを長期的な知識資産として保守するworkflowです。
 
@@ -330,10 +330,10 @@ type(scope): 変更の責務または成果
 避ける例:
 
 ```text
-feat(localty): 対応
-feat(localty): 修正
-feat(localty): README.mdを修正
-feat(localty): protocol共通化に伴う対応
+feat(target-system): 対応
+feat(target-system): 修正
+feat(target-system): README.mdを修正
+feat(target-system): protocol共通化に伴う対応
 ```
 
 推奨例:
@@ -341,7 +341,7 @@ feat(localty): protocol共通化に伴う対応
 ```text
 docs(runtime): supervisor/worker運用契約とprotocol依存をREADMEへ反映
 feat(supervisor): worker分離とcontrol安全境界を追加
-feat(protocol): UDP port定義をlocalty-system-protocolへ集約
+feat(protocol): UDP port定義をtarget-system-protocolへ集約
 ```
 
 body では以下を補います。

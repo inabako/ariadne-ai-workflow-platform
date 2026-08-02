@@ -18,7 +18,7 @@
 
 ```powershell
 .\runtime\windows-script\aiwf.cmd ctl intake run `
-  --project-name localty-system-gui `
+  --project-name target-system `
   --workflow ariadne-new-system-development
 ```
 
@@ -48,7 +48,7 @@ realtime-iac
 ```powershell
 .\runtime\windows-script\aiwf.cmd ctl intake run `
   C:\path\to\requirements.md `
-  --project-name localty-system-gui `
+  --project-name target-system `
   --workflow ariadne-new-system-development
 ```
 

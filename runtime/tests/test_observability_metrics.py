@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
@@ -103,6 +103,39 @@ def test_runtime_event_logger_writes_pipe_prefixed_json_line(tmp_path: Path) -> 
         "input": {"api_token": "***", "query": "runtime"},
         "output": {"route": "rag"},
     }
+
+
+def test_active_runtime_trace_state_is_used_by_default(tmp_path: Path) -> None:
+    result = logger.begin_active_runtime_trace(tmp_path, workflow="/runtime-health-check", trace_id="wftrace")
+
+    assert result["status"] == "active"
+    assert result["last_sequence"] == 0
+    assert logger.active_runtime_trace_id(tmp_path) == "wftrace"
+    event_logger = logger.RuntimeEventLogger(repo_root=tmp_path, component="ctl")
+    event_logger.emit("runtime_command_started")
+    logger.RuntimeEventLogger(repo_root=tmp_path, component="ctl").emit("runtime_command_completed")
+
+    log_path = tmp_path / "logs" / "runtime" / "runtime-events.log"
+    log_text = log_path.read_text(encoding="utf-8")
+    assert " | wftrace | 00001 | " in log_text
+    assert " | wftrace | 00002 | " in log_text
+    assert logger.active_runtime_trace_last_sequence(tmp_path) == 2
+    ended = logger.end_active_runtime_trace(tmp_path)
+    assert ended["status"] == "ended"
+    assert ended["last_sequence"] == 2
+    assert logger.active_runtime_trace_id(tmp_path) == ""
+
+
+def test_active_runtime_trace_begin_blocks_existing_trace_without_force(tmp_path: Path) -> None:
+    first = logger.begin_active_runtime_trace(tmp_path, workflow="/first", trace_id="firsttrace")
+    second = logger.begin_active_runtime_trace(tmp_path, workflow="/second", trace_id="secondtrace")
+    forced = logger.begin_active_runtime_trace(tmp_path, workflow="/second", trace_id="secondtrace", force=True)
+
+    assert first["status"] == "active"
+    assert second["status"] == "blocked"
+    assert second["trace_id"] == "firsttrace"
+    assert forced["status"] == "active"
+    assert logger.active_runtime_trace_id(tmp_path) == "secondtrace"
 
 
 def test_runtime_event_logger_rotates_when_max_bytes_is_exceeded(tmp_path: Path) -> None:

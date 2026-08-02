@@ -1,4 +1,4 @@
-﻿---
+---
 name: docs-sync
 description: Compare implementation and docs on a target branch, store docs drift analysis as JSON, create a GitHub Issue, create feature/issue-XXX from the target branch, update docs only, push after human approval, then prepare RAG capture and archive. Use when the user selects /docs-sync or asks to synchronize repository docs with implementation.
 ---
@@ -23,7 +23,7 @@ Respond to the user in Japanese by default. Human-facing reports, docs, reviews,
 Example:
 
 ```text
-/docs-sync localty-system-gui develop
+/docs-sync target-system develop
 ```
 
 ## Directory Model

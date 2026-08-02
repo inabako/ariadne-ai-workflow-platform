@@ -1,35 +1,46 @@
----
-# yamllint disable rule:line-length
 name: 機能要望
 description: workflow、runtime、documentation、platformの改善を提案します。
-title: "feat: "
-labels:
-  - enhancement
+title: "[Feature]: "
+labels: ["enhancement"]
 body:
+  - type: checkboxes
+    id: existing-issue
+    attributes:
+      label: 既存のIssueは確認しましたか？
+      description: 新しく提案する前に、既存のIssueとDiscussionsを確認してください。
+      options:
+        - label: 既存のIssueとDiscussionsを確認しました。
+          required: true
   - type: textarea
     id: intent
     attributes:
-      label: 意図
+      label: Intent
       description: 何を改善したいですか？
     validations:
       required: true
   - type: textarea
-    id: current
+    id: current-behavior
     attributes:
       label: 現在の動作
+      description: 現在、何が難しい、不足している、不明確ですか？
+    validations:
+      required: false
   - type: textarea
-    id: proposed
+    id: proposed-behavior
     attributes:
       label: 提案する動作
+      description: 希望するworkflow、runtime、documentation、platformの変更を記載してください。
     validations:
       required: true
   - type: textarea
-    id: evidence
+    id: evidence-and-context
     attributes:
-      label: 証跡と背景
-      description: 関連するdocs、artifact、workflow outputがあれば記載してください。
+      label: EvidenceとContext
+      description: 関連docs、artifact、workflow output、過去のDiscussionsがあれば記載してください。
+    validations:
+      required: false
   - type: checkboxes
-    id: review
+    id: review-gates
     attributes:
       label: Review Gate
       options:

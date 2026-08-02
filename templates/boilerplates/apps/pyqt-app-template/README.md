@@ -29,13 +29,13 @@ python -m venv .venv
 .\\.venv\\Scripts\\python cmd\\app.py
 ```
 
-## Localty Extension Points
+## Target Application Extension Points
 
 - Add real UDP control in `network/udp_client.py`.
 - Add telemetry receiver under `network/`.
 - Add GStreamer receiver behavior in `network/gstreamer_receiver.py`.
 - Add widgets for video, telemetry, controls, connection state, and logs.
-- Keep robot motion, physical STOP, real camera quality, and field network checks as bench or human-check evidence.
+- Keep physical motion, emergency stop behavior, real camera quality, and field network checks as bench or human-check evidence when the target application requires them.
 
 ## Guardrails
 

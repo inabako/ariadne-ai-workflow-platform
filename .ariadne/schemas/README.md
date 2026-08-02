@@ -11,6 +11,9 @@
 | File | Purpose |
 | --- | --- |
 | `gate-restart.schema.json` | workflow gate failure 後の修復可否、再開 gate、pass/fail 後の遷移を固定する共通契約 |
+| `workflow-doctor-warning.schema.json` | `aiwfctl doctor --json` の warning item を Agent / Review Council が扱うための構造 |
+| `ctl-help-usage.schema.json` | `aiwfctl help` のusage guidanceをregistry seedとして扱うための構造 |
+| `runtime-help-capabilities.schema.json` | `aiwfctl help runtime --json` の status / doctor / dry-run / log 操作導線を Agent が扱うための構造 |
 
 このディレクトリは、Agent 間で情報を受け渡すための共通 schema を定義します。
 
@@ -52,6 +55,7 @@
 | `github-operation-gate.schema.json` | GitHub read-only収集、mutation、clone、RAG publicationのHuman Check条件 |
 | `human-gates.schema.json` | 人間承認が必要なworkflow操作registryの構造定義 |
 | `workflow-help.schema.json` | `aiwfctl help` 用workflow prompt command registryの構造定義 |
+| `ctl-help-usage.schema.json` | `aiwfctl help` の後続修飾子未指定時に表示するusage guidance registryの構造定義 |
 | `search-terms.schema.json` | registry itemへ `owner_id` で結び付く検索語registryの構造定義 |
 | `tool-candidates.schema.json` | Context First Tool Dispatcher が参照するtool候補registryの構造定義 |
 | `context-manifest.schema.json` | Context First Architectureで `work/<work-id>/context/context-manifest.json` を標準化する構造定義 |

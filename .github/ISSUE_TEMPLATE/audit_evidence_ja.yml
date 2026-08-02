@@ -1,0 +1,94 @@
+name: 監査Evidence
+description: REUSE、ScanCode、Dependency Review、Release Gateなどの監査記録を管理します。
+title: "[監査Evidence] "
+labels: ["documentation"]
+body:
+  - type: checkboxes
+    id: parent-version
+    attributes:
+      label: 親Issue
+      description: 対象バージョンの改善フローIssueを確認してください。
+      options:
+        - label: 対象バージョンの改善フローIssueと関連付けます。
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      value: v0.0.3
+    validations:
+      required: true
+  - type: dropdown
+    id: audit-type
+    attributes:
+      label: Audit Type
+      description: 対象の監査種別を選択してください。
+      options:
+        - REUSE lint
+        - ScanCode
+        - Dependency Review
+        - Release Gate
+        - Security Review
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: purpose
+    attributes:
+      label: Purpose
+      description: この監査で何を確認するかを記載してください。
+    validations:
+      required: true
+  - type: textarea
+    id: commands-or-run
+    attributes:
+      label: Commands / GitHub Actions Run
+      description: 実行コマンド、workflow URL、run ID、artifact名を記載してください。
+      value: |
+        - command:
+        - workflow:
+        - run:
+        - artifact:
+    validations:
+      required: false
+  - type: textarea
+    id: result-summary
+    attributes:
+      label: Result Summary
+      description: 結果、警告、fail理由、human review結果を記載してください。
+      value: |
+        - status:
+        - warnings:
+        - failures:
+        - human review:
+    validations:
+      required: true
+  - type: textarea
+    id: evidence-paths
+    attributes:
+      label: Evidence Paths
+      description: 保存したevidence、artifact、log、docsパスを記載してください。
+      value: |
+        - 
+    validations:
+      required: false
+  - type: checkboxes
+    id: completion-criteria
+    attributes:
+      label: Completion Criteria
+      options:
+        - label: 監査結果を確認した
+          required: false
+        - label: warning / failureの扱いを判断した
+          required: false
+        - label: 必要なevidenceをdocs配下に保存した
+          required: false
+        - label: release判断に必要な残作業を明確にした
+          required: false
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks / Open QA
+      description: 残るリスク、未確認事項、Release Gateで判断すべき点を記載してください。
+    validations:
+      required: false

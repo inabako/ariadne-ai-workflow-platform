@@ -36,6 +36,48 @@ SUBCOMMAND_ATTRIBUTES = (
     "iac_template_command",
     "integration_command",
     "integration_emulator_command",
+    "trace_command",
+    "log_command",
+)
+
+
+RESUME_OPTION_NAMES: tuple[tuple[str, str], ...] = (
+    ("work_id", "--work-id"),
+    ("workflow", "--workflow"),
+    ("profile", "--profile"),
+    ("trace_id", "--trace-id"),
+    ("trace_id_option", "--trace-id"),
+    ("runtime_log", "--runtime-log"),
+    ("source_dir", "--source-dir"),
+    ("source_repo", "--source-repo"),
+    ("repository", "--repository"),
+    ("branch", "--branch"),
+    ("target_branch", "--target-branch"),
+    ("base_branch", "--base-branch"),
+    ("issue_number", "--issue-number"),
+    ("plan", "--plan"),
+    ("message", "--message"),
+    ("output", "--output"),
+    ("keep_last", "--keep-last"),
+    ("archive_dir", "--archive-dir"),
+    ("encoding_paths", "--encoding-paths"),
+    ("encoding_extensions", "--encoding-extensions"),
+)
+
+RESUME_BOOLEAN_OPTIONS: tuple[tuple[str, str], ...] = (
+    ("dry_run", "--dry-run"),
+    ("fail_on_warning", "--fail-on-warning"),
+    ("skip_ut_spec_sync", "--skip-ut-spec-sync"),
+    ("repair_encoding", "--repair-encoding"),
+    ("repair_spec_index", "--repair-spec-index"),
+    ("fix_suggestion_only", "--fix-suggestion-only"),
+    ("problems", "--problems"),
+    ("summary", "--summary"),
+    ("verbose", "--verbose"),
+    ("reset", "--reset"),
+    ("force", "--force"),
+    ("install", "--install"),
+    ("gh_login_from_env", "--gh-login-from-env"),
 )
 
 
@@ -48,6 +90,39 @@ def command_path(args: Any) -> str:
         value = str(getattr(args, attribute, "") or "")
         if value:
             parts.append(value)
+    return " ".join(parts)
+
+
+def _quote_arg(value: object) -> str:
+    text = str(value)
+    if not text:
+        return '""'
+    if any(char.isspace() for char in text) or '"' in text:
+        return '"' + text.replace('"', '\\"') + '"'
+    return text
+
+
+def runtime_resume_command(args: Any) -> str:
+    path = command_path(args)
+    if not path:
+        return ""
+    parts = ["aiwfctl", path]
+    for attribute, option in RESUME_OPTION_NAMES:
+        value = getattr(args, attribute, None)
+        if isinstance(value, list):
+            for item in value:
+                if item not in {None, ""}:
+                    parts.extend([option, _quote_arg(item)])
+            continue
+        if value in {None, "", False}:
+            continue
+        parts.extend([option, _quote_arg(value)])
+    for attribute, option in RESUME_BOOLEAN_OPTIONS:
+        if bool(getattr(args, attribute, False)):
+            parts.append(option)
+    human_check = str(getattr(args, "human_check", "") or "")
+    if human_check:
+        parts.extend(["--human-check", _quote_arg(human_check)])
     return " ".join(parts)
 
 
@@ -129,6 +204,7 @@ def runtime_diagnostics_for_result(command_path: str, status: str, reason: str) 
 class RuntimeCommandEventContext:
     repo_root: Path
     command_path: str
+    resume_command: str
     workflow: str
     operation_id: str
     input: dict[str, Any]
@@ -139,6 +215,7 @@ class RuntimeCommandEventContext:
         return cls(
             repo_root=repo_root,
             command_path=path,
+            resume_command=runtime_resume_command(args),
             workflow=runtime_workflow(args),
             operation_id=runtime_operation_id(path),
             input=runtime_log_input(args, repo_root),
@@ -169,7 +246,7 @@ class RuntimeCommandEventContext:
             diagnostics={
                 "recoverable": False,
                 "next_action": "inspect_runtime_error",
-                "resume_command": f"aiwfctl {self.command_path}" if self.command_path else "",
+                "resume_command": self.resume_command,
             },
             input=self.input,
             output={
@@ -198,7 +275,10 @@ class RuntimeCommandEventContext:
             level=runtime_level_for_status(status),
             phase="execute",
             operation_id=self.operation_id,
-            diagnostics=runtime_diagnostics_for_result(self.command_path, status, reason),
+            diagnostics={
+                **runtime_diagnostics_for_result(self.command_path, status, reason),
+                "resume_command": self.resume_command if status != "completed" else "",
+            },
             input=self.input,
             output={
                 "status": status,

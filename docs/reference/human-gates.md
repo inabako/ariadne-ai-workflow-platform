@@ -1,4 +1,4 @@
-﻿# Human Gate Registry
+# Human Gate Registry
 
 この文書は、人間承認なしで進めない操作をまとめます。
 

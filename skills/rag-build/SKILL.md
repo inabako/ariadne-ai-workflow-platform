@@ -1,4 +1,4 @@
-﻿---
+---
 name: rag-build
 description: Build or refresh the Ariadne AI Workflow file-based RAG artifacts from Markdown reports. Use when the user selects /rag-build, asks to create RAG, update RAG, accumulate corrective action reports into RAG, normalize reports, chunk documents, build indexes, or create local embeddings.
 ---

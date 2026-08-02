@@ -1,4 +1,4 @@
-﻿# Web SVG Layout Mode
+# Web SVG Layout Mode
 
 SVGで表現された画面レイアウト案を、Web画面向けのroute、section、component責務、responsive layout、React候補、Playwright候補へ変換する共通サブフローです。Next.jsは、このフローが扱うWeb framework profileの1つです。
 

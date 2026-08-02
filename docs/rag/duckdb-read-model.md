@@ -2,6 +2,8 @@
 
 この文書は、RAGデータ管理にDuckDBを導入するPhase 1の責務境界をまとめます。
 
+この文書は DuckDB read model の生成、検索、再構築、Git管理境界を扱います。RAG全体のsource分類とcleanup分類は [RAG](../reference/rag.md)、build / load の通常手順は [RAG Build / Load](../workflows/rag-build-load.md)、吸収品質評価は [RAG Knowledge Quality Metrics](knowledge-quality-metrics.md) を参照してください。
+
 ## 基本方針
 
 DuckDBファイルはsource of truthではありません。
@@ -139,9 +141,9 @@ flowchart TD
     C -- Yes --> E[work/db/ariadne-knowledge-platformへ登録]
     E --> F[normalize / chunk / optimize<br/>JSON source materialを作成]
     F --> G[ariadne-knowledge-platformへcommit / push]
-    G --> H[aiwfctl knowledge rebuild]
+    G --> H[aiwfctl rag duckdb rebuild]
     H --> I[db/rag/ariadne-knowledge.duckdb]
-    I --> J[aiwfctl knowledge verify]
+    I --> J[aiwfctl rag duckdb verify]
     J --> K[db/rag/evidence/reference-check.json]
     J --> L[db/rag/evidence/context/context-manifest.json]
     K --> M[後続workflow / Agentが参照]
@@ -196,7 +198,7 @@ git push
 Ariadne本体側へ戻り、knowledge source cloneからDuckDB read modelを再構築します。
 
 ```powershell
-aiwfctl knowledge rebuild `
+aiwfctl rag duckdb rebuild `
   --source-repo work/db/ariadne-knowledge-platform `
   --reset
 ```
@@ -214,7 +216,7 @@ db/rag/ariadne-knowledge.duckdb
 rebuild後は、代表queryで検索できることを確認します。
 
 ```powershell
-aiwfctl knowledge verify `
+aiwfctl rag duckdb verify `
   --query workflow `
   --query runtime `
   --query RAG `
@@ -336,7 +338,7 @@ aiwfctl knowledge source import-local --clean
 DuckDB再構築は、source repoを指定して実行します。
 
 ```powershell
-aiwfctl knowledge rebuild `
+aiwfctl rag duckdb rebuild `
   --source-repo work/db/ariadne-knowledge-platform `
   --reset
 ```
@@ -354,7 +356,7 @@ source repo内では、次の標準RAG JSONソースを探索します。
 
 ```powershell
 aiwfctl doctor --fail-on-warning
-aiwfctl knowledge rebuild `
+aiwfctl rag duckdb rebuild `
   --source-repo work/db/ariadne-knowledge-platform `
   --reset
 ```
@@ -362,7 +364,7 @@ aiwfctl knowledge rebuild `
 投入後は、代表queryで参照できることを確認します。
 
 ```powershell
-aiwfctl knowledge verify `
+aiwfctl rag duckdb verify `
   --query workflow `
   --query runtime `
   --query RAG `
@@ -392,7 +394,7 @@ db/rag/evidence/context/context-manifest.json
 一方、特定Issueや後続workflowに紐づく確認では、従来通り `--work-id <work-id>` を指定し、`work/<work-id>/context/context-manifest.json` に登録します。
 
 ```powershell
-aiwfctl knowledge verify `
+aiwfctl rag duckdb verify `
   --query "PyQt GUI" `
   --min-results 1 `
   --output db/rag/evidence/reference-check.json `

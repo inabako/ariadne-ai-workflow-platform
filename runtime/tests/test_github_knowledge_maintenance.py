@@ -335,7 +335,8 @@ def test_resume_blocks_when_analysis_json_is_corrupt(tmp_path: Path) -> None:
 def test_resume_blocks_push_package_without_expected_remote_sha(tmp_path: Path) -> None:
     repo_root, work_dir = make_work_dir(tmp_path)
     analysis = sample_analysis()
-    analysis["summary"] = "譛 marker should block resume artifacts."
+    mojibake_marker = "こんにちは".encode("utf-8").decode("cp932")[:1]
+    analysis["summary"] = f"{mojibake_marker} marker should block resume artifacts."
     analysis["history_rewrite_candidates"][0]["approval_status"] = "approved"
     write_json(work_dir / "context" / "github-knowledge-analysis.json", analysis)
     write_json(

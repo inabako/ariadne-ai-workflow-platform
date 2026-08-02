@@ -1,4 +1,4 @@
-﻿# 実行環境選択
+# 実行環境選択
 
 AI workflowを実行する前に、OS、shell、runtime、toolの違いによる失敗を避けるため、`aiwfctl env` で実行環境を選択します。
 
@@ -231,7 +231,7 @@ target別build環境:
 .\runtime\windows-script\aiwf.cmd ctl preflight `
   --profile gui-mode `
   --work-id issue-123 `
-  --source-dir C:\github\localty-system-gui
+  --source-dir <target-system-repo-path>
 ```
 
 Webの場合:

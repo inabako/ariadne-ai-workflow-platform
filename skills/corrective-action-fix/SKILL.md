@@ -1,4 +1,4 @@
-﻿---
+---
 name: corrective-action-fix
 description: Create a corrective action report for a specified GitHub repository and branch, store the base branch under work/<branch>, build/load RAG, create a GitHub Issue, create a separate work/issue-XXX folder with feature/issue-XXX branch, implement fixes, test, request human startup/integration approval, then push. Use when the user selects /corrective-action-fix or asks to move from improvement report creation into corrective implementation.
 ---
@@ -21,19 +21,19 @@ Optional input:
 Example:
 
 ```text
-/corrective-action-fix [inabako/localty-system-gui.git](https://github.com/inabako/localty-system-gui.git) develop
+/corrective-action-fix [owner/target-system.git](https://github.com/owner/target-system.git) develop
 ```
 
-If `.env` has `GITHUB_OWNER=inabako`, this shorter form is also valid:
+If `.env` has `GITHUB_OWNER=owner`, this shorter form is also valid:
 
 ```text
-/corrective-action-fix localty-system-gui develop
+/corrective-action-fix target-system develop
 ```
 
 Use an existing `/corrective-action-report` output:
 
 ```text
-/corrective-action-fix localty-system-gui develop work/db/ariadne-knowledge-platform/rag/corrective-action-report/260704120000_ABC12345_localty-system-gui.md
+/corrective-action-fix target-system develop work/db/ariadne-knowledge-platform/rag/corrective-action-report/260704120000_ABC12345_target-system.md
 ```
 
 ## Directory Model
@@ -259,36 +259,36 @@ The review must record trusted external-web RAG, rejected or limited claims, rep
 
 Before creating the Issue branch, confirm whether the target fix needs support repositories, local tools, Python packages, MSYS2 packages, or runtime devices. At this stage, create the dependency plan and include it in the Issue body. Run repository preparation commands after `work/issue-<issue-number>` exists.
 
-Use the loaded RAG context first. If the target is a Localty repository (`localty-system-gui`, `localty-system-robot`, or `localty-system-simulator`), treat `localty-system-protocol` as a required runtime contract.
+Use the loaded RAG context, semantic hints, and current repository evidence first. If the target repository has a project-specific runtime contract, shared package, simulator, support service, device SDK, or communication protocol, treat it as a required dependency only when that requirement is stated by evidence.
 
-Default protocol dependency:
+Example package dependency:
 
 ```toml
 dependencies = [
-  "localty-system-protocol>=0.1.0"
+  "target-system-protocol>=1.0.0"
 ]
 ```
 
 Preferred verification:
 
 ```powershell
-pip install "localty-system-protocol>=0.1.0"
-python -c "from localty_protocol.telemetry import UDP_PORTS; print(UDP_PORTS)"
+pip install "target-system-protocol>=1.0.0"
+python -c "import target_system_protocol; print('ok')"
 ```
 
-Use the published package first. Do not assume an editable sibling checkout for normal Localty fixes.
+Use the published package first when the project declares one. Do not assume an editable sibling checkout unless the repository evidence, semantic hint, or human instruction requires it.
 
-If the published package cannot be fetched or installed, prepare the protocol repository as a fallback support repository under the same issue source folder level after step 7:
+If the published package cannot be fetched or installed, prepare the required support repository under the same issue source folder level after step 7:
 
 ```powershell
 python runtime/scm/prepare_support_repository.py `
   --work-id "issue-<issue-number>" `
-  --name "localty-system-protocol" `
-  --repository "inabako/localty-system-protocol" `
+  --name "target-system-protocol" `
+  --repository "owner/target-system-protocol" `
   --branch "<target-branch>"
 ```
 
-Only use this fallback when the pip package path is unavailable. For `localty-system-simulator` integration, prepare the simulator support repository when the fix requires a runnable robot mock.
+Only use this fallback when the package path is unavailable or the target workflow explicitly requires source-level integration. Prepare simulator, mock, or support-service repositories only when the fix requires a runnable counterpart.
 
 For libraries or packages that must be installed, list the missing items, install commands, and fallback repository commands first, then stop for human approval. Do not install automatically until the user approves.
 
@@ -540,7 +540,7 @@ The test specification must include:
 
 For each planned change, add at least one test case or explicitly record why it is not directly testable. Cover normal behavior, boundary / error behavior, regression risk, safety impact, and observability such as logs, metrics, or UI display when applicable.
 
-For `localty-system-gui` and `localty-system-simulator` integration, include test cases for auto-discovery, connect, control-key send / simulator receive display, camera video, FPS display, telemetry receive, sensor override, Event Log / Packet display, and both-GUI human confirmation.
+For target systems with simulator, controller, device, or support-service integration, include test cases for discovery, connection, command send / receive, observable state display, telemetry or event receive, error handling, logging, and human confirmation when manual verification remains necessary. Derive exact scenarios from semantic hints, RAG context, and current repository evidence.
 
 Do not start unit tests or integration / communication checks until the required test cases and pass criteria are written, unless the user explicitly approves skipping the test specification for a trivial change.
 
@@ -591,23 +591,23 @@ work/issue-<issue-number>/source/repository/docs/evidence/issue-<issue-number>/i
 
 Before startup or integration checks, run target-specific preflight when the repository has setup scripts or external runtime dependencies.
 
-For fixes that involve `localty-system-gui` robot mock communication, prepare and start both GUIs before asking for human confirmation:
+For fixes that involve communication between the target application and a simulator, mock, device adapter, or support service, prepare and start all required runtime processes before asking for human confirmation:
 
-- `work/issue-<issue-number>/source/repository`: `localty-system-gui`
-- `work/issue-<issue-number>/source/localty-system-simulator`: `localty-system-simulator`
+- `work/issue-<issue-number>/source/repository`: primary target repository
+- `work/issue-<issue-number>/source/<support-component>`: simulator, mock, adapter, or support service when required
 
 The integration check must keep both processes running at the same time while waiting for the user result. Record launch commands, important environment variables, ports, logs, and the human result in `work/issue-<issue-number>/test-evidence/`.
 
-For `localty-system-gui` MSYS2 startup:
+Run the default corrective-action preflight, or a target-specific profile when the repository evidence declares one:
 
 ```powershell
 python runtime/environment/preflight.py `
-  --profile localty-msys2 `
+  --profile corrective-action-fix `
   --work-id "issue-<issue-number>" `
   --source-dir "work/issue-<issue-number>/source/repository"
 ```
 
-This preflight checks the published `localty-system-protocol>=0.1.0` package by importing `localty_protocol.telemetry.UDP_PORTS`. If the package cannot be fetched, use the fallback support repository command reported by preflight, then rerun preflight. Pass `--protocol-dir "work/issue-<issue-number>/source/localty-system-protocol"` only when validating that fallback repository.
+When a semantic hint or repository document declares a specific runtime profile or dependency verification command, run it after the default preflight and record the result. If a package cannot be fetched, use the fallback support repository command documented in the dependency plan, then rerun preflight.
 
 If required tools or MSYS2 packages are missing, create the install list, stop, and ask the user for approval before installing.
 
@@ -615,7 +615,7 @@ After approval:
 
 ```powershell
 python runtime/environment/preflight.py `
-  --profile localty-msys2 `
+  --profile corrective-action-fix `
   --work-id "issue-<issue-number>" `
   --source-dir "work/issue-<issue-number>/source/repository" `
   --install `

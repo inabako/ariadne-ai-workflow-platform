@@ -135,14 +135,14 @@ runtime/tests/test_common_runtime.py::test_env_file_process_and_github_resolutio
 runtime/tests/test_common_runtime.py::test_knowledge_source_repository_env_helpers
 ```
 
-- Confirm: knowledge source repository ENV から repo name、backup path、clone URL が安定して組み立つことを確認します。
+- 確認内容: knowledge source repository ENV から repo name、backup path、clone URL が安定して組み立つことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_common_runtime.py:141`
   - fixture/arg: なし
   - parameter: names=なし, case=なし
   - inline input: `settings`
-- Expected: `ARIADNE_KNOWLEDGE_REPOSITORY` から `work/db/<repo-name>` が解決され、明示URLがある場合はそれが優先される。
+- 期待結果: `ARIADNE_KNOWLEDGE_REPOSITORY` から `work/db/<repo-name>` が解決され、明示URLがある場合はそれが優先される。
 
 #### RT-UT-CASE-024
 

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/schemas/kubernetes-manifest-generation.schema.json",
+  "title": "Kubernetes Manifest Generation",
+  "type": "object",
+  "required": ["schema_version", "artifact_type", "status", "work_id", "manifest_dir", "manifest_files"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "schema": {"type": "string"},
+    "artifact_type": {"const": "kubernetes-manifest-generation"},
+    "status": {"type": "string"},
+    "work_id": {"type": "string"},
+    "target": {"type": "string"},
+    "template": {"type": "string"},
+    "template_path": {"type": "string"},
+    "spec_delta_path": {"type": "string"},
+    "allowed_spec_delta_keys": {"type": "array", "items": {"type": "string"}},
+    "ignored_spec_delta_keys": {"type": "array", "items": {"type": "string"}},
+    "applied_values": {"type": "object"},
+    "manifest_dir": {"type": "string"},
+    "manifest_files": {"type": "array", "items": {"type": "string"}},
+    "assessment_path": {"type": "string"},
+    "gap_report_path": {"type": "string"},
+    "next_actions": {"type": "array", "items": {"type": "string"}},
+    "artifacts": {"type": "object"}
+  },
+  "additionalProperties": true
+}

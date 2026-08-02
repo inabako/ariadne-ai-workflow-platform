@@ -1,0 +1,18 @@
+# Keep repository text files stable for cross-platform AI/runtime edits.
+# If existing files need line-ending normalization, commit that as a separate
+# review slice from functional runtime changes.
+* text=auto eol=lf
+
+# Windows command entrypoints must remain CRLF-friendly for cmd.exe.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary artifacts must never be normalized as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.duckdb binary

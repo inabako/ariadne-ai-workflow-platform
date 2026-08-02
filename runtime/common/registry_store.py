@@ -13,10 +13,13 @@ if __package__ in {None, ""}:
 from runtime.common import find_repo_root, read_json, relative_to_repo, utc_now_iso  # noqa: E402
 from runtime.constants.runtime_values import FILE_HASH_CHUNK_BYTES, REGISTRY_VERSION  # noqa: E402
 from runtime.constants.paths import (  # noqa: E402
+    CTL_HELP_USAGE_REGISTRY_FILE,
     HUMAN_GATES_REGISTRY_FILE,
     KNOWLEDGE_SOURCE_REGISTRIES,
     REGISTRY_DB_PATH,
+    RUNTIME_HELP_CAPABILITIES_REGISTRY_FILE,
     SEARCH_TERMS_REGISTRY_FILE,
+    TEMPLATE_REGISTRIES,
     TOOL_CANDIDATES_REGISTRY_FILE,
     WORKFLOW_ENVIRONMENT_PROFILES_REGISTRY_FILE,
     WORKFLOW_HELP_REGISTRY_FILE,
@@ -24,12 +27,20 @@ from runtime.constants.paths import (  # noqa: E402
 
 
 DEFAULT_LEGACY_JSON_SOURCE_DIR = KNOWLEDGE_SOURCE_REGISTRIES
+DEFAULT_TEMPLATE_JSON_SOURCE_DIR = TEMPLATE_REGISTRIES
 REQUIRED_REGISTRY_SOURCE_FILES = (
     WORKFLOW_HELP_REGISTRY_FILE,
     TOOL_CANDIDATES_REGISTRY_FILE,
     HUMAN_GATES_REGISTRY_FILE,
     WORKFLOW_ENVIRONMENT_PROFILES_REGISTRY_FILE,
+    CTL_HELP_USAGE_REGISTRY_FILE,
+    RUNTIME_HELP_CAPABILITIES_REGISTRY_FILE,
 )
+
+DOCUMENT_REGISTRY_FILES = {
+    "ctl_help_usage": CTL_HELP_USAGE_REGISTRY_FILE,
+    "runtime_help_capabilities": RUNTIME_HELP_CAPABILITIES_REGISTRY_FILE,
+}
 
 
 def registry_db_path(repo_root: Path) -> Path:
@@ -41,6 +52,9 @@ def legacy_registry_dir(repo_root: Path) -> Path:
 
 
 def default_source_dir(repo_root: Path) -> Path:
+    template_source = repo_root / DEFAULT_TEMPLATE_JSON_SOURCE_DIR
+    if source_registry_available(template_source):
+        return template_source
     return repo_root / DEFAULT_LEGACY_JSON_SOURCE_DIR
 
 
@@ -72,6 +86,7 @@ def init_schema(db_path: Path) -> None:
         conn.execute("DROP TABLE IF EXISTS workflow_environments")
         conn.execute("DROP TABLE IF EXISTS environment_profiles")
         conn.execute("DROP TABLE IF EXISTS environment_mappings")
+        conn.execute("DROP TABLE IF EXISTS registry_documents")
         conn.execute(
             """
             CREATE TABLE registry_metadata (
@@ -173,6 +188,14 @@ def init_schema(db_path: Path) -> None:
                 sort_order INTEGER NOT NULL,
                 subject_type VARCHAR,
                 subject VARCHAR,
+                payload_json TEXT NOT NULL
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE registry_documents (
+                registry_name VARCHAR PRIMARY KEY,
                 payload_json TEXT NOT NULL
             )
             """
@@ -342,6 +365,11 @@ def insert_metadata(conn: Any, registry_name: str, metadata: dict[str, Any], sou
     )
 
 
+def insert_registry_document(conn: Any, registry_name: str, payload: dict[str, Any], source_path: Path, repo_root: Path) -> None:
+    insert_metadata(conn, registry_name, metadata_for(payload, set()), source_path, repo_root)
+    conn.execute("INSERT INTO registry_documents VALUES (?, ?)", [registry_name, json_dumps(payload)])
+
+
 def build_registry_read_model(repo_root: Path, source_dir: Path, db_path: Path) -> dict[str, Any]:
     source_dir = source_dir.resolve()
     db_path = db_path.resolve()
@@ -354,8 +382,15 @@ def build_registry_read_model(repo_root: Path, source_dir: Path, db_path: Path) 
     tool_candidates_payload = read_source_json(source_dir, TOOL_CANDIDATES_REGISTRY_FILE)
     human_gates_payload = read_source_json(source_dir, HUMAN_GATES_REGISTRY_FILE)
     environments_payload = read_source_json(source_dir, WORKFLOW_ENVIRONMENT_PROFILES_REGISTRY_FILE)
+    document_payloads = {
+        registry_name: read_source_json(source_dir, file_name)
+        for registry_name, file_name in DOCUMENT_REGISTRY_FILES.items()
+    }
 
     with connect(db_path) as conn:
+        for registry_name, payload in document_payloads.items():
+            insert_registry_document(conn, registry_name, payload, source_dir / DOCUMENT_REGISTRY_FILES[registry_name], repo_root)
+
         insert_metadata(
             conn,
             "workflow_help",
@@ -471,6 +506,7 @@ def build_registry_read_model(repo_root: Path, source_dir: Path, db_path: Path) 
             "workflow_environments",
             "environment_profiles",
             "environment_mappings",
+            "registry_documents",
         ],
         "counts": {
             "workflow_help_commands": len(workflow_help.get("commands", [])),
@@ -481,6 +517,7 @@ def build_registry_read_model(repo_root: Path, source_dir: Path, db_path: Path) 
             "workflow_environments": len(environments_payload.get("environments", [])),
             "environment_profiles": len(environments_payload.get("profiles", [])),
             "environment_mappings": len(environments_payload.get("mappings", [])),
+            "registry_documents": len(document_payloads),
         },
     }
 
@@ -498,8 +535,20 @@ def registry_table_counts(db_path: Path) -> dict[str, int]:
                 "workflow_environments",
                 "environment_profiles",
                 "environment_mappings",
+                "registry_documents",
             ]
         }
+
+
+def ensure_or_rebuild_registry_read_model(
+    repo_root: Path,
+    source_dir: Path | None = None,
+    db_path: Path | None = None,
+) -> dict[str, Any]:
+    try:
+        return ensure_registry_read_model(repo_root, source_dir, db_path)
+    except Exception:
+        return ensure_registry_read_model(repo_root, source_dir, db_path, rebuild=True)
 
 
 def ensure_registry_read_model(
@@ -512,13 +561,17 @@ def ensure_registry_read_model(
     source = (source_dir or default_source_dir(repo_root)).resolve()
     target = (db_path or registry_db_path(repo_root)).resolve()
     if target.exists() and not rebuild:
+        try:
+            counts = registry_table_counts(target)
+        except Exception:
+            return ensure_registry_read_model(repo_root, source_dir, db_path, rebuild=True)
         return {
             "status": "completed",
             "artifact_type": "runtime-registry-duckdb-read-model",
             "action": "existing",
             "db": relative_to_repo(repo_root, target),
             "source_dir": relative_to_repo(repo_root, source),
-            "counts": registry_table_counts(target),
+            "counts": counts,
         }
 
     missing = missing_source_files(source)
@@ -612,6 +665,12 @@ def load_from_duckdb(repo_root: Path, registry_name: str) -> dict[str, Any]:
             data["profiles"] = load_payloads(conn, "environment_profiles")
             data["mappings"] = load_payloads(conn, "environment_mappings")
             return data
+        if registry_name in DOCUMENT_REGISTRY_FILES:
+            row = conn.execute("SELECT payload_json FROM registry_documents WHERE registry_name = ?", [registry_name]).fetchone()
+            if not row:
+                return {}
+            data = json.loads(row[0])
+            return data if isinstance(data, dict) else {}
     raise ValueError(f"Unsupported registry: {registry_name}")
 
 
@@ -621,14 +680,16 @@ def legacy_file_for(registry_name: str) -> str:
         "tool_candidates": TOOL_CANDIDATES_REGISTRY_FILE,
         "human_gates": HUMAN_GATES_REGISTRY_FILE,
         "workflow_environment_profiles": WORKFLOW_ENVIRONMENT_PROFILES_REGISTRY_FILE,
+        "ctl_help_usage": CTL_HELP_USAGE_REGISTRY_FILE,
+        "runtime_help_capabilities": RUNTIME_HELP_CAPABILITIES_REGISTRY_FILE,
     }[registry_name]
 
 
 def load_registry(repo_root: Path, registry_name: str, default: dict[str, Any] | None = None) -> Any:
     try:
         return load_from_duckdb(repo_root, registry_name)
-    except FileNotFoundError:
-        ensure_result = ensure_registry_read_model(repo_root)
+    except Exception:
+        ensure_result = ensure_or_rebuild_registry_read_model(repo_root)
         if ensure_result.get("action") in {"built", "rebuilt"}:
             return load_from_duckdb(repo_root, registry_name)
         sentinel = object()
@@ -644,6 +705,20 @@ def load_workflow_help(repo_root: Path) -> dict[str, Any]:
     if isinstance(data, dict):
         data.setdefault("commands", [])
         data.setdefault("extensions", [])
+    return data
+
+
+def load_ctl_help_usage(repo_root: Path) -> dict[str, Any]:
+    data = load_registry(repo_root, "ctl_help_usage", {})
+    if not isinstance(data, dict):
+        data = {}
+    return data
+
+
+def load_runtime_help_capabilities(repo_root: Path) -> dict[str, Any]:
+    data = load_registry(repo_root, "runtime_help_capabilities", {})
+    if not isinstance(data, dict):
+        data = {}
     return data
 
 
@@ -681,10 +756,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--db", default=str(REGISTRY_DB_PATH))
     sub = parser.add_subparsers(dest="command", required=True)
     build = sub.add_parser("build")
-    build.add_argument("--source-dir", default=str(DEFAULT_LEGACY_JSON_SOURCE_DIR))
+    build.add_argument("--source-dir", default="")
     build.set_defaults(handler=run_build)
     ensure = sub.add_parser("ensure")
-    ensure.add_argument("--source-dir", default=str(DEFAULT_LEGACY_JSON_SOURCE_DIR))
+    ensure.add_argument("--source-dir", default="")
     ensure.add_argument("--rebuild", action="store_true")
     ensure.set_defaults(handler=run_ensure)
     sub.add_parser("summary").set_defaults(handler=run_summary)
@@ -698,18 +773,20 @@ def resolve_repo_path(repo_root: Path, value: str) -> Path:
 
 def run_build(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    source_dir = resolve_repo_path(repo_root, args.source_dir) if args.source_dir else default_source_dir(repo_root)
     return build_registry_read_model(
         repo_root,
-        resolve_repo_path(repo_root, args.source_dir),
+        source_dir,
         resolve_repo_path(repo_root, args.db),
     )
 
 
 def run_ensure(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
+    source_dir = resolve_repo_path(repo_root, args.source_dir) if args.source_dir else None
     return ensure_registry_read_model(
         repo_root,
-        resolve_repo_path(repo_root, args.source_dir),
+        source_dir,
         resolve_repo_path(repo_root, args.db),
         rebuild=bool(args.rebuild),
     )
@@ -718,6 +795,7 @@ def run_ensure(args: argparse.Namespace) -> dict[str, Any]:
 def run_summary(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root()
     db_path = resolve_repo_path(repo_root, args.db)
+    ensure_or_rebuild_registry_read_model(repo_root, db_path=db_path)
     return {
         "status": "completed",
         "artifact_type": "runtime-registry-duckdb-summary",

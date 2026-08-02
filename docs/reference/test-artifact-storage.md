@@ -85,6 +85,17 @@ docs/evidence/issue-<issue-number>/test_specifications/
 | PyQt QTest command and result | `work/<id>/test-evidence/qtest_integration/` | `docs/evidence/issue-<issue-number>/integration/qtest/` | yes when QTest candidates exist |
 | Manual integration / connectivity result | `work/<id>/test-evidence/integration_connectivity_test/` | `docs/evidence/issue-<issue-number>/integration/manual/` | yes when manual integration is required |
 | Startup / external I/O launch logs | `work/<id>/test-evidence/integration_connectivity_test/` | `docs/evidence/issue-<issue-number>/integration/startup/` | yes when startup check is required |
+| Runtime E2E / integration plan | `work/<id>/test-specifications/e2e-test-plan.json` or `integration-test-plan.json` | `docs/evidence/issue-<issue-number>/test_specifications/` | yes when E2E/integration runtime is used |
+| Runtime E2E / integration verification contract | `work/<id>/test-specifications/e2e-test-contract.json` or `integration-test-contract.json` | `docs/evidence/issue-<issue-number>/test_specifications/` | yes before E2E/integration runtime execution |
+| Runtime E2E / integration evidence | `work/<id>/test-evidence/e2e-test/` or `integration-test/` | `docs/evidence/issue-<issue-number>/integration/` | yes when E2E/integration runtime is used |
+| Runtime E2E / integration Review Council bridge | `work/<id>/test-evidence/e2e-test/review-plan.json` or `integration-test/review-plan.json` | `docs/evidence/issue-<issue-number>/integration/` | yes when E2E verification is reviewed by Review Council |
+| Runtime E2E / integration coverage and final gate | `work/<id>/test-evidence/e2e-test/coverage.json`, `human-final-gate.json` or `integration-test/` equivalents | `docs/evidence/issue-<issue-number>/integration/` | yes before Human final confirmation |
+| Runtime E2E / integration evidence package | `work/<id>/test-evidence/e2e-test/evidence-package.json` or `integration-test/evidence-package.json` | `docs/evidence/issue-<issue-number>/integration/` | yes when handing off test evidence to PR, Human Check, or another Agent |
+| IaC app runtime assessment / deployment contract | `work/<id>/context/iac-app-runtime-assessment.json`, `iac-deployment-contract.*` | `docs/evidence/issue-<issue-number>/integration/` | yes before provider-specific IaC is finalized |
+| IaC prepare report | `work/<id>/process-report/iac-prepare-report.*` | `docs/evidence/issue-<issue-number>/integration/` | yes when `aiwfctl iac prepare` is used |
+| Kubernetes / k3s compatibility and gap evidence | `work/<id>/context/kubernetes-compatibility-assessment.json`, `work/<id>/process-report/kubernetes-gap-report.*` | `docs/evidence/issue-<issue-number>/integration/` | yes when Kubernetes/k3s is specified |
+| Kubernetes / k3s template source | `templates/boilerplates/infrastructure/kubernetes-app-template/` | referenced from `docs/evidence/issue-<issue-number>/integration/` | yes when Kubernetes/k3s scaffold is generated |
+| Kubernetes / k3s dry-run evidence | `work/<id>/test-evidence/kubernetes/dry-run.*`, `evidence.*` | `docs/evidence/issue-<issue-number>/integration/` | yes when Kubernetes/k3s is specified |
 | Human check result | `work/<id>/test-evidence/human_check/` | `docs/evidence/issue-<issue-number>/human_check/` | yes when human check is required |
 
 ## PyQt QTest Rule
@@ -118,3 +129,33 @@ push前に、少なくとも次を確認します。
 - human checkが必要な場合、`docs/evidence/issue-<issue-number>/human_check/` に確認結果が保存されている。
 - QTest candidateがある場合、`integration/qtest/` に実行コマンドと結果が保存されている。
 - 自動生成された `README.md` だけでpush可と判断しない。
+
+## Runtime E2E / Integration Flow
+
+結合試験およびE2Eテストを runtime artifact として残す場合は、`aiwfctl e2e` を使います。
+
+```powershell
+aiwfctl e2e plan --work-id <work-id> --objective "試験目的"
+aiwfctl e2e contract scaffold --work-id <work-id>
+aiwfctl e2e contract --work-id <work-id>
+aiwfctl e2e readiness --work-id <work-id>
+aiwfctl e2e run --work-id <work-id> --dry-run
+aiwfctl e2e observe --work-id <work-id>
+aiwfctl e2e verify --work-id <work-id>
+aiwfctl e2e review-plan --work-id <work-id>
+aiwfctl e2e coverage --work-id <work-id>
+aiwfctl e2e explain --work-id <work-id>
+aiwfctl e2e final-gate --work-id <work-id> --human-decision approved --reviewer <name>
+aiwfctl e2e evidence-package --work-id <work-id> --trace-id <trace-id> --output docs/evidence/<work-id>/e2e-package.json
+aiwfctl e2e loop --work-id <work-id>
+```
+
+実際に test plan 内の command を実行する場合は、`--human-check approved` を明示します。
+
+```powershell
+aiwfctl e2e run --work-id <work-id> --human-check approved
+```
+
+結合試験として保存する場合は `--test-kind integration` を付け、`integration-test-plan.*` と `test-evidence/integration-test/` に証跡を残します。
+
+問題発見後は `aiwfctl e2e loop` で、修正指示、Review Council / SCM 連携、再テスト command を `loop.json` / `loop.md` に保存します。

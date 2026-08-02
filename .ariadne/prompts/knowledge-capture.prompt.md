@@ -1,4 +1,4 @@
-﻿# /knowledge-capture
+# /knowledge-capture
 
 ## Output Language
 
@@ -17,7 +17,7 @@ Knowledge Capture Agent を呼び出し、今回得られた知識を未来のAI
 ```text
 /knowledge-capture \
   --issue issue-11 \
-  --repository localty-system-gui \
+  --repository target-system \
   --branch feature/issue-11
 ```
 

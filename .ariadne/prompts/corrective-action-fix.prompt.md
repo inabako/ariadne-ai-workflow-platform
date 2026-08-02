@@ -30,19 +30,19 @@ skills/corrective-action-fix/SKILL.md
 想定例:
 
 ```text
-/corrective-action-fix [inabako/localty-system-gui.git](https://github.com/inabako/localty-system-gui.git) develop
+/corrective-action-fix [owner/target-system.git](https://github.com/owner/target-system.git) develop
 ```
 
 `.env` に `GITHUB_OWNER=inabako` がある場合:
 
 ```text
-/corrective-action-fix localty-system-gui develop
+/corrective-action-fix target-system develop
 ```
 
 `/corrective-action-report` で作成済みのレポートを使う場合:
 
 ```text
-/corrective-action-fix localty-system-gui develop work/db/ariadne-knowledge-platform/rag/corrective-action-report/260704120000_ABC12345_localty-system-gui.md
+/corrective-action-fix target-system develop work/db/ariadne-knowledge-platform/rag/corrective-action-report/260704120000_ABC12345_target-system.md
 ```
 
 Flow:

@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from runtime.common import registry_store, relative_to_repo
+from runtime.common import find_repo_root, registry_store, relative_to_repo
 from runtime.ctl.help_constants import (
     BLOB_ALL_TERMS_BASE_SCORE,
     BLOB_TERM_MATCH_SCORE,
@@ -15,6 +15,7 @@ from runtime.ctl.help_constants import (
     EXPLICIT_TERM_SINGLE_MATCH_SCORE,
     MIN_SEARCH_MATCH_SCORE,
 )
+from runtime.constants.schemas import CTL_HELP_USAGE_SCHEMA, RUNTIME_HELP_CAPABILITIES_SCHEMA
 
 
 ANSI_YELLOW = "\033[33m"
@@ -384,31 +385,79 @@ def format_help_search_candidates(
     return "\n".join(lines).rstrip() + "\n"
 
 
-def format_help_usage_warning(color: bool = False) -> str:
-    return "\n".join(
+def ctl_help_usage_model(repo_root: Path | None = None) -> dict[str, Any]:
+    root = repo_root or find_repo_root()
+    model = registry_store.load_ctl_help_usage(root)
+    model.setdefault("schema_version", "1.0")
+    model.setdefault("schema", CTL_HELP_USAGE_SCHEMA)
+    model.setdefault("artifact_type", "ctl-help-usage")
+    model.setdefault("warning", "")
+    model.setdefault("guidance", "")
+    model.setdefault("sections", [])
+    return model
+
+
+def format_help_usage_warning(repo_root: Path | None = None, color: bool = False) -> str:
+    model = ctl_help_usage_model(repo_root)
+    lines = [
+        colorize_warning(str(model["warning"]), color),
+        "",
+        str(model["guidance"]),
+    ]
+    for section in model["sections"]:
+        lines.extend(["", str(section.get("title", ""))])
+        lines.extend(f"  {command}" for command in section.get("commands", []))
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def runtime_help_model(repo_root: Path | None = None) -> dict[str, Any]:
+    root = repo_root or find_repo_root()
+    model = registry_store.load_runtime_help_capabilities(root)
+    model.setdefault("schema_version", "1.0")
+    model.setdefault("schema", RUNTIME_HELP_CAPABILITIES_SCHEMA)
+    model.setdefault("artifact_type", "runtime-help-capabilities")
+    model.setdefault("guide_title", "")
+    model.setdefault("runtime_sections", [])
+    model.setdefault("responsibility_boundary", {"status": "", "preflight": "", "doctor": ""})
+    model.setdefault("responsibility_boundary_title", "")
+    model.setdefault("status_views", [])
+    model.setdefault("readiness_capabilities", [])
+    model.setdefault("dry_run_section_title", "")
+    model.setdefault("dry_run_capabilities", [])
+    model.setdefault("situations_title", "")
+    model.setdefault("situations", [])
+    model.setdefault("recovery_section_title", "")
+    model.setdefault("recovery_steps", [])
+    model.setdefault("docs", [])
+    return model
+
+
+def format_runtime_help(repo_root: Path | None = None) -> str:
+    model = runtime_help_model(repo_root)
+    boundary = model["responsibility_boundary"]
+    lines = [str(model["guide_title"]), ""]
+    for section in model["runtime_sections"]:
+        lines.append(str(section.get("title", "")))
+        lines.extend(f"  {command}" for command in section.get("commands", []))
+        lines.append("")
+    lines.extend(
         [
-            colorize_warning("警告: aiwfctl help の後続修飾子が指定されていません。", color),
+            str(model["responsibility_boundary_title"]),
+            f"  status   : {boundary['status']}",
+            f"  preflight: {boundary['preflight']}",
+            f"  doctor   : {boundary['doctor']}",
             "",
-            "help の後に、list / show / search / open / markdown のいずれかを指定してください。",
-            "",
-            "使用例:",
-            "  aiwfctl help list",
-            "  aiwfctl help show /vscode-environment",
-            "  aiwfctl help search vscode",
-            "  aiwfctl help open",
-            "  aiwfctl help markdown --output work/help/ai-workflow-help.md",
-            "",
-            "PATH登録やsession更新を行う場合:",
-            "  aiwfctl path shell",
-            "",
-            "実行環境を選択する場合:",
-            "  aiwfctl env select web-svg",
-            "  aiwfctl context init --work-id issue-123 --workflow /docs-sync",
-            "  aiwfctl knowledge search --query \"PyQt GUI smoke test\"",
-            "  aiwfctl flutter analyze --work-id issue-123",
-            "  aiwfctl doctor",
+            str(model["dry_run_section_title"]),
         ]
-    ) + "\n"
+    )
+    lines.extend(f"  {item['command']}" for item in model["dry_run_capabilities"])
+    lines.extend(["", str(model["situations_title"])])
+    for situation in model["situations"]:
+        lines.append(f"  {situation['name']}")
+        lines.extend(f"    - {command}" for command in situation["commands"])
+    lines.extend(["", str(model["recovery_section_title"])])
+    lines.extend(f"  {index}. {step}" for index, step in enumerate(model["recovery_steps"], start=1))
+    return "\n".join(lines).rstrip() + "\n"
 
 
 def format_help_list(registry: dict[str, Any]) -> str:
@@ -454,10 +503,15 @@ def format_help_list(registry: dict[str, Any]) -> str:
 def run_help_command(args: Any, repo_root: Path, registry: dict[str, Any], *, color: bool = False) -> tuple[int, str]:
     help_command = getattr(args, "help_command", None)
     if help_command is None:
-        return 1, format_help_usage_warning(color=color)
+        return 1, format_help_usage_warning(repo_root, color=color)
 
     if help_command == "list":
         return 0, format_help_list(registry)
+
+    if help_command == "runtime":
+        if getattr(args, "json", False):
+            return 0, json.dumps(runtime_help_model(repo_root), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+        return 0, format_runtime_help(repo_root)
 
     if help_command == "show":
         item_type, item = find_help_item(registry, args.name)

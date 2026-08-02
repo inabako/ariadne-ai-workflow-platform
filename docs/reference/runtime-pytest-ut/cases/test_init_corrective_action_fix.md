@@ -135,17 +135,17 @@ runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fi
 runtime/tests/test_init_corrective_action_fix.py::test_init_corrective_action_fix_uses_work_db_report_as_cleanup_evidence
 ```
 
-- Confirm: corrective-action-fix initialization uses an existing `work/db/...` corrective action report as long-lived Knowledge cleanup evidence.
+- 確認内容: corrective-action-fix initialization uses an existing `work/db/...` corrective action report as long-lived Knowledge cleanup evidence.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_init_corrective_action_fix.py:280`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected:
+- 期待結果:
   - `work_cleanup.ready_for_check` is true
   - `next_action.action == "check-work-cleanup"`
-  - generic `work cleanup-check` returns `status == "ready"`
+  - 汎用 `work cleanup-check` が `status == "ready"` を返す
 
 #### RT-UT-CASE-191
 

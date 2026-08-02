@@ -1,6 +1,6 @@
 # Component License Boundaries
 
-この文書は、OSS公開前にlicense boundaryをどのようにreviewするかを記録します。
+この文書は、OSS公開時と継続release運用でlicense boundaryをどのようにreviewするかを記録します。
 
 ## ARIADNE Repository Component
 

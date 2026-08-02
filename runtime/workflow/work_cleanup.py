@@ -12,7 +12,7 @@ if __package__ in {None, ""}:
 
 from runtime.constants.runtime_values import SCHEMA_VERSION  # noqa: E402
 from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
-from runtime.constants.workspace import work_dir_for_id  # noqa: E402
+from runtime.constants.workspace import context_dir_for_work_dir, work_dir_for_id, work_root_for_repo  # noqa: E402
 from runtime.workflow.work_cleanup_hint import artifact_index_evidence  # noqa: E402
 
 
@@ -66,7 +66,7 @@ def resolve_work_dir(repo_root: Path, work_id: str) -> Path:
     if first in PROTECTED_WORK_ROOTS:
         raise ValueError(f"Refusing to cleanup protected work root: work/{first}")
     work_dir = work_dir_for_id(repo_root, work_id)
-    work_root = repo_root / "work"
+    work_root = work_root_for_repo(repo_root)
     resolved = work_dir.resolve()
     if resolved == work_root.resolve() or work_root.resolve() not in resolved.parents:
         raise ValueError(f"Cleanup target must stay under work/: {resolved}")
@@ -74,7 +74,7 @@ def resolve_work_dir(repo_root: Path, work_id: str) -> Path:
 
 
 def workflow_kind(work_dir: Path) -> str:
-    context_dir = work_dir / "context"
+    context_dir = context_dir_for_work_dir(work_dir)
     for workflow, filename in WORKFLOW_CONTEXT_FILES.items():
         if (context_dir / filename).exists():
             return workflow
@@ -101,11 +101,11 @@ def metrics_only_empty_work(work_dir: Path) -> bool:
 
 
 def child_work_dirs(work_dir: Path) -> list[Path]:
-    if (work_dir / "context").is_dir():
+    if context_dir_for_work_dir(work_dir).is_dir():
         return [work_dir]
     if not work_dir.exists():
         return []
-    return sorted(path.parent for path in work_dir.rglob("context") if path.is_dir())
+    return sorted(path.parent for path in work_dir.rglob(context_dir_for_work_dir(work_dir).name) if path.is_dir())
 
 
 def existing_repo_path(repo_root: Path, value: str) -> bool:

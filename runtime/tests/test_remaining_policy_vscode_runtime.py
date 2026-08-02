@@ -294,13 +294,13 @@ def test_vscode_task_runner_run_helper_help_invokes_vscode_environment_help(monk
     assert calls == [[vscode_task_runner.sys.executable, "runtime/ctl/ctl.py", "workflow", "vscode-environment", "--help"]]
 
 
-def test_vscode_task_runner_msys2_smoke_reports_missing_bash(
+def test_vscode_task_runner_msys2_gui_smoke_reports_missing_bash(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     monkeypatch.setattr(vscode_task_runner.Path, "exists", lambda self: False)
 
-    code = vscode_task_runner.run_msys2_localty_smoke(argparse.Namespace())
+    code = vscode_task_runner.run_msys2_gui_smoke(argparse.Namespace())
 
     captured = capsys.readouterr()
     assert code == 1
@@ -464,7 +464,7 @@ def test_vscode_task_runner_windows_registry_and_remaining_edges(
     monkeypatch.setattr(vscode_task_runner, "refreshed_env", lambda extra=None: {"PATH": "x", **(extra or {})})
     monkeypatch.setattr(vscode_task_runner, "run_process", fake_run_process)
 
-    assert vscode_task_runner.run_msys2_localty_smoke(argparse.Namespace()) == 0
+    assert vscode_task_runner.run_msys2_gui_smoke(argparse.Namespace()) == 0
     assert calls_process[0][0][1:] == ["-lc", "python --version; gst-launch-1.0 --version"]
     assert calls_process[0][1]["MSYSTEM"] == "MINGW64"
 

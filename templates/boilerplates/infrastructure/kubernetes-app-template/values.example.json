@@ -1,0 +1,13 @@
+{
+  "app_name": "ariadne-app",
+  "namespace": "ariadne-work",
+  "image": "REPLACE_WITH_IMAGE",
+  "port": 8080,
+  "replicas": 1,
+  "health_path": "/health",
+  "cpu_request": "100m",
+  "memory_request": "128Mi",
+  "cpu_limit": "500m",
+  "memory_limit": "512Mi",
+  "service_type": "ClusterIP"
+}

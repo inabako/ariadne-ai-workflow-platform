@@ -1,4 +1,4 @@
-﻿# Context First Architecture
+# Context First Architecture
 
 Context First Architecture は、Workflow / Agent が毎回 Environment、Tool、Runtime を推論する状態を避けるための設計方針です。
 
@@ -112,7 +112,7 @@ aiwfctl context init `
   --tool gh:read-only:GitHub metadata collection `
   --required-context workflow-selection `
   --required-context tool-selection `
-  --next-command "/docs-sync localty-system-gui develop"
+  --next-command "/docs-sync target-system develop"
 ```
 
 生成物:

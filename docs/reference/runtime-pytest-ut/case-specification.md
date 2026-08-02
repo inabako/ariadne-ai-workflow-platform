@@ -1,4 +1,4 @@
-﻿# Runtime pytest 単体試験仕様
+# Runtime pytest 単体試験仕様
 
 作成日: 2026-07-07
 
@@ -12,10 +12,10 @@ coverage 推移と監査履歴は repository root の `Runtime pytest 分岐・C
 
 | 項目 | 値 |
 | --- | ---: |
-| pytest files | 45 |
-| pytest test functions | 698 |
-| pytest collected cases | 779 |
-| pytest result | `779 passed` |
+| pytest files | 54 |
+| pytest test functions | 832 |
+| pytest collected cases | 847 |
+| pytest result | `847 passed` |
 | statement coverage | 99.66% |
 | total coverage | 99.48% |
 
@@ -51,9 +51,10 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_context_first.py](cases/test_context_first.md) | 34 |
 | [test_corrective_action_report.py](cases/test_corrective_action_report.md) | 7 |
 | [test_coverage_audit.py](cases/test_coverage_audit.md) | 14 |
-| [test_ctl_help.py](cases/test_ctl_help.md) | 52 |
+| [test_ctl_help.py](cases/test_ctl_help.md) | 57 |
 | [test_dispatcher_context.py](cases/test_dispatcher_context.md) | 12 |
 | [test_docs_sync_workflow.py](cases/test_docs_sync_workflow.md) | 11 |
+| [test_expectation_design_runtime.py](cases/test_expectation_design_runtime.md) | 7 |
 | [test_flutter_multiplatform.py](cases/test_flutter_multiplatform.md) | 16 |
 | [test_gate_restart.py](cases/test_gate_restart.md) | 4 |
 | [test_github_knowledge_maintenance.py](cases/test_github_knowledge_maintenance.md) | 48 |
@@ -65,12 +66,13 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_mcp_boilerplate_templates.py](cases/test_mcp_boilerplate_templates.md) | 3 |
 | [test_mcp_server_group_workflow.py](cases/test_mcp_server_group_workflow.md) | 12 |
 | [test_observability_metrics.py](cases/test_observability_metrics.md) | 19 |
-| [test_preflight.py](cases/test_preflight.md) | 36 |
+| [test_oss_release_foundation.py](cases/test_oss_release_foundation.md) | 12 |
+| [test_preflight.py](cases/test_preflight.md) | 37 |
 | [test_preflight_ctl_runtime.py](cases/test_preflight_ctl_runtime.md) | 2 |
-| [test_pytest_ut_spec_sync.py](cases/test_pytest_ut_spec_sync.md) | 21 |
+| [test_pytest_ut_spec_sync.py](cases/test_pytest_ut_spec_sync.md) | 22 |
 | [test_rag_artifact_migration.py](cases/test_rag_artifact_migration.md) | 19 |
 | [test_rag_build.py](cases/test_rag_build.md) | 8 |
-| [test_rag_ctl_runtime.py](cases/test_rag_ctl_runtime.md) | 3 |
+| [test_rag_ctl_runtime.py](cases/test_rag_ctl_runtime.md) | 6 |
 | [test_rag_dispatcher.py](cases/test_rag_dispatcher.md) | 10 |
 | [test_rag_duckdb_store.py](cases/test_rag_duckdb_store.md) | 15 |
 | [test_rag_ingestion_optimizer.py](cases/test_rag_ingestion_optimizer.md) | 9 |
@@ -81,6 +83,9 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_review_council_runtime.py](cases/test_review_council_runtime.md) | 28 |
 | [test_retrieval_ctl_runtime.py](cases/test_retrieval_ctl_runtime.md) | 2 |
 | [test_retrieval_runtime.py](cases/test_retrieval_runtime.md) | 23 |
+| [test_runtime_log.py](cases/test_runtime_log.md) | 8 |
+| [test_runtime_status.py](cases/test_runtime_status.md) | 9 |
+| [test_runtime_trace.py](cases/test_runtime_trace.md) | 6 |
 | [test_scm_runtime.py](cases/test_scm_runtime.md) | 55 |
 | [test_sdk_analysis.py](cases/test_sdk_analysis.md) | 11 |
 | [test_self_improvement_workflow.py](cases/test_self_improvement_workflow.md) | 15 |
@@ -91,7 +96,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_vscode_environment_workflow.py](cases/test_vscode_environment_workflow.md) | 10 |
 | [test_vscode_workspace.py](cases/test_vscode_workspace.md) | 2 |
 | [test_workflow_ctl_runtime.py](cases/test_workflow_ctl_runtime.md) | 4 |
-| [test_workflow_doctor.py](cases/test_workflow_doctor.md) | 32 |
+| [test_workflow_doctor.py](cases/test_workflow_doctor.md) | 38 |
 | [test_workflow_state_noise_validation.py](cases/test_workflow_state_noise_validation.md) | 22 |
 
 ## 更新ルール

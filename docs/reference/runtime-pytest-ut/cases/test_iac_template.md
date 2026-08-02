@@ -16,7 +16,7 @@ This file lists pytest node id based UT cases for `runtime/tests/test_iac_templa
 runtime/tests/test_iac_template.py::test_iac_template_list_includes_opentelemetry_collector
 ```
 
-- 確認内容: IaC template catalog includes the OpenTelemetry Collector template and confirms that the source template directory exists.
+- 確認内容: IaC template catalogにOpenTelemetry Collector templateが含まれ、source template directoryが存在することを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_iac_template.py:12`
@@ -108,4 +108,4 @@ runtime/tests/test_iac_template.py::test_aiwfctl_iac_template_prepare_and_health
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `prepare_args`, `health_args`
-- 期待結果: CLI returns success, copies the template, and prints the health context path.
+- 期待結果: CLIが成功終了し、templateをコピーし、health context pathを出力する。

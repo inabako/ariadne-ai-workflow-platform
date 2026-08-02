@@ -1,4 +1,4 @@
-﻿---
+---
 name: self-improvement
 description: Collect workflow feedback from Ariadne AI Workflow Platform runs, append human review decisions, generate GitHub Issue bodies for accepted feedback, create standard issue branch/evidence scaffolds, and hand off to existing GitHub/SCM helpers. Use when the user selects /self-improvement or asks to turn workflow friction, noise, repeated checks, missing context, docs ambiguity, runtime observation gaps, or workflow usability issues into a governed improvement flow.
 ---

@@ -55,7 +55,6 @@ ALLOWED_ENGLISH_TERMS = {
     "evidence",
     "github",
     "json",
-    "localty",
     "markdown",
     "pr",
     "python",

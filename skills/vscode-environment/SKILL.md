@@ -1,4 +1,4 @@
-﻿---
+---
 name: vscode-environment
 description: Build or maintain reproducible VSCode Workspace-as-Code environments for AI workflows. Use when the user selects /vscode-environment or asks to standardize .vscode/settings.json, tasks.json, launch.json, extensions.json, workspace.code-workspace, terminal profiles, AI extension setup, Docker/Git/Python/Node/Java tooling, or evidence-backed VSCode environment setup.
 ---
@@ -56,7 +56,7 @@ Use this mode when `/vscode-environment <target-workspace-path>` is provided.
 Example:
 
 ```text
-/vscode-environment C:\github\localty-system-gui
+/vscode-environment <target-system-repo-path>
 ```
 
 ### 3. custom-design mode
@@ -163,8 +163,8 @@ Create a reusable VSCode environment RAG source note:
 ```powershell
 uv run --project runtime python runtime/workflow/vscode_environment.py rag-template `
   --work-id "vscode-environment" `
-  --topic "localty-vscode-environment" `
-  --repository "localty"
+  --topic "workspace-environment" `
+  --repository "target-system"
 ```
 
 Run environment preflight:
@@ -353,7 +353,7 @@ Update the target workspace README or setup docs with setup steps, recommended e
 
 ### 9. RAG Capture And UUID JSON Finalization
 
-When the VSCode environment pattern is reusable for Localty or another target workspace, save a Markdown source note under:
+When the VSCode environment pattern is reusable for another target workspace, save a Markdown source note under:
 
 ```text
 work/db/ariadne-knowledge-platform/rag/workspace-environment/YYYYMMDDHHMMSS_<random-5-to-8>_<topic>.md
@@ -364,8 +364,8 @@ Use the runtime helper to create a correctly named draft:
 ```powershell
 uv run --project runtime python runtime/workflow/vscode_environment.py rag-template `
   --work-id "<work-id>" `
-  --topic "localty-vscode-environment" `
-  --repository "localty"
+  --topic "workspace-environment" `
+  --repository "target-system"
 ```
 
 The Markdown file is the human-reviewable source note. It is not the final machine-readable knowledge artifact.
@@ -375,8 +375,8 @@ After human approval, normalize the approved source through the file-based RAG p
 ```powershell
 uv run --project runtime python runtime/workflow/vscode_environment.py rag-template `
   --work-id "<work-id>" `
-  --topic "localty-vscode-environment" `
-  --repository "localty" `
+  --topic "workspace-environment" `
+  --repository "target-system" `
   --status approved
 ```
 

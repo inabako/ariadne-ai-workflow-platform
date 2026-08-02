@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{APP_NAME}}
+  namespace: {{NAMESPACE}}
+  labels:
+    app.kubernetes.io/name: {{APP_NAME}}
+spec:
+  replicas: {{REPLICAS}}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{APP_NAME}}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{APP_NAME}}
+    spec:
+      containers:
+        - name: {{APP_NAME}}
+          image: {{IMAGE}}
+          ports:
+            - name: http
+              containerPort: {{PORT}}
+          readinessProbe:
+            httpGet:
+              path: {{HEALTH_PATH}}
+              port: http
+          livenessProbe:
+            httpGet:
+              path: {{HEALTH_PATH}}
+              port: http
+          resources:
+            requests:
+              cpu: {{CPU_REQUEST}}
+              memory: {{MEMORY_REQUEST}}
+            limits:
+              cpu: {{CPU_LIMIT}}
+              memory: {{MEMORY_LIMIT}}

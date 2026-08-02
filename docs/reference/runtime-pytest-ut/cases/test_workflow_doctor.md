@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 29 |
+| cases | 39 |
 
 ## ケース一覧
 
@@ -128,6 +128,23 @@ runtime/tests/test_workflow_doctor.py::test_human_gate_registry_findings_accepts
 - 期待結果: 未配置またはvalid registryは不要なwarningを出さない。
 
 #### RT-UT-CASE-DOCTOR-007
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_registry_seed_findings_reports_incomplete_template_source
+```
+
+- 確認内容: workflow doctorがregistry自動build失敗前に、不完全な `templates/registries` bootstrap seed fileを報告することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_workflow_doctor.py:122`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: missing template directory, complete JSON objects, missing `search_terms.json`, invalid JSON shape, invalid JSON syntax
+- 期待結果: template source欠落、seed file欠落、invalid JSON object shape、invalid JSON syntaxがregistry seed findingとして報告される。
+
+#### RT-UT-CASE-DOCTOR-007A
 
 - pytest node id:
 
@@ -345,6 +362,23 @@ runtime/tests/test_workflow_doctor.py::test_path_constant_literal_findings_ignor
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: 許可されたconstants / tests配置ではpath-constant-literal warningが発生しない。
 
+#### RT-UT-CASE-AUTO-001
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_git_attributes_and_uv_startup_findings
+```
+
+- 確認内容: `test_git_attributes_and_uv_startup_findings` runtime contract is covered by pytest assertions.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_workflow_doctor.py:437`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成されるfixtureとassertion
+- 期待結果: pytest assertionで期待結果を確認する。
+
 #### RT-UT-CASE-DOCTOR-020
 
 - pytest node id:
@@ -378,6 +412,23 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_run_reports_all_warn
   - parameter: names=なし, case=なし
   - inline input: `args`
 - 期待結果: policy、required files、archive、UTF-8、DuckDBなどのwarningが集約される。
+
+#### RT-UT-CASE-DOCTOR-021A
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_warning_guidance_uses_rebuild_hint_from_duckdb_paths
+```
+
+- Confirm: doctor warning guidance can derive the concrete DuckDB rebuild command from warning paths.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_workflow_doctor.py:554`
+  - fixture/arg: none
+  - parameter: names=none case=none
+  - inline input: warning id `rag-duckdb-read-model-missing` and paths containing a `rebuild:` hint
+- Expected: pytest assertion defines the expected result.
 
 #### RT-UT-CASE-DOCTOR-022
 
@@ -429,6 +480,72 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_repair_encoding_clea
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: repair 後の `gate_restart` は `restart_from=doctor-gate` と `next_on_pass=return-to-calling-workflow-after-gate` を返す。
+
+#### RT-UT-CASE-DOCTOR-TEXT-BOUNDARY-003
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_workflow_doctor_repair_encoding_dry_run_previews_without_writing
+```
+
+- 確認内容: `workflow doctor --repair-encoding --dry-run` がtext-boundary repairをpreviewし、対象ファイルやbackupを書き込まないことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_workflow_doctor.py`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - inline input: temporary mojibake Markdown file and dry-run doctor args
+- 期待結果: `text-boundary-repair-preview`、`dry_run=true`、`written=false` となり、対象ファイルと `.encoding-bak` は変更されない。
+
+#### RT-UT-CASE-AUTO-002
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_workflow_doctor_repair_spec_index_scaffolds_missing_cases
+```
+
+- 確認内容: `test_workflow_doctor_repair_spec_index_scaffolds_missing_cases` runtime contract is covered by pytest assertions.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_workflow_doctor.py:656`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: test関数内で生成されるfixtureとassertion
+- 期待結果: pytest assertionで期待結果を確認する。
+
+#### RT-UT-CASE-DOCTOR-SPEC-INDEX-DRY-RUN
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_workflow_doctor_repair_spec_index_dry_run_previews_without_scaffolding
+```
+
+- 確認内容: `workflow doctor --repair-spec-index --dry-run` がUT仕様書scaffoldを実行せず、欠落nodeのpreviewだけを返すことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_workflow_doctor.py`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - inline input: mocked UT spec sync findings and dry-run doctor args
+- 期待結果: `pytest-ut-spec-index-repair-preview`、`dry_run=true`、`would_write=true` となり、実repair関数は呼ばれない。
+
+#### RT-UT-CASE-AUTO-001
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_workflow_doctor_fix_suggestion_only_does_not_run_repairs
+```
+
+- Confirm: `test_workflow_doctor_fix_suggestion_only_does_not_run_repairs` runtime contract is covered by pytest assertions.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_workflow_doctor.py:852`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - parameter: names=none case=none
+  - inline input: `original`
+- Expected: pytest assertion defines the expected result.
 
 #### RT-UT-CASE-DOCTOR-023
 

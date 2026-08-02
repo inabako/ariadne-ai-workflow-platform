@@ -24,6 +24,7 @@ def load_module(path: Path, name: str):
 def test_oss_release_foundation_files_exist() -> None:
     root = repo_root()
     required = [
+        ".gitattributes",
         "CITATION.cff",
         "AGENTS.md",
         "LICENSES/AGPL-3.0-or-later.txt",
@@ -70,6 +71,33 @@ def test_oss_release_foundation_files_exist() -> None:
     ]
     missing = [path for path in required if not (root / path).exists()]
     assert missing == []
+
+
+def test_gitattributes_documents_line_ending_policy() -> None:
+    root = repo_root()
+    text = (root / ".gitattributes").read_text(encoding="utf-8")
+
+    assert "line-ending normalization" in text
+    assert "* text=auto eol=lf" in text
+    assert "*.cmd text eol=crlf" in text
+    assert "*.png binary" in text
+
+
+def test_github_copilot_bridge_files_point_to_ariadne_source_of_truth() -> None:
+    root = repo_root()
+    copilot = (root / ".github" / "copilot-instructions.md").read_text(encoding="utf-8")
+    prompt = (root / ".github" / "prompts" / "ariadne-workflows.prompt.md").read_text(encoding="utf-8")
+
+    assert "薄い bridge" in copilot
+    assert "workflow 本体ではありません" in copilot
+    assert ".ariadne/prompts/*.prompt.md" in copilot
+    assert ".ariadne/agents/*.prompt.md" in copilot
+    assert "source of truth" in copilot
+
+    assert "Ariadne Workflow Bridge" in prompt
+    assert ".ariadne/prompts/" in prompt
+    assert ".ariadne/agents/" in prompt
+    assert "#file:../../AGENTS.md" in prompt
 
 
 def test_ariadne_assets_do_not_point_to_legacy_github_ai_asset_paths() -> None:

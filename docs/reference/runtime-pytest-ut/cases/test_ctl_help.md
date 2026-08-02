@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 52 |
+| cases | 64 |
 
 ## ケース一覧
 
@@ -24,6 +24,102 @@ runtime/tests/test_ctl_help.py::test_ctl_parser_uses_aiwfctl_program_name
   - parameter: names=なし, case=なし
   - inline input: `args`, `status_args`, `verify_args`, `cleanup_args`, `work_args`, `publish_args`
 - 期待結果: parserのprogram nameが `aiwfctl` として扱われる。
+
+#### RT-UT-CASE-CTL-RUNTIME-HELP
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_help_runtime_shows_operational_command_guide
+```
+
+- 確認内容: `aiwfctl help runtime` がRuntime UX向けの操作ガイドを表示し、status、trace、doctor、dry-runの代表コマンドへ誘導できることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - inline input: minimal workflow help registry, `ctl.build_parser().parse_args(...)`
+- 期待結果: exit code が0で、`Runtime Command Guide`、`aiwfctl status`、`aiwfctl trace show`、`aiwfctl doctor`、`aiwfctl rag build --dry-run` が表示される。
+
+#### RT-UT-CASE-CTL-RUNTIME-HELP-JSON
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_help_runtime_json_exposes_dry_run_capabilities
+```
+
+- 確認内容: `aiwfctl help runtime --json` がRuntime UX capabilityを機械可読に返し、readiness / dry-run / 状況別導線を含むことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - inline input: `templates/registries` の最小seed、`ctl.build_parser().parse_args(...)`
+- 期待結果: exit code が0で、`runtime-help-capabilities`、`readiness_capabilities`、`dry_run_capabilities`、`situations` が期待どおり返る。
+
+#### RT-UT-CASE-CTL-RUNTIME-HELP-SCHEMA
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_help_runtime_json_matches_schema_contract
+```
+
+- 確認内容: Runtime help model が `.ariadne/schemas/runtime-help-capabilities.schema.json` のcontractと一致することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: なし
+  - inline input: `runtime_help_model(repo_root())`、`runtime-help-capabilities.schema.json`
+- 期待結果: required / const / capability item shape がschema contractに一致し、関連docsに `runtime-state-glossary.md` が含まれる。
+
+#### RT-UT-CASE-CTL-RUNTIME-HELP-REGISTRY-SOURCE
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_help_runtime_capabilities_load_from_template_registry
+```
+
+- 確認内容: Runtime help capability が `ctl_help.py` の直書きではなく、`templates/registries/runtime_help_capabilities.json` 相当のseedから読み込まれることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - inline input: custom `runtime_help_capabilities.json` seed
+- 期待結果: custom seed の `responsibility_boundary` と `readiness_capabilities` が model に反映される。
+
+#### RT-UT-CASE-CTL-HELP-USAGE-REGISTRY-SOURCE
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_help_usage_loads_from_template_registry
+```
+
+- 確認内容: `aiwfctl help` のusage guidanceが `ctl_help.py` の直書きではなく、`templates/registries/ctl_help_usage.json` 相当のseedから読み込まれることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - inline input: custom `ctl_help_usage.json` seed
+- 期待結果: custom seed の warning / guidance / command が usage model と表示結果に反映される。
+
+#### RT-UT-CASE-CTL-HELP-USAGE-SCHEMA
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_help_usage_json_matches_schema_contract
+```
+
+- 確認内容: CTL help usage model が `.ariadne/schemas/ctl-help-usage.schema.json` のcontractと一致することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: なし
+  - inline input: `ctl_help_usage_model(repo_root())`、`ctl-help-usage.schema.json`
+- 期待結果: required / const / usage section shape がschema contractに一致する。
 
 #### RT-UT-CASE-CTL-WINDOWS-SCRIPT
 
@@ -93,6 +189,23 @@ runtime/tests/test_ctl_help.py::test_ctl_run_writes_runtime_event_log_for_each_c
   - inline input: `args`, `started`, `completed`
 - 期待結果: `logs/runtime/runtime-events.log` に同一trace idで `runtime_command_started` と `runtime_command_completed` が `00001`、`00002` の順に保存される。
 
+#### RT-UT-CASE-CTL-REGISTRY-STALE-DUCKDB-REBUILD
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_trace_lifecycle_keeps_one_trace_id_for_workflow_commands
+```
+
+- 確認内容: `aiwfctl trace begin` から `trace end` までの複数 runtime command が、1つの workflow execution trace id にまとまることを確認します。
+- 入力値:
+  - pytest node: 上記 node id
+  - source: `runtime/tests/test_ctl_help.py:235`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `args`
+- 期待結果: begin / help / status / end の event は同じ trace id で記録され、end 後の command は新しい trace id で記録される。
+
 #### RT-UT-CASE-CTL-002A
 
 - pytest node id:
@@ -109,6 +222,23 @@ runtime/tests/test_ctl_help.py::test_runtime_diagnostics_for_blocked_command_inc
   - parameter: names=なし, case=なし
   - inline input: `command_path`, `status`, `reason`
 - 期待結果: `recoverable` が `true` になり、`next_action` と `resume_command` が Runtime Event Log の `diagnostics` として利用できる形で返る。
+
+#### RT-UT-CASE-AUTO-002
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_runtime_resume_command_keeps_safe_retry_arguments
+```
+
+- Confirm: `test_runtime_resume_command_keeps_safe_retry_arguments` runtime contract is covered by pytest assertions.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_ctl_help.py:425`
+  - fixture/arg: none
+  - parameter: names=none case=none
+  - inline input: `args`
+- Expected: pytest assertion defines the expected result.
 
 #### RT-UT-CASE-CTL-003
 
@@ -574,6 +704,21 @@ runtime/tests/test_ctl_help.py::test_defensive_specimen_ctl_doctor_formats_warni
 - pytest node id:
 
 ```text
+runtime/tests/test_ctl_help.py::test_ctl_doctor_repair_encoding_dry_run_does_not_write_files
+```
+
+- 確認内容: `aiwfctl doctor --repair-encoding --dry-run --output` がCTL経由でもdoctor runtimeへdry-runを渡し、encoding repair previewだけを返してJSON evidenceとして保存できることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - inline input: temporary mojibake Markdown file, `ctl.build_parser().parse_args(...)`
+- 期待結果: JSON出力の `dry_run` が true になり、`text-boundary-repair-preview` が返り、対象ファイルと `.encoding-bak` は作成・変更されない。
+#### RT-UT-CASE-CTL-030
+
+- pytest node id:
+
+```text
 runtime/tests/test_ctl_help.py::test_ctl_help_search_finds_svg_gui_workflows
 ```
 
@@ -712,24 +857,30 @@ runtime/tests/test_ctl_help.py::test_registry_store_builds_search_terms_table_wi
 ```text
 runtime/tests/test_ctl_help.py::test_registry_store_ensure_builds_missing_duckdb_from_source_backup
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+
+- 確認内容: source backup から欠落した `registry.duckdb` を再構築し、以後は既存read modelとして再利用されることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1488`
+  - source: `runtime/tests/test_ctl_help.py:1686`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: Placeholder; pytest assertion defines the expected result.
+  - inline input: `work/db/ariadne-knowledge-platform/registries` 配下のregistry source fixture
+- 期待結果: 初回は `action = built` となり `db/registries/registry.duckdb` が作成され、workflow help / environment registry の件数が復元される。再実行時は `action = existing` になる。
+#### RT-UT-CASE-AUTO-001
 
+- pytest node id:
 
-- 遒ｺ隱榊・螳ｹ: registry DuckDB read model縺梧ｬ關ｽ譎ゅ↓backup JSON source縺九ｉ閾ｪ蜍募・讒九〒縺阪ｋ縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
+```text
+runtime/tests/test_ctl_help.py::test_registry_store_rebuilds_stale_duckdb_without_document_registry
+```
+
+- 確認内容: `registry_documents` tableを持たない古い `registry.duckdb` が残っている場合でも、registry loader / summary がsource seedからread modelを再構築できることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_ctl_help.py`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: missing DuckDB縺後～built` action縺ｧ逕滓・縺輔ｌ縲√Ξ繧ｸ繧ｹ繝医Μcount縺瑚ｿ斐ｋ縲・
+  - inline input: `templates/registries` source fixture、古いschema相当の `registry.duckdb`
+- 期待結果: `ctl_help_usage` と `runtime_help_capabilities` がDuckDB read model経由で読め、summaryの `registry_documents` 件数が2になる。
 
 #### RT-UT-CASE-CTL-029D
 
@@ -738,24 +889,31 @@ runtime/tests/test_ctl_help.py::test_registry_store_ensure_builds_missing_duckdb
 ```text
 runtime/tests/test_ctl_help.py::test_registry_load_auto_builds_missing_duckdb_from_default_source_backup
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+
+- 確認内容: default source backup が存在する場合、registry load 時に欠落した `registry.duckdb` が自動生成されることを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1506`
+  - source: `runtime/tests/test_ctl_help.py:1704`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: Placeholder; pytest assertion defines the expected result.
+  - inline input: `work/db/ariadne-knowledge-platform/registries` 配下のregistry source fixture
+- 期待結果: `load_workflow_help` と `load_environment_profiles` が `registry.duckdb` を自動生成し、command、search terms、environment profile を読み込める。
+#### RT-UT-CASE-CTL-029D2
 
+- pytest node id:
 
-- 遒ｺ隱榊・螳ｹ: workflow help / environment registry load譎ゅ↓DuckDB縺後↑縺代ｌ縺ｰdefault source backup縺九ｉ閾ｪ蜍募・讒九☆繧九％縺ｨ繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
-  - source: `runtime/tests/test_ctl_help.py`
+```text
+runtime/tests/test_ctl_help.py::test_registry_load_auto_builds_missing_duckdb_from_template_source
+```
+
+- 確認内容: `templates/registries` から欠落したDuckDB read modelをregistry load時に自動生成できることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py:1588`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: load蜃ｦ逅・後↓ `db/registries/registry.duckdb` 縺悟ｭ伜惠縺励∵､懃ｴ｢隱槭→environment縺瑚ｪｭ縺ｿ蜿悶ｌ繧九・
+  - parameter: names=なし, case=なし
+  - inline input: temporary repository with complete `templates/registries` JSON seed files
+- 期待結果: template sourceから `db/registries/registry.duckdb` が作成され、workflow helpとenvironment profileを読み込める。
 
 #### RT-UT-CASE-CTL-029E
 
@@ -764,25 +922,15 @@ runtime/tests/test_ctl_help.py::test_registry_load_auto_builds_missing_duckdb_fr
 ```text
 runtime/tests/test_ctl_help.py::test_registry_store_ensure_skips_when_source_backup_is_incomplete
 ```
-- Confirm: Placeholder; regenerated input details are maintained by pytest_ut_spec_sync.
+
+- 確認内容: registry source backup が不完全な場合、read model の再構築を行わず missing-source として扱うことを確認します。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
-  - source: `runtime/tests/test_ctl_help.py:1520`
+  - source: `runtime/tests/test_ctl_help.py:1732`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
-  - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: Placeholder; pytest assertion defines the expected result.
-
-
-- 遒ｺ隱榊・螳ｹ: registry source backup縺御ｸ榊ｮ悟・譎ゅ↓荳ｭ騾泌濠縺ｮDuckDB繧剃ｽ懈・縺帙★skip縺吶ｋ縺薙→繧堤｢ｺ隱阪＠縺ｾ縺吶・
-- 蜈･蜉帛､:
-  - pytest node: 荳願ｨ倥さ繝ｼ繝峨ヶ繝ｭ繝・け縺ｮnode id
-  - source: `runtime/tests/test_ctl_help.py`
-  - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=縺ｪ縺・ case=縺ｪ縺・
-  - inline input: test髢｢謨ｰ蜀・〒逕滓・縺輔ｌ繧句崋螳壼・蜉帙・
-- 譛溷ｾ・ｵ先棡: `missing-source` action縺ｨmissing source list縺瑚ｿ斐ｊ縲．uckDB file縺ｯ逕滓・縺輔ｌ縺ｪ縺・・
-
+  - inline input: `workflow_help.json` のみを持つ不完全なregistry source fixture
+- 期待結果: `action = missing-source`、`status = skipped` となり、欠落sourceに `tool_candidates.json` が含まれ、`registry.duckdb` は作成されない。
 #### RT-UT-CASE-CTL-029F
 
 - pytest node id:
@@ -926,11 +1074,11 @@ runtime/tests/test_ctl_help.py::test_ctl_run_manual_error_and_json_branches
 runtime/tests/test_ctl_help.py::test_ctl_work_cleanup_check_and_apply_requires_absorbed_knowledge
 ```
 
-- Confirm: `aiwfctl work cleanup-check/apply` verifies long-lived Knowledge absorption before removing a temporary work scope.
+- 確認内容: `aiwfctl work cleanup-check/apply` verifies long-lived Knowledge absorption before removing a temporary work scope.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_ctl_help.py:1934`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: `blocked_args`, `blocked`, `metrics_args`, `metrics`, `protected_args`, `ready_args`
-- Expected: cleanup is blocked before RAG evidence exists, becomes ready after `work/db/.../rag/github-knowledge` evidence, and apply requires `--human-check approved` before removing `work/github/original`.
+- 期待結果: RAG evidenceが存在する前はcleanupがblockされ、`work/db/.../rag/github-knowledge` evidence追加後にreadyとなり、`work/github/original` 削除前に `--human-check approved` が必須になる。

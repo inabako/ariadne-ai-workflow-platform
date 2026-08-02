@@ -16,14 +16,14 @@ This file lists pytest node ids for `runtime/tests/test_retrieval_ctl_runtime.py
 runtime/tests/test_retrieval_ctl_runtime.py::test_ctl_retrieval_run_writes_task_reports_and_runtime_log
 ```
 
-- Confirm: `aiwfctl retrieval run` runs the task runner through the shared CTL entrypoint, writes task reports, and emits the expected runtime command log.
-- Input:
+- 確認内容: `aiwfctl retrieval run` がshared CTL entrypoint経由でtask runnerを実行し、task reportと期待するruntime command logを出力することを確認します。
+- 入力値:
   - pytest node: node id in the code block above
   - source: `runtime/tests/test_retrieval_ctl_runtime.py:14`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=none, case=none
+  - parameter: names=なし, case=なし
   - inline input: `repo`, `work_dir`, `context_dir`, `task_file`, `args`, `result`, `completed`
-- Expected:
+- 期待結果:
   - exit code is 0
   - result work id is `issue-1`
   - task JSON and Markdown reports are written
@@ -37,14 +37,14 @@ runtime/tests/test_retrieval_ctl_runtime.py::test_ctl_retrieval_run_writes_task_
 runtime/tests/test_retrieval_ctl_runtime.py::test_ctl_retrieval_run_reports_missing_work_directory
 ```
 
-- Confirm: `aiwfctl retrieval run` reports task runner errors through CTL and records a failed runtime event.
-- Input:
+- 確認内容: `aiwfctl retrieval run` reports task runner errors through CTL and records a failed runtime event.
+- 入力値:
   - pytest node: node id in the code block above
   - source: `runtime/tests/test_retrieval_ctl_runtime.py:58`
   - fixture/arg: `tmp_path` (temporary filesystem)
-  - parameter: names=none, case=none
+  - parameter: names=なし, case=なし
   - inline input: `repo`, `task_file`, `args`, `completed`
-- Expected:
+- 期待結果:
   - exit code is 1
   - output starts with a retrieval runtime failure message
   - runtime log command is `retrieval run`

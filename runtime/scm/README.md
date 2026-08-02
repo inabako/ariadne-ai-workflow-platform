@@ -31,7 +31,7 @@ SCM連携に必要な値は repository root の `.env` から読み込みます�
 
 `push_branch.py` は、HTTPS remote へのpush時に `GITHUB_TOKEN` が設定されていれば一時的な `GIT_ASKPASS` 経由で認証に使います。token はremote URLやgit configには保存しません。SSH remote または既存のgit credentialがある場合は、それらも利用できます。
 
-`GITHUB_OWNER` を設定すると、`localty-system-gui` のようなrepository名だけの指定を `<GITHUB_OWNER>/localty-system-gui` として解決し、clone URLやGitHub branch作成に使います。
+`GITHUB_OWNER` を設定すると、`target-system` のようなrepository名だけの指定を `<GITHUB_OWNER>/target-system` として解決し、clone URLやGitHub branch作成に使います。
 
 `create_issue_branch.py` は、既定ではGitHub上にbranchを先に作成してから、`work/<id>/source/repository/` にそのbranchをclone / checkoutします。`--link-to-issue` を指定すると、GitHub GraphQL `createLinkedBranch` でIssueに紐づくbranchとして作成します。`--branch-prefix` が未指定の場合、`DEFAULT_FEATURE_BRANCH_PREFIX` を使います。従来のローカルbranch作成だけを行う場合は `--local-only` を指定します。
 
@@ -86,8 +86,8 @@ runtime/scm/push_branch.py
 
 .\runtime\windows-script\aiwf.cmd ctl scm support `
   --work-id issue-123 `
-  --name localty-system-protocol `
-  --repository inabako/localty-system-protocol `
+  --name target-system-protocol `
+  --repository owner/target-system-protocol `
   --branch develop
 
 .\runtime\windows-script\aiwf.cmd ctl scm commit `

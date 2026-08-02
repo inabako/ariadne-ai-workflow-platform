@@ -25,7 +25,7 @@ func TestLoadFromEnvDefaults(t *testing.T) {
 }
 
 func TestLoadFromEnvOverrides(t *testing.T) {
-	t.Setenv("SERVICE_NAME", "localty-realtime-gateway")
+	t.Setenv("SERVICE_NAME", "target-realtime-gateway")
 	t.Setenv("HTTP_ADDR", ":18080")
 	t.Setenv("ENABLE_UDP_CONTROL", "false")
 	t.Setenv("SHUTDOWN_TIMEOUT", "3s")
@@ -34,7 +34,7 @@ func TestLoadFromEnvOverrides(t *testing.T) {
 	if err != nil {
 		t.Fatalf("LoadFromEnv returned error: %v", err)
 	}
-	if cfg.ServiceName != "localty-realtime-gateway" {
+	if cfg.ServiceName != "target-realtime-gateway" {
 		t.Fatalf("unexpected service name: %s", cfg.ServiceName)
 	}
 	if cfg.HTTPAddr != ":18080" {

@@ -1,4 +1,4 @@
-﻿# Workflow Help CLI
+# Workflow Help CLI
 
 この文書は、AI workflow prompt command のヘルプをターミナルから確認するための `aiwfctl` 入口を説明します。
 
@@ -183,22 +183,32 @@ aiwfctl help markdown --output work/help/ai-workflow-help.md
 db/registries/registry.duckdb
 ```
 
-DuckDB read modelのsource JSONは次です。
+DuckDB read modelのbootstrap source JSONは次です。
 
 ```text
-work/db/ariadne-knowledge-platform/registries/workflow_help.json
-work/db/ariadne-knowledge-platform/registries/search_terms.json
+templates/registries/human_gates.json
+templates/registries/workflow_help.json
+templates/registries/search_terms.json
+templates/registries/tool_candidates.json
+templates/registries/workflow_environment_profiles.json
 ```
+
+運用中にknowledge workspaceへmirror / backupする場合は、`work/db/ariadne-knowledge-platform/registries/` を使います。
 
 `workflow_help.json` はcommand / extension本体だけを持ちます。各項目の `id` は `/ariadne-new-system` なら `ariadne_new_system` のように、prompt commandやextension名をsnake_case化した機能IDにします。
 
 検索語は `search_terms.json` に分離します。各検索語の `id` はUUID、`owner_id` は `workflow_help.json` 内のsnake_case機能IDにします。
 
+`tool_candidates.json`、`human_gates.json`、`workflow_environment_profiles.json` は、Context First Tool Dispatcher、Human Gate Policy、Environment Selection からも参照されるregistry seedです。fresh checkoutでは、これらのsource JSONから `db/registries/registry.duckdb` を再生成します。
+
 構造定義は次に置きます。
 
 ```text
+.ariadne/schemas/human-gates.schema.json
 .ariadne/schemas/workflow-help.schema.json
 .ariadne/schemas/search-terms.schema.json
+.ariadne/schemas/tool-candidate-registry.schema.json
+.ariadne/schemas/workflow-environment-profiles.schema.json
 ```
 
 `db/registries/` はruntime横断で参照するregistry実体、`.ariadne/schemas/` は構造定義専用です。
@@ -209,12 +219,13 @@ work/db/ariadne-knowledge-platform/registries/search_terms.json
 
 workflow prompt commandを追加、削除、引数変更した場合は、次を更新します。
 
-1. `work/db/ariadne-knowledge-platform/registries/workflow_help.json`
-2. `work/db/ariadne-knowledge-platform/registries/search_terms.json`
-3. `db/registries/registry.duckdb`
-4. `.ariadne/schemas/workflow-help.schema.json` / `.ariadne/schemas/search-terms.schema.json` が必要なら更新
-5. `docs/reference/workflow-help.md`
-6. `runtime/tests/test_ctl_help.py`
+1. `templates/registries/workflow_help.json`
+2. `templates/registries/search_terms.json`
+3. 関連する `templates/registries/*.json`
+4. `db/registries/registry.duckdb`
+5. `.ariadne/schemas/*.schema.json` が必要なら更新
+6. `docs/reference/workflow-help.md`
+7. `runtime/tests/test_ctl_help.py`
 
 特に、次の項目は省略しません。
 

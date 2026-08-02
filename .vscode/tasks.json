@@ -418,7 +418,7 @@
       "problemMatcher": []
     },
     {
-      "label": "test:msys2-localty-smoke",
+      "label": "test:msys2-gui-smoke",
       "type": "process",
       "command": "uv",
       "args": [
@@ -427,7 +427,7 @@
         "runtime",
         "python",
         "runtime/workflow/vscode_task_runner.py",
-        "msys2-localty-smoke"
+        "msys2-gui-smoke"
       ],
       "options": {
         "cwd": "${workspaceFolder}"

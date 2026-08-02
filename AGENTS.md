@@ -1,6 +1,6 @@
 ﻿# Ariadne AI Workflow: Agent Guide
 
-このリポジトリは、Localty の対象システム開発を Intent、Safety、Operational Learning を中心に進めるための AI workflow repository です。
+このリポジトリは、対象システム開発を Intent、Safety、Operational Learning を中心に進めるための AI workflow repository です。
 
 Agent は、単に成果物を作るだけではなく、次のAgentと人間が判断を継続できるように、context、decision、reason、evidence、risk、open QA を残してください。
 
@@ -42,6 +42,16 @@ Ariadne は、AI Agent が迷わず作業を進めるために、workflow の入
   instructions/
                thin VS Code Copilot custom instruction bridge
   prompts/     thin VS Code Copilot prompt stubs only
+
+.cursor/
+               thin Cursor project rule bridge into AGENTS.md and .ariadne/
+
+.clinerules/
+               thin Cline bridge rules into AGENTS.md and .ariadne/
+.claude/
+               thin Claude Code / Claude IDE bridge into AGENTS.md and .ariadne/
+.kiro/
+               thin Kiro steering bridge into AGENTS.md and .ariadne/
 
 knowledge-inbox/
   investigations/
@@ -179,7 +189,7 @@ Agent は、次のAgentが必要とする情報を schema に沿って残して�
 
 共通判断ルールは `.ariadne/shared/` を参照してください。
 
-- `localty-principles.md`
+- `ariadne-principles.md`
 - `risk-and-severity.md`
 - `artifact-management.md`
 - `agent-handoff.md`

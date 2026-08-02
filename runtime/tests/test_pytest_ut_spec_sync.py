@@ -39,14 +39,20 @@ runtime/tests/test_sample.py::test_example[value0]
 
 
 def test_defensive_specimen_collect_pytest_nodes_filters_noise_and_reports_collect_error(monkeypatch, tmp_path: Path) -> None:
-    def failed_run(command, cwd, text, capture_output, check):
+    captured_envs: list[dict[str, str]] = []
+
+    def failed_run(command, cwd, text, capture_output, check, env):
+        captured_envs.append(env)
         return subprocess.CompletedProcess(command, 2, stdout="", stderr="collect failed")
 
     monkeypatch.setattr(sync.subprocess, "run", failed_run)
     with pytest.raises(RuntimeError, match="collect failed"):
         sync.collect_pytest_nodes(tmp_path)
 
-    def noisy_run(command, cwd, text, capture_output, check):
+    assert captured_envs[-1][sync.PYTEST_DISABLE_PLUGIN_AUTOLOAD_ENV] == "1"
+
+    def noisy_run(command, cwd, text, capture_output, check, env):
+        captured_envs.append(env)
         return subprocess.CompletedProcess(
             command,
             0,
@@ -68,6 +74,7 @@ def test_defensive_specimen_collect_pytest_nodes_filters_noise_and_reports_colle
         "runtime/tests/test_sample.py::test_from_tests",
         "runtime/tests/test_sample.py::test_from_runtime",
     ]
+    assert captured_envs[-1][sync.PYTEST_DISABLE_PLUGIN_AUTOLOAD_ENV] == "1"
 
 
 def test_defensive_specimen_script_path_load_exposes_helpers() -> None:
@@ -374,6 +381,62 @@ runtime/tests/test_sample.py::test_example
     assert result["confirm_count"] == 1
     assert result["input_count"] == 1
     assert result["expected_count"] == 1
+
+
+def test_scaffold_missing_cases_creates_ordered_split_case_blocks(monkeypatch, tmp_path: Path) -> None:
+    runtime_root = tmp_path / "runtime"
+    test_dir = runtime_root / "tests"
+    test_dir.mkdir(parents=True)
+    (test_dir / "test_sample.py").write_text(
+        """
+def test_first():
+    assert True
+
+
+def test_second(tmp_path):
+    value = "x"
+    assert value
+""",
+        encoding="utf-8",
+    )
+    spec_path = tmp_path / "docs" / "reference" / "runtime-pytest-ut" / "case-specification.md"
+    case_dir = spec_path.with_name("cases")
+    case_dir.mkdir(parents=True)
+    spec_path.write_text("# Spec index\n", encoding="utf-8")
+    (case_dir / "test_sample.md").write_text(
+        """# test_sample.py
+#### RT-UT-CASE-001
+
+- pytest node id:
+
+```text
+runtime/tests/test_sample.py::test_second
+```
+
+- Confirm: existing
+- Input:
+  - pytest node: above node id
+- Expected: pass
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        sync,
+        "collect_pytest_nodes",
+        lambda runtime_root: [
+            "runtime/tests/test_sample.py::test_first",
+            "runtime/tests/test_sample.py::test_second",
+        ],
+    )
+
+    result = sync.scaffold_missing_cases(spec_path, runtime_root)
+    text = (case_dir / "test_sample.md").read_text(encoding="utf-8")
+
+    assert result["status"] == "repaired"
+    assert result["repairs"][0]["node_id"] == "runtime/tests/test_sample.py::test_first"
+    assert text.index("test_first") < text.index("test_second")
+    assert "| cases | 2 |" in text
+    assert sync.check_spec(spec_path, runtime_root)["status"] == "ok"
 
 
 def test_main_fix_inputs_and_check_json_output(monkeypatch, tmp_path: Path, capsys) -> None:

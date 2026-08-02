@@ -1,0 +1,81 @@
+name: Docs整備
+description: ドキュメント追加、修正、日本語/英語整備を管理します。
+title: "[Docs整備] "
+labels: ["documentation"]
+body:
+  - type: checkboxes
+    id: parent-version
+    attributes:
+      label: 親Issue
+      description: 対象バージョンの改善フローIssueを確認してください。
+      options:
+        - label: 対象バージョンの改善フローIssueと関連付けます。
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      value: v0.0.3
+    validations:
+      required: true
+  - type: textarea
+    id: target-docs
+    attributes:
+      label: Target Docs
+      description: 対象となるdocs、README、template、evidenceを記載してください。
+      value: |
+        - 
+    validations:
+      required: true
+  - type: textarea
+    id: current-gap
+    attributes:
+      label: Current Gap
+      description: 現在の不足、古い記載、分かりにくい点を記載してください。
+    validations:
+      required: true
+  - type: textarea
+    id: update-policy
+    attributes:
+      label: Update Policy
+      description: どういう方針で更新するかを記載してください。
+    validations:
+      required: true
+  - type: checkboxes
+    id: doc-type
+    attributes:
+      label: Document Type
+      options:
+        - label: README
+          required: false
+        - label: docs
+          required: false
+        - label: legal / license
+          required: false
+        - label: workflow / runtime reference
+          required: false
+        - label: template
+          required: false
+        - label: evidence
+          required: false
+        - label: development notes
+          required: false
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: 更新後に確認する観点を記載してください。
+      value: |
+        - [ ] 日本語として自然に読める
+        - [ ] 古い参照や削除予定ファイルへの参照がない
+        - [ ] GitHub上でリンクが成立する
+        - [ ] Development Notesへ必要に応じて反映する
+    validations:
+      required: true
+  - type: textarea
+    id: related-context
+    attributes:
+      label: Related Context
+      description: 関連Issue、PR、Discussions、artifactがあれば記載してください。
+    validations:
+      required: false

@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 21 |
+| cases | 22 |
 
 ## ケース一覧
 
@@ -237,14 +237,31 @@ runtime/tests/test_pytest_ut_spec_sync.py::test_check_spec_reads_split_case_file
 runtime/tests/test_pytest_ut_spec_sync.py::test_check_spec_accepts_ascii_case_field_labels
 ```
 
-- Confirm: pytest UT spec sync accepts ASCII field labels for encoding-safe case additions.
+- 確認内容: pytest UT spec sync accepts ASCII field labels for encoding-safe case additions.
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_pytest_ut_spec_sync.py:350`
   - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
-- Expected: check result is `ok` and confirm/input/expected counts are each 1.
+- 期待結果: check result is `ok` and confirm/input/expected counts are each 1.
+#### RT-UT-CASE-AUTO-001
+
+- pytest node id:
+
+```text
+runtime/tests/test_pytest_ut_spec_sync.py::test_scaffold_missing_cases_creates_ordered_split_case_blocks
+```
+
+- 確認内容: `test_scaffold_missing_cases_creates_ordered_split_case_blocks` runtime contract is covered by pytest assertions.
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_pytest_ut_spec_sync.py:379`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - parameter: names=なし, case=なし
+  - inline input: `text`
+- 期待結果: pytest assertionで期待結果を確認する。
+
 #### RT-UT-CASE-265
 
 - pytest node id:

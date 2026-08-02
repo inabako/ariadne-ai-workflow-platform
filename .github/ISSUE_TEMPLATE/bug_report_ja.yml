@@ -1,38 +1,63 @@
----
-# yamllint disable rule:line-length
 name: バグ報告
 description: ARIADNEで再現可能な不具合を報告します。
-title: "bug: "
-labels:
-  - bug
+title: "[Bug]: "
+labels: ["bug"]
 body:
-  - type: textarea
-    id: summary
+  - type: checkboxes
+    id: existing-issue
     attributes:
-      label: 概要
-      description: 何が起きましたか？
+      label: 既存のIssueは確認しましたか？
+      description: 新しく報告する前に、既存のIssueとDiscussionsを確認してください。
+      options:
+        - label: 既存のIssueとDiscussionsを確認しました。
+          required: true
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: 現在の動作
+      description: 何が起きたかを簡潔に記載してください。
     validations:
       required: true
   - type: textarea
-    id: steps
-    attributes:
-      label: 再現手順
-      description: 可能であれば、実行コマンド、workflow名、artifactのパスを含めてください。
-    validations:
-      required: true
-  - type: textarea
-    id: expected
+    id: expected-behavior
     attributes:
       label: 期待する動作
+      description: 本来どう動くべきかを簡潔に記載してください。
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: 再現手順
+      description: 可能であれば、実行コマンド、workflow名、artifactパスを含めてください。
+      placeholder: |
+        1. ...を実行する
+        2. ...を開く
+        3. ...が発生する
     validations:
       required: true
   - type: textarea
     id: evidence
     attributes:
-      label: 証跡
-      description: テスト出力、ログ、スクリーンショット、review artifactなどを追加してください。secretは含めないでください。
+      label: Evidence
+      description: テスト出力、ログ、スクリーンショット、review artifactなどを添付してください。secretは含めないでください。
+      render: shell
+    validations:
+      required: false
+  - type: textarea
+    id: environment
+    attributes:
+      label: 実行環境
+      description: 問題が発生した環境を記載してください。
+      value: |
+        - OS:
+        - Shell:
+        - Python:
+        - Docker:
+    validations:
+      required: false
   - type: checkboxes
-    id: safety
+    id: safety-check
     attributes:
       label: 公開前の安全確認
       options:

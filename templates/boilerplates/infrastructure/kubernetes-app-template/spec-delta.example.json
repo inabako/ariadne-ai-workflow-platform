@@ -1,0 +1,13 @@
+{
+  "app_name": "my-service",
+  "namespace": "my-namespace",
+  "image": "ghcr.io/example/my-service:0.1.0",
+  "port": 8080,
+  "replicas": 1,
+  "health_path": "/health",
+  "cpu_request": "100m",
+  "memory_request": "128Mi",
+  "cpu_limit": "500m",
+  "memory_limit": "512Mi",
+  "service_type": "ClusterIP"
+}
