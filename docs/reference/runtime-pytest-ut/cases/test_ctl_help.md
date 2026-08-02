@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 56 |
+| cases | 64 |
 
 ## ケース一覧
 
@@ -40,6 +40,86 @@ runtime/tests/test_ctl_help.py::test_ctl_help_runtime_shows_operational_command_
   - fixture/arg: `tmp_path` (temporary filesystem)
   - inline input: minimal workflow help registry, `ctl.build_parser().parse_args(...)`
 - 期待結果: exit code が0で、`Runtime Command Guide`、`aiwfctl status`、`aiwfctl trace show`、`aiwfctl doctor`、`aiwfctl rag build --dry-run` が表示される。
+
+#### RT-UT-CASE-CTL-RUNTIME-HELP-JSON
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_help_runtime_json_exposes_dry_run_capabilities
+```
+
+- 確認内容: `aiwfctl help runtime --json` がRuntime UX capabilityを機械可読に返し、readiness / dry-run / 状況別導線を含むことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - inline input: `templates/registries` の最小seed、`ctl.build_parser().parse_args(...)`
+- 期待結果: exit code が0で、`runtime-help-capabilities`、`readiness_capabilities`、`dry_run_capabilities`、`situations` が期待どおり返る。
+
+#### RT-UT-CASE-CTL-RUNTIME-HELP-SCHEMA
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_help_runtime_json_matches_schema_contract
+```
+
+- 確認内容: Runtime help model が `.ariadne/schemas/runtime-help-capabilities.schema.json` のcontractと一致することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: なし
+  - inline input: `runtime_help_model(repo_root())`、`runtime-help-capabilities.schema.json`
+- 期待結果: required / const / capability item shape がschema contractに一致し、関連docsに `runtime-state-glossary.md` が含まれる。
+
+#### RT-UT-CASE-CTL-RUNTIME-HELP-REGISTRY-SOURCE
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_help_runtime_capabilities_load_from_template_registry
+```
+
+- 確認内容: Runtime help capability が `ctl_help.py` の直書きではなく、`templates/registries/runtime_help_capabilities.json` 相当のseedから読み込まれることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - inline input: custom `runtime_help_capabilities.json` seed
+- 期待結果: custom seed の `responsibility_boundary` と `readiness_capabilities` が model に反映される。
+
+#### RT-UT-CASE-CTL-HELP-USAGE-REGISTRY-SOURCE
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_help_usage_loads_from_template_registry
+```
+
+- 確認内容: `aiwfctl help` のusage guidanceが `ctl_help.py` の直書きではなく、`templates/registries/ctl_help_usage.json` 相当のseedから読み込まれることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - inline input: custom `ctl_help_usage.json` seed
+- 期待結果: custom seed の warning / guidance / command が usage model と表示結果に反映される。
+
+#### RT-UT-CASE-CTL-HELP-USAGE-SCHEMA
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_ctl_help_usage_json_matches_schema_contract
+```
+
+- 確認内容: CTL help usage model が `.ariadne/schemas/ctl-help-usage.schema.json` のcontractと一致することを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: なし
+  - inline input: `ctl_help_usage_model(repo_root())`、`ctl-help-usage.schema.json`
+- 期待結果: required / const / usage section shape がschema contractに一致する。
 
 #### RT-UT-CASE-CTL-WINDOWS-SCRIPT
 
@@ -109,7 +189,7 @@ runtime/tests/test_ctl_help.py::test_ctl_run_writes_runtime_event_log_for_each_c
   - inline input: `args`, `started`, `completed`
 - 期待結果: `logs/runtime/runtime-events.log` に同一trace idで `runtime_command_started` と `runtime_command_completed` が `00001`、`00002` の順に保存される。
 
-#### RT-UT-CASE-AUTO-001
+#### RT-UT-CASE-CTL-REGISTRY-STALE-DUCKDB-REBUILD
 
 - pytest node id:
 
@@ -142,6 +222,23 @@ runtime/tests/test_ctl_help.py::test_runtime_diagnostics_for_blocked_command_inc
   - parameter: names=なし, case=なし
   - inline input: `command_path`, `status`, `reason`
 - 期待結果: `recoverable` が `true` になり、`next_action` と `resume_command` が Runtime Event Log の `diagnostics` として利用できる形で返る。
+
+#### RT-UT-CASE-AUTO-002
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_runtime_resume_command_keeps_safe_retry_arguments
+```
+
+- Confirm: `test_runtime_resume_command_keeps_safe_retry_arguments` runtime contract is covered by pytest assertions.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_ctl_help.py:425`
+  - fixture/arg: none
+  - parameter: names=none case=none
+  - inline input: `args`
+- Expected: pytest assertion defines the expected result.
 
 #### RT-UT-CASE-CTL-003
 
@@ -607,6 +704,21 @@ runtime/tests/test_ctl_help.py::test_defensive_specimen_ctl_doctor_formats_warni
 - pytest node id:
 
 ```text
+runtime/tests/test_ctl_help.py::test_ctl_doctor_repair_encoding_dry_run_does_not_write_files
+```
+
+- 確認内容: `aiwfctl doctor --repair-encoding --dry-run --output` がCTL経由でもdoctor runtimeへdry-runを渡し、encoding repair previewだけを返してJSON evidenceとして保存できることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - inline input: temporary mojibake Markdown file, `ctl.build_parser().parse_args(...)`
+- 期待結果: JSON出力の `dry_run` が true になり、`text-boundary-repair-preview` が返り、対象ファイルと `.encoding-bak` は作成・変更されない。
+#### RT-UT-CASE-CTL-030
+
+- pytest node id:
+
+```text
 runtime/tests/test_ctl_help.py::test_ctl_help_search_finds_svg_gui_workflows
 ```
 
@@ -754,6 +866,22 @@ runtime/tests/test_ctl_help.py::test_registry_store_ensure_builds_missing_duckdb
   - parameter: names=なし, case=なし
   - inline input: `work/db/ariadne-knowledge-platform/registries` 配下のregistry source fixture
 - 期待結果: 初回は `action = built` となり `db/registries/registry.duckdb` が作成され、workflow help / environment registry の件数が復元される。再実行時は `action = existing` になる。
+#### RT-UT-CASE-AUTO-001
+
+- pytest node id:
+
+```text
+runtime/tests/test_ctl_help.py::test_registry_store_rebuilds_stale_duckdb_without_document_registry
+```
+
+- 確認内容: `registry_documents` tableを持たない古い `registry.duckdb` が残っている場合でも、registry loader / summary がsource seedからread modelを再構築できることを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_ctl_help.py`
+  - fixture/arg: `tmp_path` (temporary filesystem)
+  - inline input: `templates/registries` source fixture、古いschema相当の `registry.duckdb`
+- 期待結果: `ctl_help_usage` と `runtime_help_capabilities` がDuckDB read model経由で読め、summaryの `registry_documents` 件数が2になる。
+
 #### RT-UT-CASE-CTL-029D
 
 - pytest node id:

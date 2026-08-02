@@ -64,13 +64,13 @@ runtime/tests/test_rag_ctl_runtime.py::test_ctl_rag_migrate_legacy_root_moves_ba
 runtime/tests/test_rag_ctl_runtime.py::test_ctl_rag_build_dry_run_reports_plan_without_writing_outputs
 ```
 
-- 確認内容: `aiwfctl rag build --dry-run` がRAG build pipelineを実行せず、読み取り元と書き込み予定先をplanとして返すことを確認する。
+- 確認内容: `aiwfctl rag build --dry-run --output` がRAG build pipelineを実行せず、読み取り元と書き込み予定先をplanとして返し、plan JSONだけを保存することを確認する。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_rag_ctl_runtime.py`
   - fixture/arg: `tmp_path` (temporary filesystem)
   - inline input: temporary `rag/source/note.md`, `ctl.build_parser().parse_args(...)`
-- 期待結果: exit code が0で、`artifact_type=rag-dry-run-plan`、`status=dry-run`、`would_run=false` となり、`rag/retrieval/build.json` や `rag/normalized` は作成されない。
+- 期待結果: exit code が0で、`artifact_type=rag-dry-run-plan`、`status=dry-run`、`would_run=false` となり、`rag/retrieval/build.json` にplan JSONが保存され、`rag/normalized` は作成されない。
 
 #### RT-UT-CASE-298E
 
@@ -80,7 +80,7 @@ runtime/tests/test_rag_ctl_runtime.py::test_ctl_rag_build_dry_run_reports_plan_w
 runtime/tests/test_rag_ctl_runtime.py::test_ctl_rag_duckdb_rebuild_dry_run_reports_plan_without_creating_db
 ```
 
-- 確認内容: `aiwfctl rag duckdb rebuild --dry-run` がDuckDB read modelを作成せず、rebuild予定をplanとして返すことを確認する。
+- 確認内容: `aiwfctl rag duckdb rebuild --dry-run --output` がDuckDB read modelを作成せず、rebuild予定をplanとして返し、plan JSONだけを保存することを確認する。
 - 入力値:
   - pytest node: 上記コードブロックのnode id
   - source: `runtime/tests/test_rag_ctl_runtime.py`

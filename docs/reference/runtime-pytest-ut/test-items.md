@@ -1,4 +1,4 @@
-﻿# Runtime pytest UTテスト項目表
+# Runtime pytest UTテスト項目表
 
 作成日: 2026-07-07
 
@@ -13,10 +13,10 @@ pytest node id 単位の詳細な単体試験仕様は [Runtime pytest 単体試
 | 項目 | 値 |
 | --- | ---: |
 | pytest対象ディレクトリ | `runtime/tests` |
-| pytest files | 49 |
-| pytest test functions | 794 |
-| pytest collected tests | 809 |
-| pytest result | `809 passed` |
+| pytest files | 54 |
+| pytest test functions | 832 |
+| pytest collected tests | 847 |
+| pytest result | `847 passed` |
 | statement coverage | 96% |
 | total coverage | 96% |
 | missing lines | 397 |
@@ -55,7 +55,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | RT-UT-003 | `runtime/tests/test_context_first.py` | 34 | 34 | `runtime/workflow/context_first.py`、関連workflow | context manifest、environment selection、test-evidence読取、dispatcher context、IaC handoff、各workflowのContext First登録 | workflow実行前に必要contextを固定し、AIの推測実行を減らす |
 | RT-UT-004 | `runtime/tests/test_corrective_action_report.py` | 6 | 6 | `runtime/workflow/corrective_action_report.py` | corrective action report context登録、front matter解析、section count、show/register CLI | 改善レポートを後続fix workflowへ渡せる構造にする |
 | RT-UT-005 | `runtime/tests/test_coverage_audit.py` | 14 | 14 | `runtime/tools/coverage_audit.py`, `runtime/tools/text_encoding_convert.py`, `runtime/tools/text_encoding_guard.py`, `runtime/tools/utf8_bom.py` | runtime module集計、CLI検査、coverage実行、JSON/Markdown出力、script path load、encoding候補検査・hex preview・SJIS/CP932からUTF-8への安全変換、decode error・不可逆欠落検出、UTF-8 BOM検出・除去 | runtime品質を継続監査する自己診断を支える |
-| RT-UT-006 | `runtime/tests/test_ctl_help.py` | 56 | 56 | `runtime/ctl/ctl.py`, `runtime/ctl/ctl_help.py`, `runtime/workflow/work_cleanup.py`, `runtime/windows-script/aiwf.cmd`, `runtime/windows-script/aiwf.ps1`, `runtime/posix-bash/aiwf.sh` | `aiwfctl help`、`help runtime`、Windows 11 PowerShell入口、Linux/WSL/macOS bash入口、runtime-local pytest config/cache、`aiwfctl doctor`、`aiwfctl knowledge`、`aiwfctl work cleanup-check/apply`、GitHub knowledge sync/rebase apply、human-gate、close-archive、env選択、検索、警告表示、Context First初期化、registry参照、分離search_terms registry、DuckDB `search_terms` table、templates registry seed、全prompt commandの検索語coverage | 肥大化したworkflowをCLI索引から迷わず呼べるようにし、一時work作業場をKnowledge吸収確認後に安全cleanupできるようにする |
+| RT-UT-006 | `runtime/tests/test_ctl_help.py` | 57 | 57 | `runtime/ctl/ctl.py`, `runtime/ctl/ctl_help.py`, `runtime/ctl/ctl_doctor_adapter.py`, `runtime/workflow/work_cleanup.py`, `runtime/windows-script/aiwf.cmd`, `runtime/windows-script/aiwf.ps1`, `runtime/posix-bash/aiwf.sh` | `aiwfctl help`、`help runtime`、Windows 11 PowerShell入口、Linux/WSL/macOS bash入口、runtime-local pytest config/cache、`aiwfctl doctor --repair-encoding --dry-run`、`aiwfctl knowledge`、`aiwfctl work cleanup-check/apply`、GitHub knowledge sync/rebase apply、human-gate、close-archive、env選択、検索、警告表示、Context First初期化、registry参照、分離search_terms registry、DuckDB `search_terms` table、templates registry seed、全prompt commandの検索語coverage | 肥大化したworkflowをCLI索引から迷わず呼べるようにし、一時work作業場をKnowledge吸収確認後に安全cleanupできるようにする |
 | RT-UT-007 | `runtime/tests/test_dispatcher_context.py` | 12 | 12 | `runtime/workflow/dispatcher_context.py` | workflow/tool candidate scoring、Human Check、registry fallback、context生成 | Intentからworkflow/tool選定へ進むdispatcherの判断根拠を固定する |
 | RT-UT-008 | `runtime/tests/test_docs_sync_workflow.py` | 11 | 11 | `runtime/workflow/docs_sync.py` | docs-sync init、SCM context gate、analysis template、Issue body、CLI dispatch | 実装とdocs差分をdocs-only workflowとして安全に切り出す |
 | RT-UT-008A | `runtime/tests/test_expectation_design_runtime.py` | 7 | 7 | `runtime/design/expectation/*`, `runtime/ctl/ctl.py` | Expectation-Driven Design init、compare、candidate scaffold、feasibility、extraction、review、Human Gate、refinement、contracts、verification、feedback、Review Council dispatch | Expectation-Driven Design Flow のruntime contractとartifact generationをpytest仕様に紐付ける |
@@ -86,8 +86,9 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | RT-UT-029 | `runtime/tests/test_remaining_rag_scm_runtime.py` | 10 | 10 | `runtime/rag/jsonize_rag_tree.py`、`runtime/scm/compare_requirements.py` | RAG tree jsonize、source削除、requirements比較、git diff、artifact出力 | RAG/SCMの残存横断moduleを横断的に守る |
 | RT-UT-029A | `runtime/tests/test_retrieval_ctl_runtime.py` | 2 | 2 | `runtime/ctl/ctl.py`, `runtime/ctl/ctl_retrieval_adapter.py` | `aiwfctl retrieval run` route, task report generation, runtime log command path | agent task実行計画を公式CTL入口へ統一し、task runnerを直接呼ぶ必要を減らす |
 | RT-UT-030 | `runtime/tests/test_retrieval_runtime.py` | 16 | 23 | `runtime/retrieval/task_runner.py` | task plan検証、dependency、dry-run、parallel/sequential、logs、reports、CLI | agent task実行計画を依存関係付きで安全に動かす |
-| RT-UT-030A | `runtime/tests/test_runtime_status.py` | 2 | 2 | `runtime/workflow/runtime_status.py`, `runtime/ctl/ctl.py` | `aiwfctl status`、active trace、runtime event log、work state、knowledge source、DuckDB read model、next action表示 | workflow実行前後に現在地と次の確認コマンドを一目で把握できるようにする |
-| RT-UT-030B | `runtime/tests/test_runtime_trace.py` | 3 | 3 | `runtime/workflow/runtime_trace.py`, `runtime/ctl/ctl.py` | `aiwfctl trace show`、trace id検索、latest trace選択、command集約、blocked/failed event抽出、last successful command、missing trace終了コード | workflowが最後まで通らない原因をtrace単位で読み解けるようにする |
+| RT-UT-030L | `runtime/tests/test_runtime_log.py` | 8 | 8 | `runtime/workflow/runtime_log.py`, `runtime/ctl/ctl.py` | `aiwfctl log summary`、log tail、log grep、log export、log archive/prune dry-run、承認制archive/prune、runtime event log集計 | runtime logの肥大化を見える化し、Human Check付きで安全に退避・縮小できるようにする |
+| RT-UT-030A | `runtime/tests/test_runtime_status.py` | 9 | 9 | `runtime/workflow/runtime_status.py`, `runtime/ctl/ctl.py`, `runtime/workflow/workflow_doctor.py`, `runtime/environment/preflight.py` | `aiwfctl status`、`status --summary/--verbose/--problems --json`、active trace、runtime event log、work state、work-id関連trace、knowledge source、DuckDB read model、doctor warning count、dependency readiness、doctor guidance由来のnext action表示、runtime log肥大化時のlog maintenance next action、status/helpノイズ除外後のlast relevant/problem event | workflow実行前後に現在地と次の確認コマンドを一目で把握し、work-id・doctor warning・dependency readinessから関連traceや復旧導線を辿れるようにする |
+| RT-UT-030B | `runtime/tests/test_runtime_trace.py` | 6 | 6 | `runtime/workflow/runtime_trace.py`, `runtime/ctl/ctl.py` | `aiwfctl trace show`、`trace show --problems`、trace id検索、latest trace選択、command集約、blocked/failed event抽出、resume hint、last successful command、missing trace終了コード、trace begin work-id記録、active trace異常復旧preview/approval | workflowが最後まで通らない原因をtrace単位で読み解き、active trace異常時も安全に復旧できるようにする |
 | RT-UT-031 | `runtime/tests/test_scm_runtime.py` | 55 | 55 | `runtime/scm/*`, `runtime/ctl/ctl.py` | prepare repository、issue branch、push、commit、bootstrap、token askpass、dry-run/non-dry-run、`aiwfctl scm prepare/branch` | Git操作をremote mutation前提でも安全にmock・dry-run検証する |
 | RT-UT-032 | `runtime/tests/test_sdk_analysis.py` | 11 | 11 | `runtime/workflow/sdk_analysis.py`、`runtime/ctl/ctl.py` | SDK入力skip、metadata抽出、AWS/GCP cloud metadata抽出、Stripe payment metadata抽出、Context First登録、knowledge JSON候補、secret値非コピー、外部discovery候補生成、aiwfctl入口 | 要件定義工程でSDKプログラムを安全に前処理し、外部関連資料の確認観点と人間確認が必要な採用判断を見える形にする |
 | RT-UT-033 | `runtime/tests/test_self_improvement_workflow.py` | 15 | 15 | `runtime/workflow/self_improvement.py`、`skills/*/SKILL.md`、`db/registries/registry.duckdb` | feedback report作成、Runtime log分析、Human Review追記、Issue body生成、evidence scaffold、feedback出力妥当化、help registry妥当化 | Ariadne自身のworkflow改善候補を安全に保存し、運用判断から改善Issueへつなぐ |
@@ -97,7 +98,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | RT-UT-035B | `runtime/tests/test_visual_ctl_runtime.py` | 3 | 3 | `runtime/ctl/ctl.py`, `runtime/ctl/ctl_gui_adapter.py` | `aiwfctl gui init-input/self-test` route, `aiwfctl web-svg run` route, runtime log command path | GUI/Web SVG generation and validation are unified under the official CTL entrypoint so agents do not need to call workflow modules directly |
 | RT-UT-036 | `runtime/tests/test_vscode_environment_workflow.py` | 10 | 10 | `runtime/workflow/vscode_environment.py`, `runtime/constants/paths.py` | self-provision、local RAG backup directory provisioning、draft/open questions、RAG template、requirements、validation、CLI | AI workflow実行環境をVSCode workspace as codeとして整え、ローカルKnowledgeバックアップ階層をGit pushなしで準備する |
 | RT-UT-037 | `runtime/tests/test_vscode_workspace.py` | 2 | 2 | `.vscode/*`、`runtime/windows-script/aiwfctl.cmd` | aiwfctl PATH task、cmd usage | VSCodeから`aiwfctl`を迷わず呼べる導線を守る |
-| RT-UT-038 | `runtime/tests/test_workflow_doctor.py` | 36 | 36 | `runtime/workflow/workflow_doctor.py`, `runtime/common/text_boundary.py`, `runtime/common/gate_restart.py` | tracked policy、required files、pytest runtime boundary、human gate registry、registry bootstrap seed、close archive completeness、git line ending policy、uv startup route、doctor warning guidance、text-boundary repair、spec index repair、gate restart、UT仕様書同期チェック、fail-on-warning | workflow repository自身の健康診断と本線復帰を自動化する |
+| RT-UT-038 | `runtime/tests/test_workflow_doctor.py` | 38 | 38 | `runtime/workflow/workflow_doctor.py`, `runtime/common/text_boundary.py`, `runtime/common/gate_restart.py` | tracked policy、required files、pytest runtime boundary、human gate registry、registry bootstrap seed、close archive completeness、git line ending policy、uv startup route、doctor warning guidance、text-boundary repair preview、spec index repair preview、text-boundary repair、spec index repair、gate restart、UT仕様書同期チェック、fail-on-warning | workflow repository自身の健康診断と本線復帰を自動化する |
 | RT-UT-038A | `runtime/tests/test_workflow_ctl_runtime.py` | 4 | 4 | `runtime/ctl/ctl.py`, `runtime/ctl/ctl_workflow_adapter.py` | `aiwfctl workflow state/docs-sync/iac-handoff/validate-vscode-workspace` route、runtime log command path | workflow補助系を公式CTL入口へ統一し、agentが個別workflow moduleを直接呼ぶ必要を減らす |
 | RT-UT-039 | `runtime/tests/test_workflow_state_noise_validation.py` | 22 | 22 | `runtime/workflow/workflow_state.py`、`noise_reduction.py`、`validate_output_language.py`、`validate_vscode_workspace.py` | workflow state、noise reduction、Japanese output guard、VSCode workspace JSON検証 | 要件定義前処理・状態管理・出力言語品質を守る |
 

@@ -4,6 +4,8 @@
 
 `registry.duckdb` は生成物として `.gitignore` 対象にします。一方で、ARIADNE自身の `aiwfctl help`、`aiwfctl env`、Context First Tool Dispatcher、Human Gate Policy、Workflow Doctor が初期起動に必要とするsource JSONは、templateとしてrepositoryに保持します。
 
+Runtime は、原則としてこのdirectoryのseed JSONを `db/registries/registry.duckdb` へ投影したread model経由で参照します。構造化検索や一覧が必要なregistryは専用tableへ、usage guidanceのようなdocument型registryは `registry_documents` tableへ格納します。
+
 ## 責任範囲
 
 - workflow、intake、doctor、将来のruntime補助CLIから共通参照される承認ゲート、分類表、許可リストなどのseedを置きます。
@@ -18,6 +20,8 @@
 | --- | --- |
 | `human_gates.json` | 人間承認が必要なruntime操作のregistry |
 | `workflow_help.json` | `aiwfctl help` で表示するAI workflow prompt command / extensionのregistry |
+| `ctl_help_usage.json` | `aiwfctl help` の後続修飾子がない場合に表示するusage guidance registry |
+| `runtime_help_capabilities.json` | `aiwfctl help runtime --json` で表示するRuntime UX capability registry |
 | `search_terms.json` | 検索語registry。各検索語の `id` はUUID、`owner_id` は `workflow_help.json` のsnake_case機能ID |
 | `tool_candidates.json` | Context First Tool Dispatcher が参照するtool候補、mode、Human Check条件のregistry |
 | `workflow_environment_profiles.json` | `aiwfctl env` で参照する利用者向けEnvironmentと内部Backend profileのregistry |

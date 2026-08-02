@@ -1,5 +1,9 @@
 # Documentation Guide
 
+Workflow 開始前の総合確認は `aiwfctl ready` を使います。状態語彙は [Runtime State Glossary](reference/runtime-state-glossary.md) を参照してください。
+
+Runtime の最短運用は [Runtime UX Quickstart](reference/runtime-quickstart.md) を参照してください。
+
 この `docs/` は、Ariadne AI Workflow Platform を運用するための日本語ドキュメント置き場です。
 
 Repository root の `README.md` は入口と索引に絞り、workflow の詳細手順、runtime、RAG、template、skill discovery などはここに分散します。

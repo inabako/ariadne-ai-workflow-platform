@@ -1,5 +1,15 @@
 # Runtime
 
+## Runtime UX Quickstart
+
+Runtime の最短運用、`status` / `trace` / `doctor` / `preflight` の使い分け、状況別の確認順は [Runtime UX Quickstart](runtime-quickstart.md) を参照してください。
+
+機械可読な dry-run capability は次で確認できます。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd help runtime --json
+```
+
 `runtime/` は、workflow を実行・補助するための処理機能を置く場所です。
 
 ## Official Runtime Entrypoint
@@ -25,14 +35,62 @@
 .\runtime\windows-script\aiwfctl.cmd status
 .\runtime\windows-script\aiwfctl.cmd status --work-id issue-123
 .\runtime\windows-script\aiwfctl.cmd status --json
+.\runtime\windows-script\aiwfctl.cmd status --summary --json
+.\runtime\windows-script\aiwfctl.cmd status --problems --json
+.\runtime\windows-script\aiwfctl.cmd status --verbose --json
 ```
+
+`status --work-id` は、指定した work id に紐づく trace を `Related Traces` として表示し、直近 trace を深掘りする `aiwfctl trace show <trace-id>` を Next Actions に含めます。
+
+`status` は doctor warning count と dependency readiness も表示します。`--summary --json` は Agent や dashboard が読む軽量ビュー、`--problems --json` は失敗・警告・未準備項目だけを追う調査ビュー、`--verbose --json` は全情報を明示的に読むビューです。
 
 workflow実行が途中で止まった理由をtrace単位で確認する場合は、`aiwfctl trace show <trace-id>` を使います。
 `runtime-events.log` から該当traceのcommand、成功済みcommand、blocked / failed event、復帰候補を集約します。
 
 ```powershell
+.\runtime\windows-script\aiwfctl.cmd trace begin --workflow /docs-sync --work-id issue-123
 .\runtime\windows-script\aiwfctl.cmd trace show <trace-id>
+.\runtime\windows-script\aiwfctl.cmd trace show <trace-id> --problems
 .\runtime\windows-script\aiwfctl.cmd trace show <trace-id> --json
+```
+
+`active-trace.json` が壊れている場合は、まず復旧予定を dry-run で確認します。実際に退避する場合は Human Check approval を明示します。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd trace status --json
+.\runtime\windows-script\aiwfctl.cmd trace recover --dry-run
+.\runtime\windows-script\aiwfctl.cmd trace recover --human-check approved
+```
+
+`aiwfctl status` の Runtime Log では、互換性のため生の最終eventを `Last` に表示しつつ、`status` / `help ...` / `log ...` などの操作ノイズを除いた直近eventを `Relevant`、直近の blocked / failed / error / warning event を `Problem` として表示します。
+
+## Runtime Log Maintenance
+
+`logs/runtime/runtime-events.log` は workflow 実行や `aiwfctl` 実行のたびに追記されます。長期運用では、まず `summary` で件数と trace 数を確認し、必要に応じて `archive` または `prune` を `--dry-run` で予行します。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd log summary
+.\runtime\windows-script\aiwfctl.cmd log tail -n 20
+.\runtime\windows-script\aiwfctl.cmd log grep --trace-id <trace-id>
+.\runtime\windows-script\aiwfctl.cmd log export --trace-id <trace-id> --output work/evidence/runtime-log-export.json
+.\runtime\windows-script\aiwfctl.cmd log archive --keep-last 1000 --dry-run
+.\runtime\windows-script\aiwfctl.cmd log prune --keep-last 1000 --dry-run
+```
+
+実際にログを縮小する操作は、明示的な Human Check を要求します。通常は削除だけの `prune` より、退避ファイルを残す `archive` を優先してください。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd log archive --keep-last 1000 --human-check approved
+```
+
+## Workflow Doctor Warning View
+
+`aiwfctl doctor` は warning ごとに `severity`、`category`、`repairable`、`human_review_required` を付けます。人間向け出力では `Repairable Warnings` と `Human Review Warnings` を分けて表示するため、先に修復コマンドを試すものと、方針判断が必要なものを切り分けられます。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd doctor
+.\runtime\windows-script\aiwfctl.cmd doctor --json
+.\runtime\windows-script\aiwfctl.cmd doctor --repair-encoding --dry-run
 ```
 
 ## Runtime Help Guide
@@ -42,6 +100,30 @@ Runtime操作で迷った場合は、最初に `aiwfctl help runtime` を実行�
 ```powershell
 .\runtime\windows-script\aiwfctl.cmd help runtime
 ```
+
+## Dry-run Plan Evidence
+
+`--dry-run` で表示した実行予定は、必要に応じて `--output` で JSON evidence として保存できます。Human Check 前に「何を読み、何を書き換える予定だったか」を残したい場合に使います。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd rag build `
+  --source-dir work/db/ariadne-knowledge-platform/rag/corrective-action-report `
+  --dry-run `
+  --output work/evidence/rag-build-dry-run.json
+
+.\runtime\windows-script\aiwfctl.cmd rag duckdb rebuild `
+  --source-repo work/db/ariadne-knowledge-platform `
+  --reset `
+  --dry-run `
+  --output work/evidence/duckdb-rebuild-dry-run.json
+
+.\runtime\windows-script\aiwfctl.cmd doctor `
+  --repair-encoding `
+  --dry-run `
+  --output work/evidence/doctor-repair-dry-run.json
+```
+
+`--output` を指定しない `--dry-run` は、従来どおり表示だけで終了します。保存された JSON には `plan_output` と `written` が含まれます。
 
 ## Windows 11 PowerShell Runtime
 

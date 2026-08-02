@@ -168,6 +168,8 @@ DUCKDB_CONTEXT_MANIFEST = DUCKDB_EVIDENCE_DIR / "context" / "context-manifest.js
 
 REGISTRY_DB_PATH = Path("db/registries/registry.duckdb")
 WORKFLOW_HELP_REGISTRY_FILE = "workflow_help.json"
+CTL_HELP_USAGE_REGISTRY_FILE = "ctl_help_usage.json"
+RUNTIME_HELP_CAPABILITIES_REGISTRY_FILE = "runtime_help_capabilities.json"
 SEARCH_TERMS_REGISTRY_FILE = "search_terms.json"
 TOOL_CANDIDATES_REGISTRY_FILE = "tool_candidates.json"
 HUMAN_GATES_REGISTRY_FILE = "human_gates.json"

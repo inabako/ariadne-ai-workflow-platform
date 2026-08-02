@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 | --- | ---: |
-| cases | 36 |
+| cases | 39 |
 
 ## ケース一覧
 
@@ -481,6 +481,22 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_repair_encoding_clea
   - inline input: test関数内で生成される固定入力、mock入力、または一時ファイル
 - 期待結果: repair 後の `gate_restart` は `restart_from=doctor-gate` と `next_on_pass=return-to-calling-workflow-after-gate` を返す。
 
+#### RT-UT-CASE-DOCTOR-TEXT-BOUNDARY-003
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_workflow_doctor_repair_encoding_dry_run_previews_without_writing
+```
+
+- 確認内容: `workflow doctor --repair-encoding --dry-run` がtext-boundary repairをpreviewし、対象ファイルやbackupを書き込まないことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_workflow_doctor.py`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - inline input: temporary mojibake Markdown file and dry-run doctor args
+- 期待結果: `text-boundary-repair-preview`、`dry_run=true`、`written=false` となり、対象ファイルと `.encoding-bak` は変更されない。
+
 #### RT-UT-CASE-AUTO-002
 
 - pytest node id:
@@ -497,6 +513,39 @@ runtime/tests/test_workflow_doctor.py::test_workflow_doctor_repair_spec_index_sc
   - parameter: names=なし, case=なし
   - inline input: test関数内で生成されるfixtureとassertion
 - 期待結果: pytest assertionで期待結果を確認する。
+
+#### RT-UT-CASE-DOCTOR-SPEC-INDEX-DRY-RUN
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_workflow_doctor_repair_spec_index_dry_run_previews_without_scaffolding
+```
+
+- 確認内容: `workflow doctor --repair-spec-index --dry-run` がUT仕様書scaffoldを実行せず、欠落nodeのpreviewだけを返すことを確認します。
+- 入力値:
+  - pytest node: 上記コードブロックのnode id
+  - source: `runtime/tests/test_workflow_doctor.py`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - inline input: mocked UT spec sync findings and dry-run doctor args
+- 期待結果: `pytest-ut-spec-index-repair-preview`、`dry_run=true`、`would_write=true` となり、実repair関数は呼ばれない。
+
+#### RT-UT-CASE-AUTO-001
+
+- pytest node id:
+
+```text
+runtime/tests/test_workflow_doctor.py::test_workflow_doctor_fix_suggestion_only_does_not_run_repairs
+```
+
+- Confirm: `test_workflow_doctor_fix_suggestion_only_does_not_run_repairs` runtime contract is covered by pytest assertions.
+- Input:
+  - pytest node: above node id
+  - source: `runtime/tests/test_workflow_doctor.py:852`
+  - fixture/arg: `monkeypatch` (environment / function monkeypatch), `tmp_path` (temporary filesystem)
+  - parameter: names=none case=none
+  - inline input: `original`
+- Expected: pytest assertion defines the expected result.
 
 #### RT-UT-CASE-DOCTOR-023
 

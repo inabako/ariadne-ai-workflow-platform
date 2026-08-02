@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from typing import Any
 
+from runtime.ctl.ctl_adapter_utils import add_output_argument
 from runtime.constants.cli_defaults import (
     DUCKDB_CONTEXT_MAX_CHARS_DEFAULT,
     DUCKDB_VERIFY_LIMIT_DEFAULT,
@@ -32,6 +33,8 @@ from runtime.constants.cli_defaults import (
     TEXT_PREVIEW_MAX_BYTES_DEFAULT,
     TEXT_PREVIEW_MAX_CHARS_DEFAULT,
 )
+from runtime.constants.workflow_limits import RUNTIME_LOG_DEFAULT_KEEP_LAST
+from runtime.constants.workflow_limits import RUNTIME_LOG_TAIL_DEFAULT_LIMIT
 from runtime.constants.paths import (
     DUCKDB_DEFAULT_PATH,
     EMBEDDINGS_INDEX,
@@ -379,7 +382,11 @@ def _add_rag_build_arguments(command: argparse.ArgumentParser) -> None:
     command.add_argument("--optimized-chunks-dir", default="work/db/ariadne-knowledge-platform/rag/optimized-chunks")
     command.add_argument("--indexes-dir", default="work/db/ariadne-knowledge-platform/rag/indexes")
     command.add_argument("--embeddings-output", default="work/db/ariadne-knowledge-platform/rag/embeddings/chunks-embeddings.jsonl")
-    command.add_argument("--output", default="work/db/ariadne-knowledge-platform/rag/retrieval/rag-build-run-latest.json")
+    add_output_argument(
+        command,
+        default="work/db/ariadne-knowledge-platform/rag/retrieval/rag-build-run-latest.json",
+        help="RAG build run JSON path. In --dry-run, an explicitly supplied value saves the dry-run plan.",
+    )
     command.add_argument("--ingestion-evidence-dir", default="db/rag/evidence/ingestion")
     command.add_argument("--ingestion-policy", default="runtime/rag/policies/knowledge-ingestion-policy.json")
     command.add_argument("--skip-optimization", action="store_true")
@@ -484,6 +491,7 @@ def _add_duckdb_rebuild_arguments(command: argparse.ArgumentParser) -> None:
     command.add_argument("--error-log", default=str(duckdb_store.DEFAULT_ERROR_LOG))
     command.add_argument("--reset", action="store_true")
     command.add_argument("--dry-run", action="store_true")
+    add_output_argument(command, default="", help="Optional dry-run plan JSON output path.")
     command.add_argument("--json", action="store_true")
 
 
@@ -522,6 +530,7 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     normalize.add_argument("--status", default="draft")
     normalize.add_argument("--clean-output", action="store_true")
     normalize.add_argument("--dry-run", action="store_true")
+    add_output_argument(normalize, default="", help="Optional dry-run plan JSON output path.")
     normalize.add_argument("--json", action="store_true")
 
     chunk = rag_sub.add_parser("chunk", help="Split normalized RAG documents into chunks.")
@@ -531,6 +540,7 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     chunk.add_argument("--chunk-overlap", type=int, default=RAG_CHUNK_OVERLAP_DEFAULT)
     chunk.add_argument("--clean-output", action="store_true")
     chunk.add_argument("--dry-run", action="store_true")
+    add_output_argument(chunk, default="", help="Optional dry-run plan JSON output path.")
     chunk.add_argument("--json", action="store_true")
 
     index = rag_sub.add_parser("index", help="Build document and chunk JSONL indexes.")
@@ -538,6 +548,7 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     index.add_argument("--chunks-dir", required=True)
     index.add_argument("--output-dir", required=True)
     index.add_argument("--dry-run", action="store_true")
+    add_output_argument(index, default="", help="Optional dry-run plan JSON output path.")
     index.add_argument("--json", action="store_true")
 
     embed = rag_sub.add_parser("embed", help="Create local sparse embeddings for chunk index rows.")
@@ -554,6 +565,7 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     optimize.add_argument("--policy", default="runtime/rag/policies/knowledge-ingestion-policy.json")
     optimize.add_argument("--clean-output", action="store_true")
     optimize.add_argument("--dry-run", action="store_true")
+    add_output_argument(optimize, default="", help="Optional dry-run plan JSON output path.")
     optimize.add_argument("--json", action="store_true")
 
     standardize = rag_sub.add_parser("standardize", help="Standardize corrective action report filenames.")
@@ -566,6 +578,7 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
         choices=range(RAG_STANDARDIZE_RANDOM_LENGTH_MIN, RAG_STANDARDIZE_RANDOM_LENGTH_MAX_EXCLUSIVE),
     )
     standardize.add_argument("--dry-run", action="store_true")
+    add_output_argument(standardize, default="", help="Optional dry-run plan JSON output path.")
     standardize.add_argument("--json", action="store_true")
 
     jsonize = rag_sub.add_parser("jsonize", help="Convert a RAG tree into standard JSON source records.")
@@ -575,6 +588,7 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     jsonize.add_argument("--delete-source", action="store_true")
     jsonize.add_argument("--clean-output", action="store_true")
     jsonize.add_argument("--dry-run", action="store_true")
+    add_output_argument(jsonize, default="", help="Optional dry-run plan JSON output path.")
     jsonize.add_argument("--json", action="store_true")
 
     migrate = rag_sub.add_parser("migrate-retrieval", help="Migrate legacy retrieval artifacts into jsonized RAG records.")
@@ -585,6 +599,7 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     migrate.add_argument("--repair-from-jsonized", action="store_true")
     migrate.add_argument("--prune-legacy-migrations", action="store_true")
     migrate.add_argument("--dry-run", action="store_true")
+    add_output_argument(migrate, default="", help="Optional dry-run plan JSON output path.")
     migrate.add_argument("--json", action="store_true")
 
     legacy = rag_sub.add_parser("migrate-legacy-root", help="Move legacy root RAG backups into the standard RAG tree.")
@@ -592,6 +607,7 @@ def _add_rag_stage_arguments(rag_sub: Any) -> None:
     legacy.add_argument("--target-rag-dir", default="work/db/ariadne-knowledge-platform/rag")
     legacy.add_argument("--keep-legacy-dir", action="store_true")
     legacy.add_argument("--dry-run", action="store_true")
+    add_output_argument(legacy, default="", help="Optional dry-run plan JSON output path.")
     legacy.add_argument("--json", action="store_true")
 
 
@@ -608,6 +624,7 @@ def _add_rag_semantic_hints_arguments(rag_sub: Any) -> None:
     generate.add_argument("--status", default="approved")
     generate.add_argument("--clean-output", action="store_true")
     generate.add_argument("--dry-run", action="store_true")
+    add_output_argument(generate, default="", help="Optional dry-run plan JSON output path.")
     generate.add_argument("--json", action="store_true")
 
     build = hints_sub.add_parser("build", help="Generate semantic hint sources and run the RAG build pipeline.")
@@ -620,7 +637,11 @@ def _add_rag_semantic_hints_arguments(rag_sub: Any) -> None:
     build.add_argument("--optimized-chunks-dir", default=str(GENERATED_OPTIMIZED_CHUNKS))
     build.add_argument("--indexes-dir", default=str(GENERATED_INDEXES))
     build.add_argument("--embeddings-output", default=str(EMBEDDINGS_INDEX))
-    build.add_argument("--output", default=str(GENERATED_RETRIEVAL / "semantic-hints-build-latest.json"))
+    add_output_argument(
+        build,
+        default=str(GENERATED_RETRIEVAL / "semantic-hints-build-latest.json"),
+        help="Semantic hints build JSON path. In --dry-run, an explicitly supplied value saves the dry-run plan.",
+    )
     build.add_argument("--project", default="ariadne")
     build.add_argument("--repository", default="ariadne-ai-workflow-platform")
     build.add_argument("--branch", default="")
@@ -888,14 +909,26 @@ def build_parser() -> argparse.ArgumentParser:
 
     status_cmd = sub.add_parser("status", help="Show repository, work, trace, log, and knowledge runtime status.")
     status_cmd.add_argument("--work-id", default="", help="Show status for one work/<work-id> area.")
+    status_mode = status_cmd.add_mutually_exclusive_group()
+    status_mode.add_argument("--summary", action="store_true", help="Print a compact status JSON view.")
+    status_mode.add_argument("--verbose", action="store_true", help="Print the full status JSON view explicitly.")
+    status_mode.add_argument("--problems", action="store_true", help="Print only problem-oriented status JSON fields.")
     status_cmd.add_argument("--json", action="store_true", help="Print runtime status as JSON.")
+
+    ready_cmd = sub.add_parser("ready", help="Check whether runtime gates are ready for a workflow run.")
+    ready_cmd.add_argument("--work-id", default="", help="Include work/<work-id> trace linkage in the readiness check.")
+    ready_cmd.add_argument("--skip-spec-check", action="store_true", help="Skip pytest UT specification sync check.")
+    ready_cmd.add_argument("--strict", action="store_true", help="Treat attention as blocked for release or CI-style checks.")
+    add_output_argument(ready_cmd, default="", help="Optional runtime ready evidence JSON output path.")
+    ready_cmd.add_argument("--json", action="store_true", help="Print runtime readiness as JSON.")
 
     help_cmd = sub.add_parser("help", help="AI workflow prompt command help.")
     help_sub = help_cmd.add_subparsers(dest="help_command")
 
     help_sub.add_parser("list", help="List workflow prompt commands.")
 
-    help_sub.add_parser("runtime", help="Show Runtime UX command guide for status, trace, doctor, and dry-run.")
+    runtime_help = help_sub.add_parser("runtime", help="Show Runtime UX command guide for status, trace, doctor, and dry-run.")
+    runtime_help.add_argument("--json", action="store_true", help="Print Runtime UX guide and capabilities as JSON.")
 
     show = help_sub.add_parser("show", help="Show one workflow command.")
     show.add_argument("name")
@@ -915,6 +948,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     trace_begin = trace_sub.add_parser("begin", help="Start a workflow execution trace.")
     trace_begin.add_argument("--workflow", required=True, help="Workflow name, for example /runtime-health-check.")
+    trace_begin.add_argument("--work-id", default="", help="Optional work id associated with this workflow trace.")
     trace_begin.add_argument("--trace-id", default="", help="Optional explicit trace id. Defaults to generated id.")
     trace_begin.add_argument("--force", action="store_true", help="Replace an existing active workflow trace.")
     trace_begin.add_argument("--json", action="store_true", help="Print trace state as JSON.")
@@ -926,10 +960,68 @@ def build_parser() -> argparse.ArgumentParser:
     trace_show.add_argument("trace_id", nargs="?", default="", help="Trace id. Defaults to the latest trace in the runtime event log.")
     trace_show.add_argument("--trace-id", dest="trace_id_option", default="", help="Optional named trace id argument.")
     trace_show.add_argument("--runtime-log", default="", help="Runtime event log path. Defaults to logs/runtime/runtime-events.log.")
+    trace_show.add_argument("--problems", action="store_true", help="Only show blocked, failed, warning, or error events.")
     trace_show.add_argument("--json", action="store_true", help="Print trace report as JSON.")
 
     trace_end = trace_sub.add_parser("end", help="End the active workflow execution trace.")
     trace_end.add_argument("--json", action="store_true", help="Print ended trace state as JSON.")
+
+    trace_recover = trace_sub.add_parser("recover", help="Recover from an invalid active-trace.json state.")
+    trace_recover.add_argument("--dry-run", action="store_true", help="Preview recovery without moving active-trace.json.")
+    trace_recover.add_argument("--human-check", choices=["approved"], default=None, help="Required to archive invalid active trace state.")
+    trace_recover.add_argument("--json", action="store_true", help="Print recovery result as JSON.")
+
+    log_cmd = sub.add_parser("log", help="Summarize, archive, and prune runtime event logs.")
+    log_sub = log_cmd.add_subparsers(dest="log_command")
+
+    log_summary = log_sub.add_parser("summary", help="Summarize logs/runtime/runtime-events.log.")
+    log_summary.add_argument("--runtime-log", default="", help="Runtime event log path. Defaults to logs/runtime/runtime-events.log.")
+    log_summary.add_argument("--json", action="store_true", help="Print runtime log summary as JSON.")
+
+    log_archive = log_sub.add_parser("archive", help="Archive old runtime log lines and keep the latest lines in place.")
+    log_archive.add_argument("--runtime-log", default="", help="Runtime event log path. Defaults to logs/runtime/runtime-events.log.")
+    log_archive.add_argument("--archive-dir", default="", help="Archive output directory. Defaults to logs/runtime/archive.")
+    log_archive.add_argument("--keep-last", type=int, default=RUNTIME_LOG_DEFAULT_KEEP_LAST)
+    log_archive.add_argument("--dry-run", action="store_true", help="Preview archive and prune counts without writing.")
+    log_archive.add_argument("--human-check", choices=["approved"], default=None, help="Required to write archive and shrink the log.")
+    add_output_argument(log_archive, default="", help="Optional archive preview/result JSON output path.")
+    log_archive.add_argument("--json", action="store_true", help="Print archive result as JSON.")
+
+    log_prune = log_sub.add_parser("prune", help="Prune old runtime log lines without creating an archive.")
+    log_prune.add_argument("--runtime-log", default="", help="Runtime event log path. Defaults to logs/runtime/runtime-events.log.")
+    log_prune.add_argument("--keep-last", type=int, default=RUNTIME_LOG_DEFAULT_KEEP_LAST)
+    log_prune.add_argument("--dry-run", action="store_true", help="Preview prune counts without writing.")
+    log_prune.add_argument("--human-check", choices=["approved"], default=None, help="Required to shrink the log.")
+    add_output_argument(log_prune, default="", help="Optional prune preview/result JSON output path.")
+    log_prune.add_argument("--json", action="store_true", help="Print prune result as JSON.")
+
+    log_tail = log_sub.add_parser("tail", help="Show the latest runtime event log entries.")
+    log_tail.add_argument("--runtime-log", default="", help="Runtime event log path. Defaults to logs/runtime/runtime-events.log.")
+    log_tail.add_argument("-n", "--limit", type=int, default=RUNTIME_LOG_TAIL_DEFAULT_LIMIT, help="Number of events to show.")
+    log_tail.add_argument("--trace-id", default="", help="Filter tail by trace id before taking the latest entries.")
+    log_tail.add_argument("--problems", action="store_true", help="Only show blocked, failed, warning, or error events.")
+    log_tail.add_argument("--json", action="store_true", help="Print log tail as JSON.")
+
+    log_grep = log_sub.add_parser("grep", help="Extract runtime events for one trace id.")
+    log_grep.add_argument("--runtime-log", default="", help="Runtime event log path. Defaults to logs/runtime/runtime-events.log.")
+    log_grep.add_argument("--trace-id", required=True, help="Trace id to extract.")
+    log_grep.add_argument("--problems", action="store_true", help="Only show blocked, failed, warning, or error events.")
+    log_grep.add_argument("--json", action="store_true", help="Print grep result as JSON.")
+
+    log_export = log_sub.add_parser("export", help="Export runtime events for one trace id as investigation evidence.")
+    log_export.add_argument("--runtime-log", default="", help="Runtime event log path. Defaults to logs/runtime/runtime-events.log.")
+    log_export.add_argument("--trace-id", required=True, help="Trace id to export.")
+    add_output_argument(log_export, required=True, help="Output JSON evidence path.")
+    log_export.add_argument("--problems", action="store_true", help="Only export blocked, failed, warning, or error events.")
+    log_export.add_argument("--json", action="store_true", help="Print export result as JSON.")
+
+    log_ack = log_sub.add_parser("acknowledge-problem", help="Acknowledge the latest or selected runtime problem event.")
+    log_ack.add_argument("--trace-id", default="", help="Trace id to acknowledge. Defaults to the latest problem event.")
+    log_ack.add_argument("--sequence", default="", help="Problem event sequence to acknowledge with --trace-id.")
+    log_ack.add_argument("--command", dest="ack_command", default="", help="Problem command to acknowledge, for example \"env select\".")
+    log_ack.add_argument("--all", action="store_true", help="Acknowledge all matching problem events instead of only the latest one.")
+    log_ack.add_argument("--reason", default="", help="Short human reason for acknowledgement.")
+    log_ack.add_argument("--json", action="store_true", help="Print acknowledgement result as JSON.")
 
     env_cmd = sub.add_parser("env", help="Select workflow execution environment.")
     env_sub = env_cmd.add_subparsers(dest="env_command")
@@ -1777,6 +1869,9 @@ def build_parser() -> argparse.ArgumentParser:
     doctor_cmd.add_argument("--skip-ut-spec-sync", action="store_true", help="Skip pytest UT specification sync check.")
     doctor_cmd.add_argument("--repair-encoding", action="store_true", help="Repair safe text-boundary findings before returning doctor status.")
     doctor_cmd.add_argument("--repair-spec-index", action="store_true", help="Scaffold missing pytest UT specification cases before returning doctor status.")
+    doctor_cmd.add_argument("--dry-run", action="store_true", help="Preview requested doctor repairs without writing files.")
+    doctor_cmd.add_argument("--fix-suggestion-only", action="store_true", help="Only show recommended fix commands without running repairs.")
+    add_output_argument(doctor_cmd, default="", help="Optional dry-run repair preview JSON output path.")
     doctor_cmd.add_argument("--encoding-paths", nargs="+", default=None, help="Text-boundary paths to scan or repair.")
     doctor_cmd.add_argument("--encoding-extensions", nargs="+", default=None, help="Text extensions included in text-boundary scan or repair.")
     return parser

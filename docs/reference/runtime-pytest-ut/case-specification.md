@@ -1,4 +1,4 @@
-﻿# Runtime pytest 単体試験仕様
+# Runtime pytest 単体試験仕様
 
 作成日: 2026-07-07
 
@@ -12,10 +12,10 @@ coverage 推移と監査履歴は repository root の `Runtime pytest 分岐・C
 
 | 項目 | 値 |
 | --- | ---: |
-| pytest files | 49 |
-| pytest test functions | 794 |
-| pytest collected cases | 809 |
-| pytest result | `809 passed` |
+| pytest files | 54 |
+| pytest test functions | 832 |
+| pytest collected cases | 847 |
+| pytest result | `847 passed` |
 | statement coverage | 99.66% |
 | total coverage | 99.48% |
 
@@ -51,7 +51,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_context_first.py](cases/test_context_first.md) | 34 |
 | [test_corrective_action_report.py](cases/test_corrective_action_report.md) | 7 |
 | [test_coverage_audit.py](cases/test_coverage_audit.md) | 14 |
-| [test_ctl_help.py](cases/test_ctl_help.md) | 56 |
+| [test_ctl_help.py](cases/test_ctl_help.md) | 57 |
 | [test_dispatcher_context.py](cases/test_dispatcher_context.md) | 12 |
 | [test_docs_sync_workflow.py](cases/test_docs_sync_workflow.md) | 11 |
 | [test_expectation_design_runtime.py](cases/test_expectation_design_runtime.md) | 7 |
@@ -83,8 +83,9 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_review_council_runtime.py](cases/test_review_council_runtime.md) | 28 |
 | [test_retrieval_ctl_runtime.py](cases/test_retrieval_ctl_runtime.md) | 2 |
 | [test_retrieval_runtime.py](cases/test_retrieval_runtime.md) | 23 |
-| [test_runtime_status.py](cases/test_runtime_status.md) | 2 |
-| [test_runtime_trace.py](cases/test_runtime_trace.md) | 3 |
+| [test_runtime_log.py](cases/test_runtime_log.md) | 8 |
+| [test_runtime_status.py](cases/test_runtime_status.md) | 9 |
+| [test_runtime_trace.py](cases/test_runtime_trace.md) | 6 |
 | [test_scm_runtime.py](cases/test_scm_runtime.md) | 55 |
 | [test_sdk_analysis.py](cases/test_sdk_analysis.md) | 11 |
 | [test_self_improvement_workflow.py](cases/test_self_improvement_workflow.md) | 15 |
@@ -95,7 +96,7 @@ cd C:\github\ariadne-ai-workflow-platform\runtime
 | [test_vscode_environment_workflow.py](cases/test_vscode_environment_workflow.md) | 10 |
 | [test_vscode_workspace.py](cases/test_vscode_workspace.md) | 2 |
 | [test_workflow_ctl_runtime.py](cases/test_workflow_ctl_runtime.md) | 4 |
-| [test_workflow_doctor.py](cases/test_workflow_doctor.md) | 36 |
+| [test_workflow_doctor.py](cases/test_workflow_doctor.md) | 38 |
 | [test_workflow_state_noise_validation.py](cases/test_workflow_state_noise_validation.md) | 22 |
 
 ## 更新ルール

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ariadne.local/schemas/ctl-help-usage.schema.json",
+  "title": "CTL Help Usage",
+  "description": "Machine-readable usage guidance shown when aiwfctl help is invoked without a subcommand.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "schema",
+    "artifact_type",
+    "warning",
+    "guidance",
+    "sections"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "schema": {
+      "type": "string"
+    },
+    "artifact_type": {
+      "type": "string",
+      "const": "ctl-help-usage"
+    },
+    "warning": {
+      "type": "string"
+    },
+    "guidance": {
+      "type": "string"
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/usageSection"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "usageSection": {
+      "type": "object",
+      "required": ["title", "commands"],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

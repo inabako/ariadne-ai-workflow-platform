@@ -141,6 +141,7 @@ def begin_active_runtime_trace(
     repo_root: Path,
     *,
     workflow: str,
+    work_id: str = "",
     trace_id: str = "",
     force: bool = False,
     initial_sequence: int = RUNTIME_EVENT_INITIAL_SEQUENCE,
@@ -154,6 +155,7 @@ def begin_active_runtime_trace(
             "reason": "active-trace-exists",
             "trace_id": existing.get("trace_id", ""),
             "workflow": existing.get("workflow", ""),
+            "work_id": existing.get("work_id", ""),
             "last_sequence": _coerce_runtime_event_sequence(
                 existing.get("last_sequence", RUNTIME_EVENT_INITIAL_SEQUENCE)
             ),
@@ -165,6 +167,7 @@ def begin_active_runtime_trace(
         "status": "active",
         "trace_id": trace_id or generate_trace_id(),
         "workflow": workflow,
+        "work_id": work_id,
         "started_at": _now_local().isoformat(timespec="milliseconds"),
         "updated_at": _now_local().isoformat(timespec="milliseconds"),
         "last_sequence": _coerce_runtime_event_sequence(initial_sequence),

@@ -42,6 +42,19 @@ Ariadne runtime は、単一の巨大な自動化scriptではなく、複数のD
 
 ## Quick Start
 
+Workflow を始める前に Runtime の現在地を確認する場合:
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd ready
+.\runtime\windows-script\aiwfctl.cmd status --summary --json
+```
+
+Release 前や CI 相当の厳しめの確認では、`attention` も `blocked` として扱う `--strict` を使います。
+
+```powershell
+.\runtime\windows-script\aiwfctl.cmd ready --strict --json
+```
+
 まず読む場所:
 
 1. [docs/README.md](docs/README.md)

@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from runtime.ctl.ctl_close_archive_adapter import run_close_archive
+from runtime.ctl.ctl_adapter_utils import save_plan_output_if_requested
 from runtime.ctl.ctl_context_adapter import run_context
 from runtime.ctl.ctl_design_adapter import run_design
 from runtime.ctl.ctl_doctor_adapter import run_doctor
@@ -39,6 +40,8 @@ from runtime.observability import logger as runtime_event_logger
 from runtime.release import manifest as release_manifest
 from runtime.release import validation as release_validation
 from runtime.workflow import runtime_status
+from runtime.workflow import runtime_log
+from runtime.workflow import runtime_ready
 from runtime.workflow import runtime_trace
 
 
@@ -103,6 +106,9 @@ def _format_dry_run_plan(result: dict[str, Any]) -> str:
         for item in writes:
             if isinstance(item, dict):
                 lines.append(f"  - {item.get('role', '')}: {item.get('path', '')}")
+    plan_output = str(result.get("plan_output", "") or "")
+    if plan_output:
+        lines.extend(["", f"Output : {plan_output}"])
     next_action = str(result.get("next_action", "") or "")
     if next_action:
         lines.extend(["", f"Next   : {next_action}"])
@@ -154,6 +160,7 @@ def _format_trace_result(result: dict[str, Any]) -> str:
             f"Status   : {result.get('status', '')}",
             f"Trace ID : {result.get('trace_id', '')}",
             f"Workflow : {result.get('workflow', '')}",
+            f"Work ID  : {result.get('work_id', '')}",
             f"Last Seq : {result.get('last_sequence', 0)}",
             f"Path     : {result.get('path', '')}",
             f"Reason   : {result.get('reason', '')}",
@@ -175,22 +182,25 @@ def _handle_trace(args: argparse.Namespace, repo_root: Path, registry: dict[str,
         result = runtime_event_logger.begin_active_runtime_trace(
             repo_root,
             workflow=str(getattr(args, "workflow", "") or ""),
+            work_id=str(getattr(args, "work_id", "") or ""),
             trace_id=str(getattr(args, "_runtime_trace_id", "") or getattr(args, "trace_id", "") or ""),
             force=bool(getattr(args, "force", False)),
             initial_sequence=int(getattr(args, "_runtime_sequence", 0) or 0),
         )
         code = 0 if result.get("status") == "active" else 2
     elif trace_command == "status":
-        active = runtime_event_logger.load_active_runtime_trace(repo_root)
-        result = {
-            **active,
-            "status": active.get("status", "not-active") if active else "not-active",
-            "path": str(runtime_event_logger.active_runtime_trace_path(repo_root)),
-        }
-        code = 0 if active else 2
+        result = runtime_trace.inspect_active_trace(repo_root)
+        code = 0 if result.get("status") == "active" else 2
     elif trace_command == "end":
         result = runtime_event_logger.end_active_runtime_trace(repo_root)
         code = 0 if result.get("status") == "ended" else 2
+    elif trace_command == "recover":
+        result = runtime_trace.recover_active_trace(
+            repo_root,
+            dry_run=bool(getattr(args, "dry_run", False)),
+            human_check=getattr(args, "human_check", None),
+        )
+        code = 0 if result.get("status") in {"dry-run", "recovered", "no-op"} else 2
     elif trace_command == "show":
         trace_id = str(getattr(args, "trace_id_option", "") or getattr(args, "trace_id", "") or "")
         result = runtime_trace.build_trace_report(
@@ -198,6 +208,7 @@ def _handle_trace(args: argparse.Namespace, repo_root: Path, registry: dict[str,
             trace_id=trace_id,
             runtime_log=str(getattr(args, "runtime_log", "") or ""),
             exclude_trace_id="" if trace_id else str(getattr(args, "_runtime_trace_id", "") or ""),
+            problems_only=bool(getattr(args, "problems", False)),
         )
         code = 0 if result.get("status") == "ok" else 2
     else:
@@ -209,11 +220,121 @@ def _handle_trace(args: argparse.Namespace, repo_root: Path, registry: dict[str,
     return code, _format_trace_result(result)
 
 
+def _status_view_mode(args: argparse.Namespace) -> str:
+    if getattr(args, "summary", False):
+        return "summary"
+    if getattr(args, "problems", False):
+        return "problems"
+    if getattr(args, "verbose", False):
+        return "verbose"
+    return "full"
+
+
 def _handle_status(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
-    result = runtime_status.collect_status(repo_root, work_id=str(getattr(args, "work_id", "") or ""))
+    view_mode = _status_view_mode(args)
+    result = runtime_status.collect_status(repo_root, work_id=str(getattr(args, "work_id", "") or ""), view_mode=view_mode)
     if getattr(args, "json", False):
-        return 0, json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+        return 0, json.dumps(runtime_status.apply_status_view(result, view_mode), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     return 0, runtime_status.format_status(result)
+
+
+def _handle_ready(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    result = runtime_ready.build_ready_check(
+        repo_root,
+        work_id=str(getattr(args, "work_id", "") or ""),
+        skip_spec_check=bool(getattr(args, "skip_spec_check", False)),
+        strict=bool(getattr(args, "strict", False)),
+    )
+    result = save_plan_output_if_requested(args, repo_root, result)
+    code = 0 if result.get("status") == "ready" else 2
+    if getattr(args, "json", False):
+        return code, json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    return code, runtime_ready.format_ready_check(result)
+
+
+def _handle_log(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
+    log_command = getattr(args, "log_command", None)
+    if log_command is None:
+        return 1, (
+            "Runtime Log\n\n"
+            "Usage:\n"
+            "  aiwfctl log summary\n"
+            "  aiwfctl log tail -n 20\n"
+            "  aiwfctl log grep --trace-id <trace-id>\n"
+            "  aiwfctl log export --trace-id <trace-id> --output work/evidence/runtime-log-export.json\n"
+            "  aiwfctl log acknowledge-problem --trace-id <trace-id> --sequence <sequence>\n"
+            "  aiwfctl log archive --keep-last 1000 --dry-run\n"
+            "  aiwfctl log prune --keep-last 1000 --dry-run\n"
+        )
+    if log_command == "summary":
+        result = runtime_log.build_log_summary(repo_root, runtime_log=str(getattr(args, "runtime_log", "") or ""))
+        code = 0 if result.get("status") in {"ok", "empty-log"} else 2
+        output = json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n" if getattr(args, "json", False) else runtime_log.format_log_summary(result)
+        return code, output
+    if log_command == "archive":
+        result = runtime_log.archive_runtime_log(
+            repo_root,
+            runtime_log=str(getattr(args, "runtime_log", "") or ""),
+            archive_dir=str(getattr(args, "archive_dir", "") or ""),
+            keep_last=int(getattr(args, "keep_last", 0) or 0),
+            dry_run=bool(getattr(args, "dry_run", False)),
+            human_check=getattr(args, "human_check", None),
+        )
+        result = save_plan_output_if_requested(args, repo_root, result)
+    elif log_command == "prune":
+        result = runtime_log.prune_runtime_log(
+            repo_root,
+            runtime_log=str(getattr(args, "runtime_log", "") or ""),
+            keep_last=int(getattr(args, "keep_last", 0) or 0),
+            dry_run=bool(getattr(args, "dry_run", False)),
+            human_check=getattr(args, "human_check", None),
+        )
+        result = save_plan_output_if_requested(args, repo_root, result)
+    elif log_command == "tail":
+        result = runtime_log.tail_runtime_log(
+            repo_root,
+            runtime_log=str(getattr(args, "runtime_log", "") or ""),
+            limit=int(getattr(args, "limit", 0) or 0),
+            trace_id=str(getattr(args, "trace_id", "") or ""),
+            problems=bool(getattr(args, "problems", False)),
+        )
+    elif log_command == "grep":
+        result = runtime_log.grep_runtime_log(
+            repo_root,
+            runtime_log=str(getattr(args, "runtime_log", "") or ""),
+            trace_id=str(getattr(args, "trace_id", "") or ""),
+            problems=bool(getattr(args, "problems", False)),
+        )
+    elif log_command == "export":
+        result = runtime_log.export_runtime_log(
+            repo_root,
+            runtime_log=str(getattr(args, "runtime_log", "") or ""),
+            trace_id=str(getattr(args, "trace_id", "") or ""),
+            output=str(getattr(args, "output", "") or ""),
+            problems=bool(getattr(args, "problems", False)),
+        )
+    elif log_command == "acknowledge-problem":
+        result = runtime_log.acknowledge_runtime_problem(
+            repo_root,
+            trace_id=str(getattr(args, "trace_id", "") or ""),
+            sequence=str(getattr(args, "sequence", "") or ""),
+            command=str(getattr(args, "ack_command", "") or ""),
+            all_matching=bool(getattr(args, "all", False)),
+            reason=str(getattr(args, "reason", "") or ""),
+        )
+    else:
+        return 1, f"Unknown log command: {log_command}\n"
+    code = 0 if result.get("status") in {"ok", "dry-run", "no-op"} else 2
+    output = (
+        json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+        if getattr(args, "json", False)
+        else runtime_log.format_log_events_result(result)
+        if result.get("artifact_type") in {"runtime-log-tail", "runtime-log-grep", "runtime-log-export"}
+        else runtime_log.format_problem_acknowledgement(result)
+        if result.get("artifact_type") == "runtime-problem-acknowledgement"
+        else runtime_log.format_log_maintenance_result(result)
+    )
+    return code, output
 
 
 def _handle_context(args: argparse.Namespace, repo_root: Path, registry: dict[str, Any], helpers: HelperModule, color: bool = False) -> tuple[int, str]:
@@ -1295,7 +1416,24 @@ def _handle_doctor(args: argparse.Namespace, repo_root: Path, registry: dict[str
         f"Status        : {result.get('status', '')}",
         f"Warning Count : {result.get('warning_count', 0)}",
         f"Repair Count  : {sum(len(item.get('repairs', [])) for item in repairs if isinstance(item, dict))}",
+        f"Dry Run       : {str(result.get('dry_run', False)).lower()}",
+        f"Suggestion Only: {str(result.get('fix_suggestion_only', False)).lower()}",
     ]
+    warning_summary = result.get("warning_summary", {})
+    if isinstance(warning_summary, dict):
+        severity_counts = warning_summary.get("severity_counts", {})
+        category_counts = warning_summary.get("category_counts", {})
+        lines.extend(
+            [
+                f"Repairable    : {warning_summary.get('repairable_count', 0)}",
+                f"Human Review  : {warning_summary.get('human_review_count', 0)}",
+                f"Severity      : {', '.join(f'{key}={value}' for key, value in severity_counts.items()) or 'none'}",
+                f"Category      : {', '.join(f'{key}={value}' for key, value in category_counts.items()) or 'none'}",
+            ]
+        )
+    plan_output = str(result.get("plan_output", "") or "")
+    if plan_output:
+        lines.append(f"Output        : {plan_output}")
     gate_restart = result.get("gate_restart", {})
     if isinstance(gate_restart, dict):
         lines.append(f"Restart From : {gate_restart.get('restart_from', '')}")
@@ -1308,6 +1446,8 @@ def _handle_doctor(args: argparse.Namespace, repo_root: Path, registry: dict[str
             lines.extend(
                 [
                     f"  - {warning.get('id', '')}",
+                    f"    severity: {warning.get('severity', '')}",
+                    f"    category: {warning.get('category', '')}",
                     f"    message: {warning.get('message', '')}",
                 ]
             )
@@ -1321,6 +1461,28 @@ def _handle_doctor(args: argparse.Namespace, repo_root: Path, registry: dict[str
                 lines.append(f"    path: {path}")
     else:
         lines.extend(["", "Warnings", "  - なし"])
+    if isinstance(warning_summary, dict):
+        repairable_warnings = warning_summary.get("repairable_warnings", [])
+        if repairable_warnings:
+            lines.extend(["", "Repairable Warnings"])
+            for warning in repairable_warnings:
+                if isinstance(warning, dict):
+                    lines.append(f"  - {warning.get('id', '')}: {warning.get('repair_command', '')}")
+        human_review_warnings = warning_summary.get("human_review_warnings", [])
+        if human_review_warnings:
+            lines.extend(["", "Human Review Warnings"])
+            for warning in human_review_warnings:
+                if isinstance(warning, dict):
+                    lines.append(f"  - {warning.get('id', '')}: {warning.get('next_action', '')}")
+    fix_suggestions = result.get("fix_suggestions", [])
+    if fix_suggestions:
+        lines.extend(["", "Fix Suggestions"])
+        for suggestion in fix_suggestions:
+            if isinstance(suggestion, dict):
+                command = suggestion.get("suggested_command", "") or suggestion.get("next_action", "")
+                lines.append(
+                    f"  - {suggestion.get('warning_id', '')}: {command}"
+                )
     if repairs:
         lines.extend(["", "Repairs"])
         for repair in repairs:
@@ -1334,6 +1496,10 @@ def _handle_doctor(args: argparse.Namespace, repo_root: Path, registry: dict[str
                     f"    repaired: {len(repair_items) if isinstance(repair_items, list) else 0}",
                 ]
             )
+            if "planned_count" in repair:
+                lines.append(f"    planned: {repair.get('planned_count', 0)}")
+            if "would_write" in repair:
+                lines.append(f"    would_write: {str(repair.get('would_write', False)).lower()}")
             if isinstance(repair_items, list):
                 for item in repair_items[:CTL_WARNING_PATH_PREVIEW_LIMIT]:
                     if not isinstance(item, dict):
@@ -1413,8 +1579,10 @@ def _handle_release(args: argparse.Namespace, repo_root: Path, registry: dict[st
 
 COMMAND_HANDLERS: dict[str, CommandHandler] = {
     "status": _handle_status,
+    "ready": _handle_ready,
     "env": _handle_env,
     "trace": _handle_trace,
+    "log": _handle_log,
     "context": _handle_context,
     "human-gate": _handle_human_gate,
     "design": _handle_design,

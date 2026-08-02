@@ -127,7 +127,9 @@ def test_registry_seed_findings_reports_incomplete_template_source(tmp_path: Pat
     source.mkdir(parents=True)
     for name in (
         *workflow_doctor.registry_store.REQUIRED_REGISTRY_SOURCE_FILES,
+        workflow_doctor.registry_store.CTL_HELP_USAGE_REGISTRY_FILE,
         workflow_doctor.registry_store.SEARCH_TERMS_REGISTRY_FILE,
+        workflow_doctor.registry_store.RUNTIME_HELP_CAPABILITIES_REGISTRY_FILE,
     ):
         (source / name).write_text('{"registry_version": "1.0"}', encoding="utf-8")
 
@@ -546,7 +548,22 @@ def test_workflow_doctor_run_reports_all_warning_types(monkeypatch, tmp_path: Pa
         assert warning["next_action"]
         assert warning["repair_command"]
         assert warning["ignore_condition"]
+        assert warning["severity"] in {"critical", "high", "medium", "low"}
+        assert warning["category"]
+        assert isinstance(warning["repairable"], bool)
+        assert isinstance(warning["human_review_required"], bool)
     assert result["warnings"][9]["repair_command"] == (
+        "aiwfctl rag duckdb rebuild --source-repo work/db/ariadne-knowledge-platform --reset"
+    )
+    assert result["warnings"][9]["repairable"] is True
+    assert result["warnings"][9]["human_review_required"] is False
+    assert result["warning_summary"]["repairable_count"] == 2
+    assert result["warning_summary"]["human_review_count"] == 11
+    assert result["warning_summary"]["severity_counts"]["critical"] == 1
+    assert result["warning_summary"]["category_counts"]["knowledge-read-model"] == 1
+    assert result["schema"]["warning"] == ".ariadne/schemas/workflow-doctor-warning.schema.json"
+    assert result["fix_suggestions"][9]["warning_id"] == "rag-duckdb-read-model-missing"
+    assert result["fix_suggestions"][9]["suggested_command"] == (
         "aiwfctl rag duckdb rebuild --source-repo work/db/ariadne-knowledge-platform --reset"
     )
 
@@ -583,10 +600,25 @@ def test_workflow_doctor_run_passes_without_warnings(monkeypatch, tmp_path: Path
     result = workflow_doctor.run(args)
 
     assert result == {
+        "artifact_type": "workflow-doctor-report",
+        "schema": {
+            "warning": ".ariadne/schemas/workflow-doctor-warning.schema.json",
+        },
         "status": "pass",
         "warning_count": 0,
         "warnings": [],
+        "warning_summary": {
+            "severity_counts": {},
+            "category_counts": {},
+            "repairable_count": 0,
+            "human_review_count": 0,
+            "repairable_warnings": [],
+            "human_review_warnings": [],
+        },
+        "fix_suggestions": [],
+        "fix_suggestion_only": False,
         "repairs": [],
+        "dry_run": False,
         "gate_restart": {
             "schema_version": "1.0",
             "artifact_type": "gate-restart",
@@ -680,6 +712,53 @@ def test_workflow_doctor_repair_encoding_clears_text_boundary_warning(monkeypatc
     assert target.read_text(encoding="utf-8") == f"# {original}\n"
 
 
+def test_workflow_doctor_repair_encoding_dry_run_previews_without_writing(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "pytest_runtime_boundary_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "registry_seed_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "git_attributes_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "uv_startup_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "duckdb_read_model_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "workspace_layout_literal_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "path_constant_literal_findings", lambda repo_root: [])
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    original = "\u3042\u3042"
+    mojibake = original.encode("utf-8").decode("cp932")
+    target = docs / "guide.md"
+    target.write_text(f"# {mojibake}\n", encoding="utf-8")
+
+    result = workflow_doctor.run(
+        argparse.Namespace(
+            repo_root=str(tmp_path),
+            fail_on_warning=True,
+            skip_ut_spec_sync=False,
+            repair_encoding=True,
+            repair_spec_index=False,
+            dry_run=True,
+            encoding_paths=["docs"],
+            encoding_extensions=[".md"],
+        )
+    )
+
+    assert result["status"] == "fail"
+    assert result["dry_run"] is True
+    assert result["gate_restart"]["restart_reason"] == "dry-run-doctor-gate"
+    assert result["repairs"][0]["artifact_type"] == "text-boundary-repair-preview"
+    assert result["repairs"][0]["status"] == "dry-run"
+    assert result["repairs"][0]["would_write"] is True
+    assert result["repairs"][0]["planned_count"] == 1
+    assert result["repairs"][0]["repairs"][0]["path"] == "docs/guide.md"
+    assert result["repairs"][0]["repairs"][0]["written"] is False
+    assert target.read_text(encoding="utf-8") == f"# {mojibake}\n"
+    assert not (docs / "guide.md.encoding-bak").exists()
+
+
 def test_workflow_doctor_repair_spec_index_scaffolds_missing_cases(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: [])
     monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
@@ -728,6 +807,91 @@ def test_new():
     assert result["repairs"][0]["artifact_type"] == "pytest-ut-spec-index-repair"
     assert result["repairs"][0]["repairs"][0]["node_id"] == "runtime/tests/test_sample.py::test_new"
     assert (spec_path.with_name("cases") / "test_sample.md").exists()
+
+
+def test_workflow_doctor_repair_spec_index_dry_run_previews_without_scaffolding(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "pytest_runtime_boundary_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "registry_seed_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "git_attributes_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "uv_startup_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "duckdb_read_model_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "workspace_layout_literal_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "path_constant_literal_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: ["missing: runtime/tests/test_sample.py::test_new"])
+    monkeypatch.setattr(
+        workflow_doctor,
+        "repair_ut_spec_index",
+        lambda repo_root: (_ for _ in ()).throw(AssertionError("repair must not run during dry-run")),
+    )
+
+    result = workflow_doctor.run(
+        argparse.Namespace(
+            repo_root=str(tmp_path),
+            fail_on_warning=False,
+            skip_ut_spec_sync=False,
+            repair_encoding=False,
+            repair_spec_index=True,
+            dry_run=True,
+            encoding_paths=["docs"],
+            encoding_extensions=[".md"],
+        )
+    )
+
+    assert result["status"] == "warning"
+    assert result["dry_run"] is True
+    assert result["repairs"][0]["artifact_type"] == "pytest-ut-spec-index-repair-preview"
+    assert result["repairs"][0]["status"] == "dry-run"
+    assert result["repairs"][0]["would_write"] is True
+    assert result["repairs"][0]["planned_count"] == 1
+    assert result["repairs"][0]["findings"] == ["missing: runtime/tests/test_sample.py::test_new"]
+
+
+def test_workflow_doctor_fix_suggestion_only_does_not_run_repairs(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(workflow_doctor, "tracked_policy_violations", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "missing_required_files", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "pytest_runtime_boundary_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "human_gate_registry_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "registry_seed_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "close_archive_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "vscode_utf8_first_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "git_attributes_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "uv_startup_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "ut_spec_sync_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "duckdb_read_model_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "workspace_layout_literal_findings", lambda repo_root: [])
+    monkeypatch.setattr(workflow_doctor, "path_constant_literal_findings", lambda repo_root: [])
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    original = "\u3042\u3042"
+    mojibake = original.encode("utf-8").decode("cp932")
+    target = docs / "guide.md"
+    target.write_text(f"# {mojibake}\n", encoding="utf-8")
+
+    result = workflow_doctor.run(
+        argparse.Namespace(
+            repo_root=str(tmp_path),
+            fail_on_warning=False,
+            skip_ut_spec_sync=False,
+            repair_encoding=True,
+            repair_spec_index=True,
+            dry_run=False,
+            fix_suggestion_only=True,
+            encoding_paths=["docs"],
+            encoding_extensions=[".md"],
+        )
+    )
+
+    assert result["status"] == "warning"
+    assert result["fix_suggestion_only"] is True
+    assert result["repairs"] == []
+    assert result["warnings"][0]["id"] == "text-boundary"
+    assert result["fix_suggestions"][0]["suggested_command"] == "aiwfctl doctor --repair-encoding --fail-on-warning"
+    assert target.read_text(encoding="utf-8") == f"# {mojibake}\n"
 
 
 def test_workflow_doctor_main_prints_pass_json(monkeypatch, tmp_path: Path, capsys) -> None:

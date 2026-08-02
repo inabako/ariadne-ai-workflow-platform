@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 from typing import Any
 
+from runtime.ctl.ctl_adapter_utils import save_plan_output_if_requested
 from runtime.ctl.ctl_adapter_utils import workflow_args
 from runtime.rag import duckdb_store
 
@@ -30,7 +31,7 @@ def duckdb_dry_run_plan(args: argparse.Namespace, repo_root: Path, command: str)
     if getattr(dry_args, "reset", False):
         writes.append({"role": "reset-generated-read-model", "path": _display_path(getattr(dry_args, "db", ""))})
 
-    return {
+    result = {
         "schema_version": "1.0",
         "artifact_type": "rag-dry-run-plan",
         "status": "dry-run",
@@ -44,6 +45,7 @@ def duckdb_dry_run_plan(args: argparse.Namespace, repo_root: Path, command: str)
         },
         "next_action": "内容を確認し、問題なければ --dry-run を外して同じコマンドを実行してください。",
     }
+    return save_plan_output_if_requested(args, repo_root, result)
 
 
 def run_knowledge(args: argparse.Namespace, repo_root: Path, command: str) -> dict[str, Any]:

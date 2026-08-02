@@ -16,6 +16,7 @@ from runtime.common import find_repo_root, relative_to_repo  # noqa: E402
 from runtime.constants.schemas import (  # noqa: E402
     CONTEXT_MANIFEST_SCHEMA,
     CORRECTIVE_ACTION_REPORT_SCHEMA,
+    CTL_HELP_USAGE_SCHEMA,
     ENVIRONMENT_SELECTION_SCHEMA,
     EXECUTION_PLAN_SCHEMA,
     GATE_RESTART_SCHEMA,
@@ -27,11 +28,13 @@ from runtime.constants.schemas import (  # noqa: E402
     RAG_LOAD_DISPATCH_SCHEMA,
     REALTIME_IAC_HANDOFF_SCHEMA,
     RUNTIME_CONTEXT_SCHEMA,
+    RUNTIME_HELP_CAPABILITIES_SCHEMA,
     RUNTIME_METRICS_SCHEMA,
     TOOL_CANDIDATES_SCHEMA,
     TOOL_SELECTION_SCHEMA,
     VSCODE_ENVIRONMENT_STATE_SCHEMA,
     WORKFLOW_ENVIRONMENT_PROFILES_SCHEMA,
+    WORKFLOW_DOCTOR_WARNING_SCHEMA,
     WORKFLOW_HELP_SCHEMA,
     WORKFLOW_SELECTION_SCHEMA,
 )
@@ -170,6 +173,93 @@ WARNING_GUIDANCE: dict[str, dict[str, str]] = {
     },
 }
 
+WARNING_CLASSIFICATION: dict[str, dict[str, Any]] = {
+    "tracked-local-workspace-files": {
+        "severity": "high",
+        "category": "release-boundary",
+        "repairable": False,
+        "human_review_required": True,
+    },
+    "missing-required-files": {
+        "severity": "critical",
+        "category": "repository-contract",
+        "repairable": False,
+        "human_review_required": True,
+    },
+    "pytest-runtime-boundary": {
+        "severity": "medium",
+        "category": "runtime-test-boundary",
+        "repairable": False,
+        "human_review_required": True,
+    },
+    "human-gate-registry-responsibility-boundary": {
+        "severity": "high",
+        "category": "governance",
+        "repairable": False,
+        "human_review_required": True,
+    },
+    "runtime-registry-bootstrap-source": {
+        "severity": "high",
+        "category": "fresh-checkout",
+        "repairable": False,
+        "human_review_required": True,
+    },
+    "incomplete-close-archive": {
+        "severity": "medium",
+        "category": "evidence",
+        "repairable": False,
+        "human_review_required": True,
+    },
+    "vscode-utf8-first": {
+        "severity": "medium",
+        "category": "local-environment",
+        "repairable": False,
+        "human_review_required": True,
+    },
+    "git-line-ending-policy": {
+        "severity": "high",
+        "category": "multi-os",
+        "repairable": False,
+        "human_review_required": True,
+    },
+    "uv-startup-route": {
+        "severity": "high",
+        "category": "runtime-startup",
+        "repairable": False,
+        "human_review_required": True,
+    },
+    "rag-duckdb-read-model-missing": {
+        "severity": "medium",
+        "category": "knowledge-read-model",
+        "repairable": True,
+        "human_review_required": False,
+    },
+    "workspace-layout-literal": {
+        "severity": "medium",
+        "category": "runtime-maintainability",
+        "repairable": False,
+        "human_review_required": True,
+    },
+    "path-constant-literal": {
+        "severity": "medium",
+        "category": "runtime-maintainability",
+        "repairable": False,
+        "human_review_required": True,
+    },
+    "pytest-ut-spec-sync": {
+        "severity": "medium",
+        "category": "test-evidence",
+        "repairable": True,
+        "human_review_required": False,
+    },
+    "text-boundary": {
+        "severity": "high",
+        "category": "text-integrity",
+        "repairable": True,
+        "human_review_required": True,
+    },
+}
+
 
 def warning_guidance(warning_id: str, paths: list[str] | None = None) -> dict[str, str]:
     guidance = dict(
@@ -191,13 +281,73 @@ def warning_guidance(warning_id: str, paths: list[str] | None = None) -> dict[st
     return guidance
 
 
+def warning_classification(warning_id: str) -> dict[str, Any]:
+    return {
+        "severity": "medium",
+        "category": "repository-health",
+        "repairable": False,
+        "human_review_required": True,
+        **WARNING_CLASSIFICATION.get(warning_id, {}),
+    }
+
+
 def enrich_warning(warning: dict[str, Any]) -> dict[str, Any]:
     warning_id = str(warning.get("id", "") or "")
     paths = [str(item) for item in warning.get("paths", [])] if isinstance(warning.get("paths"), list) else []
     return {
         **warning_guidance(warning_id, paths),
+        **warning_classification(warning_id),
         **warning,
     }
+
+
+def warning_summary(warnings: list[dict[str, Any]]) -> dict[str, Any]:
+    severity_counts: dict[str, int] = {}
+    category_counts: dict[str, int] = {}
+    repairable: list[dict[str, Any]] = []
+    human_review: list[dict[str, Any]] = []
+    for warning in warnings:
+        severity = str(warning.get("severity", "medium") or "medium")
+        category = str(warning.get("category", "repository-health") or "repository-health")
+        severity_counts[severity] = severity_counts.get(severity, 0) + 1
+        category_counts[category] = category_counts.get(category, 0) + 1
+        if bool(warning.get("repairable", False)):
+            repairable.append(warning)
+        if bool(warning.get("human_review_required", True)):
+            human_review.append(warning)
+    return {
+        "severity_counts": severity_counts,
+        "category_counts": category_counts,
+        "repairable_count": len(repairable),
+        "human_review_count": len(human_review),
+        "repairable_warnings": repairable,
+        "human_review_warnings": human_review,
+    }
+
+
+def fix_suggestions(warnings: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    suggestions: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    for warning in warnings:
+        command = str(warning.get("repair_command", "") or "")
+        next_action = str(warning.get("next_action", "") or "")
+        key = (str(warning.get("id", "") or ""), command or next_action)
+        if key in seen:
+            continue
+        seen.add(key)
+        suggestions.append(
+            {
+                "warning_id": warning.get("id", ""),
+                "severity": warning.get("severity", ""),
+                "category": warning.get("category", ""),
+                "repairable": bool(warning.get("repairable", False)),
+                "human_review_required": bool(warning.get("human_review_required", True)),
+                "suggested_command": command,
+                "next_action": next_action,
+                "reason": warning.get("cause", ""),
+            }
+        )
+    return suggestions
 
 
 def run_git(repo_root: Path, args: list[str]) -> list[str]:
@@ -232,6 +382,7 @@ def missing_required_files(repo_root: Path) -> list[str]:
         "runtime/workflow/noise_reduction.py",
         "runtime/workflow/workflow_state.py",
         "runtime/workflow/context_first.py",
+        "runtime/workflow/runtime_ready.py",
         "runtime/workflow/dispatcher_context.py",
         "runtime/workflow/iac_handoff_context.py",
         "runtime/workflow/human_gate_policy.py",
@@ -256,13 +407,16 @@ def missing_required_files(repo_root: Path) -> list[str]:
         WORKFLOW_SELECTION_SCHEMA,
         TOOL_SELECTION_SCHEMA,
         RUNTIME_CONTEXT_SCHEMA,
+        RUNTIME_HELP_CAPABILITIES_SCHEMA,
         RUNTIME_METRICS_SCHEMA,
         EXECUTION_PLAN_SCHEMA,
+        WORKFLOW_DOCTOR_WARNING_SCHEMA,
         REALTIME_IAC_HANDOFF_SCHEMA,
         VSCODE_ENVIRONMENT_STATE_SCHEMA,
         WORKFLOW_ENVIRONMENT_PROFILES_SCHEMA,
         GITHUB_OPERATION_GATE_SCHEMA,
         CORRECTIVE_ACTION_REPORT_SCHEMA,
+        CTL_HELP_USAGE_SCHEMA,
         RAG_BUILD_RUN_SCHEMA,
         RAG_DISPATCH_PLAN_SCHEMA,
         RAG_LOAD_DISPATCH_SCHEMA,
@@ -284,7 +438,9 @@ def registry_seed_findings(repo_root: Path) -> list[str]:
         return [f"missing:{registry_store.DEFAULT_TEMPLATE_JSON_SOURCE_DIR.as_posix()}"]
     expected_files = (
         *registry_store.REQUIRED_REGISTRY_SOURCE_FILES,
+        registry_store.CTL_HELP_USAGE_REGISTRY_FILE,
         registry_store.SEARCH_TERMS_REGISTRY_FILE,
+        registry_store.RUNTIME_HELP_CAPABILITIES_REGISTRY_FILE,
     )
     findings: list[str] = []
     for name in dict.fromkeys(expected_files):
@@ -570,6 +726,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--skip-ut-spec-sync", action="store_true", help="Skip pytest UT specification sync check.")
     parser.add_argument("--repair-encoding", action="store_true", help="Repair safe text-boundary findings before returning doctor status.")
     parser.add_argument("--repair-spec-index", action="store_true", help="Scaffold missing pytest UT specification cases before returning doctor status.")
+    parser.add_argument("--dry-run", action="store_true", help="Preview requested doctor repairs without writing files.")
+    parser.add_argument("--fix-suggestion-only", action="store_true", help="Only return warning fix suggestions; do not run repair actions.")
     parser.add_argument(
         "--encoding-paths",
         nargs="+",
@@ -685,8 +843,24 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "paths": path_constant_findings,
             }
         )
-    if getattr(args, "repair_spec_index", False) and not getattr(args, "skip_ut_spec_sync", False):
-        repairs.append(repair_ut_spec_index(repo_root))
+    dry_run = bool(getattr(args, "dry_run", False))
+    fix_suggestion_only = bool(getattr(args, "fix_suggestion_only", False))
+    if not fix_suggestion_only and getattr(args, "repair_spec_index", False) and not getattr(args, "skip_ut_spec_sync", False):
+        if dry_run:
+            sync_preview_findings = ut_spec_sync_findings(repo_root)
+            repairs.append(
+                {
+                    "schema_version": "1.0",
+                    "artifact_type": "pytest-ut-spec-index-repair-preview",
+                    "status": "dry-run",
+                    "would_write": bool(sync_preview_findings),
+                    "planned_count": len(sync_preview_findings),
+                    "findings": sync_preview_findings,
+                    "repairs": [],
+                }
+            )
+        else:
+            repairs.append(repair_ut_spec_index(repo_root))
     if not getattr(args, "skip_ut_spec_sync", False):
         sync_findings = ut_spec_sync_findings(repo_root)
         if sync_findings:
@@ -699,8 +873,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             )
     encoding_paths = list(getattr(args, "encoding_paths", None) or text_boundary.DEFAULT_PATHS)
     encoding_extensions = text_boundary.normalize_extensions(getattr(args, "encoding_extensions", None))
-    if getattr(args, "repair_encoding", False):
-        repair_result = text_boundary.repair_text_boundary(repo_root, encoding_paths, encoding_extensions)
+    if not fix_suggestion_only and getattr(args, "repair_encoding", False):
+        repair_result = text_boundary.repair_text_boundary(repo_root, encoding_paths, encoding_extensions, write=not dry_run)
+        if dry_run:
+            repair_result["artifact_type"] = "text-boundary-repair-preview"
+            repair_result["status"] = "dry-run"
+            repair_result["would_write"] = bool(repair_result.get("repairs", []))
+            repair_result["planned_count"] = len(repair_result.get("repairs", []))
         repairs.append(repair_result)
         boundary_findings = repair_result.get("remaining_findings", [])
     else:
@@ -719,15 +898,25 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             }
         )
     warnings = [enrich_warning(warning) for warning in warnings]
+    warning_groups = warning_summary(warnings)
+    suggestions = fix_suggestions(warnings)
     status = "fail" if warnings and args.fail_on_warning else "warning" if warnings else "pass"
     return {
+        "artifact_type": "workflow-doctor-report",
+        "schema": {
+            "warning": WORKFLOW_DOCTOR_WARNING_SCHEMA,
+        },
         "status": status,
         "warning_count": len(warnings),
         "warnings": warnings,
+        "warning_summary": warning_groups,
+        "fix_suggestions": suggestions,
+        "fix_suggestion_only": fix_suggestion_only,
         "repairs": repairs,
+        "dry_run": dry_run,
         "gate_restart": gate_restart.build_gate_restart(
             "doctor-gate",
-            restart_reason="failed-doctor-gate" if repairs else "normal-doctor-gate",
+            restart_reason="dry-run-doctor-gate" if dry_run and repairs else "failed-doctor-gate" if repairs else "normal-doctor-gate",
             repair_available=True,
             repair_command="aiwfctl doctor --repair-encoding --repair-spec-index --fail-on-warning",
             status_after_restart=status,

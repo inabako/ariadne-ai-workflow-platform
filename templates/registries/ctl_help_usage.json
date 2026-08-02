@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "schema": ".ariadne/schemas/ctl-help-usage.schema.json",
+  "artifact_type": "ctl-help-usage",
+  "warning": "警告: aiwfctl help の後続修飾子が指定されていません。",
+  "guidance": "help の後に、list / show / search / open / markdown のいずれかを指定してください。",
+  "sections": [
+    {
+      "title": "使用例:",
+      "commands": [
+        "aiwfctl help list",
+        "aiwfctl help show /vscode-environment",
+        "aiwfctl help search vscode",
+        "aiwfctl help open",
+        "aiwfctl help markdown --output work/help/ai-workflow-help.md"
+      ]
+    },
+    {
+      "title": "PATH登録やsession更新を行う場合:",
+      "commands": [
+        "aiwfctl path shell"
+      ]
+    },
+    {
+      "title": "実行環境を選択する場合:",
+      "commands": [
+        "aiwfctl env select web-svg",
+        "aiwfctl context init --work-id issue-123 --workflow /docs-sync",
+        "aiwfctl knowledge search --query \"PyQt GUI smoke test\"",
+        "aiwfctl flutter analyze --work-id issue-123",
+        "aiwfctl doctor"
+      ]
+    }
+  ]
+}
