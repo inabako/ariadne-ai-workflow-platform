@@ -60,7 +60,8 @@ def test_oss_release_foundation_files_exist() -> None:
         ".github/copilot-instructions.md",
         ".github/instructions/ariadne.instructions.md",
         ".github/prompts/ariadne-workflows.prompt.md",
-        ".github/PULL_REQUEST_TEMPLATE.md",
+        ".github/PULL_REQUEST_TEMPLATE/pull_request_template.md",
+        ".github/PULL_REQUEST_TEMPLATE/pull_request_template_ja.md",
         ".github/ISSUE_TEMPLATE/bug_report.yml",
         ".github/ISSUE_TEMPLATE/feature_request.yml",
         ".github/workflows/scancode.yml",
@@ -92,7 +93,7 @@ def test_github_copilot_bridge_files_point_to_ariadne_source_of_truth() -> None:
     assert "workflow 本体ではありません" in copilot
     assert ".ariadne/prompts/*.prompt.md" in copilot
     assert ".ariadne/agents/*.prompt.md" in copilot
-    assert "source of truth" in copilot
+    assert "正本" in copilot
 
     assert "Ariadne Workflow Bridge" in prompt
     assert ".ariadne/prompts/" in prompt

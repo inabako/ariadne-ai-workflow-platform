@@ -50,7 +50,7 @@ runtime/tests/test_oss_release_foundation.py::test_gitattributes_documents_line_
 runtime/tests/test_oss_release_foundation.py::test_github_copilot_bridge_files_point_to_ariadne_source_of_truth
 ```
 
-- 確認内容: `.github` 配下の Copilot bridge が `.ariadne` を source of truth として案内し、workflow本体と誤認されないことを確認します。
+- 確認内容: `.github` 配下の Copilot bridge が `.ariadne` を正本として案内し、workflow本体と誤認されないことを確認します。
 - 入力値:
   - pytest node: 上記 node id
   - source: `runtime/tests/test_oss_release_foundation.py:86`

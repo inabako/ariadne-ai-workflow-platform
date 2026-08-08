@@ -39,7 +39,9 @@ language: ja-JP
 │   ├── bug.yml
 │   ├── improvement.yml
 │   └── config.yml
-├── PULL_REQUEST_TEMPLATE.md
+├── PULL_REQUEST_TEMPLATE/
+│   ├── pull_request_template.md
+│   └── pull_request_template_ja.md
 ├── workflows/
 ├── CODEOWNERS
 ├── dependabot.yml
