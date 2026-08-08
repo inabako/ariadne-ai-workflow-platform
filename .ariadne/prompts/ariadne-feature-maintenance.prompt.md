@@ -1,4 +1,4 @@
-﻿# Ariadne Feature Maintenance Skill Entrypoint
+# Ariadne Feature Maintenance Skill Entrypoint
 
 ## Output Language
 
@@ -11,7 +11,7 @@
 Use:
 
 ```text
-skills/ariadne-feature-maintenance/SKILL.md
+.agents/skills/ariadne-feature-maintenance/SKILL.md
 ```
 
 Then delegate the detailed workflow to:

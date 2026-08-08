@@ -109,7 +109,7 @@ def replace_text_references(repo_root: Path, path_map: dict[str, str]) -> list[s
         *knowledge_rag_dir.glob("**/*.md"),
         repo_root / "README.md",
         repo_root / "AGENTS.md",
-        *repo_root.glob("skills/**/*.md"),
+        *repo_root.glob(".agents/skills/**/*.md"),
         *repo_root.glob(".ariadne/prompts/**/*.md"),
         *repo_root.glob("runtime/**/*.md"),
     ]

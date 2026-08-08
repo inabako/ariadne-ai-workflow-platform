@@ -9,7 +9,7 @@ Ariadne AI workflow の source of truth は、次の場所にあります。
 - Agent prompts: `.ariadne/agents/*.prompt.md`
 - Schemas: `.ariadne/schemas/*.schema.json`
 - Shared policies: `.ariadne/shared/*.md`
-- Skill entrypoints: `skills/<workflow>/SKILL.md`
+- Skill entrypoints: `.agents/skills/<workflow>/SKILL.md`
 
 `.github/` 配下には GitHub native files と Copilot integration bridge だけを置きます。
 `.github/prompts/` の prompt file は VS Code Copilot Chat の入口であり、workflow 本体ではありません。

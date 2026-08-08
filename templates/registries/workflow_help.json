@@ -7,7 +7,7 @@
       "aliases": [],
       "workflow": "requirement-discovery",
       "skill": "requirement-discovery",
-      "skill_path": "skills/requirement-discovery/SKILL.md",
+      "skill_path": ".agents/skills/requirement-discovery/SKILL.md",
       "prompt_path": ".ariadne/prompts/requirement-discovery.prompt.md",
       "overview": "箇条書き草案から完成版の要件定義書を作成する。",
       "prerequisites": [
@@ -57,7 +57,7 @@
       ],
       "workflow": "system-integration-quality",
       "skill": "system-integration-quality",
-      "skill_path": "skills/system-integration-quality/SKILL.md",
+      "skill_path": ".agents/skills/system-integration-quality/SKILL.md",
       "prompt_path": ".ariadne/prompts/system-integration-quality.prompt.md",
       "overview": "生成・改修したコードを対象システムへ自然に統合できているか確認し、必要なエミュレータ候補、Integration Test、Human Check、Knowledge化対象を整理する。",
       "prerequisites": [
@@ -125,7 +125,7 @@
       ],
       "workflow": "flutter-multiplatform",
       "skill": "flutter-multiplatform",
-      "skill_path": "skills/flutter-multiplatform/SKILL.md",
+      "skill_path": ".agents/skills/flutter-multiplatform/SKILL.md",
       "prompt_path": ".ariadne/prompts/flutter-multiplatform.prompt.md",
       "overview": "Flutterアプリの対象platform、開発環境、boilerplate、静的解析、test、platform別build計画、evidence、Knowledge化対象を整理する。",
       "prerequisites": [
@@ -204,7 +204,7 @@
       ],
       "workflow": "ariadne-new-system-development",
       "skill": "ariadne-new-system",
-      "skill_path": "skills/ariadne-new-system/SKILL.md",
+      "skill_path": ".agents/skills/ariadne-new-system/SKILL.md",
       "prompt_path": ".ariadne/prompts/ariadne-new-system.prompt.md",
       "overview": "新しい対象システム、runtime、remote operation、device integrationを開始する。",
       "prerequisites": [
@@ -248,7 +248,7 @@
       "aliases": [],
       "workflow": "ariadne-new-system-iac",
       "skill": "ariadne-new-system-iac",
-      "skill_path": "skills/ariadne-new-system-iac/SKILL.md",
+      "skill_path": ".agents/skills/ariadne-new-system-iac/SKILL.md",
       "prompt_path": ".ariadne/prompts/ariadne-new-system-iac.prompt.md",
       "overview": "新システム開発からShared Artifacts検証、realtime IaC連携まで進める。",
       "prerequisites": [
@@ -297,7 +297,7 @@
       ],
       "workflow": "ariadne-feature-maintenance-development",
       "skill": "ariadne-feature-maintenance",
-      "skill_path": "skills/ariadne-feature-maintenance/SKILL.md",
+      "skill_path": ".agents/skills/ariadne-feature-maintenance/SKILL.md",
       "prompt_path": ".ariadne/prompts/ariadne-feature-maintenance-development.prompt.md",
       "overview": "既存対象システムの新機能追加、bug fix、保守開発を開始する。",
       "prerequisites": [
@@ -340,7 +340,7 @@
       "aliases": [],
       "workflow": "corrective-action-report",
       "skill": "corrective-action-report",
-      "skill_path": "skills/corrective-action-report/SKILL.md",
+      "skill_path": ".agents/skills/corrective-action-report/SKILL.md",
       "prompt_path": ".ariadne/prompts/corrective-action-report.prompt.md",
       "overview": "対象repository / branchをread-onlyで調査し、改善レポートを作成する。",
       "prerequisites": [
@@ -393,7 +393,7 @@
       "aliases": [],
       "workflow": "corrective-action-fix",
       "skill": "corrective-action-fix",
-      "skill_path": "skills/corrective-action-fix/SKILL.md",
+      "skill_path": ".agents/skills/corrective-action-fix/SKILL.md",
       "prompt_path": ".ariadne/prompts/corrective-action-fix.prompt.md",
       "overview": "改善レポートからIssue、branch、修正、test、push、knowledge captureまで進める。",
       "prerequisites": [
@@ -456,7 +456,7 @@
       "aliases": [],
       "workflow": "docs-sync",
       "skill": "docs-sync",
-      "skill_path": "skills/docs-sync/SKILL.md",
+      "skill_path": ".agents/skills/docs-sync/SKILL.md",
       "prompt_path": ".ariadne/prompts/docs-sync.prompt.md",
       "overview": "実装とdocsの差分を検出し、docsだけを同期する。",
       "prerequisites": [
@@ -505,7 +505,7 @@
       "aliases": [],
       "workflow": "self-improvement",
       "skill": "self-improvement",
-      "skill_path": "skills/self-improvement/SKILL.md",
+      "skill_path": ".agents/skills/self-improvement/SKILL.md",
       "prompt_path": ".ariadne/prompts/self-improvement.prompt.md",
       "overview": "workflow実行中の摩擦をFeedback reportへ保存し、人間レビューで採用判断して改善Issueへつなぐ。",
       "prerequisites": [
@@ -554,7 +554,7 @@
       "aliases": [],
       "workflow": "github-knowledge-maintenance",
       "skill": "github-knowledge-maintenance",
-      "skill_path": "skills/github-knowledge-maintenance/SKILL.md",
+      "skill_path": ".agents/skills/github-knowledge-maintenance/SKILL.md",
       "prompt_path": ".ariadne/prompts/github-knowledge-maintenance.prompt.md",
       "overview": "GitHub Issue、PR、docs、CARを長期知識資産として保守する。",
       "prerequisites": [
@@ -595,7 +595,7 @@
       "aliases": [],
       "workflow": "vscode-environment",
       "skill": "vscode-environment",
-      "skill_path": "skills/vscode-environment/SKILL.md",
+      "skill_path": ".agents/skills/vscode-environment/SKILL.md",
       "prompt_path": ".ariadne/prompts/vscode-environment.prompt.md",
       "overview": "VSCode workspace as codeを整備する。",
       "prerequisites": [
@@ -653,7 +653,7 @@
       "aliases": [],
       "workflow": "realtime-iac",
       "skill": "realtime-iac",
-      "skill_path": "skills/realtime-iac/SKILL.md",
+      "skill_path": ".agents/skills/realtime-iac/SKILL.md",
       "prompt_path": ".ariadne/prompts/realtime-iac.prompt.md",
       "overview": "リアルタイムシステム向けIaC、platform infrastructure、database infrastructure、Redis middleware infrastructure、OpenLDAP identity infrastructure、OpenTelemetry Collector infrastructureを設計、生成、レビュー、検証、文書化する。",
       "prerequisites": [
@@ -699,7 +699,7 @@
       "aliases": [],
       "workflow": "knowledge-capture",
       "skill": "knowledge-capture",
-      "skill_path": "skills/knowledge-capture/SKILL.md",
+      "skill_path": ".agents/skills/knowledge-capture/SKILL.md",
       "prompt_path": ".ariadne/prompts/knowledge-capture.prompt.md",
       "overview": "完了IssueからPR材料、RAG候補、docs候補、archive準備を作る。",
       "prerequisites": [
@@ -758,7 +758,7 @@
       "aliases": [],
       "workflow": "rag-build",
       "skill": "rag-build",
-      "skill_path": "skills/rag-build/SKILL.md",
+      "skill_path": ".agents/skills/rag-build/SKILL.md",
       "prompt_path": ".ariadne/prompts/rag-build.prompt.md",
       "overview": "Markdown reportをfile-based RAG artifactへ変換する。",
       "prerequisites": [
@@ -804,7 +804,7 @@
       "aliases": [],
       "workflow": "rag-load",
       "skill": "rag-load",
-      "skill_path": "skills/rag-load/SKILL.md",
+      "skill_path": ".agents/skills/rag-load/SKILL.md",
       "prompt_path": ".ariadne/prompts/rag-load.prompt.md",
       "overview": "開発前にRAGを検索し、圧縮済みcontext packを読み込む。",
       "prerequisites": [
@@ -868,7 +868,7 @@
       ],
       "workflow": "runtime-health-check",
       "skill": "runtime-health-check",
-      "skill_path": "skills/runtime-health-check/SKILL.md",
+      "skill_path": ".agents/skills/runtime-health-check/SKILL.md",
       "prompt_path": ".ariadne/prompts/runtime-health-check.prompt.md",
       "overview": "Ariadne AI Workflow Platform自身のruntime、pytest、UT仕様書、Context First、aiwfctl、docs品質を自己診断する。",
       "prerequisites": [

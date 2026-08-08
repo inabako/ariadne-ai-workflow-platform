@@ -146,5 +146,5 @@ work/close/improvement/<issue-id>/
 ## Source Skill
 
 ```text
-skills/knowledge-capture/SKILL.md
+.agents/skills/knowledge-capture/SKILL.md
 ```

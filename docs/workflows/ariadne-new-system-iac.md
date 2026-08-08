@@ -130,7 +130,7 @@ templates/workflows/iac/software-inventory-template.md
 ## Source Skills
 
 ```text
-skills/ariadne-new-system/SKILL.md
-skills/realtime-iac/SKILL.md
-skills/ariadne-new-system-iac/SKILL.md
+.agents/skills/ariadne-new-system/SKILL.md
+.agents/skills/realtime-iac/SKILL.md
+.agents/skills/ariadne-new-system-iac/SKILL.md
 ```

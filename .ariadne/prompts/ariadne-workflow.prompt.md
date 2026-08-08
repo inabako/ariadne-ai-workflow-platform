@@ -1,4 +1,4 @@
-﻿# Ariadne Workflow
+# Ariadne Workflow
 
 ## Output Language
 
@@ -59,14 +59,14 @@ Ariadne は、workflow の入口、context、decision、evidence、Human Check�
 
 | Slash Command | Skill | Delegated Flow |
 | --- | --- | --- |
-| `/requirement-discovery` | `skills/requirement-discovery/SKILL.md` | requirement discovery and human review |
-| `/docs-sync` | `skills/docs-sync/SKILL.md` | implementation/docs drift analysis and docs-only issue branch |
-| `/ariadne-new-system` | `skills/ariadne-new-system/SKILL.md` | `/ariadne-new-system-development` |
-| `/ariadne-new-system-iac` | `skills/ariadne-new-system-iac/SKILL.md` | Shared Artifacts validation then `/realtime-iac` |
-| `/ariadne-feature-maintenance` | `skills/ariadne-feature-maintenance/SKILL.md` | `/ariadne-feature-maintenance-development` |
-| `/realtime-iac` | `skills/realtime-iac/SKILL.md` | realtime IaC design, generation, validation, and docs |
-| `/corrective-action-report` | `skills/corrective-action-report/SKILL.md` | read-only improvement report |
-| `/knowledge-capture` | `skills/knowledge-capture/SKILL.md` | finalization and knowledge recovery |
+| `/requirement-discovery` | `.agents/skills/requirement-discovery/SKILL.md` | requirement discovery and human review |
+| `/docs-sync` | `.agents/skills/docs-sync/SKILL.md` | implementation/docs drift analysis and docs-only issue branch |
+| `/ariadne-new-system` | `.agents/skills/ariadne-new-system/SKILL.md` | `/ariadne-new-system-development` |
+| `/ariadne-new-system-iac` | `.agents/skills/ariadne-new-system-iac/SKILL.md` | Shared Artifacts validation then `/realtime-iac` |
+| `/ariadne-feature-maintenance` | `.agents/skills/ariadne-feature-maintenance/SKILL.md` | `/ariadne-feature-maintenance-development` |
+| `/realtime-iac` | `.agents/skills/realtime-iac/SKILL.md` | realtime IaC design, generation, validation, and docs |
+| `/corrective-action-report` | `.agents/skills/corrective-action-report/SKILL.md` | read-only improvement report |
+| `/knowledge-capture` | `.agents/skills/knowledge-capture/SKILL.md` | finalization and knowledge recovery |
 
 ## Two Primary Flows
 

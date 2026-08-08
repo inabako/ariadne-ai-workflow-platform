@@ -2475,7 +2475,7 @@ def infer_commit_type_scope(paths: list[str], subject: str) -> tuple[str, str]:
         return "test", "runtime"
     if any(path.startswith("runtime/") for path in lowered):
         return ("fix" if any(word in subject_lower for word in ["fix", "修正", "是正", "guard"]) else "feat", "runtime")
-    if any(path.startswith("skills/") for path in lowered):
+    if any(path.startswith(".agents/skills/") for path in lowered):
         return "docs", "workflow"
     if any(path.startswith(".github/") for path in lowered):
         return "chore", "github"

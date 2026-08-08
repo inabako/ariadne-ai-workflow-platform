@@ -95,5 +95,5 @@ uv run --project runtime python runtime/ctl/ctl.py --repo-root . close-archive p
 ## Source Skill
 
 ```text
-skills/docs-sync/SKILL.md
+.agents/skills/docs-sync/SKILL.md
 ```

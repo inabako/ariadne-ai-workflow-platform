@@ -6,9 +6,9 @@ applyTo: "**"
 
 このファイルは、VS Code Copilot custom instructions 向けの薄いbridgeです。
 repository guidance の正本は `AGENTS.md` です。
-Ariadne AI workflow の source of truth は `.ariadne/` と `skills/` にあります。
+Ariadne AI workflow の source of truth は `.ariadne/` と `.agents/skills/` にあります。
 
-作業前に `AGENTS.md` を確認し、詳細なworkflow定義は `.ariadne/` と `skills/` から読んでください。
+作業前に `AGENTS.md` を確認し、詳細なworkflow定義は `.ariadne/` と `.agents/skills/` から読んでください。
 
 ## Ariadne Asset配置
 
@@ -16,7 +16,7 @@ Ariadne AI workflow の source of truth は `.ariadne/` と `skills/` にあり�
 - Agent prompts: `.ariadne/agents/*.prompt.md`
 - Schemas: `.ariadne/schemas/*.schema.json`
 - Shared policies: `.ariadne/shared/*.md`
-- Skill entrypoints: `skills/<workflow>/SKILL.md`
+- Skill entrypoints: `.agents/skills/<workflow>/SKILL.md`
 
 ## 作業ルール
 

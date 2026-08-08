@@ -1,3 +1,8 @@
+---
+name: system-integration-quality
+description: Verify that generated or modified code integrates safely into an existing target system, including SDKs, external APIs, cloud services, payments, databases, async processing, UI, batch jobs, monitoring, infrastructure settings, tests, operation model, evidence layout, and Knowledge handoff. Use when the user selects /system-integration-quality or asks for integration quality checks.
+---
+
 # System Integration Quality Workflow
 
 Use this workflow when generated or modified code must be integrated into an existing target system, especially when SDKs, external APIs, cloud services, payment services, databases, async processing, UI, batch jobs, monitoring, or infrastructure settings are involved.

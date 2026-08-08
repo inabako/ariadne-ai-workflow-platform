@@ -2,7 +2,7 @@
 
 `workflow-flowcharts.md` の Mermaid 図を、業務工程ごとの表として読み替えるための解説です。
 
-この document は実行手順の source of truth ではありません。詳細手順、停止条件、成果物形式は `docs/workflows/`、`skills/<skill-name>/SKILL.md`、`templates/` を優先します。
+この document は実行手順の source of truth ではありません。詳細手順、停止条件、成果物形式は `docs/workflows/`、`.agents/skills/<skill-name>/SKILL.md`、`templates/` を優先します。
 
 ## 読み方
 

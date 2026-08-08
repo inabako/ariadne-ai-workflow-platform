@@ -19,5 +19,5 @@
 
 - Mermaid図は、詳細手順そのものではなく、動作イメージを掴むための入口として使います。
 - 表ベースの解説は、flowchartを業務工程、入力、出力、gateへ読み替えるために使います。
-- 詳細な実行手順は `docs/workflows/` と `skills/<skill-name>/SKILL.md` をsource of truthにします。
+- 詳細な実行手順は `docs/workflows/` と `.agents/skills/<skill-name>/SKILL.md` をsource of truthにします。
 - RAG、Review Council、Expectation-Driven Design、Runtime Observabilityなどの主要workflowを変更した場合は、実行手順docsだけでなく、このディレクトリのflowchartと工程表も同期します。

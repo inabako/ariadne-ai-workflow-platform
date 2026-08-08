@@ -352,5 +352,5 @@ High / critical finding がある場合、Shared Artifact Gate、Network / Secur
 ## Source Skill
 
 ```text
-skills/realtime-iac/SKILL.md
+.agents/skills/realtime-iac/SKILL.md
 ```

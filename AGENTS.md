@@ -1,4 +1,4 @@
-﻿# Ariadne AI Workflow: Agent Guide
+# Ariadne AI Workflow: Agent Guide
 
 このリポジトリは、対象システム開発を Intent、Safety、Operational Learning を中心に進めるための AI workflow repository です。
 
@@ -33,6 +33,10 @@ Ariadne は、AI Agent が迷わず作業を進めるために、workflow の入
   schemas/     JSON Schema contracts for Agent-to-Agent data sharing
   shared/      common rules, principles, handoff guidance
 
+.agents/
+  README.md    thin Codex bridge into AGENTS.md and .ariadne/
+  skills/      repo-local Codex Skill entrypoints
+
 .github/
   workflows/   GitHub Actions workflows
   ISSUE_TEMPLATE/
@@ -65,7 +69,6 @@ work/requirements/draft/
                human bullet-list drafts for requirement discovery
 rag/           future RAG-ready knowledge area
 runtime/       workflow runtime functions
-skills/        workflow skill assets
 templates/     reusable artifact templates
 ```
 
@@ -123,20 +126,20 @@ Current prompt set:
 
 Role-based Agent prompts live in `.ariadne/agents/`.
 
-Workflow Skill entrypoints live in `skills/`.
+Workflow Skill entrypoints live in `.agents/skills/`.
 
 Current Skill entrypoints:
 
-- `/requirement-discovery` -> `skills/requirement-discovery/SKILL.md` -> `work/requirements/draft/`, then `work/requirements/` after human OK
-- `/docs-sync` -> `skills/docs-sync/SKILL.md` -> `work/<target-branch>/context/docs-drift-analysis.json`, then docs-only `feature/issue-<number>`
-- `/github-knowledge-maintenance` -> `skills/github-knowledge-maintenance/SKILL.md` -> `work/github-knowledge-<repository>-<mode>/context/github-knowledge-analysis.json`, then approval-gated GitHub documentation sync and RAG candidates
-- `/vscode-environment` -> `skills/vscode-environment/SKILL.md` -> `work/<work-id>/`, `.vscode/*`, optional `workspace.code-workspace`
-- `/ariadne-new-system` -> `skills/ariadne-new-system/SKILL.md` -> `/ariadne-new-system-development`
-- `/ariadne-feature-maintenance` -> `skills/ariadne-feature-maintenance/SKILL.md` -> `/ariadne-feature-maintenance-development`
-- `/corrective-action-report` -> `skills/corrective-action-report/SKILL.md` -> `rag/corrective-action-report/`
-- `/corrective-action-fix` -> `skills/corrective-action-fix/SKILL.md` -> `work/<branch>/`, `work/issue-<issue-number>/`, `feature/issue-<issue-number>`
-- `/rag-build` -> `skills/rag-build/SKILL.md` -> `rag/normalized/`, `rag/chunks/`, `rag/indexes/`, `rag/embeddings/`
-- `/rag-load` -> `skills/rag-load/SKILL.md` -> `rag/retrieval/<uuid>.json`
+- `/requirement-discovery` -> `.agents/skills/requirement-discovery/SKILL.md` -> `work/requirements/draft/`, then `work/requirements/` after human OK
+- `/docs-sync` -> `.agents/skills/docs-sync/SKILL.md` -> `work/<target-branch>/context/docs-drift-analysis.json`, then docs-only `feature/issue-<number>`
+- `/github-knowledge-maintenance` -> `.agents/skills/github-knowledge-maintenance/SKILL.md` -> `work/github-knowledge-<repository>-<mode>/context/github-knowledge-analysis.json`, then approval-gated GitHub documentation sync and RAG candidates
+- `/vscode-environment` -> `.agents/skills/vscode-environment/SKILL.md` -> `work/<work-id>/`, `.vscode/*`, optional `workspace.code-workspace`
+- `/ariadne-new-system` -> `.agents/skills/ariadne-new-system/SKILL.md` -> `/ariadne-new-system-development`
+- `/ariadne-feature-maintenance` -> `.agents/skills/ariadne-feature-maintenance/SKILL.md` -> `/ariadne-feature-maintenance-development`
+- `/corrective-action-report` -> `.agents/skills/corrective-action-report/SKILL.md` -> `rag/corrective-action-report/`
+- `/corrective-action-fix` -> `.agents/skills/corrective-action-fix/SKILL.md` -> `work/<branch>/`, `work/issue-<issue-number>/`, `feature/issue-<issue-number>`
+- `/rag-build` -> `.agents/skills/rag-build/SKILL.md` -> `rag/normalized/`, `rag/chunks/`, `rag/indexes/`, `rag/embeddings/`
+- `/rag-load` -> `.agents/skills/rag-load/SKILL.md` -> `rag/retrieval/<uuid>.json`
 
 GaC / UaC GUI Mode is not a standalone Skill entrypoint. Before Issue creation, SVG files are placed under `work/requirements/svg-input/` with `SYS_`, `FEAT_`, or `FIX_` prefixes. After the Issue work area exists, the three implementation workflows claim matching files and dispatch `.ariadne/prompts/gac-uac-gui-mode.prompt.md`.
 

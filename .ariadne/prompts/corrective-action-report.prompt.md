@@ -1,4 +1,4 @@
-﻿---
+---
 name: corrective-action-report
 description: 指定された repository / branch の現状を調査し、改善点を corrective action report として保存します。
 argument-hint: "<target-repository> <target-branch>"
@@ -18,7 +18,7 @@ agent: agent
 Use:
 
 ```text
-skills/corrective-action-report/SKILL.md
+.agents/skills/corrective-action-report/SKILL.md
 ```
 
 ## Required Inputs

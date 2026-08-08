@@ -10,7 +10,7 @@
 flowchart TD
   subgraph WorkflowAssets[AI workflow source assets]
     Ariadne[.ariadne prompts / agents / schemas / shared]
-    Skills[skills/*/SKILL.md]
+    Skills[.agents/skills/*/SKILL.md]
     Templates[templates/*]
     RegistrySeeds[templates/registries/*.json]
   end
@@ -134,7 +134,7 @@ flowchart TD
 
 | 分類 | 主な場所 | 役割 | Git管理 |
 | --- | --- | --- | --- |
-| AI workflow source | `.ariadne/`, `skills/`, `templates/` | Agent prompt、schema、Skill、artifact templateのsource | 管理対象 |
+| AI workflow source | `.ariadne/`, `.agents/skills/`, `templates/` | Agent prompt、schema、Skill、artifact templateのsource | 管理対象 |
 | Registry bootstrap source | `templates/registries/*.json` | fresh checkoutでregistry read modelを再生成するsource | 管理対象 |
 | Registry read model | `db/registries/registry.duckdb` | `aiwfctl help`、Dispatcher、Human Gate、Doctorが読むruntime read model | 生成物 |
 | Requirement source | `work/requirements/` | intake前の正式入力 | 運用により管理 |

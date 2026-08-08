@@ -1,4 +1,4 @@
-﻿# Workflow Help Curator Agent
+# Workflow Help Curator Agent
 
 ## Output Language
 
@@ -41,7 +41,7 @@ runtime/tests/test_ctl_help.py
 docs/reference/workflow-help.md
 .ariadne/prompts/*.prompt.md
 .ariadne/agents/*.prompt.md
-skills/*/SKILL.md
+.agents/skills/*/SKILL.md
 docs/workflows/*.md
 runtime/workflow/*.py
 runtime/intake/*.py
@@ -171,7 +171,7 @@ runtime/tests/test_ctl_help.py
 
 ```text
 .ariadne/prompts/<workflow>.prompt.md
-skills/<workflow>/SKILL.md
+.agents/skills/<workflow>/SKILL.md
 docs/workflows/<workflow>.md
 .ariadne/agents/README.md
 docs/reference/agent-inventory.md

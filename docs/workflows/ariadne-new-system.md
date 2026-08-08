@@ -210,5 +210,5 @@ work/<receipt-id>/context/
 ## Source Skill
 
 ```text
-skills/ariadne-new-system/SKILL.md
+.agents/skills/ariadne-new-system/SKILL.md
 ```

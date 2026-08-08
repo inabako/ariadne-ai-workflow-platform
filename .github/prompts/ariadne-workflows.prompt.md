@@ -12,7 +12,7 @@ workflow 本体は `.ariadne/prompts/`、agent prompt は `.ariadne/agents/`、s
 ## References
 
 - #file:../../AGENTS.md
-- #file:../../skills/skill-index.json
+- #file:../../.agents/skills/skill-index.json
 - #file:../../docs/workflows/README.md
 - #file:../../docs/reference/skill-discovery.md
 - `.ariadne/prompts/`
@@ -22,5 +22,5 @@ workflow 本体は `.ariadne/prompts/`、agent prompt は `.ariadne/agents/`、s
 
 ## Task
 
-ユーザーの依頼内容から該当 workflow を選び、必要な `.ariadne/prompts/<workflow>.prompt.md` と `skills/<workflow>/SKILL.md` を読んでください。
+ユーザーの依頼内容から該当 workflow を選び、必要な `.ariadne/prompts/<workflow>.prompt.md` と `.agents/skills/<workflow>/SKILL.md` を読んでください。
 該当 workflow が明確でない場合は、候補を短く提示して確認してください。

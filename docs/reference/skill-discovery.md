@@ -1,10 +1,10 @@
 # Skill Discovery
 
-このrepoでは、VS Code / GitHub Copilot Chat の slash prompt、Codex Skill、`aiwfctl help` の候補表示を分けて扱います。
+この repository では、VS Code / GitHub Copilot Chat の slash prompt、Codex Skill、`aiwfctl help` の候補表示を分けて扱います。
 
 ## VS Code Prompt Discovery
 
-VS Code / GitHub Copilot Chat の `/` 候補に出すpromptは次に置きます。
+VS Code / GitHub Copilot Chat の `/` 候補に出る prompt は次に置きます。
 
 ```text
 .ariadne/prompts/*.prompt.md
@@ -24,79 +24,63 @@ VS Code / GitHub Copilot Chat の `/` 候補に出すpromptは次に置きます
 .ariadne/prompts/ariadne-feature-maintenance.prompt.md
 ```
 
-GitHub Knowledge Maintenance の prompt command は次です。
-
-```text
-/github-knowledge-maintenance
-```
-
-候補に出ない場合は、`C:\github\ariadne-ai-workflow-platform` をVS Code workspaceとして開いていることを確認し、Copilot Chat / VS Code windowをreloadします。
+候補に出ない場合は、この repository を VS Code workspace として開いていることを確認し、Copilot Chat / VS Code window を reload します。
 
 ## Codex Skill Discovery
 
-このrepositoryのSkill source of truthは次です。
+この repository の Codex Skill source of truth は次です。
 
 ```text
-C:\github\ariadne-ai-workflow-platform\skills
+.agents/skills/
 ```
 
-ただし、repo-local `skills/` に置くだけではCodex Skill候補に出ない場合があります。Codex候補として表示するには、Codexが探索するlocal skill directoryから参照できる必要があります。
+Codex は repo-local skill として `.agents/skills` を探索します。したがって、この repository を Codex session の working directory または repo root として開けば、`$requirement-discovery` などの skill 候補として検出されます。
 
-```text
-C:\Users\User\.codex\skills\<skill-name>
-  -> C:\github\ariadne-ai-workflow-platform\skills\<skill-name>
-```
+`.agents/README.md` は Codex 向けの薄い bridge です。Workflow 定義や Safety rule は複製せず、`AGENTS.md`、`.ariadne/`、`.agents/skills/` への入口だけを置きます。
 
-現在の標準接続はNTFS Junctionです。
+旧運用では `C:\Users\User\.codex\skills` から repository の `skills/` へ NTFS Junction を張っていました。現在は `.agents/skills` を Git 管理するため、通常は Junction は不要です。
 
-GitHub Knowledge Maintenance のCodex Skillは次を確認します。
-
-```text
-C:\Users\User\.codex\skills\github-knowledge-maintenance
-  -> C:\github\ariadne-ai-workflow-platform\skills\github-knowledge-maintenance
-```
-
-既存セッションで候補に出ない場合は、新しいCodexセッションで確認します。Copilot CLI系のskill候補を使う場合は、`/skills reload` 後に `/skills info github-knowledge-maintenance` で確認します。
+既存 session で候補に出ない場合は、新しい Codex session で確認します。CLI 系の skill 候補を使う場合は、必要に応じて `/skills reload` 後に `/skills info requirement-discovery` で確認します。
 
 ## aiwfctl Help Discovery
 
-`aiwfctl help` の候補は、workflow help registryから表示します。
+`aiwfctl help` の候補は workflow help registry から表示します。
 
 ```powershell
 aiwfctl help search github knowledge
 aiwfctl help show /github-knowledge-maintenance
 ```
 
-sourceは次です。
+source は次です。
 
 ```text
 db/registries/registry.duckdb
 ```
 
-`/github-knowledge-maintenance` は `aiwfctl help search github knowledge` と `aiwfctl help show /github-knowledge-maintenance` の両方で確認できます。
+`aiwfctl help` は Codex Skill discovery とは別経路です。Skill path を変更した場合は、registry template と read model の同期も確認してください。
 
 ## Skill Index
 
-Skill、slash command、prompt fileの対応は次にまとめます。
+Skill、slash command、prompt file の対応は次にまとめます。
 
 ```text
-skills/skill-index.json
+.agents/skills/skill-index.json
 ```
 
-新しいworkflowを追加した場合は、次を揃えます。
+新しい workflow を追加した場合は、次を揃えます。
 
-- `skills/<skill-name>/SKILL.md`
+- `.agents/skills/<skill-name>/SKILL.md`
 - `.ariadne/prompts/<command>.prompt.md`
-- `skills/skill-index.json`
+- `.agents/skills/skill-index.json`
+- `templates/registries/workflow_help.json`
 - `db/registries/registry.duckdb`
 - `docs/workflows/README.md`
-- 必要に応じて `C:\Users\User\.codex\skills` のJunction
 
 ## Reload
 
-候補が更新されない場合は、どの候補機構を見ているかでreload先が変わります。
+候補が更新されない場合は、候補機構ごとに reload 先が変わります。
 
 - VS Code / GitHub Copilot Chat: VS Code window reload
-- Codex Skill: 新しいCodexセッションで確認
+- Codex Skill: 新しい Codex session で確認
 - Copilot CLI Skill: `/skills reload`
-- `aiwfctl help`: `aiwfctl help search <keyword>` でregistryを直接確認
+- `aiwfctl help`: `aiwfctl help search <keyword>` で registry を直接確認

@@ -308,5 +308,5 @@ After long-lived Knowledge absorption is confirmed, verify temporary work cleanu
 ## Source Skill
 
 ```text
-skills/vscode-environment/SKILL.md
+.agents/skills/vscode-environment/SKILL.md
 ```

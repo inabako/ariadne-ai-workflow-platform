@@ -392,7 +392,7 @@ def missing_required_files(repo_root: Path) -> list[str]:
         "runtime/tests/test_observability_metrics.py",
         "runtime/tools/pytest_ut_spec_sync.py",
         "runtime/tests/test_pytest_ut_spec_sync.py",
-        "skills/runtime-health-check/SKILL.md",
+        ".agents/skills/runtime-health-check/SKILL.md",
         ".ariadne/prompts/runtime-health-check.prompt.md",
         ".ariadne/agents/runtime-quality-gate-agent.prompt.md",
         "docs/workflows/runtime-health-check.md",

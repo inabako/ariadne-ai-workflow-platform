@@ -14,7 +14,7 @@ agent: agent
 Use:
 
 ```text
-skills/vscode-environment/SKILL.md
+.agents/skills/vscode-environment/SKILL.md
 ```
 
 ## Goal

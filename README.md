@@ -1,4 +1,4 @@
-﻿# Ariadne AI Workflow Platform
+# Ariadne AI Workflow Platform
 
 <p align="center">
   <img src="docs/brand/logo/ariadne-logo-master.svg" alt="Ariadne AI Workflow Platform logo" width="360">
@@ -120,6 +120,7 @@ ARIADNEの構成は、prompt、agent、schema、runtime、workflow document、te
 
 ```text
 .ariadne/   prompts, agents, schemas, shared rules
+.agents/    Codex bridge and repo-local Skill entrypoints
 .github/    GitHub templates, workflows, and thin Copilot bridge files
 docs/       workflow guides and reference docs
 db/registries/
@@ -127,7 +128,6 @@ db/registries/
 db/rag/     generated DuckDB RAG read model and local evidence
 logs/       local runtime event logs and test logs
 runtime/    workflow helper CLI
-skills/     Codex Skill entrypoints
 templates/  requirement, design, report, test templates
 work/db/ariadne-knowledge-platform/
             local knowledge source workspace
@@ -235,9 +235,9 @@ Context First Architecture では、Dispatcher が `work/<work-id>/context/` に
 
 詳細は [Workflow Help CLI](docs/reference/workflow-help.md) を参照してください。
 
-Skill entrypoint は `skills/` にあります。対応関係は `skills/skill-index.json` にまとめます。
+Skill entrypoint は `.agents/skills/` にあります。対応関係は `.agents/skills/skill-index.json` にまとめます。
 
-`skills/` はこの repository の source of truth です。Codex候補として表示するには、必要に応じて `C:\Users\User\.codex\skills` からJunctionで接続します。詳しくは [Skill Discovery](docs/reference/skill-discovery.md) を参照してください。
+`.agents/skills/` はこの repository の source of truth です。Codex は repo-local skill としてこの directory を探索します。詳しくは [Skill Discovery](docs/reference/skill-discovery.md) を参照してください。
 
 ## Runtime and Workflow Model
 

@@ -266,7 +266,7 @@ single query debug:
 | `.ariadne/schemas/rag-dispatch-plan.schema.json` | dispatch plan schema |
 | `.ariadne/schemas/rag-retrieval-result.schema.json` | retrieval result schema |
 | `.ariadne/schemas/rag-context-pack.schema.json` | context pack schema |
-| `skills/rag-load/SKILL.md` | RAG読み込みskillの実行手順 |
+| `.agents/skills/rag-load/SKILL.md` | RAG読み込みskillの実行手順 |
 | `docs/reference/rag.md` | RAG全体のpipeline |
 
 ## 判断のまとめ

@@ -1,4 +1,4 @@
-﻿# Ariadne New System Skill Entrypoint
+# Ariadne New System Skill Entrypoint
 
 ## Output Language
 
@@ -11,7 +11,7 @@
 Use:
 
 ```text
-skills/ariadne-new-system/SKILL.md
+.agents/skills/ariadne-new-system/SKILL.md
 ```
 
 Then delegate the detailed workflow to:

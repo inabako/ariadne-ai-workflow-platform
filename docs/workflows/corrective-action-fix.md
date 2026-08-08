@@ -260,5 +260,5 @@ Knowledge Capture実行時にtarget repository側の証跡フォルダは自動�
 ## Source Skill
 
 ```text
-skills/corrective-action-fix/SKILL.md
+.agents/skills/corrective-action-fix/SKILL.md
 ```

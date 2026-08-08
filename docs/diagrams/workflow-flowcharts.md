@@ -2,7 +2,7 @@
 
 各AI workflowの動作イメージを掴むためのMermaid式flowchartです。
 
-詳細手順は `docs/workflows/` と `skills/<skill-name>/SKILL.md` を優先します。
+詳細手順は `docs/workflows/` と `.agents/skills/<skill-name>/SKILL.md` を優先します。
 
 ## Requirement Discovery
 

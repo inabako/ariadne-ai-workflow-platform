@@ -186,7 +186,7 @@ Repository root の `README.md` は入口と索引に絞り、workflow の詳細
 
 ## Source Of Truth
 
-- 実行手順の詳細は `skills/<skill-name>/SKILL.md` を最優先します。
+- 実行手順の詳細は `.agents/skills/<skill-name>/SKILL.md` を最優先します。
 - Runtime CLI の詳細は `runtime/**/README.md` と実装を確認します。
 - 成果物の形式は `templates/` と `.ariadne/schemas/` を確認します。
 - `docs/` は、運用者が迷わず入口を選ぶための整理された案内として使います。

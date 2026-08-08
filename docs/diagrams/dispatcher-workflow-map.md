@@ -2,7 +2,7 @@
 
 この文書は、Context First Architecture における Dispatcher 群と各Workflowの関係をMermaidで示します。
 
-詳細な実行手順は `docs/workflows/` と `skills/<skill-name>/SKILL.md` を優先します。この図は、Workflowへ入る前にどの判断がContext化され、Workflow中にどのContextが参照・更新されるかを掴むための入口です。
+詳細な実行手順は `docs/workflows/` と `.agents/skills/<skill-name>/SKILL.md` を優先します。この図は、Workflowへ入る前にどの判断がContext化され、Workflow中にどのContextが参照・更新されるかを掴むための入口です。
 
 ## 全体像
 

@@ -367,13 +367,13 @@ def test_vscode_task_runner_run_go_version_uses_found_executable(monkeypatch: py
 
 def test_vscode_task_runner_skill_info_prints_command_and_skill(capsys: pytest.CaptureFixture[str]) -> None:
     code = vscode_task_runner.run_skill_info(
-        argparse.Namespace(command_name="/vscode-environment", skill="skills/vscode-environment/SKILL.md")
+        argparse.Namespace(command_name="/vscode-environment", skill=".agents/skills/vscode-environment/SKILL.md")
     )
 
     captured = capsys.readouterr()
     assert code == 0
     assert "Codex Skill: /vscode-environment" in captured.out
-    assert "skills/vscode-environment/SKILL.md" in captured.out
+    assert ".agents/skills/vscode-environment/SKILL.md" in captured.out
 
 
 def test_vscode_task_runner_main_dispatches_skill_info(capsys: pytest.CaptureFixture[str]) -> None:
@@ -383,7 +383,7 @@ def test_vscode_task_runner_main_dispatches_skill_info(capsys: pytest.CaptureFix
             "--command",
             "/vscode-environment",
             "--skill",
-            "skills/vscode-environment/SKILL.md",
+            ".agents/skills/vscode-environment/SKILL.md",
         ]
     )
 

@@ -151,5 +151,5 @@ reportには、専門reviewで採用した外部知識を `Supporting References
 ## Source Skill
 
 ```text
-skills/corrective-action-report/SKILL.md
+.agents/skills/corrective-action-report/SKILL.md
 ```

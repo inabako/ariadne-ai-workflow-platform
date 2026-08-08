@@ -4,7 +4,7 @@
     {
       "slash_command": "/requirement-discovery",
       "skill": "requirement-discovery",
-      "skill_path": "skills/requirement-discovery/SKILL.md",
+      "skill_path": ".agents/skills/requirement-discovery/SKILL.md",
       "delegated_prompt": "/requirement-discovery",
       "prompt_path": ".ariadne/prompts/requirement-discovery.prompt.md",
       "workflow": "requirement-discovery",
@@ -13,7 +13,7 @@
     {
       "slash_command": "/docs-sync",
       "skill": "docs-sync",
-      "skill_path": "skills/docs-sync/SKILL.md",
+      "skill_path": ".agents/skills/docs-sync/SKILL.md",
       "delegated_prompt": "/docs-sync",
       "prompt_path": ".ariadne/prompts/docs-sync.prompt.md",
       "workflow": "docs-sync",
@@ -22,7 +22,7 @@
     {
       "slash_command": "/self-improvement",
       "skill": "self-improvement",
-      "skill_path": "skills/self-improvement/SKILL.md",
+      "skill_path": ".agents/skills/self-improvement/SKILL.md",
       "delegated_prompt": "/self-improvement",
       "prompt_path": ".ariadne/prompts/self-improvement.prompt.md",
       "workflow": "self-improvement",
@@ -31,7 +31,7 @@
     {
       "slash_command": "/system-integration-quality",
       "skill": "system-integration-quality",
-      "skill_path": "skills/system-integration-quality/SKILL.md",
+      "skill_path": ".agents/skills/system-integration-quality/SKILL.md",
       "delegated_prompt": "/system-integration-quality",
       "prompt_path": ".ariadne/prompts/system-integration-quality.prompt.md",
       "workflow": "system-integration-quality",
@@ -40,7 +40,7 @@
     {
       "slash_command": "/flutter-multiplatform",
       "skill": "flutter-multiplatform",
-      "skill_path": "skills/flutter-multiplatform/SKILL.md",
+      "skill_path": ".agents/skills/flutter-multiplatform/SKILL.md",
       "delegated_prompt": "/flutter-multiplatform",
       "prompt_path": ".ariadne/prompts/flutter-multiplatform.prompt.md",
       "workflow": "flutter-multiplatform",
@@ -49,7 +49,7 @@
     {
       "slash_command": "/github-knowledge-maintenance",
       "skill": "github-knowledge-maintenance",
-      "skill_path": "skills/github-knowledge-maintenance/SKILL.md",
+      "skill_path": ".agents/skills/github-knowledge-maintenance/SKILL.md",
       "delegated_prompt": "/github-knowledge-maintenance",
       "prompt_path": ".ariadne/prompts/github-knowledge-maintenance.prompt.md",
       "workflow": "github-knowledge-maintenance",
@@ -58,7 +58,7 @@
     {
       "slash_command": "/vscode-environment",
       "skill": "vscode-environment",
-      "skill_path": "skills/vscode-environment/SKILL.md",
+      "skill_path": ".agents/skills/vscode-environment/SKILL.md",
       "delegated_prompt": "/vscode-environment",
       "prompt_path": ".ariadne/prompts/vscode-environment.prompt.md",
       "workflow": "vscode-environment",
@@ -67,7 +67,7 @@
     {
       "slash_command": "/ariadne-new-system",
       "skill": "ariadne-new-system",
-      "skill_path": "skills/ariadne-new-system/SKILL.md",
+      "skill_path": ".agents/skills/ariadne-new-system/SKILL.md",
       "delegated_prompt": "/ariadne-new-system-development",
       "prompt_path": ".ariadne/prompts/ariadne-new-system-development.prompt.md",
       "workflow": "ariadne-new-system-development",
@@ -76,7 +76,7 @@
     {
       "slash_command": "/ariadne-new-system-iac",
       "skill": "ariadne-new-system-iac",
-      "skill_path": "skills/ariadne-new-system-iac/SKILL.md",
+      "skill_path": ".agents/skills/ariadne-new-system-iac/SKILL.md",
       "delegated_prompt": "/ariadne-new-system-iac",
       "prompt_path": ".ariadne/prompts/ariadne-new-system-iac.prompt.md",
       "workflow": "ariadne-new-system-iac",
@@ -85,7 +85,7 @@
     {
       "slash_command": "/ariadne-feature-maintenance",
       "skill": "ariadne-feature-maintenance",
-      "skill_path": "skills/ariadne-feature-maintenance/SKILL.md",
+      "skill_path": ".agents/skills/ariadne-feature-maintenance/SKILL.md",
       "delegated_prompt": "/ariadne-feature-maintenance-development",
       "prompt_path": ".ariadne/prompts/ariadne-feature-maintenance-development.prompt.md",
       "workflow": "ariadne-feature-maintenance-development",
@@ -94,7 +94,7 @@
     {
       "slash_command": "/realtime-iac",
       "skill": "realtime-iac",
-      "skill_path": "skills/realtime-iac/SKILL.md",
+      "skill_path": ".agents/skills/realtime-iac/SKILL.md",
       "delegated_prompt": "/realtime-iac",
       "prompt_path": ".ariadne/prompts/realtime-iac.prompt.md",
       "workflow": "realtime-iac",
@@ -103,7 +103,7 @@
     {
       "slash_command": "/corrective-action-report",
       "skill": "corrective-action-report",
-      "skill_path": "skills/corrective-action-report/SKILL.md",
+      "skill_path": ".agents/skills/corrective-action-report/SKILL.md",
       "delegated_prompt": "/corrective-action-report",
       "prompt_path": ".ariadne/prompts/corrective-action-report.prompt.md",
       "workflow": "corrective-action-report",
@@ -112,7 +112,7 @@
     {
       "slash_command": "/corrective-action-fix",
       "skill": "corrective-action-fix",
-      "skill_path": "skills/corrective-action-fix/SKILL.md",
+      "skill_path": ".agents/skills/corrective-action-fix/SKILL.md",
       "delegated_prompt": "/corrective-action-fix",
       "prompt_path": ".ariadne/prompts/corrective-action-fix.prompt.md",
       "workflow": "corrective-action-fix",
@@ -121,7 +121,7 @@
     {
       "slash_command": "/knowledge-capture",
       "skill": "knowledge-capture",
-      "skill_path": "skills/knowledge-capture/SKILL.md",
+      "skill_path": ".agents/skills/knowledge-capture/SKILL.md",
       "delegated_prompt": "/knowledge-capture",
       "prompt_path": ".ariadne/prompts/knowledge-capture.prompt.md",
       "workflow": "knowledge-capture",
@@ -130,7 +130,7 @@
     {
       "slash_command": "/rag-build",
       "skill": "rag-build",
-      "skill_path": "skills/rag-build/SKILL.md",
+      "skill_path": ".agents/skills/rag-build/SKILL.md",
       "delegated_prompt": "/rag-build",
       "prompt_path": ".ariadne/prompts/rag-build.prompt.md",
       "workflow": "rag-build",
@@ -139,7 +139,7 @@
     {
       "slash_command": "/rag-load",
       "skill": "rag-load",
-      "skill_path": "skills/rag-load/SKILL.md",
+      "skill_path": ".agents/skills/rag-load/SKILL.md",
       "delegated_prompt": "/rag-load",
       "prompt_path": ".ariadne/prompts/rag-load.prompt.md",
       "workflow": "rag-load",
@@ -148,7 +148,7 @@
     {
       "slash_command": "/runtime-health-check",
       "skill": "runtime-health-check",
-      "skill_path": "skills/runtime-health-check/SKILL.md",
+      "skill_path": ".agents/skills/runtime-health-check/SKILL.md",
       "delegated_prompt": "/runtime-health-check",
       "prompt_path": ".ariadne/prompts/runtime-health-check.prompt.md",
       "workflow": "runtime-health-check",

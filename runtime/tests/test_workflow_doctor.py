@@ -69,7 +69,7 @@ def test_missing_required_files_reports_core_runtime_assets(tmp_path: Path) -> N
     assert "runtime/tools/pytest_ut_spec_sync.py" in missing
     assert "runtime/observability/metrics.py" in missing
     assert "runtime/tests/test_observability_metrics.py" in missing
-    assert "skills/runtime-health-check/SKILL.md" in missing
+    assert ".agents/skills/runtime-health-check/SKILL.md" in missing
     assert ".ariadne/prompts/runtime-health-check.prompt.md" in missing
     assert "docs/workflows/runtime-health-check.md" in missing
     assert ".ariadne/schemas/context-manifest.schema.json" in missing

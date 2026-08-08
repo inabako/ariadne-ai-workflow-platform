@@ -181,5 +181,5 @@ work/<receipt-id>/context/
 ## Source Skill
 
 ```text
-skills/ariadne-feature-maintenance/SKILL.md
+.agents/skills/ariadne-feature-maintenance/SKILL.md
 ```

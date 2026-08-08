@@ -1,3 +1,8 @@
+---
+name: runtime-health-check
+description: Check the Ariadne AI Workflow Platform runtime itself, including pytest, workflow doctor checks, aiwfctl doctor, Context First test evidence, and Japanese Markdown output quality. Use when the user selects /runtime-health-check or asks to diagnose Ariadne runtime health.
+---
+
 # Runtime Health Check Skill
 
 ## 目的

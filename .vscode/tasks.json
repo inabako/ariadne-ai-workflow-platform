@@ -15,7 +15,7 @@
         "--command",
         "/requirement-discovery",
         "--skill",
-        "skills/requirement-discovery/SKILL.md"
+        ".agents/skills/requirement-discovery/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -36,7 +36,7 @@
         "--command",
         "/ariadne-new-system",
         "--skill",
-        "skills/ariadne-new-system/SKILL.md"
+        ".agents/skills/ariadne-new-system/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -57,7 +57,7 @@
         "--command",
         "/ariadne-new-system-iac",
         "--skill",
-        "skills/ariadne-new-system-iac/SKILL.md"
+        ".agents/skills/ariadne-new-system-iac/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -78,7 +78,7 @@
         "--command",
         "/ariadne-feature-maintenance",
         "--skill",
-        "skills/ariadne-feature-maintenance/SKILL.md"
+        ".agents/skills/ariadne-feature-maintenance/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -99,7 +99,7 @@
         "--command",
         "/realtime-iac",
         "--skill",
-        "skills/realtime-iac/SKILL.md"
+        ".agents/skills/realtime-iac/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -120,7 +120,7 @@
         "--command",
         "/corrective-action-report",
         "--skill",
-        "skills/corrective-action-report/SKILL.md"
+        ".agents/skills/corrective-action-report/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -141,7 +141,7 @@
         "--command",
         "/corrective-action-fix",
         "--skill",
-        "skills/corrective-action-fix/SKILL.md"
+        ".agents/skills/corrective-action-fix/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -162,7 +162,7 @@
         "--command",
         "/docs-sync",
         "--skill",
-        "skills/docs-sync/SKILL.md"
+        ".agents/skills/docs-sync/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -183,7 +183,7 @@
         "--command",
         "/github-knowledge-maintenance",
         "--skill",
-        "skills/github-knowledge-maintenance/SKILL.md"
+        ".agents/skills/github-knowledge-maintenance/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -204,7 +204,7 @@
         "--command",
         "/vscode-environment",
         "--skill",
-        "skills/vscode-environment/SKILL.md"
+        ".agents/skills/vscode-environment/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -225,7 +225,7 @@
         "--command",
         "/knowledge-capture",
         "--skill",
-        "skills/knowledge-capture/SKILL.md"
+        ".agents/skills/knowledge-capture/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -246,7 +246,7 @@
         "--command",
         "/rag-build",
         "--skill",
-        "skills/rag-build/SKILL.md"
+        ".agents/skills/rag-build/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
@@ -267,7 +267,7 @@
         "--command",
         "/rag-load",
         "--skill",
-        "skills/rag-load/SKILL.md"
+        ".agents/skills/rag-load/SKILL.md"
       ],
       "options": {
         "cwd": "${workspaceFolder}"

@@ -183,8 +183,8 @@ Vector DB、provider-based embeddings、高度な semantic search、reranking mo
 ## Source Skills
 
 ```text
-skills/rag-build/SKILL.md
-skills/rag-load/SKILL.md
+.agents/skills/rag-build/SKILL.md
+.agents/skills/rag-load/SKILL.md
 ```
 
 ## Semantic Hints

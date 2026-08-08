@@ -18,7 +18,7 @@ docs更新は「手順を追記する作業」だけではありません。後�
 | --- | --- |
 | `aiwfctl` command、runtime CLI、wrapperを変更した | `docs/reference/runtime.md`、`docs/runtime/runtime-observability.md`、`docs/reference/runtime-pytest-ut/` |
 | Runtime event log、trace、metrics、Feedback連携を変更した | `docs/runtime/runtime-observability.md`、`docs/reference/workflow-feedback.md`、`logs/README.md`、`logs/test/README.md` |
-| workflow prompt、Skill、Agent promptを変更した | `docs/workflows/README.md`、該当 `docs/workflows/*.md`、`docs/reference/agent-inventory.md`、`skills/skill-index.json` |
+| workflow prompt、Skill、Agent promptを変更した | `docs/workflows/README.md`、該当 `docs/workflows/*.md`、`docs/reference/agent-inventory.md`、`.agents/skills/skill-index.json` |
 | `.ariadne/` のschema、agent、prompt、shared ruleを変更した | `docs/reference/data-model.md`、`docs/reference/repository-structure.md`、該当workflow docs |
 | `templates/registries`、`db/registries`、help registryを変更した | `docs/reference/workflow-help.md`、`docs/reference/repository-structure.md`、`runtime/tests/test_ctl_help.py`、UT仕様書 |
 | RAG source、RAG build/load、DuckDB read modelを変更した | `docs/reference/rag.md`、`docs/workflows/rag-build-load.md`、`docs/rag/README.md`、`docs/rag/duckdb-read-model.md`、`docs/rag/knowledge-quality-metrics.md` |
